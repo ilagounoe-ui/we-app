@@ -1,154 +1,204 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nous 💖</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notre Histoire 💖</title>
+    <style>
+        :root {
+            --primary: #ff4da6;
+            --secondary: #70a1ff;
+            --bg: #121212;
+        }
 
-<style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#1a1a1a,#2b0f2f);
-  font-family:Arial, sans-serif;
-  color:white;
-}
+        body {
+            margin: 0;
+            padding: 20px 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a1a, #2b0f2f);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
 
-.card{
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:350px;
-  box-shadow:0 0 20px rgba(255,0,128,0.2);
-  animation:fadeIn 0.6s ease;
-}
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            border-radius: 30px;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
 
-h1{
-  margin-top:0;
-  font-size:26px;
-}
+        .days-number {
+            font-size: 50px;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(255, 77, 166, 0.5);
+            margin: 10px 0;
+        }
 
-input{
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  margin-top:10px;
-}
+        /* Section Timeline */
+        .timeline {
+            width: 90%;
+            max-width: 400px;
+            margin-top: 20px;
+            text-align: left;
+        }
 
-button{
-  padding:10px 20px;
-  border-radius:20px;
-  border:none;
-  background:#ff4da6;
-  color:white;
-  margin-top:15px;
-  cursor:pointer;
-  transition:0.3s;
-}
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-left: 3px solid var(--primary);
+            margin-bottom: 10px;
+            border-radius: 0 15px 15px 0;
+        }
 
-button:hover{
-  transform:scale(1.05);
-}
+        .timeline-date { font-size: 12px; color: var(--primary); font-weight: bold; }
+        .timeline-text { font-size: 15px; margin-top: 5px; }
 
-.secondary{
-  background:gray;
-}
+        /* Boutons */
+        button {
+            padding: 12px 25px;
+            border-radius: 25px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            margin: 10px 0;
+        }
 
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
-}
+        button:active { transform: scale(0.95); }
 
-.days{
-  font-size:20px;
-  margin:20px 0;
-}
-</style>
+        .btn-message { background: var(--secondary); }
+
+        /* Animation cœurs */
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: float 3s linear forwards;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="card">
+    <div class="card">
+        <h1>💖 Notre Histoire</h1>
+        
+        <div id="setup" style="display:none;">
+            <p>Quand tout a commencé ? 💞</p>
+            <input type="date" id="dateInput" style="padding:10px; border-radius:10px; border:none; width:80%;">
+            <button onclick="saveDate()">Enregistrer la date</button>
+        </div>
 
-<h1>💖 Nous</h1>
+        <div id="main">
+            <p>On s'aime depuis...</p>
+            <div class="days-number" id="daysCount">0</div>
+            <p>jours incroyables ✨</p>
+            
+            <button onclick="spawnHearts()">❤️ Envoyer un bisou</button>
+            <button class="btn-message" onclick="showSurprise()">🎁 Un mot doux ?</button>
+            <p id="loveQuote" style="font-style: italic; margin-top: 15px; min-height: 40px; font-size: 14px;"></p>
+        </div>
+    </div>
 
-<div id="setup" style="display:none;">
-  <p>Choisis notre date 💞</p>
-  <input type="date" id="dateInput">
-  <br>
-  <button onclick="saveDate()">Enregistrer</button>
-  <br>
-  <button class="secondary" onclick="goBack()">↩ Retour</button>
-</div>
+    <div class="timeline">
+        <h3 style="text-align: center;">📍 Nos Moments Clés</h3>
+        
+        <div class="timeline-item">
+            <div class="timeline-date">Premier Jour</div>
+            <div class="timeline-text">Le début de notre magnifique aventure... ✨</div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-date">Aujourd'hui</div>
+            <div class="timeline-text">Chaque jour à tes côtés est un cadeau. 🎁</div>
+        </div>
+    </div>
 
-<div id="main">
-  <p class="days" id="days"></p>
-  <button onclick="love()">❤️ Je pense à toi</button>
-  <br>
-  <button class="secondary" onclick="editDate()">🔄 Modifier la date</button>
-</div>
-
-</div>
+    <button onclick="editDate()" style="width: auto; background: none; font-size: 12px; opacity: 0.5;">Modifier la date</button>
 
 <script>
+    const quotes = [
+        "Tu es la meilleure chose qui m'soit arrivée. 🌹",
+        "Chaque seconde avec toi est un sourire en plus. 😊",
+        "Mon endroit préféré au monde ? Tes bras. 🏠",
+        "Je t'aime plus qu'hier, mais moins que demain. 📈",
+        "Merci d'être toi, tout simplement. ❤️"
+    ];
 
-function calculateDays(dateString){
-  let startDate = new Date(dateString);
-  let today = new Date();
-  let difference = today - startDate;
-  return Math.floor(difference / (1000 * 60 * 60 * 24));
-}
+    function calculateDays(dateString) {
+        const start = new Date(dateString);
+        const today = new Date();
+        const diff = today - start;
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
 
-function saveDate(){
-  let date = document.getElementById("dateInput").value;
-  if(date){
-    localStorage.setItem("coupleDate", date);
-    showMain();
-  }
-}
+    function saveDate() {
+        const date = document.getElementById("dateInput").value;
+        if(date) {
+            localStorage.setItem("coupleDate", date);
+            updateUI();
+        }
+    }
 
-function editDate(){
-  let savedDate = localStorage.getItem("coupleDate");
-  document.getElementById("dateInput").value = savedDate;
-  document.getElementById("main").style.display = "none";
-  document.getElementById("setup").style.display = "block";
-}
+    function updateUI() {
+        const savedDate = localStorage.getItem("coupleDate");
+        if(savedDate) {
+            document.getElementById("daysCount").innerText = calculateDays(savedDate);
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("main").style.display = "block";
+        } else {
+            document.getElementById("setup").style.display = "block";
+            document.getElementById("main").style.display = "none";
+        }
+    }
 
-function goBack(){
-  showMain();
-}
+    function showSurprise() {
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        const quoteElement = document.getElementById("loveQuote");
+        quoteElement.style.opacity = 0;
+        setTimeout(() => {
+            quoteElement.innerText = randomQuote;
+            quoteElement.style.opacity = 1;
+        }, 200);
+    }
 
-function showMain(){
-  let savedDate = localStorage.getItem("coupleDate");
-  if(savedDate){
-    let days = calculateDays(savedDate);
-    document.getElementById("days").innerText =
-    "Ensemble depuis " + days + " jours 💞";
+    function spawnHearts() {
+        for(let i=0; i<10; i++) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = ['❤️','💖','✨','💕'][Math.floor(Math.random()*4)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.bottom = '0';
+            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            heart.style.duration = (Math.random() * 2 + 2) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 3000);
+        }
+    }
 
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("main").style.display = "block";
-  }
-}
+    function editDate() {
+        localStorage.removeItem("coupleDate");
+        updateUI();
+    }
 
-function love(){
-  alert("Ton message a été envoyé 💘");
-}
-
-let savedDate = localStorage.getItem("coupleDate");
-
-if(!savedDate){
-  document.getElementById("main").style.display = "none";
-  document.getElementById("setup").style.display = "block";
-}else{
-  showMain();
-}
-
+    updateUI();
 </script>
-
 </body>
 </html>
