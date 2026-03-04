@@ -1,84 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nous 💖</title>
+
 <style>
-/* Style spécifique pour le look NGL */
-.ngl-input {
-  width: 100%;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 15px;
-  padding: 15px;
-  color: white;
-  margin-top: 10px;
-  box-sizing: border-box;
-  font-family: inherit;
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#1a1a1a,#2b0f2f);
+  font-family:Arial, sans-serif;
+  color:white;
 }
 
-.ngl-card {
-  background: #f0f0f0;
-  color: #333;
-  padding: 15px;
-  border-radius: 15px;
-  margin-top: 10px;
-  text-align: left;
-  font-size: 14px;
-  box-shadow: 5px 5px 0px #ff4da6; /* Le look un peu cartoon de NGL */
+.card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+  width:85%;
+  max-width:350px;
+  box-shadow:0 0 20px rgba(255,0,128,0.2);
+}
+
+h1{ margin-top:0; font-size:26px; }
+
+button{
+  padding:10px 20px;
+  border-radius:20px;
+  border:none;
+  background:#ff4da6;
+  color:white;
+  margin-top:15px;
+  cursor:pointer;
+  transition:0.3s;
+  width: 100%; /* Pour que ce soit plus joli */
+}
+
+.secondary{ background:gray; }
+
+.days{ font-size:20px; margin:20px 0; }
+
+/* Nouveau style pour les boutons de profil */
+.profile-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.3);
+  margin-bottom: 10px;
 }
 </style>
+</head>
 
-<div id="main">
-  <p class="days" id="days"></p>
-  
-  <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px;">
-    <p style="font-size: 14px; margin-bottom: 5px;">Envoyer un message anonyme... 🤫</p>
-    <textarea id="nglMessage" class="ngl-input" placeholder="Dis-moi un truc que tu n'oses pas dire..."></textarea>
-    <button onclick="envoyerSecret()" style="background: #ff4da6;">Envoyer (Anonyme)</button>
+<body>
+
+<div class="card">
+
+  <div id="selection">
+    <h1>Qui est-ce ? ✨</h1>
+    <button class="profile-btn" onclick="ouvrirSite('Lui')">🙋‍♂️ C'est Lui</button>
+    <button class="profile-btn" onclick="ouvrirSite('Elle')">🙋‍♀️ C'est Elle</button>
   </div>
 
-  <div id="boiteSecrets" style="margin-top: 20px; display:none;">
-    <p>📬 Tes messages secrets :</p>
-    <div id="listeMessages"></div>
+  <div id="contenu" style="display:none;">
+    <h1 id="titreBienvenue">💖 Nous</h1>
+    <p id="petitMessage"></p>
+    
+    <div id="setup" style="display:none;">
+      <p>Choisis notre date 💞</p>
+      <input type="date" id="dateInput" style="padding:10px; border-radius:10px;">
+      <br>
+      <button onclick="saveDate()">Enregistrer</button>
+    </div>
+
+    <div id="main">
+      <p class="days" id="days"></p>
+      <button onclick="love()">❤️ Je pense à toi</button>
+      <br>
+      <button class="secondary" onclick="editDate()">🔄 Modifier la date</button>
+      <br>
+      <button class="secondary" style="margin-top:5px; font-size:12px;" onclick="location.reload()">↩ Changer de profil</button>
+    </div>
   </div>
 
-  <button class="secondary" onclick="voirSecrets()">👀 Voir mes messages</button>
-  <br>
-  <button class="secondary" onclick="editDate()">🔄 Modifier la date</button>
 </div>
 
 <script>
-// --- LOGIQUE NGL ---
-
-function envoyerSecret() {
-  let msg = document.getElementById("nglMessage").value;
-  if(msg.trim() !== "") {
-    // On récupère les messages existants
-    let secrets = JSON.parse(localStorage.getItem("monNGL") || "[]");
-    secrets.push({
-      texte: msg,
-      date: new Date().toLocaleDateString()
-    });
-    localStorage.setItem("monNGL", JSON.stringify(secrets));
+// Fonction pour ouvrir le site selon la personne
+function ouvrirSite(qui) {
+    document.getElementById("selection").style.display = "none";
+    document.getElementById("contenu").style.display = "block";
     
-    document.getElementById("nglMessage").value = "";
-    alert("Envoyé anonymement ! ✨");
+    const message = document.getElementById("petitMessage");
+    const titre = document.getElementById("titreBienvenue");
+
+    if(qui === 'Elle') {
+        titre.innerText = "Coucou ma Reine 👑";
+        message.innerText = "Ravi de te revoir !";
+    } else {
+        titre.innerText = "Salut BG ⚡";
+        message.innerText = "Prêt pour une nouvelle journée ?";
+    }
+    showMain();
+}
+
+function calculateDays(dateString){
+  let startDate = new Date(dateString);
+  let today = new Date();
+  let difference = today - startDate;
+  return Math.floor(difference / (1000 * 60 * 60 * 24));
+}
+
+function saveDate(){
+  let date = document.getElementById("dateInput").value;
+  if(date){
+    localStorage.setItem("coupleDate", date);
+    showMain();
   }
 }
 
-function voirSecrets() {
-  let divBoite = document.getElementById("boiteSecrets");
-  let liste = document.getElementById("listeMessages");
-  let secrets = JSON.parse(localStorage.getItem("monNGL") || "[]");
-  
-  liste.innerHTML = "";
-  
-  if(secrets.length === 0) {
-    liste.innerHTML = "<p style='font-size:12px;'>Aucun message pour l'instant... 😢</p>";
+function editDate(){
+  document.getElementById("main").style.display = "none";
+  document.getElementById("setup").style.display = "block";
+}
+
+function showMain(){
+  let savedDate = localStorage.getItem("coupleDate");
+  if(savedDate){
+    let days = calculateDays(savedDate);
+    document.getElementById("days").innerText = "Ensemble depuis " + days + " jours 💞";
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("main").style.display = "block";
   } else {
-    secrets.forEach(s => {
-      liste.innerHTML += `<div class="ngl-card"><strong>${s.date} :</strong><br>${s.texte}</div>`;
-    });
+    document.getElementById("main").style.display = "none";
+    document.getElementById("setup").style.display = "block";
   }
-  
-  divBoite.style.display = divBoite.style.display === "none" ? "block" : "none";
 }
 
-// ... (Garde tes autres fonctions calculateDays, etc.) ...
+function love(){
+  alert("Ton message a été envoyé 💘");
+}
 </script>
+
+</body>
+</html>
