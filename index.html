@@ -3,120 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity ♾️</title>
+    <title>Notre Histoire 💖</title>
     <style>
         :root {
             --primary: #ff4da6;
-            --accent: #00d2ff;
-            --glass: rgba(255, 255, 255, 0.1);
+            --secondary: #70a1ff;
+            --bg: #121212;
         }
 
         body {
-            margin: 0; padding: 0; min-height: 100vh;
-            display: flex; justify-content: center; align-items: center;
-            background: #0f0c29;
-            background: linear-gradient(to bottom, #24243e, #0f0c29);
-            font-family: 'Poppins', sans-serif; color: white; overflow: hidden;
+            margin: 0;
+            padding: 20px 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a1a, #2b0f2f);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: white;
+            overflow-x: hidden;
         }
-
-        .bg-stars {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; background: url('https://www.transparenttextures.com/patterns/stardust.png');
-            opacity: 0.3;
-        }
-
-        .container { position: relative; z-index: 10; width: 90%; max-width: 400px; }
 
         .card {
-            background: var(--glass); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 30px; padding: 40px 20px; text-align: center;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px);
+            padding: 30px 20px;
+            border-radius: 30px;
+            text-align: center;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
         }
 
-        /* Système de profils */
-        .profile-selection { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        
-        .profile-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid white;
-            padding: 20px; border-radius: 15px; color: white;
-            cursor: pointer; transition: 0.3s; font-size: 18px;
+        .days-number {
+            font-size: 50px;
+            font-weight: bold;
+            color: var(--primary);
+            text-shadow: 0 0 15px rgba(255, 77, 166, 0.5);
+            margin: 10px 0;
         }
 
-        .profile-btn:hover { background: var(--primary); transform: scale(1.02); }
-
-        .days-circle {
-            width: 140px; height: 140px; border: 4px solid var(--primary);
-            border-radius: 50%; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; margin: 0 auto 20px;
-            box-shadow: 0 0 20px var(--primary);
+        /* Section Timeline */
+        .timeline {
+            width: 90%;
+            max-width: 400px;
+            margin-top: 20px;
+            text-align: left;
         }
 
-        .hidden { display: none; }
-        
-        button.main-btn {
-            background: linear-gradient(45deg, var(--primary), var(--accent));
-            border: none; padding: 15px; border-radius: 50px;
-            color: white; font-weight: bold; width: 100%; cursor: pointer;
+        .timeline-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-left: 3px solid var(--primary);
+            margin-bottom: 10px;
+            border-radius: 0 15px 15px 0;
+        }
+
+        .timeline-date { font-size: 12px; color: var(--primary); font-weight: bold; }
+        .timeline-text { font-size: 15px; margin-top: 5px; }
+
+        /* Boutons */
+        button {
+            padding: 12px 25px;
+            border-radius: 25px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        .btn-message { background: var(--secondary); }
+
+        /* Animation cœurs */
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: float 3s linear forwards;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-stars"></div>
-
-    <div class="container">
-        <div id="login-screen" class="card">
-            <h1>Qui se connecte ?</h1>
-            <div class="profile-selection">
-                <button class="profile-btn" onclick="login('Lui')">🙋‍♂️ Lui</button>
-                <button class="profile-btn" onclick="login('Elle')">🙋‍♀️ Elle</button>
-            </div>
+    <div class="card">
+        <h1>💖 Notre Histoire</h1>
+        
+        <div id="setup" style="display:none;">
+            <p>Quand tout a commencé ? 💞</p>
+            <input type="date" id="dateInput" style="padding:10px; border-radius:10px; border:none; width:80%;">
+            <button onclick="saveDate()">Enregistrer la date</button>
         </div>
 
-        <div id="main-screen" class="card hidden">
-            <h1 id="welcome-msg">Bonjour</h1>
+        <div id="main">
+            <p>On s'aime depuis...</p>
+            <div class="days-number" id="daysCount">0</div>
+            <p>jours incroyables ✨</p>
             
-            <div class="days-circle">
-                <span style="font-size: 35px; font-weight: 800;" id="daysDisplay">0</span>
-                <span style="font-size: 10px; text-transform: uppercase;">Jours</span>
-            </div>
-
-            <p id="personal-note" style="font-style: italic; font-size: 14px; opacity: 0.8; margin-bottom: 20px;"></p>
-            
-            <button class="main-btn" onclick="location.reload()">🔒 Déconnexion</button>
+            <button onclick="spawnHearts()">❤️ Envoyer un bisou</button>
+            <button class="btn-message" onclick="showSurprise()">🎁 Un mot doux ?</button>
+            <p id="loveQuote" style="font-style: italic; margin-top: 15px; min-height: 40px; font-size: 14px;"></p>
         </div>
     </div>
 
-    <script>
-        // Remplace par votre date de rencontre
-        const startDate = "2023-01-01"; 
+    <div class="timeline">
+        <h3 style="text-align: center;">📍 Nos Moments Clés</h3>
+        
+        <div class="timeline-item">
+            <div class="timeline-date">Premier Jour</div>
+            <div class="timeline-text">Le début de notre magnifique aventure... ✨</div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-date">Aujourd'hui</div>
+            <div class="timeline-text">Chaque jour à tes côtés est un cadeau. 🎁</div>
+        </div>
+    </div>
 
-        function calculateDays() {
-            const start = new Date(startDate);
-            const today = new Date();
-            return Math.floor((today - start) / (1000 * 60 * 60 * 24));
+    <button onclick="editDate()" style="width: auto; background: none; font-size: 12px; opacity: 0.5;">Modifier la date</button>
+
+<script>
+    const quotes = [
+        "Tu es la meilleure chose qui m'soit arrivée. 🌹",
+        "Chaque seconde avec toi est un sourire en plus. 😊",
+        "Mon endroit préféré au monde ? Tes bras. 🏠",
+        "Je t'aime plus qu'hier, mais moins que demain. 📈",
+        "Merci d'être toi, tout simplement. ❤️"
+    ];
+
+    function calculateDays(dateString) {
+        const start = new Date(dateString);
+        const today = new Date();
+        const diff = today - start;
+        return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
+
+    function saveDate() {
+        const date = document.getElementById("dateInput").value;
+        if(date) {
+            localStorage.setItem("coupleDate", date);
+            updateUI();
         }
+    }
 
-        function login(user) {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-            
-            document.getElementById('daysDisplay').innerText = calculateDays();
-            
-            const msg = document.getElementById('welcome-msg');
-            const note = document.getElementById('personal-note');
-
-            if(user === 'Elle') {
-                msg.innerText = "Coucou ma Reine 👑";
-                note.innerText = "Regarde tout le chemin qu'on a parcouru ensemble... Je t'aime plus que tout !";
-                document.documentElement.style.setProperty('--primary', '#ff4da6');
-            } else {
-                msg.innerText = "Salut Champion ⚡";
-                note.innerText = "Force à nous, chaque jour compte pour construire notre futur.";
-                document.documentElement.style.setProperty('--primary', '#00d2ff'); // Bleu pour lui
-            }
+    function updateUI() {
+        const savedDate = localStorage.getItem("coupleDate");
+        if(savedDate) {
+            document.getElementById("daysCount").innerText = calculateDays(savedDate);
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("main").style.display = "block";
+        } else {
+            document.getElementById("setup").style.display = "block";
+            document.getElementById("main").style.display = "none";
         }
-    </script>
+    }
+
+    function showSurprise() {
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        const quoteElement = document.getElementById("loveQuote");
+        quoteElement.style.opacity = 0;
+        setTimeout(() => {
+            quoteElement.innerText = randomQuote;
+            quoteElement.style.opacity = 1;
+        }, 200);
+    }
+
+    function spawnHearts() {
+        for(let i=0; i<10; i++) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+            heart.innerHTML = ['❤️','💖','✨','💕'][Math.floor(Math.random()*4)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.bottom = '0';
+            heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            heart.style.duration = (Math.random() * 2 + 2) + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 3000);
+        }
+    }
+
+    function editDate() {
+        localStorage.removeItem("coupleDate");
+        updateUI();
+    }
+
+    updateUI();
+</script>
 </body>
 </html>
