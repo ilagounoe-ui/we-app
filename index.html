@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +6,8 @@
     <title>Nous 💖</title>
     <style>
         :root {
+            --primary: #ff4da6;
+            --secondary: #8e44ad;
             --bg-image: url('94a99c728e9fab72bb967717213d2490.jpg');
         }
 
@@ -15,98 +17,88 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Poppins', sans-serif;
             color: white;
             overflow: hidden;
-            background-color: #222;
         }
 
+        /* Fond plus lumineux avec un dégradé superposé */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-image: var(--bg-image);
+            background-image: linear-gradient(135deg, rgba(255, 77, 166, 0.4), rgba(142, 68, 173, 0.4)), var(--bg-image);
             background-size: cover;
             background-position: center;
-            filter: blur(10px) brightness(0.6);
+            filter: blur(5px) brightness(0.8);
             z-index: -1;
-            transition: background-image 1s ease;
+            transition: 1s;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 25px;
-            border-radius: 25px;
+            border-radius: 30px;
             text-align: center;
             width: 85%;
-            max-width: 350px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 360px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
 
         #profilePic {
-            width: 90px;
-            height: 90px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #ff4da6;
-            margin: 0 auto 15px auto;
+            border: 4px solid white;
+            margin: -60px auto 15px auto; /* Effet de photo qui dépasse */
             display: none;
-            box-shadow: 0 5px 15px rgba(255, 77, 166, 0.4);
+            box-shadow: 0 10px 20px rgba(255, 77, 166, 0.5);
         }
 
-        h1 { margin: 0 0 5px 0; font-size: 22px; }
-        p { margin-bottom: 15px; font-size: 13px; opacity: 0.9; }
+        h1 { margin: 10px 0 5px 0; font-size: 24px; font-weight: 700; }
+        p { margin-bottom: 15px; font-size: 14px; opacity: 0.9; }
 
         button {
-            padding: 10px;
-            border-radius: 20px;
+            padding: 14px;
+            border-radius: 50px;
             border: none;
-            background: #ff4da6;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             color: white;
-            margin-top: 8px;
+            margin-top: 10px;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.3s ease;
             width: 100%;
-            font-weight: bold;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 77, 166, 0.3);
         }
 
         button:active { transform: scale(0.95); }
-        .secondary { background: rgba(255, 255, 255, 0.2); font-size: 11px; }
+        .secondary { background: rgba(255, 255, 255, 0.2); font-size: 12px; box-shadow: none; margin-top: 5px; }
 
-        .days { font-size: 20px; margin: 15px 0; font-weight: bold; }
-
-        /* Spotify Player Wrapper */
-        .spotify-player {
-            margin: 15px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            background: transparent;
-        }
-
-        input[type="date"] {
+        .days { 
+            font-size: 20px; 
+            margin: 15px 0; 
+            background: rgba(255, 255, 255, 0.2);
             padding: 10px;
-            border-radius: 10px;
-            border: none;
-            width: 80%;
-            margin-bottom: 10px;
+            border-radius: 15px;
+            display: inline-block;
+            width: 90%;
         }
 
-        .heart {
-            position: fixed;
-            font-size: 20px;
-            top: -10%;
-            user-select: none;
-            pointer-events: none;
-            animation: fall linear forwards;
-            z-index: 999;
+        .spotify-container {
+            margin: 15px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            height: 80px;
         }
 
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
-        }
+        .heart { position: fixed; font-size: 25px; top: -10%; animation: fall linear forwards; z-index: 1000; }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -115,7 +107,8 @@
     <img id="profilePic" src="" alt="Photo">
 
     <div id="selection">
-        <h1>Qui est-ce ? ✨</h1>
+        <h1>Coucou ! ✨</h1>
+        <p>Qui se connecte ?</p>
         <button onclick="ouvrirSite('Lui')">🙋‍♂️ C'est Lui</button>
         <button onclick="ouvrirSite('Elle')">🙋‍♀️ C'est Elle</button>
     </div>
@@ -125,105 +118,87 @@
         <p id="petitMessage"></p>
 
         <div id="setup" style="display:none;">
-            <p>Configuration 💞</p>
-            <input type="date" id="dateInput">
+            <input type="date" id="dateInput" style="padding:10px; border-radius:10px; border:none; width:80%;">
             <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="savePhoto(this)">
-            <button class="secondary" onclick="document.getElementById('photoInput').click()">📸 Choisir notre photo</button>
-            <button onclick="saveDate()">Enregistrer</button>
+            <button class="secondary" onclick="document.getElementById('photoInput').click()">📸 Changer la photo</button>
+            <button onclick="saveDate()">Valider</button>
         </div>
 
         <div id="main" style="display:none;">
-            <p class="days" id="days"></p>
+            <div class="days" id="days"></div>
             
             <button onclick="loveAnimation()">❤️ Je pense à toi</button>
 
-            <div class="spotify-player">
-                <iframe src="https://open.spotify.com/embed/track/2S9p9i32X1N38U9v6E62I6?utm_source=generator" 
-                    width="100%" 
-                    height="80" 
-                    frameBorder="0" 
-                    allowfullscreen="" 
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                    loading="lazy">
-                </iframe>
+            <div class="spotify-container">
+                <iframe src="https://open.spotify.com/embed/playlist/37i9dQZF1DWZqd5Jicv9vG?utm_source=generator&theme=0" 
+                    width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
             </div>
 
-            <button class="secondary" onclick="editDate()">🔄 Modifier date/photo</button>
-            <button class="secondary" onclick="changerFond()">🌸 Changer le fond</button>
-            <button class="secondary" onclick="location.reload()">↩ Déconnexion</button>
+            <button class="secondary" onclick="editDate()">⚙️ Paramètres</button>
+            <button class="secondary" onclick="changerFond()">🌸 Changer le décor</button>
+            <button class="secondary" onclick="location.reload()">↩ Quitter</button>
         </div>
     </div>
 </div>
 
 <script>
+    // --- PHOTO & DATE ---
     window.onload = () => {
-        const savedPhoto = localStorage.getItem("couplePhoto");
-        if(savedPhoto) {
-            document.getElementById("profilePic").src = savedPhoto;
-            document.getElementById("profilePic").style.display = "block";
-        }
+        const p = localStorage.getItem("couplePhoto");
+        if(p) { document.getElementById("profilePic").src = p; document.getElementById("profilePic").style.display = "block"; }
     };
 
     function ouvrirSite(qui) {
         document.getElementById("selection").style.display = "none";
         document.getElementById("contenu").style.display = "block";
-        const msg = document.getElementById("petitMessage");
-        const titre = document.getElementById("titreBienvenue");
-        if(qui === 'Elle') { titre.innerText = "Ma Reine 👑"; msg.innerText = "Heureux de te revoir !"; }
-        else { titre.innerText = "Salut BG ⚡"; msg.innerText = "Prêt pour une belle journée ?"; }
+        document.getElementById("titreBienvenue").innerText = qui === 'Elle' ? "Ma Reine 👑" : "Salut BG ⚡";
+        document.getElementById("petitMessage").innerText = "Ravi de te revoir !";
         showMain();
     }
 
     function savePhoto(input) {
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                localStorage.setItem("couplePhoto", e.target.result);
-                document.getElementById("profilePic").src = e.target.result;
-                document.getElementById("profilePic").style.display = "block";
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            localStorage.setItem("couplePhoto", e.target.result);
+            location.reload();
+        };
+        reader.readAsDataURL(input.files[0]);
     }
 
     function saveDate() {
-        const date = document.getElementById("dateInput").value;
-        if(date) localStorage.setItem("coupleDate", date);
+        const d = document.getElementById("dateInput").value;
+        if(d) localStorage.setItem("coupleDate", d);
         showMain();
     }
 
     function showMain() {
-        const savedDate = localStorage.getItem("coupleDate");
-        if(savedDate) {
-            const diff = Math.floor((new Date() - new Date(savedDate)) / (1000 * 60 * 60 * 24));
-            document.getElementById("days").innerText = `Ensemble depuis ${diff} jours 💞`;
+        const d = localStorage.getItem("coupleDate");
+        if(d) {
+            const diff = Math.floor((new Date() - new Date(d)) / 86400000);
+            document.getElementById("days").innerHTML = `Ensemble depuis<br><b>${diff} jours</b> 💞`;
             document.getElementById("setup").style.display = "none";
             document.getElementById("main").style.display = "block";
-        } else {
-            document.getElementById("setup").style.display = "block";
-        }
+        } else { document.getElementById("setup").style.display = "block"; }
     }
 
-    function editDate() {
-        document.getElementById("main").style.display = "none";
-        document.getElementById("setup").style.display = "block";
-    }
+    function editDate() { document.getElementById("main").style.display = "none"; document.getElementById("setup").style.display = "block"; }
 
+    // --- ANIMATION ---
     function loveAnimation() {
-        for (let i = 0; i < 35; i++) {
+        for (let i = 0; i < 40; i++) {
             setTimeout(() => {
-                const heart = document.createElement('div');
-                heart.classList.add('heart');
-                heart.innerText = ['❤️', '💖', '💝', '💕', '✨'][Math.floor(Math.random() * 5)];
-                heart.style.left = Math.random() * 100 + "vw";
-                heart.style.animationDuration = (Math.random() * 3 + 2) + "s";
-                heart.style.opacity = Math.random();
-                document.body.appendChild(heart);
-                setTimeout(() => heart.remove(), 5000);
+                const h = document.createElement('div');
+                h.classList.add('heart');
+                h.innerText = ['❤️', '💖', '💕', '✨'][Math.floor(Math.random() * 4)];
+                h.style.left = Math.random() * 100 + "vw";
+                h.style.animationDuration = (Math.random() * 2 + 3) + "s";
+                document.body.appendChild(h);
+                setTimeout(() => h.remove(), 5000);
             }, i * 100);
         }
     }
 
+    // --- FONDS ---
     const fonds = ['94a99c728e9fab72bb967717213d2490.jpg', 'a57e1c7c289e7753975d60a58fb6f6df.jpg'];
     let idx = 0;
     function changerFond() {
