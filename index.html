@@ -1,148 +1,109 @@
-<!DOCTYPE html>
-<html>
+ <!DOCTYPE html>
+<html lang="fr">
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nous 💖</title>
+<meta charset="UTF-8">
+<title>Nous ❤️</title>
 
 <style>
+
 body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:linear-gradient(135deg,#1a1a1a,#2b0f2f);
-  font-family:Arial, sans-serif;
-  color:white;
+margin:0;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+
+background:linear-gradient(180deg,#ff9ecf,#1a0026);
+font-family:Arial;
+color:white;
+text-align:center;
 }
 
-.card{
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:350px;
-  box-shadow:0 0 20px rgba(255,0,128,0.2);
+/* titre */
+
+h1{
+font-size:32px;
+margin-bottom:10px;
 }
 
-h1{ margin-top:0; font-size:26px; }
+/* photo */
+
+.photo{
+width:260px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,0.5);
+margin-top:15px;
+}
+
+/* compteur */
+
+#jours{
+margin-top:15px;
+font-size:22px;
+}
+
+/* bouton musique */
 
 button{
-  padding:10px 20px;
-  border-radius:20px;
-  border:none;
-  background:#ff4da6;
-  color:white;
-  margin-top:15px;
-  cursor:pointer;
-  transition:0.3s;
-  width: 100%; /* Pour que ce soit plus joli */
+margin-top:20px;
+padding:10px 20px;
+border:none;
+border-radius:15px;
+background:#ff4fa3;
+color:white;
+font-size:18px;
+cursor:pointer;
 }
 
-.secondary{ background:gray; }
-
-.days{ font-size:20px; margin:20px 0; }
-
-/* Nouveau style pour les boutons de profil */
-.profile-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.3);
-  margin-bottom: 10px;
+iframe{
+margin-top:20px;
+border-radius:15px;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<h1>Nous ❤️</h1>
 
-  <div id="selection">
-    <h1>Qui est-ce ? ✨</h1>
-    <button class="profile-btn" onclick="ouvrirSite('Lui')">🙋‍♂️ C'est Lui</button>
-    <button class="profile-btn" onclick="ouvrirSite('Elle')">🙋‍♀️ C'est Elle</button>
-  </div>
+<img src="photo.jpg" class="photo">
 
-  <div id="contenu" style="display:none;">
-    <h1 id="titreBienvenue">💖 Nous</h1>
-    <p id="petitMessage"></p>
-    
-    <div id="setup" style="display:none;">
-      <p>Choisis notre date 💞</p>
-      <input type="date" id="dateInput" style="padding:10px; border-radius:10px;">
-      <br>
-      <button onclick="saveDate()">Enregistrer</button>
-    </div>
+<div id="jours"></div>
 
-    <div id="main">
-      <p class="days" id="days"></p>
-      <button onclick="love()">❤️ Je pense à toi</button>
-      <br>
-      <button class="secondary" onclick="editDate()">🔄 Modifier la date</button>
-      <br>
-      <button class="secondary" style="margin-top:5px; font-size:12px;" onclick="location.reload()">↩ Changer de profil</button>
-    </div>
-  </div>
+<button onclick="playMusic()">🎵 Notre musique</button>
 
-</div>
+<div id="music"></div>
 
 <script>
-// Fonction pour ouvrir le site selon la personne
-function ouvrirSite(qui) {
-    document.getElementById("selection").style.display = "none";
-    document.getElementById("contenu").style.display = "block";
-    
-    const message = document.getElementById("petitMessage");
-    const titre = document.getElementById("titreBienvenue");
 
-    if(qui === 'Elle') {
-        titre.innerText = "Coucou ma Reine 👑";
-        message.innerText = "Ravi de te revoir !";
-    } else {
-        titre.innerText = "Salut BG ⚡";
-        message.innerText = "Prêt pour une nouvelle journée ?";
-    }
-    showMain();
+const dateDebut = new Date("2025-01-01");
+
+function calculerJours(){
+
+const aujourd'hui = new Date();
+const diff = aujourd'hui - dateDebut;
+
+const jours = Math.floor(diff / (1000*60*60*24));
+
+document.getElementById("jours").innerHTML =
+"Nous sommes ensemble depuis ❤️ " + jours + " jours";
+
 }
 
-function calculateDays(dateString){
-  let startDate = new Date(dateString);
-  let today = new Date();
-  let difference = today - startDate;
-  return Math.floor(difference / (1000 * 60 * 60 * 24));
+calculerJours();
+
+function playMusic(){
+
+document.getElementById("music").innerHTML =
+
+'<iframe width="300" height="170" src="https://www.youtube.com/embed/0q6c0AKDKU8?autoplay=1" frameborder="0" allow="autoplay"></iframe>';
+
 }
 
-function saveDate(){
-  let date = document.getElementById("dateInput").value;
-  if(date){
-    localStorage.setItem("coupleDate", date);
-    showMain();
-  }
-}
-
-function editDate(){
-  document.getElementById("main").style.display = "none";
-  document.getElementById("setup").style.display = "block";
-}
-
-function showMain(){
-  let savedDate = localStorage.getItem("coupleDate");
-  if(savedDate){
-    let days = calculateDays(savedDate);
-    document.getElementById("days").innerText = "Ensemble depuis " + days + " jours 💞";
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("main").style.display = "block";
-  } else {
-    document.getElementById("main").style.display = "none";
-    document.getElementById("setup").style.display = "block";
-  }
-}
-
-function love(){
-  alert("Ton message a été envoyé 💘");
-}
 </script>
 
 </body>
-</html>
+</html>photo.jpg 
