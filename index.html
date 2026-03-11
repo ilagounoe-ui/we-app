@@ -3,248 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Elite</title>
+    <title>Nexus Vision</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --accent: #ff2d55; --primary: #007aff; --bg: #0b0e14; --card: #161c24; --text: #ffffff; }
+        :root { 
+            --accent: #ff2d55; --glow: #5856d6; --bg: #05070a; 
+            --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08);
+        }
         
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
-        
-        /* --- UI COMPONENTS --- */
-        .app-container { height: 100vh; display: flex; flex-direction: column; display: none; }
-        .page { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 100px; }
-        .page-active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { 
+            margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); 
+            color: white; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at 0% 0%, #101424 0%, #05070a 100%);
+        }
 
-        /* --- INBOX STYLE (WhatsApp) --- */
-        .chat-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--card); border-radius: 20px; margin-bottom: 10px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
-        .pfp { width: 55px; height: 55px; border-radius: 18px; object-fit: cover; background: #222; }
-        .chat-info { flex: 1; }
-        .chat-info b { font-size: 16px; display: block; margin-bottom: 4px; }
-        .chat-info p { margin: 0; font-size: 13px; opacity: 0.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* --- NAVIGATION --- */
+        .nav-bar { 
+            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 75px;
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px);
+            border-radius: 30px; border: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        .nav-item { font-size: 24px; opacity: 0.2; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
+        .nav-active { opacity: 1; color: var(--accent); transform: translateY(-10px) scale(1.2); text-shadow: 0 0 15px var(--accent); }
 
-        /* --- COUPLE LOCK --- */
-        #coupleLock { position: absolute; inset: 0; background: var(--bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
-        .lock-icon { font-size: 50px; margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--accent)); }
+        /* --- PAGES --- */
+        .view { flex: 1; overflow-y: auto; padding: 25px; display: none; height: 100vh; padding-bottom: 120px; }
+        .view-active { display: block; animation: slideUp 0.6s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- MESSAGERIE FULLSPACE --- */
-        #chatInterface { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
-        .chat-header { padding: 20px; background: var(--card); display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .msg-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: var(--bg); }
-        .bubble { max-width: 85%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .sent { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
-        .received { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
+        /* --- AMIS / INBOX CARDS --- */
+        .friend-card { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border-radius: 28px; padding: 18px; display: flex; align-items: center; gap: 15px;
+            margin-bottom: 15px; border: 1px solid var(--border); transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .friend-card:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
+        .pfp-ring { padding: 3px; border-radius: 20px; background: linear-gradient(45deg, var(--accent), var(--glow)); }
+        .pfp { width: 55px; height: 55px; border-radius: 17px; object-fit: cover; display: block; }
 
-        /* --- INPUTS --- */
-        .input-bar { padding: 15px 20px; background: var(--card); display: flex; gap: 10px; align-items: center; }
-        input { flex: 1; padding: 14px; border-radius: 25px; border: none; background: #262e38; color: white; outline: none; }
-        .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--primary); border: none; color: white; cursor: pointer; font-weight: bold; }
+        /* --- COUPLE VAULT --- */
+        #vaultLock { 
+            position: fixed; inset: 0; background: var(--bg); z-index: 200; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #1a1f35 0%, #05070a 100%);
+        }
+        .vault-circle { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(255,45,85,0.2); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0px var(--accent); } 50% { box-shadow: 0 0 30px var(--accent); } 100% { box-shadow: 0 0 0px var(--accent); } }
 
-        /* --- NAVBAR --- */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: var(--card); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { font-size: 24px; opacity: 0.3; cursor: pointer; transition: 0.3s; }
-        .nav-active { opacity: 1; color: var(--accent); transform: translateY(-5px); }
+        /* --- CHAT INTERFACE --- */
+        #chatOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: none; flex-direction: column; }
+        .chat-header { padding: 40px 25px 15px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); }
+        .msg-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .bubble { max-width: 80%; padding: 15px 20px; border-radius: 25px; font-size: 15px; line-height: 1.4; position: relative; }
+        .sent { align-self: flex-end; background: linear-gradient(135deg, var(--accent), #ff5e3a); color: white; border-bottom-right-radius: 5px; box-shadow: 0 10px 20px rgba(255,45,85,0.3); }
+        .received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
 
-        .btn-plus { position: fixed; bottom: 100px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); border: none; color: white; font-size: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); cursor: pointer; }
+        .input-area { padding: 20px; background: var(--bg); display: flex; gap: 12px; }
+        .input-glass { flex: 1; background: var(--glass); border: 1px solid var(--border); border-radius: 22px; padding: 15px; color: white; outline: none; }
+        .send-pill { width: 55px; height: 55px; border-radius: 22px; background: var(--accent); border: none; color: white; font-weight: 800; cursor: pointer; }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { font-weight: 800; font-size: 32px; letter-spacing: -1.5px; margin: 0; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     </style>
 </head>
 <body>
 
-<div id="authScreen" style="position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center;">
-    <div style="text-align:center; width:80%;">
-        <h1 style="font-size:40px; margin-bottom:10px;">Nexus.</h1>
-        <input type="text" id="regName" placeholder="Ton Surnom" style="width:100%; margin-bottom:15px;">
-        <button onclick="register()" style="width:100%; padding:15px; border-radius:15px; background:var(--primary); color:white; border:none; font-weight:800;">REJOINDRE</button>
-    </div>
-</div>
-
-<div class="app-container" id="app">
-    
-    <div id="pageInbox" class="page page-active">
-        <h2 style="margin-bottom:25px;">Messages</h2>
+<div class="app-shell" id="app">
+    <div id="vAmis" class="view view-active">
+        <div style="margin-bottom: 30px;">
+            <p style="opacity: 0.5; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Conversations</p>
+            <h1>Global Inbox.</h1>
+        </div>
         <div id="inboxList"></div>
-        <button class="btn-plus" onclick="findFriend()">+</button>
+        <button onclick="addFriend()" style="position:fixed; bottom:110px; right:30px; width:60px; height:60px; border-radius:50%; background:var(--glow); border:none; color:white; font-size:30px; box-shadow: 0 10px 25px rgba(88,86,214,0.4);">+</button>
     </div>
 
-    <div id="pageCouple" class="page" style="padding:0;">
-        <div id="coupleLock">
-            <div class="lock-icon">🔒</div>
-            <h3>Espace Privé</h3>
-            <p style="opacity:0.5; font-size:13px; margin-bottom:20px;">Entrez votre code secret pour continuer</p>
-            <input type="password" id="lockInput" placeholder="Code Secret" style="text-align:center; max-width:200px;">
-            <button onclick="unlockCouple()" style="background:var(--accent); color:white; border:none; padding:12px 30px; border-radius:12px; margin-top:10px; font-weight:bold;">DÉVERROUILLER</button>
+    <div id="vCouple" class="view" style="padding:0;">
+        <div id="vaultLock">
+            <div class="vault-circle">🔒</div>
+            <h2 style="letter-spacing:-1px;">Espace Sécurisé</h2>
+            <p style="opacity:0.4; font-size:13px; margin-bottom:25px;">Biométrie ou Code requis</p>
+            <input type="password" id="vaultPass" placeholder="••••" style="background:var(--glass); border:1px solid var(--border); color:white; text-align:center; padding:15px; border-radius:15px; width:150px; font-size:20px; outline:none;">
+            <button onclick="openVault()" style="margin-top:20px; background:none; border:1px solid var(--accent); color:var(--accent); padding:10px 30px; border-radius:12px; font-weight:600;">Entrer</button>
         </div>
 
-        <div id="coupleContent" style="display:none; height:100%; display:flex; flex-direction:column;">
-            <div class="chat-header" style="background:transparent;">
-                <div style="flex:1"><b>Cocon Privé ❤️</b><br><small id="coupleDays" style="color:var(--accent)"></small></div>
-                <button onclick="document.getElementById('imgUp').click()" style="background:none; border:1px solid white; color:white; border-radius:8px; padding:5px 10px;">Album</button>
+        <div id="vaultContent" style="display:none; flex-direction:column; height:100vh;">
+            <div class="chat-header">
+                <div style="flex:1"><h1>Privé ❤️</h1><small id="loveDays" style="color:var(--accent)"></small></div>
             </div>
-            <div id="coupleFlow" class="msg-flow"></div>
-            <div class="input-bar">
-                <input type="text" id="coupleMsgIn" placeholder="Un secret...">
-                <button class="send-btn" onclick="sendMsg('couple')" style="background:var(--accent)">➔</button>
+            <div id="coupleMsgs" class="msg-container"></div>
+            <div class="input-area">
+                <input type="text" id="coupleInput" class="input-glass" placeholder="Dire un secret...">
+                <button class="send-pill" onclick="pushMsg('couple')">➔</button>
             </div>
-            <input type="file" id="imgUp" style="display:none" onchange="uploadToAlbum(this)">
         </div>
     </div>
 
-    <div id="chatInterface">
+    <div id="chatOverlay">
         <div class="chat-header">
-            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:25px;">←</button>
-            <img id="chatTargetPfp" class="pfp" style="width:40px; height:40px; border-radius:50%;">
-            <b id="chatTargetName">Ami</b>
-        </div>
-        <div id="chatFlow" class="msg-flow"></div>
-        <div class="input-bar">
-            <input type="text" id="chatIn" placeholder="Message...">
-            <button class="send-btn" onclick="sendMsg('direct')">➔</button>
-        </div>
-    </div>
-
-    <nav class="nav">
-        <div class="nav-item nav-active" onclick="nav('pageInbox', this)">💬</div>
-        <div class="nav-item" onclick="nav('pageCouple', this)">❤️</div>
-        <div onclick="localStorage.clear();location.reload()" class="nav-item">⚙️</div>
-    </nav>
-</div>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
-        databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let u = JSON.parse(localStorage.getItem('nx_v10'));
-    let activeChat = null;
-
-    if(u) {
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        startApp();
-    }
-
-    function register() {
-        const n = document.getElementById('regName').value;
-        if(n) {
-            const data = { name: n, id: 'u'+Math.floor(Math.random()*100000), pfp: 'https://ui-avatars.com/api/?name='+n+'&background=random&color=fff', coupleCode: '', date: '' };
-            db.ref('users/'+data.id).set(data);
-            localStorage.setItem('nx_v10', JSON.stringify(data));
-            location.reload();
-        }
-    }
-
-    function startApp() {
-        // Liste des Conversations (Inbox)
-        db.ref('directs').on('value', s => {
-            const list = document.getElementById('inboxList'); list.innerHTML = "";
-            s.forEach(c => {
-                if(c.key.includes(u.id)) {
-                    const otherId = c.key.replace(u.id, '').replace('_', '');
-                    db.ref('users/'+otherId).once('value', us => {
-                        const other = us.val();
-                        const lastMsg = Object.values(c.val()).pop();
-                        list.innerHTML += `
-                            <div class="chat-item" onclick="openChat('${otherId}', '${other.name}', '${other.pfp}')">
-                                <img src="${other.pfp}" class="pfp">
-                                <div class="chat-info">
-                                    <b>${other.name}</b>
-                                    <p>${lastMsg.sid === u.id ? 'Toi: ' : ''}${lastMsg.txt}</p>
-                                </div>
-                            </div>`;
-                    });
-                }
-            });
-        });
-    }
-
-    function findFriend() {
-        const name = prompt("Pseudo de l'ami à contacter :");
-        if(!name) return;
-        db.ref('users').once('value', s => {
-            let found = false;
-            s.forEach(c => {
-                if(c.val().name.toLowerCase() === name.toLowerCase()) {
-                    openChat(c.val().id, c.val().name, c.val().pfp);
-                    found = true;
-                }
-            });
-            if(!found) alert("Utilisateur non trouvé !");
-        });
-    }
-
-    function openChat(id, name, pfp) {
-        activeChat = u.id < id ? u.id+'_'+id : id+'_'+u.id;
-        document.getElementById('chatInterface').style.display = 'flex';
-        document.getElementById('chatTargetName').innerText = name;
-        document.getElementById('chatTargetPfp').src = pfp;
-        loadMsgs('directs/'+activeChat, 'chatFlow');
-    }
-
-    function unlockCouple() {
-        const input = document.getElementById('lockInput').value.toLowerCase();
-        db.ref('users/'+u.id).once('value', s => {
-            const userData = s.val();
-            if(input === userData.coupleCode) {
-                document.getElementById('coupleLock').style.display = 'none';
-                document.getElementById('coupleContent').style.display = 'flex';
-                const diff = Math.floor((new Date() - new Date(userData.date)) / 86400000);
-                document.getElementById('coupleDays').innerText = `Ensemble depuis ${diff} jours`;
-                loadMsgs('couples/'+input+'/chat', 'coupleFlow');
-            } else { alert("Code incorrect !"); }
-        });
-    }
-
-    function loadMsgs(path, containerId) {
-        db.ref(path).off();
-        db.ref(path).limitToLast(30).on('value', s => {
-            const b = document.getElementById(containerId); b.innerHTML = "";
-            s.forEach(c => {
-                const m = c.val();
-                b.innerHTML += `<div class="bubble ${m.sid===u.id?'sent':'received'}">${m.txt}</div>`;
-            });
-            b.scrollTop = b.scrollHeight;
-        });
-    }
-
-    function sendMsg(mode) {
-        const input = document.getElementById(mode === 'couple' ? 'coupleMsgIn' : 'chatIn');
-        if(!input.value) return;
-        
-        if(mode === 'couple') {
-            db.ref('users/'+u.id).once('value', s => {
-                db.ref('couples/'+s.val().coupleCode+'/chat').push({ sid: u.id, txt: input.value });
-            });
-        } else {
-            db.ref('directs/'+activeChat).push({ sid: u.id, txt: input.value });
-        }
-        input.value = "";
-    }
-
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
-        document.getElementById(id).classList.add('page-active');
-        el.classList.add('nav-active');
-        if(id === 'pageCouple') {
-            document.getElementById('coupleLock').style.display = 'flex';
-            document.getElementById('coupleContent').style.display = 'none';
-        }
-    }
-
-    function closeChat() { document.getElementById('chatInterface').style.display = 'none'; }
-
-    // Pour configurer au début (A faire 1 fois dans la console ou via bouton réglages)
-    function setupCouple(code, date) {
-        db.ref('users/'+u.id).update({ coupleCode: code.toLowerCase(), date: date });
-        alert("Configuré ! Redémarre l'app.");
-    }
-</script>
-</body>
-</html>
+            <button onclick="closeChat()" style="background:none; border:none
+                
