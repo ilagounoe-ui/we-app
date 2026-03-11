@@ -2,31 +2,13 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notre Univers 💖</title>
-
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#ff9a9e">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
-    <link rel="apple-touch-icon" href="94a99c728e9fab72bb967717213d2490.jpg">
-    <link rel="icon" type="image/jpg" href="94a99c728e9fab72bb967717213d2490.jpg">
-
-    <link rel="manifest" href='data:application/manifest+json,{"name":"Notre Univers","short_name":"Univers","start_url":".","display":"standalone","background_color":"#ff9a9e","theme_color":"#ff4da6","icons":[{"src":"94a99c728e9fab72bb967717213d2490.jpg","sizes":"512x512","type":"image/jpg"}]}'>
-    <link rel="manifest" href="https://progressier.app/QSQOjrDMBKeYLcKfuSNa/progressier.json"/>
-<script defer src="https://progressier.app/QSQOjrDMBKeYLcKfuSNa/script.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#ff9a9e">
 
-<link rel="manifest" href='data:application/manifest+json,{"name":"Notre Univers","short_name":"Univers","start_url":".","display":"standalone","background_color":"#ff9a9e","theme_color":"#ff4da6","icons":[{"src":"https://via.placeholder.com/512","sizes":"512x512","type":"image/png"}]}'>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <style>
         :root {
             --accent: #ff4da6;
@@ -38,7 +20,6 @@
         body {
             margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
             font-family: 'Poppins', sans-serif; background: var(--bg-grad); overflow: hidden; color: white;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body::before {
@@ -70,6 +51,7 @@
         .box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 25px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
         
         button { background: linear-gradient(135deg, #ff4da6 0%, #ff7eb9 100%); border: none; padding: 15px; border-radius: 50px; color: white; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 77, 166, 0.4); text-transform: uppercase; font-size: 12px; }
+        button:active { transform: scale(0.96); }
         
         textarea, input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 12px; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; }
 
@@ -98,7 +80,7 @@
     <div class="content">
         <div id="home" class="page active">
             <div class="box">
-                <p style="margin:0; font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Message de ton amour</p>
+                <p style="margin:0; font-size: 12px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Le mot de mon amour</p>
                 <p id="motDouxDisplay" style="font-style: italic; font-weight: 600; margin-top:12px; font-size: 18px;"></p>
             </div>
             <button onclick="sparkle()">❤️ Envoyer des cœurs</button>
@@ -117,14 +99,14 @@
         <div id="album" class="page">
             <h3 style="margin-top:0;">Nos Souvenirs 📸</h3>
             <input type="file" id="photoAdd" style="display:none" onchange="addPhoto(this)" accept="image/*">
-            <button onclick="document.getElementById('photoAdd').click()" class="box" style="background:transparent; border:2px dashed rgba(255,255,255,0.3); color:rgba(255,255,255,0.7); text-transform: none;">+ Ajouter une photo</button>
+            <button onclick="document.getElementById('photoAdd').click()" class="box" style="background:transparent; border:2px dashed rgba(255,255,255,0.3); color:rgba(255,255,255,0.7); text-transform: none;">+ Ajouter une photo de nous</button>
             <div class="album-grid" id="albumGrid"></div>
         </div>
 
         <div id="chat" class="page">
             <h3 style="margin-top:0;">Nouveau Message ✍️</h3>
             <div class="box">
-                <textarea id="motDouxInput" rows="3" placeholder="Ton message..."></textarea>
+                <textarea id="motDouxInput" rows="3" placeholder="Écris ici ton mot doux..."></textarea>
                 <button onclick="sendMotDoux()">Mettre à jour</button>
             </div>
             <button onclick="resetSetup()" style="background:rgba(0,0,0,0.3); font-size:10px; margin-top:10px;">⚙️ Paramètres de l'appli</button>
@@ -140,7 +122,7 @@
 </div>
 
 <script>
-    // --- FIREBASE CONFIG (NE PAS CHANGER) ---
+    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = {
         apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
         authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -154,18 +136,25 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- SYNCHRONISATION ---
+    // --- SYNCHRONISATION EN TEMPS RÉEL ---
+    // Mot Doux
     db.ref('motDoux').on('value', (snapshot) => {
         const msg = snapshot.val() || "Je t'aime mon amour ❤️";
-        document.getElementById('motDouxDisplay').innerText = msg;
+        const display = document.getElementById('motDouxDisplay');
+        if(display.innerText !== "" && display.innerText !== msg) {
+            document.getElementById('msgBadge').style.display = 'block';
+        }
+        display.innerText = msg;
     });
 
+    // Album
     db.ref('album').on('value', (snapshot) => {
         const album = snapshot.val() || {};
         const grid = document.getElementById('albumGrid');
         grid.innerHTML = Object.values(album).map(src => `<img src="${src}" class="album-img">`).reverse().join('');
     });
 
+    // Agenda
     db.ref('event').on('value', (snapshot) => {
         const ev = snapshot.val();
         if(ev) {
@@ -175,15 +164,22 @@
         }
     });
 
+    // --- ACTIONS ---
     function sendMotDoux() {
         const txt = document.getElementById('motDouxInput').value;
-        if(txt) { db.ref('motDoux').set(txt); document.getElementById('motDouxInput').value = ""; showPage('home', document.querySelector('.nav-item')); }
+        if(txt) {
+            db.ref('motDoux').set(txt);
+            document.getElementById('motDouxInput').value = "";
+            showPage('home', document.querySelector('.nav-item'));
+        }
     }
 
     function addPhoto(input) {
         if (input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => { db.ref('album').push(e.target.result); };
+            reader.onload = (e) => {
+                db.ref('album').push(e.target.result);
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -191,48 +187,66 @@
     function saveEvent() {
         const title = document.getElementById('eventTitle').value;
         const date = document.getElementById('eventDate').value;
-        if(title && date) db.ref('event').set({title, date});
+        if(title && date) {
+            db.ref('event').set({title, date});
+            alert("Rendez-vous enregistré !");
+        }
     }
 
+    // --- NAVIGATION ---
     function showPage(pageId, el) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
         document.getElementById(pageId).classList.add('active');
         el.classList.add('active-nav');
+        if(pageId === 'home' || pageId === 'chat') document.getElementById('msgBadge').style.display = 'none';
     }
 
+    // --- SETUP LOCAL ---
     window.onload = () => {
         const pfp = localStorage.getItem('my_pfp');
         if(pfp) { document.getElementById('pfp').src = pfp; document.getElementById('pfp').style.display = 'inline-block'; }
+        
         const start = localStorage.getItem('couple_date');
         if(start) {
             const diff = Math.floor((new Date() - new Date(start)) / 86400000);
             document.getElementById('ensembleDepuis').innerText = `Ensemble depuis ${diff} jours 💖`;
+        } else {
+            document.getElementById('ensembleDepuis').innerText = "Bienvenue dans votre espace";
         }
     };
 
     function resetSetup() {
-        const d = prompt("Date de rencontre (AAAA-MM-JJ) :");
+        const d = prompt("Date de rencontre (Année-Mois-Jour, ex: 2024-11-03) :");
         if(d) localStorage.setItem('couple_date', d);
+        
         const photoIn = document.createElement('input');
         photoIn.type = 'file';
         photoIn.onchange = (e) => {
             const reader = new FileReader();
-            reader.onload = (ev) => { localStorage.setItem('my_pfp', ev.target.result); location.reload(); };
+            reader.onload = (ev) => {
+                localStorage.setItem('my_pfp', ev.target.result);
+                location.reload();
+            };
             reader.readAsDataURL(e.target.files[0]);
         };
         photoIn.click();
     }
 
     function sparkle() {
-        for(let i=0; i<30; i++) {
+        for(let i=0; i<35; i++) {
             setTimeout(() => {
-                const h = document.createElement('div'); h.className = 'heart'; h.innerText = '❤️';
-                h.style.left = Math.random()*100+'vw'; h.style.animationDuration = (Math.random()*2+3)+'s';
-                document.body.appendChild(h); setTimeout(() => h.remove(), 5000);
+                const h = document.createElement('div');
+                h.className = 'heart';
+                h.innerText = ['❤️', '💖', '✨', '💕'][Math.floor(Math.random()*4)];
+                h.style.left = Math.random()*100+'vw';
+                h.style.animationDuration = (Math.random()*2+3)+'s';
+                document.body.appendChild(h);
+                setTimeout(() => h.remove(), 5000);
             }, i*100);
         }
     }
 </script>
 </body>
-</html>
+            </html>
+            
