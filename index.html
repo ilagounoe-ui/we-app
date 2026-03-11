@@ -5,83 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Notre Univers 💖</title>
     
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root {
-            --accent: #ff4da6;
-            --accent-glow: rgba(255, 77, 166, 0.5);
-            --bg-grad: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%);
-        }
+        :root { --accent: #ff4da6; --accent-glow: rgba(255, 77, 166, 0.5); --bg-grad: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%); }
+        body { margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center; font-family: 'Poppins', sans-serif; background: var(--bg-grad); overflow: hidden; color: white; }
+        body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: url('94a99c728e9fab72bb967717213d2490.jpg') center/cover; filter: blur(12px) brightness(0.7); z-index: -1; }
 
-        body {
-            margin: 0; height: 100vh; display: flex; justify-content: center; align-items: center;
-            font-family: 'Poppins', sans-serif; background: var(--bg-grad); overflow: hidden; color: white;
-        }
+        /* BIENVENUE */
+        #loginPage { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-grad); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.8s; }
+        .login-card { background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px); padding: 30px; border-radius: 40px; width: 85%; max-width: 320px; text-align: center; border: 1px solid rgba(255,255,255,0.3); }
+        .preview-container { width: 80px; height: 80px; border-radius: 50%; border: 3px solid white; margin: 0 auto 15px; overflow: hidden; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        #previewImg { width: 100%; height: 100%; object-fit: cover; display: none; }
 
-        body::before {
-            content: ""; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: url('94a99c728e9fab72bb967717213d2490.jpg') center/cover;
-            filter: blur(12px) brightness(0.7); z-index: -1;
-        }
-
-        /* --- PAGE DE BIENVENUE (LOGIN) --- */
-        #loginPage {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-grad); z-index: 10000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .login-card {
-            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px);
-            padding: 30px 20px; border-radius: 40px; width: 85%; max-width: 320px;
-            text-align: center; border: 1px solid rgba(255,255,255,0.3);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        }
-        .preview-container {
-            width: 80px; height: 80px; border-radius: 50%; border: 3px solid white;
-            margin: 0 auto 15px; overflow: hidden; background: rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .preview-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .preview-container span { font-size: 24px; }
-
-        /* --- APPLICATION PRINCIPALE --- */
-        .card {
-            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 40px;
-            width: 90%; max-width: 380px; height: 620px; display: flex; flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow);
-            visibility: hidden;
-        }
-
-        .header { padding: 35px 20px 15px; text-align: center; }
-        .profile-img { width: 95px; height: 95px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 0 25px var(--accent-glow); }
-        .content { flex: 1; overflow-y: auto; padding: 10px 25px; text-align: center; scrollbar-width: none; }
+        /* APP */
+        .card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 40px; width: 90%; max-width: 380px; height: 620px; display: flex; flex-direction: column; visibility: hidden; }
+        .header { padding: 30px 20px 10px; text-align: center; }
+        .profile-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid white; object-fit: cover; }
+        .content { flex: 1; overflow-y: auto; padding: 10px 20px; scrollbar-width: none; }
         .content::-webkit-scrollbar { display: none; }
-        .page { display: none; animation: fadeIn 0.4s ease; }
-        .active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page { display: none; height: 100%; }
+        .active { display: flex; flex-direction: column; }
 
-        .box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 25px; margin-bottom: 20px; }
-        button { background: linear-gradient(135deg, #ff4da6 0%, #ff7eb9 100%); border: none; padding: 15px; border-radius: 50px; color: white; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; text-transform: uppercase; font-size: 11px; margin-bottom: 10px; }
-        textarea, input { width: 100%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; color: white; padding: 12px; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; outline: none; }
+        /* MESSAGERIE */
+        #chatList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
+        .msg { max-width: 80%; padding: 10px 15px; border-radius: 20px; font-size: 14px; position: relative; animation: pop 0.3s ease; }
+        @keyframes pop { from { transform: scale(0.8); opacity: 0; } }
+        .msg.sent { align-self: flex-end; background: var(--accent); border-bottom-right-radius: 5px; }
+        .msg.received { align-self: flex-start; background: rgba(255,255,255,0.2); border-bottom-left-radius: 5px; }
+        .msg-time { font-size: 9px; opacity: 0.6; display: block; margin-top: 5px; text-align: right; }
+        .chat-input-area { display: flex; gap: 8px; padding-top: 10px; }
+        .chat-input-area input { flex: 1; margin: 0; border-radius: 25px; padding: 12px 18px; }
 
-        .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 20px; }
-        .album-img { width: 100%; height: 110px; object-fit: cover; border-radius: 15px; border: 2px solid rgba(255,255,255,0.2); }
+        /* ÉLÉMENTS COMMUNS */
+        .box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 25px; margin-bottom: 15px; text-align: center;}
+        button { background: linear-gradient(135deg, #ff4da6 0%, #ff7eb9 100%); border: none; padding: 12px; border-radius: 50px; color: white; font-weight: 700; cursor: pointer; text-transform: uppercase; font-size: 10px; }
+        input { width: 100%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; color: white; padding: 12px; box-sizing: border-box; outline: none; margin-bottom: 10px;}
+        
+        .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .album-img { width: 100%; height: 100px; object-fit: cover; border-radius: 15px; }
 
-        .nav { display: flex; justify-content: space-around; padding: 20px 10px; background: rgba(0, 0, 0, 0.3); border-radius: 0 0 40px 40px; }
-        .nav-item { cursor: pointer; font-size: 24px; opacity: 0.4; transition: 0.4s; position: relative; }
-        .nav-item.active-nav { opacity: 1; transform: scale(1.3) translateY(-5px); text-shadow: 0 0 15px var(--accent); }
-        .heart { position: fixed; font-size: 25px; top: -10%; animation: fall linear forwards; z-index: 1000; }
-        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+        .nav { display: flex; justify-content: space-around; padding: 15px 10px; background: rgba(0, 0, 0, 0.2); border-radius: 0 0 40px 40px; }
+        .nav-item { cursor: pointer; font-size: 22px; opacity: 0.4; transition: 0.3s; }
+        .nav-item.active-nav { opacity: 1; transform: scale(1.2); text-shadow: 0 0 10px var(--accent); }
     </style>
 </head>
 <body>
@@ -89,71 +57,53 @@
 <div id="loginPage">
     <div class="login-card">
         <div class="preview-container" onclick="document.getElementById('inputPfp').click()">
-            <img id="previewImg" src="">
-            <span id="previewPlaceholder">📸</span>
+            <img id="previewImg" src=""><span id="previewPlaceholder">📸</span>
         </div>
         <input type="file" id="inputPfp" style="display:none" accept="image/*" onchange="previewPhoto(this)">
-        
-        <h1 style="margin:0 0 5px; font-size: 22px;">Bienvenue 💖</h1>
-        <p style="font-size: 11px; opacity: 0.8; margin-bottom: 20px;">Créez votre profil personnel</p>
-        
-        <input type="text" id="inputCode" placeholder="Code Secret (Le même pour les 2)">
-        <input type="text" id="inputName" placeholder="Ton Surnom (Ex: Mon Amour)">
-        <input type="date" id="inputDate" title="Date de rencontre">
-        
-        <button onclick="saveProfile()">CRÉER MON PROFIL</button>
-        <p style="font-size: 9px; opacity: 0.6; margin-top: 10px;">Le code sert à synchroniser vos messages et photos.</p>
+        <h2 style="margin-bottom:15px;">Bienvenue 💖</h2>
+        <input type="text" id="inputCode" placeholder="Code de Couple (Identique)">
+        <input type="text" id="inputName" placeholder="Ton Surnom">
+        <input type="date" id="inputDate">
+        <button onclick="saveProfile()" style="width:100%">Ouvrir notre Univers</button>
     </div>
 </div>
 
 <div class="card" id="mainApp">
     <div class="header">
-        <img id="pfp" class="profile-img" src="" style="display:none;">
-        <h2 id="userName" style="margin: 10px 0 5px;">...</h2>
-        <small id="ensembleDepuis" style="font-size: 12px; opacity: 0.8;"></small>
+        <img id="pfp" class="profile-img" src="">
+        <h3 id="userName" style="margin: 10px 0 0;">...</h3>
+        <small id="ensembleDepuis" style="opacity: 0.8;"></small>
     </div>
 
     <div class="content">
         <div id="home" class="page active">
             <div class="box">
-                <p style="margin:0; font-size: 11px; opacity: 0.6; text-transform: uppercase;">Le mot de mon amour</p>
-                <p id="motDouxDisplay" style="font-style: italic; font-weight: 600; margin-top:12px; font-size: 18px;"></p>
+                <p style="font-size: 10px; opacity: 0.6; text-transform: uppercase;">Dernier mot doux</p>
+                <p id="lastMsgDisplay" style="font-style: italic; font-size: 16px;">Chargement...</p>
             </div>
             <button onclick="sparkle()">❤️ Envoyer des cœurs</button>
         </div>
 
-        <div id="agenda" class="page">
-            <h3 style="margin-top:0;">Prochain RDV 🗓️</h3>
-            <div class="box">
-                <input type="text" id="eventTitle" placeholder="Ex: Restaurant...">
-                <input type="date" id="eventDate">
-                <button onclick="saveEvent()">Planifier</button>
-            </div>
-            <div id="countdown" style="font-weight: 700; font-size: 15px; margin-top: 15px;"></div>
-        </div>
-
         <div id="album" class="page">
-            <h3 style="margin-top:0;">Nos Souvenirs 📸</h3>
             <input type="file" id="photoAdd" style="display:none" onchange="addPhoto(this)" accept="image/*">
-            <button onclick="document.getElementById('photoAdd').click()" class="box" style="background:transparent; border:2px dashed rgba(255,255,255,0.3); text-transform: none;">+ Ajouter une photo</button>
+            <button onclick="document.getElementById('photoAdd').click()" style="width:100%; margin-bottom:15px;">+ Ajouter une photo</button>
             <div class="album-grid" id="albumGrid"></div>
         </div>
 
         <div id="chat" class="page">
-            <h3 style="margin-top:0;">Nouveau Message ✍️</h3>
-            <div class="box">
-                <textarea id="motDouxInput" rows="3" placeholder="Ton message..."></textarea>
-                <button onclick="sendMotDoux()">Mettre à jour</button>
+            <div id="chatList"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Écris ici...">
+                <button onclick="sendMessage()" style="border-radius:50%; width:45px; height:45px; padding:0;">➔</button>
             </div>
-            <button onclick="resetApp()" style="background:rgba(0,0,0,0.3); font-size:9px;">⚙️ Se déconnecter / Changer de code</button>
         </div>
     </div>
 
     <div class="nav">
         <div class="nav-item active-nav" onclick="showPage('home', this)">🏠</div>
-        <div class="nav-item" onclick="showPage('agenda', this)">📅</div>
         <div class="nav-item" onclick="showPage('album', this)">🖼️</div>
         <div class="nav-item" onclick="showPage('chat', this)">💬</div>
+        <div class="nav-item" onclick="resetApp()">⚙️</div>
     </div>
 </div>
 
@@ -170,103 +120,99 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     let coupleID = localStorage.getItem('couple_id');
+    let myName = localStorage.getItem('user_name');
     let tempPfp = "";
 
-    window.onload = () => {
-        if (coupleID) {
-            hideLogin();
-            initApp();
-        }
-    };
+    window.onload = () => { if (coupleID) { hideLogin(); initApp(); } };
 
-    // --- APERÇU DE LA PHOTO ---
     function previewPhoto(input) {
-        if (input.files && input.files[0]) {
+        if (input.files[0]) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('previewImg').src = e.target.result;
+            reader.onload = e => { 
+                document.getElementById('previewImg').src = e.target.result; 
                 document.getElementById('previewImg').style.display = 'block';
                 document.getElementById('previewPlaceholder').style.display = 'none';
-                tempPfp = e.target.result;
-            }
+                tempPfp = e.target.result; 
+            };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    // --- SAUVEGARDE DU PROFIL ---
     function saveProfile() {
         const code = document.getElementById('inputCode').value.trim().toLowerCase();
         const name = document.getElementById('inputName').value.trim();
         const date = document.getElementById('inputDate').value;
-
         if (code && name && date && tempPfp) {
             localStorage.setItem('couple_id', code);
             localStorage.setItem('user_name', name);
             localStorage.setItem('couple_date', date);
             localStorage.setItem('my_pfp', tempPfp);
             location.reload();
-        } else {
-            alert("N'oublie pas ta photo, ton nom et le code ! ✨");
-        }
+        } else { alert("Remplis tout ! ✨"); }
     }
 
     function hideLogin() {
-        document.getElementById('loginPage').style.transform = "translateY(-110%)";
+        document.getElementById('loginPage').style.display = "none";
         document.getElementById('mainApp').style.visibility = "visible";
     }
 
     function initApp() {
-        const name = localStorage.getItem('user_name');
         const start = localStorage.getItem('couple_date');
-        const pfp = localStorage.getItem('my_pfp');
-
-        document.getElementById('userName').innerText = name + " 💞";
+        document.getElementById('userName').innerText = myName + " 💞";
         const diff = Math.floor((new Date() - new Date(start)) / 86400000);
-        document.getElementById('ensembleDepuis').innerText = `Ensemble depuis ${diff} jours 💖`;
-        
-        const img = document.getElementById('pfp');
-        img.src = pfp; img.style.display = 'inline-block';
+        document.getElementById('ensembleDepuis').innerText = `Ensemble depuis ${diff} jours`;
+        document.getElementById('pfp').src = localStorage.getItem('my_pfp');
 
-        // SYNC FIREBASE
-        db.ref(coupleID + '/motDoux').on('value', snap => {
-            document.getElementById('motDouxDisplay').innerText = snap.val() || "Bienvenue mon amour ❤️";
+        // SYNC MESSAGES
+        db.ref(coupleID + '/messages').on('value', snap => {
+            const list = document.getElementById('chatList');
+            list.innerHTML = "";
+            let lastMsg = "";
+            snap.forEach(child => {
+                const data = child.val();
+                const isMe = data.sender === myName;
+                lastMsg = data.text;
+                list.innerHTML += `
+                    <div class="msg ${isMe ? 'sent' : 'received'}">
+                        ${data.text}
+                        <span class="msg-time">${data.time}</span>
+                    </div>`;
+            });
+            document.getElementById('lastMsgDisplay').innerText = lastMsg || "Aucun message...";
+            list.scrollTop = list.scrollHeight;
         });
+
+        // SYNC ALBUM
         db.ref(coupleID + '/album').on('value', snap => {
-            const album = snap.val() || {};
-            document.getElementById('albumGrid').innerHTML = Object.values(album).map(src => `<img src="${src}" class="album-img">`).reverse().join('');
-        });
-        db.ref(coupleID + '/event').on('value', snap => {
-            const ev = snap.val();
-            if(ev) {
-                const d = Math.ceil((new Date(ev.date) - new Date()) / 86400000);
-                document.getElementById('countdown').innerHTML = d >= 0 ? `Dans ${d} jours : ${ev.title}` : "Passé !";
-            }
+            const grid = document.getElementById('albumGrid');
+            grid.innerHTML = "";
+            snap.forEach(child => {
+                grid.innerHTML = `<img src="${child.val()}" class="album-img">` + grid.innerHTML;
+            });
         });
     }
 
-    function sendMotDoux() {
-        const txt = document.getElementById('motDouxInput').value;
-        if(txt) {
-            db.ref(coupleID + '/motDoux').set(txt);
-            document.getElementById('motDouxInput').value = "";
-            showPage('home', document.querySelector('.nav-item'));
+    function sendMessage() {
+        const input = document.getElementById('chatInput');
+        if (input.value.trim()) {
+            const now = new Date();
+            const time = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes();
+            db.ref(coupleID + '/messages').push({
+                sender: myName,
+                text: input.value,
+                time: time
+            });
+            input.value = "";
         }
     }
 
     function addPhoto(input) {
         if (input.files[0]) {
             const reader = new FileReader();
-            reader.onload = (e) => db.ref(coupleID + '/album').push(e.target.result);
+            reader.onload = e => db.ref(coupleID + '/album').push(e.target.result);
             reader.readAsDataURL(input.files[0]);
         }
-    }
-
-    function saveEvent() {
-        const title = document.getElementById('eventTitle').value;
-        const date = document.getElementById('eventDate').value;
-        if(title && date) db.ref(coupleID + '/event').set({title, date});
     }
 
     function showPage(pageId, el) {
@@ -276,22 +222,8 @@
         el.classList.add('active-nav');
     }
 
-    function resetApp() {
-        if(confirm("Se déconnecter ? Ton profil local sera effacé.")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    function sparkle() {
-        for(let i=0; i<30; i++) {
-            setTimeout(() => {
-                const h = document.createElement('div'); h.className = 'heart'; h.innerText = '❤️';
-                h.style.left = Math.random()*100+'vw'; h.style.animationDuration = (Math.random()*2+2)+'s';
-                document.body.appendChild(h); setTimeout(() => h.remove(), 4000);
-            }, i*100);
-        }
-    }
+    function resetApp() { if(confirm("Se déconnecter ?")) { localStorage.clear(); location.reload(); } }
 </script>
 </body>
-</html>
+    </html>
+    
