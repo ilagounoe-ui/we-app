@@ -3,106 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Social & Love</title>
+    <title>Nexus Universal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --primary: #6366f1; --love: #ff4d6d; --bg: #0f172a; --glass: rgba(255, 255, 255, 0.05); --online: #10b981; }
+        :root { 
+            --primary: #6366f1; --love: #ff4d6d; --bg: #0f172a; 
+            --glass: rgba(255, 255, 255, 0.08); --online: #10b981; 
+        }
         
-        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
-        
-        .app-container { height: 100vh; display: flex; flex-direction: column; }
-
-        /* --- BARRE DES AMIS (STYLE STORIES) --- */
-        .online-bar {
-            padding: 15px; display: flex; gap: 15px; overflow-x: auto;
-            background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);
-            scrollbar-width: none;
-        }
-        .online-bar::-webkit-scrollbar { display: none; }
-        
-        .user-story {
-            display: flex; flex-direction: column; align-items: center; min-width: 60px; gap: 5px;
-        }
-        .avatar-wrapper {
-            width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary);
-            padding: 2px; position: relative;
-        }
-        .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .status-dot {
-            position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px;
-            background: var(--online); border: 2px solid var(--bg); border-radius: 50%;
-        }
-        .story-name { font-size: 10px; opacity: 0.8; font-weight: 500; }
-
-        /* --- CHAT AREA --- */
-        .chat-section { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
-        
-        .tab-nav {
-            display: flex; background: var(--glass); border-radius: 15px; padding: 5px; margin-bottom: 15px;
-        }
-        .tab-btn {
-            flex: 1; padding: 10px; border: none; background: transparent; color: white;
-            font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.3s;
-        }
-        .tab-btn.active { background: var(--primary); }
-        .tab-btn.active.love-mode { background: var(--love); }
-
-        #msgList { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 10px; }
-        .bubble { 
-            max-width: 80%; padding: 12px; border-radius: 18px; font-size: 14px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); line-height: 1.4;
-        }
-        .mine { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
-        .theirs { align-self: flex-start; background: var(--glass); border-bottom-left-radius: 4px; }
-        .love-bubble { background: var(--love) !important; }
-
-        .input-group { display: flex; gap: 10px; padding: 10px 0; }
-        input { 
-            flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px; padding: 12px; color: white; outline: none;
+        body { 
+            margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); 
+            color: white; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
         }
 
-        /* --- AUTH OVERLAY --- */
-        #auth { 
+        /* --- AUTH --- */
+        #authOverlay {
             position: fixed; inset: 0; background: var(--bg); z-index: 1000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px;
+            display: flex; align-items: center; justify-content: center; padding: 25px;
         }
+        .auth-card {
+            background: var(--glass); backdrop-filter: blur(20px); padding: 30px;
+            border-radius: 30px; width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        /* --- LAYOUT --- */
+        .main-app { height: 100vh; display: flex; flex-direction: column; visibility: hidden; }
+
+        /* STORIES / ONLINE USERS */
+        .online-scroll {
+            padding: 15px; display: flex; gap: 12px; overflow-x: auto;
+            border-bottom: 1px solid rgba(255,255,255,0.05); scrollbar-width: none;
+        }
+        .user-node { display: flex; flex-direction: column; align-items: center; min-width: 55px; gap: 4px; }
+        .avatar {
+            width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary);
+            position: relative; padding: 2px;
+        }
+        .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .dot { position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--online); border: 2px solid var(--bg); border-radius: 50%; }
+
+        /* CONTENT */
+        .content-area { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+
+        /* TABS (Garder l'esprit des premières versions) */
+        .tabs { display: flex; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; margin-bottom: 15px; }
+        .tab { flex: 1; padding: 10px; border: none; background: transparent; color: white; font-weight: 600; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 13px; }
+        .tab.active { background: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .tab.active.couple-mode { background: var(--love); }
+
+        /* CHAT */
+        #chatBox { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
+        .bbl { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .me { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
+        .not-me { align-self: flex-start; background: var(--glass); border-bottom-left-radius: 4px; }
+        .love-bbl { background: var(--love) !important; }
+
+        /* INPUT */
+        .input-bar { display: flex; gap: 8px; background: var(--glass); padding: 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .input-bar input { flex: 1; background: transparent; border: none; color: white; padding: 8px 12px; outline: none; font-size: 14px; }
+        .input-bar button { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: bold; }
+
+        button.love-btn { background: var(--love) !important; }
     </style>
 </head>
 <body>
 
-<div id="auth">
-    <h1 style="color: var(--primary); margin-bottom: 5px;">NEXUS</h1>
-    <p style="opacity: 0.5; margin-bottom: 30px;">Social & Private Network</p>
-    <input type="text" id="regName" placeholder="Ton Pseudo">
-    <input type="text" id="regCode" placeholder="Code Secret Couple (Optionnel)">
-    <button onclick="register()" style="width:100%; padding:15px; background:var(--primary); color:white; border:none; border-radius:15px; font-weight:700; margin-top:10px;">REJOINDRE</button>
+<div id="authOverlay">
+    <div class="auth-card">
+        <h2 style="margin:0 0 10px;">Nexus Universal ✨</h2>
+        <p style="font-size: 12px; opacity: 0.6; margin-bottom: 25px;">Rejoins la communauté ou ton espace privé</p>
+        <input type="text" id="regName" placeholder="Ton Pseudo" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white; margin-bottom:10px; box-sizing:border-box;">
+        <input type="text" id="regCode" placeholder="Code Secret (Optionnel)" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white; margin-bottom:20px; box-sizing:border-box;">
+        <button onclick="doAuth()" style="width:100%; padding:14px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer;">DÉMARRER</button>
+    </div>
 </div>
 
-<div class="app-container">
-    <div class="online-bar" id="onlineUsers">
+<div class="main-app" id="app">
+    <div class="online-scroll" id="statusList"></div>
+
+    <div class="content-area">
+        <div class="tabs">
+            <button class="tab active" id="tabPub" onclick="changeMode('public')">COMMUNAUTÉ</button>
+            <button class="tab" id="tabPriv" onclick="changeMode('private')">COUPLE ❤️</button>
         </div>
 
-    <div class="chat-section">
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="setMode('public', this)">🌎 Communauté</button>
-            <button class="tab-btn" onclick="setMode('private', this)">❤️ Couple</button>
-        </div>
+        <div id="chatBox"></div>
 
-        <div id="msgList"></div>
-
-        <div class="input-group">
-            <input type="text" id="msgInput" placeholder="Message...">
-            <button onclick="send()" id="sendBtn" style="width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:white;">➔</button>
+        <div class="input-bar">
+            <input type="text" id="textInput" placeholder="Écris ici...">
+            <button id="sendBtn" onclick="pushMsg()">➔</button>
         </div>
     </div>
 </div>
 
 <script>
+    // --- FIREBASE CONFIG (TA CONFIG ACTUELLE) ---
     const firebaseConfig = {
         apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
         databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/",
@@ -110,91 +113,88 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_v2'));
+    let user = JSON.parse(localStorage.getItem('nexus_pro_v1'));
     let currentMode = 'public';
 
     if(user) {
-        document.getElementById('auth').style.display = 'none';
-        startApp();
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('app').style.visibility = 'visible';
+        bootApp();
     }
 
-    function register() {
-        const name = document.getElementById('regName').value.trim();
-        const code = document.getElementById('regCode').value.trim().toLowerCase();
-        if(name) {
-            const data = { name, code: code || null, id: Date.now() };
-            localStorage.setItem('nexus_v2', JSON.stringify(data));
+    function doAuth() {
+        const n = document.getElementById('regName').value.trim();
+        const c = document.getElementById('regCode').value.trim().toLowerCase();
+        if(n) {
+            const d = { name: n, code: c || null, id: 'u' + Date.now() };
+            localStorage.setItem('nexus_pro_v1', JSON.stringify(d));
             location.reload();
         }
     }
 
-    function startApp() {
-        // 1. Gérer la présence (En ligne)
-        const myStatusRef = db.ref('status/' + user.id);
-        myStatusRef.set({ name: user.name, online: true });
-        myStatusRef.onDisconnect().remove(); // Se retire si on ferme l'appli
+    function bootApp() {
+        // Présence
+        const sRef = db.ref('status/' + user.id);
+        sRef.set({ name: user.name, online: true });
+        sRef.onDisconnect().remove();
 
-        // 2. Écouter les utilisateurs en ligne
+        // Liste des connectés
         db.ref('status').on('value', snap => {
-            const bar = document.getElementById('onlineUsers');
-            bar.innerHTML = "";
-            snap.forEach(child => {
-                const u = child.val();
-                bar.innerHTML += `
-                    <div class="user-story">
-                        <div class="avatar-wrapper" style="border-color:${u.name === user.name ? 'var(--primary)' : '#444'}">
-                            <img src="https://ui-avatars.com/api/?name=${u.name}&background=random">
-                            <div class="status-dot"></div>
+            const list = document.getElementById('statusList');
+            list.innerHTML = "";
+            snap.forEach(c => {
+                const u = c.val();
+                list.innerHTML += `
+                    <div class="user-node">
+                        <div class="avatar" style="border-color:${u.name === user.name ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}">
+                            <img src="https://ui-avatars.com/api/?name=${u.name}&background=random&color=fff">
+                            <div class="dot"></div>
                         </div>
-                        <span class="story-name">${u.name}</span>
+                        <span style="font-size:9px; opacity:0.7">${u.name}</span>
                     </div>`;
             });
         });
 
-        loadChat('public_chat');
+        loadData('public_chat');
     }
 
-    function setMode(mode, btn) {
-        currentMode = mode;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'love-mode'));
-        btn.classList.add('active');
+    function changeMode(m) {
+        if(m === 'private' && !user.code) return alert("Besoin d'un Code Secret pour l'espace Couple !");
         
-        const sendBtn = document.getElementById('sendBtn');
-        if(mode === 'private') {
-            if(!user.code) return alert("Configure un code secret pour accéder ici !");
-            btn.classList.add('love-mode');
-            sendBtn.style.background = 'var(--love)';
-            loadChat('couples/' + user.code + '/chat');
-        } else {
-            sendBtn.style.background = 'var(--primary)';
-            loadChat('public_chat');
-        }
+        currentMode = m;
+        document.getElementById('tabPub').classList.toggle('active', m === 'public');
+        document.getElementById('tabPriv').classList.toggle('active', m === 'private');
+        document.getElementById('tabPriv').classList.toggle('couple-mode', m === 'private');
+        document.getElementById('sendBtn').classList.toggle('love-btn', m === 'private');
+
+        const path = (m === 'private') ? `couples/${user.code}/chat` : 'public_chat';
+        loadData(path);
     }
 
-    function loadChat(path) {
+    function loadData(path) {
         db.ref(path).off();
-        db.ref(path).limitToLast(30).on('value', snap => {
-            const list = document.getElementById('msgList');
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const m = child.val();
+        db.ref(path).limitToLast(40).on('value', snap => {
+            const box = document.getElementById('chatBox');
+            box.innerHTML = "";
+            snap.forEach(c => {
+                const m = c.val();
                 const isMe = m.sender === user.name;
-                list.innerHTML += `
-                    <div class="bubble ${isMe ? 'mine' : 'theirs'} ${currentMode === 'private' ? 'love-bubble' : ''}">
-                        <div style="font-size:9px; font-weight:bold; margin-bottom:3px; opacity:0.7">${m.sender}</div>
+                box.innerHTML += `
+                    <div class="bbl ${isMe ? 'me' : 'not-me'} ${currentMode === 'private' ? 'love-bbl' : ''}">
+                        <div style="font-size:9px; font-weight:700; margin-bottom:2px; opacity:0.6">${isMe ? 'Moi' : m.sender}</div>
                         ${m.text}
                     </div>`;
             });
-            list.scrollTop = list.scrollHeight;
+            box.scrollTop = box.scrollHeight;
         });
     }
 
-    function send() {
-        const input = document.getElementById('msgInput');
-        if(!input.value) return;
-        const path = currentMode === 'private' ? 'couples/' + user.code + '/chat' : 'public_chat';
-        db.ref(path).push({ sender: user.name, text: input.value });
-        input.value = "";
+    function pushMsg() {
+        const i = document.getElementById('textInput');
+        if(!i.value) return;
+        const path = (currentMode === 'private') ? `couples/${user.code}/chat` : 'public_chat';
+        db.ref(path).push({ sender: user.name, text: i.value, time: Date.now() });
+        i.value = "";
     }
 </script>
 </body>
