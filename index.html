@@ -18,7 +18,6 @@
             --accent: #ff4da6;
             --accent-glow: rgba(255, 77, 166, 0.5);
             --bg-grad: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%);
-            --card-bg: rgba(255, 255, 255, 0.12);
         }
 
         body {
@@ -32,11 +31,27 @@
             filter: blur(12px) brightness(0.7); z-index: -1;
         }
 
+        /* --- ÉCRAN DE BIENVENUE (LOGIN) --- */
+        #loginPage {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-grad); z-index: 10000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: 0.8s ease-in-out;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(20px);
+            padding: 40px 25px; border-radius: 40px; width: 85%; max-width: 320px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        /* --- L'APPLICATION PRINCIPALE --- */
         .card {
-            background: var(--card-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 40px;
             width: 90%; max-width: 380px; height: 620px; display: flex; flex-direction: column;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow);
+            visibility: hidden; /* Caché tant que pas connecté */
         }
 
         .header { padding: 35px 20px 15px; text-align: center; }
@@ -51,9 +66,10 @@
 
         .box { background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 25px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
         
-        button { background: linear-gradient(135deg, #ff4da6 0%, #ff7eb9 100%); border: none; padding: 15px; border-radius: 50px; color: white; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 77, 166, 0.4); text-transform: uppercase; font-size: 11px; }
+        button { background: linear-gradient(135deg, #ff4da6 0%, #ff7eb9 100%); border: none; padding: 15px; border-radius: 50px; color: white; font-weight: 700; cursor: pointer; width: 100%; transition: 0.3s; box-shadow: 0 5px 15px rgba(255, 77, 166, 0.4); text-transform: uppercase; font-size: 11px; margin-bottom: 10px; }
         
-        textarea, input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 12px; box-sizing: border-box; margin-bottom: 12px; font-family: inherit; }
+        textarea, input { width: 100%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; color: white; padding: 15px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; outline: none; }
+        input::placeholder { color: rgba(255,255,255,0.7); }
 
         .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding-bottom: 20px; }
         .album-img { width: 100%; height: 110px; object-fit: cover; border-radius: 15px; border: 2px solid rgba(255,255,255,0.2); }
@@ -70,17 +86,31 @@
 </head>
 <body>
 
-<div class="card">
+<div id="loginPage">
+    <div class="login-card">
+        <h1 style="margin:0 0 10px; font-size: 24px;">Bienvenue 💖</h1>
+        <p style="font-size: 13px; opacity: 0.8; margin-bottom: 25px;">Entrez votre code secret pour rejoindre votre univers privé.</p>
+        
+        <input type="text" id="inputCode" placeholder="Code Secret (ex: Amour2026)">
+        <input type="text" id="inputName" placeholder="Votre Surnom">
+        <input type="date" id="inputDate">
+        
+        <button onclick="createAccount()">ENTRER DANS L'UNIVERS</button>
+        <p style="font-size: 10px; opacity: 0.6; margin-top: 10px;">Le code doit être le même pour les deux partenaires.</p>
+    </div>
+</div>
+
+<div class="card" id="mainApp">
     <div class="header">
         <img id="pfp" class="profile-img" src="" style="display:none;">
-        <h2 id="userName" style="margin: 10px 0 5px;">Chargement...</h2>
+        <h2 id="userName" style="margin: 10px 0 5px;">...</h2>
         <small id="ensembleDepuis" style="font-size: 13px; opacity: 0.8;"></small>
     </div>
 
     <div class="content">
         <div id="home" class="page active">
             <div class="box">
-                <p style="margin:0; font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Le mot de mon amour</p>
+                <p style="margin:0; font-size: 11px; opacity: 0.6; text-transform: uppercase;">Le mot de mon amour</p>
                 <p id="motDouxDisplay" style="font-style: italic; font-weight: 600; margin-top:12px; font-size: 18px;"></p>
             </div>
             <button onclick="sparkle()">❤️ Envoyer des cœurs</button>
@@ -89,7 +119,7 @@
         <div id="agenda" class="page">
             <h3 style="margin-top:0;">Prochain RDV 🗓️</h3>
             <div class="box">
-                <input type="text" id="eventTitle" placeholder="Ex: Restaurant, Ciné...">
+                <input type="text" id="eventTitle" placeholder="Ex: Restaurant...">
                 <input type="date" id="eventDate">
                 <button onclick="saveEvent()">Planifier</button>
             </div>
@@ -99,7 +129,7 @@
         <div id="album" class="page">
             <h3 style="margin-top:0;">Nos Souvenirs 📸</h3>
             <input type="file" id="photoAdd" style="display:none" onchange="addPhoto(this)" accept="image/*">
-            <button onclick="document.getElementById('photoAdd').click()" class="box" style="background:transparent; border:2px dashed rgba(255,255,255,0.3); color:rgba(255,255,255,0.7); text-transform: none;">+ Ajouter une photo</button>
+            <button onclick="document.getElementById('photoAdd').click()" class="box" style="background:transparent; border:2px dashed rgba(255,255,255,0.3); text-transform: none;">+ Ajouter une photo</button>
             <div class="album-grid" id="albumGrid"></div>
         </div>
 
@@ -109,7 +139,7 @@
                 <textarea id="motDouxInput" rows="3" placeholder="Ton message..."></textarea>
                 <button onclick="sendMotDoux()">Mettre à jour</button>
             </div>
-            <button onclick="resetFullSetup()" style="background:rgba(0,0,0,0.3); font-size:9px; margin-top:10px;">⚙️ Changer de Code / Profil</button>
+            <button onclick="resetApp()" style="background:rgba(0,0,0,0.3); font-size:9px;">⚙️ Déconnexion / Changer de code</button>
         </div>
     </div>
 
@@ -122,7 +152,6 @@
 </div>
 
 <script>
-    // --- FIREBASE (TON URL) ---
     const firebaseConfig = {
         apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
         authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -139,23 +168,44 @@
     let coupleID = localStorage.getItem('couple_id');
 
     window.onload = () => {
-        if (!coupleID) {
-            startFirstTime();
-        } else {
+        if (coupleID) {
+            hideLogin();
             initApp();
         }
     };
 
-    function startFirstTime() {
-        let code = prompt("Créez ou entrez votre CODE DE COUPLE secret :\n(Ex: Amour2026)");
-        if (code) {
-            localStorage.setItem('couple_id', code.trim().toLowerCase());
-            let name = prompt("Votre nom (ou surnom de couple) :", "N'neka Alicia");
+    function createAccount() {
+        const code = document.getElementById('inputCode').value.trim().toLowerCase();
+        const name = document.getElementById('inputName').value.trim();
+        const date = document.getElementById('inputDate').value;
+
+        if (code && name && date) {
+            localStorage.setItem('couple_id', code);
             localStorage.setItem('user_name', name);
-            let date = prompt("Date de rencontre (AAAA-MM-JJ) :", "2024-01-01");
             localStorage.setItem('couple_date', date);
-            location.reload();
+            coupleID = code;
+            
+            // On demande la photo
+            const photoIn = document.createElement('input');
+            photoIn.type = 'file';
+            photoIn.onchange = (e) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    localStorage.setItem('my_pfp', ev.target.result);
+                    location.reload();
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            };
+            alert("Dernière étape : Choisis ta photo de profil !");
+            photoIn.click();
+        } else {
+            alert("Remplis tous les champs pour créer votre univers ! ✨");
         }
+    }
+
+    function hideLogin() {
+        document.getElementById('loginPage').style.transform = "translateY(-100%)";
+        document.getElementById('mainApp').style.visibility = "visible";
     }
 
     function initApp() {
@@ -166,20 +216,19 @@
         document.getElementById('userName').innerText = name + " 💞";
         const diff = Math.floor((new Date() - new Date(start)) / 86400000);
         document.getElementById('ensembleDepuis').innerText = `Ensemble depuis ${diff} jours 💖`;
-        if(pfp) { document.getElementById('pfp').src = pfp; document.getElementById('pfp').style.display = 'inline-block'; }
+        if(pfp) { 
+            const img = document.getElementById('pfp');
+            img.src = pfp; img.style.display = 'inline-block'; 
+        }
 
-        // SYNCHRONISATION PRIVÉE VIA LE CODE
+        // SYNCHRONISATION
         db.ref(coupleID + '/motDoux').on('value', snap => {
-            const msg = snap.val() || "Bienvenue dans votre espace ! ❤️";
-            document.getElementById('motDouxDisplay').innerText = msg;
+            document.getElementById('motDouxDisplay').innerText = snap.val() || "Rien pour le moment ❤️";
         });
-
         db.ref(coupleID + '/album').on('value', snap => {
             const album = snap.val() || {};
-            const grid = document.getElementById('albumGrid');
-            grid.innerHTML = Object.values(album).map(src => `<img src="${src}" class="album-img">`).reverse().join('');
+            document.getElementById('albumGrid').innerHTML = Object.values(album).map(src => `<img src="${src}" class="album-img">`).reverse().join('');
         });
-
         db.ref(coupleID + '/event').on('value', snap => {
             const ev = snap.val();
             if(ev) {
@@ -189,7 +238,6 @@
         });
     }
 
-    // ACTIONS
     function sendMotDoux() {
         const txt = document.getElementById('motDouxInput').value;
         if(txt) {
@@ -220,8 +268,8 @@
         el.classList.add('active-nav');
     }
 
-    function resetFullSetup() {
-        if(confirm("Voulez-vous changer de code ou de profil ?")) {
+    function resetApp() {
+        if(confirm("Se déconnecter ?")) {
             localStorage.clear();
             location.reload();
         }
