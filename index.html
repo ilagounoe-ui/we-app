@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notre Histoire 💖</title>
+    <title>Notre Univers 💖</title>
     <style>
         :root {
             --accent: #ff7eb9;
-            --gradient: linear-gradient(135deg, #ff7eb9 0%, #ffc1e3 100%);
+            --bg-grad: linear-gradient(135deg, #ff7eb9 0%, #7579ff 100%);
         }
 
         body {
@@ -16,228 +16,207 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
+            font-family: 'Segoe UI', sans-serif;
+            background: #121212;
             overflow: hidden;
+            color: white;
         }
 
-        /* Fond avec dégradé doux et image */
         body::before {
             content: "";
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(circle at top right, rgba(255, 126, 185, 0.2), transparent),
-                radial-gradient(circle at bottom left, rgba(122, 252, 255, 0.1), transparent),
-                url('94a99c728e9fab72bb967717213d2490.jpg');
-            background-size: cover;
-            background-position: center;
-            filter: blur(8px) brightness(0.7);
+            background: url('94a99c728e9fab72bb967717213d2490.jpg') center/cover;
+            filter: blur(15px) brightness(0.6);
             z-index: -1;
         }
 
         .card {
             background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 40px;
-            padding: 40px 25px;
-            width: 85%;
-            max-width: 360px;
-            text-align: center;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
-            animation: fadeIn 0.8s ease-out;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 35px;
+            width: 90%;
+            max-width: 380px;
+            height: 550px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* --- Header --- */
+        .header { padding: 20px; text-align: center; }
+        .profile-img { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; object-fit: cover; }
+
+        /* --- Contenu --- */
+        .content { flex: 1; overflow-y: auto; padding: 0 20px; text-align: center; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Navigation --- */
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 0 0 35px 35px;
         }
+        .nav-item { cursor: pointer; font-size: 20px; opacity: 0.6; transition: 0.3s; }
+        .nav-item.active-nav { opacity: 1; transform: scale(1.2); }
 
-        #profilePic {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid white;
-            margin: -85px auto 20px auto;
-            display: none;
-            box-shadow: 0 10px 20px rgba(255, 126, 185, 0.4);
-        }
-
-        h1 { font-size: 26px; margin: 5px 0; color: white; font-weight: 600; }
-        p { font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 20px; }
-
-        .days-container {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px;
-            border-radius: 20px;
-            margin: 20px 0;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .days-count {
-            display: block;
-            font-size: 28px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 4px;
-        }
-
-        button {
-            width: 100%;
-            padding: 15px;
-            border-radius: 50px;
-            border: none;
-            background: var(--gradient);
-            color: white;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            box-shadow: 0 8px 15px rgba(255, 126, 185, 0.3);
-        }
-
-        button:hover { transform: translateY(-2px); box-shadow: 0 12px 20px rgba(255, 126, 185, 0.4); }
-        button:active { transform: scale(0.96); }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            font-size: 13px;
-            font-weight: 400;
-            margin-top: 10px;
-            box-shadow: none;
-        }
-
-        input[type="date"] {
-            width: 80%;
-            padding: 12px;
-            border-radius: 15px;
-            border: none;
-            background: rgba(255,255,255,0.9);
-            margin-bottom: 15px;
-            font-family: inherit;
-        }
-
-        .heart {
-            position: fixed;
-            top: -10%;
-            pointer-events: none;
-            animation: fall linear forwards;
-            z-index: 1000;
-        }
-
-        @keyframes fall {
-            to { transform: translateY(110vh) rotate(360deg); }
-        }
+        /* --- Elements spécifiques --- */
+        .box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; margin-bottom: 15px; }
+        .album-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .album-img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; }
+        
+        textarea { width: 100%; background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; padding: 10px; box-sizing: border-box; }
+        button { background: var(--accent); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <img id="profilePic" src="" alt="Notre Photo">
-
-    <div id="selection">
-        <h1>Coucou ! ✨</h1>
-        <p>Qui se connecte aujourd'hui ?</p>
-        <button onclick="start('Lui')">🙋‍♂️ C'est Lui</button>
-        <button onclick="start('Elle')">🙋‍♀️ C'est Elle</button>
+    <div class="header">
+        <img id="pfp" class="profile-img" src="" style="display:none;">
+        <h2 id="userName" style="margin: 10px 0 5px;">Coucou ! ✨</h2>
+        <small id="ensembleDepuis" style="opacity: 0.7;"></small>
     </div>
 
-    <div id="main" style="display:none;">
-        <h1 id="welcomeTitle">💖 Nous</h1>
-        <div class="days-container">
-            <span class="days-count" id="dayValue">0</span>
-            <span style="font-size: 14px; opacity: 0.8;">jours de bonheur 💞</span>
+    <div class="content">
+        <div id="home" class="page active">
+            <div class="box">
+                <p style="margin:0; font-size: 14px;">💌 Mot doux du moment :</p>
+                <p id="motDouxDisplay" style="font-style: italic; font-weight: bold;">"Je t'aime plus qu'hier !"</p>
+            </div>
+            <button onclick="sparkle()">❤️ Je pense à toi</button>
         </div>
-        
-        <button onclick="sparkleHearts()">❤️ Je pense à toi</button>
-        
-        <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-            <button class="btn-outline" onclick="showConfig()">⚙️ Personnaliser</button>
-            <button class="btn-outline" onclick="location.reload()">↩ Changer de profil</button>
+
+        <div id="agenda" class="page">
+            <h3>Notre Prochain RDV 🗓️</h3>
+            <div class="box">
+                <input type="text" id="eventTitle" placeholder="C'est quoi ?" style="margin-bottom:5px; width:80%;">
+                <input type="date" id="eventDate">
+                <button onclick="saveEvent()" style="font-size:12px;">Planifier</button>
+            </div>
+            <div id="countdown" style="font-size: 18px; font-weight: bold;"></div>
+        </div>
+
+        <div id="album" class="page">
+            <h3>Nos Moments 📸</h3>
+            <input type="file" id="photoAdd" style="display:none" onchange="addPhoto(this)">
+            <button onclick="document.getElementById('photoAdd').click()" class="box" style="width:100%; border:2px dashed rgba(255,255,255,0.3); background:transparent;">+ Ajouter une photo</button>
+            <div class="album-grid" id="albumGrid"></div>
+        </div>
+
+        <div id="chat" class="page">
+            <h3>Laisse un mot ✍️</h3>
+            <textarea id="motDouxInput" rows="4" placeholder="Écris quelque chose de mignon..."></textarea>
+            <button onclick="saveMotDoux()">Mettre à jour le message</button>
         </div>
     </div>
 
-    <div id="config" style="display:none;">
-        <h1>Réglages 💞</h1>
-        <p>Modifier votre date ou votre photo</p>
-        <input type="date" id="dateInput">
-        <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="handlePhoto(this)">
-        <button class="btn-outline" onclick="document.getElementById('photoInput').click()">📸 Choisir une photo</button>
-        <button onclick="saveAll()">Enregistrer</button>
+    <div class="nav">
+        <div class="nav-item active-nav" onclick="showPage('home', this)">🏠</div>
+        <div class="nav-item" onclick="showPage('agenda', this)">📅</div>
+        <div class="nav-item" onclick="showPage('album', this)">🖼️</div>
+        <div class="nav-item" onclick="showPage('chat', this)">💬</div>
     </div>
 </div>
 
 <script>
-    // Chargement initial
-    const savedPhoto = localStorage.getItem("couple_img");
-    if(savedPhoto) {
-        const img = document.getElementById("profilePic");
-        img.src = savedPhoto;
-        img.style.display = "block";
+    // --- NAVIGATION ---
+    function showPage(pageId, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+        document.getElementById(pageId).classList.add('active');
+        el.classList.add('active-nav');
     }
 
-    function start(who) {
-        document.getElementById("selection").style.display = "none";
-        document.getElementById("main").style.display = "block";
-        document.getElementById("welcomeTitle").innerText = who === 'Elle' ? "Ma Reine 👑" : "Salut BG ⚡";
-        checkData();
+    // --- LOGIQUE ---
+    window.onload = () => {
+        // Init User & Date
+        const name = localStorage.getItem('lastUser') || "Nous";
+        document.getElementById('userName').innerText = name;
+        const start = localStorage.getItem('couple_date');
+        if(start) {
+            const diff = Math.floor((new Date() - new Date(start)) / 86400000);
+            document.getElementById('ensembleDepuis').innerText = diff + " jours ensemble 💞";
+        }
+        
+        // Init Photo & Album
+        const pfp = localStorage.getItem('couple_img');
+        if(pfp) { document.getElementById('pfp').src = pfp; document.getElementById('pfp').style.display = 'inline-block'; }
+        loadAlbum();
+        loadEvent();
+        document.getElementById('motDouxDisplay').innerText = localStorage.getItem('motDoux') || "Pas encore de mot doux...";
+    };
+
+    // Agenda
+    function saveEvent() {
+        const title = document.getElementById('eventTitle').value;
+        const date = document.getElementById('eventDate').value;
+        if(title && date) {
+            localStorage.setItem('event', JSON.stringify({title, date}));
+            loadEvent();
+        }
     }
 
-    function handlePhoto(input) {
-        if (input.files && input.files[0]) {
+    function loadEvent() {
+        const ev = JSON.parse(localStorage.getItem('event'));
+        if(ev) {
+            const diff = Math.ceil((new Date(ev.date) - new Date()) / 86400000);
+            document.getElementById('countdown').innerHTML = diff >= 0 ? 
+                `Dans ${diff} jours : <br>${ev.title} ✨` : "Événement passé !";
+        }
+    }
+
+    // Album
+    function addPhoto(input) {
+        if (input.files[0]) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                localStorage.setItem("couple_img", e.target.result);
-                document.getElementById("profilePic").src = e.target.result;
-                document.getElementById("profilePic").style.display = "block";
+                let album = JSON.parse(localStorage.getItem('album') || '[]');
+                album.push(e.target.result);
+                localStorage.setItem('album', JSON.stringify(album));
+                loadAlbum();
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
 
-    function saveAll() {
-        const date = document.getElementById("dateInput").value;
-        if(date) localStorage.setItem("couple_date", date);
-        document.getElementById("config").style.display = "none";
-        document.getElementById("main").style.display = "block";
-        checkData();
+    function loadAlbum() {
+        const album = JSON.parse(localStorage.getItem('album') || '[]');
+        const grid = document.getElementById('albumGrid');
+        grid.innerHTML = album.map(src => `<img src="${src}" class="album-img">`).join('');
     }
 
-    function checkData() {
-        const date = localStorage.getItem("couple_date");
-        if(!date) {
-            showConfig();
-        } else {
-            const diff = Math.floor((new Date() - new Date(date)) / 86400000);
-            document.getElementById("dayValue").innerText = diff;
-        }
+    // Messagerie
+    function saveMotDoux() {
+        const txt = document.getElementById('motDouxInput').value;
+        localStorage.setItem('motDoux', txt);
+        document.getElementById('motDouxDisplay').innerText = txt;
+        alert("Message enregistré !");
     }
 
-    function showConfig() {
-        document.getElementById("main").style.display = "none";
-        document.getElementById("config").style.display = "block";
-    }
-
-    function sparkleHearts() {
-        for (let i = 0; i < 35; i++) {
-            setTimeout(() => {
-                const h = document.createElement('div');
-                h.className = 'heart';
-                h.innerText = ['❤️', '💖', '💕', '✨', '🌸'][Math.floor(Math.random() * 5)];
-                h.style.left = Math.random() * 100 + "vw";
-                h.style.fontSize = (Math.random() * 20 + 20) + "px";
-                h.style.animationDuration = (Math.random() * 2 + 3) + "s";
-                h.style.opacity = Math.random();
-                document.body.appendChild(h);
-                setTimeout(() => h.remove(), 5000);
-            }, i * 100);
+    function sparkle() {
+        for (let i = 0; i < 30; i++) {
+            const h = document.createElement('div');
+            h.innerHTML = '❤️';
+            h.style.position = 'fixed';
+            h.style.left = Math.random() * 100 + 'vw';
+            h.style.top = '-50px';
+            h.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            h.style.transition = (Math.random() * 2 + 2) + 's linear';
+            document.body.appendChild(h);
+            setTimeout(() => { h.style.top = '110vh'; h.style.transform = `rotate(${Math.random()*360}deg)`; }, 100);
+            setTimeout(() => h.remove(), 5000);
         }
     }
 </script>
+
 </body>
 </html>
