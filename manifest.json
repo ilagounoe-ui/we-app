@@ -1,0 +1,15 @@
+{
+  "name": "Notre Univers",
+  "short_name": "Univers",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ff9a9e",
+  "theme_color": "#ff4da6",
+  "icons": [
+    {
+      "src": "94a99c728e9fab72bb967717213d2490.jpg",
+      "sizes": "512x512",
+      "type": "image/jpg"
+    }
+  ]
+}
