@@ -3,110 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Vision</title>
+    <title>Nexus Crystal</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
         :root { 
-            --accent: #ff2d55; --glow: #5856d6; --bg: #05070a; 
-            --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.08);
+            --accent: #ff2d55; --primary: #5856d6; --bg: #000000; 
+            --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
         }
         
         body { 
-            margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); 
+            margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg); 
             color: white; height: 100vh; overflow: hidden;
-            background-image: radial-gradient(circle at 0% 0%, #101424 0%, #05070a 100%);
         }
 
-        /* --- NAVIGATION --- */
-        .nav-bar { 
-            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 75px;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(25px);
-            border-radius: 30px; border: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center; z-index: 100;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        /* --- BACKGROUND GRADIENTS --- */
+        .bg-glow {
+            position: fixed; width: 300px; height: 300px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(88,86,214,0.15) 0%, rgba(0,0,0,0) 70%);
+            top: -100px; left: -100px; z-index: -1;
         }
-        .nav-item { font-size: 24px; opacity: 0.2; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-        .nav-active { opacity: 1; color: var(--accent); transform: translateY(-10px) scale(1.2); text-shadow: 0 0 15px var(--accent); }
 
-        /* --- PAGES --- */
-        .view { flex: 1; overflow-y: auto; padding: 25px; display: none; height: 100vh; padding-bottom: 120px; }
-        .view-active { display: block; animation: slideUp 0.6s ease; }
+        /* --- APP SHELL --- */
+        .app { height: 100vh; display: flex; flex-direction: column; display: none; }
+        .page { flex: 1; overflow-y: auto; padding: 25px; display: none; padding-bottom: 120px; }
+        .active { display: block; animation: slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- AMIS / INBOX CARDS --- */
-        .friend-card { 
-            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
-            border-radius: 28px; padding: 18px; display: flex; align-items: center; gap: 15px;
-            margin-bottom: 15px; border: 1px solid var(--border); transition: 0.3s;
-            backdrop-filter: blur(10px);
+        /* --- AMIS / INBOX DESIGN --- */
+        .inbox-card {
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 18px; border-radius: 28px; display: flex; align-items: center;
+            gap: 15px; margin-bottom: 15px; backdrop-filter: blur(10px);
+            transition: 0.3s; cursor: pointer;
         }
-        .friend-card:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
-        .pfp-ring { padding: 3px; border-radius: 20px; background: linear-gradient(45deg, var(--accent), var(--glow)); }
-        .pfp { width: 55px; height: 55px; border-radius: 17px; object-fit: cover; display: block; }
+        .inbox-card:active { transform: scale(0.96); background: rgba(255,255,255,0.1); }
+        .avatar-wrap { position: relative; width: 60px; height: 60px; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 22px; object-fit: cover; }
+        .online-glow { 
+            position: absolute; bottom: -2px; right: -2px; width: 14px; height: 14px; 
+            background: #00ff88; border-radius: 50%; border: 3px solid var(--bg);
+            box-shadow: 0 0 10px #00ff88;
+        }
 
-        /* --- COUPLE VAULT --- */
-        #vaultLock { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 200; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: radial-gradient(circle at center, #1a1f35 0%, #05070a 100%);
+        /* --- COUPLE VAULT (Design Privé) --- */
+        .vault-lock {
+            height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .vault-circle { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(255,45,85,0.2); animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0px var(--accent); } 50% { box-shadow: 0 0 30px var(--accent); } 100% { box-shadow: 0 0 0px var(--accent); } }
+        .vault-circle {
+            width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; margin-bottom: 40px;
+            background: radial-gradient(circle, rgba(255,45,85,0.05) 0%, rgba(0,0,0,0) 70%);
+            box-shadow: 0 0 30px rgba(255,45,85,0.1);
+        }
+        .lock-input {
+            background: none; border: none; border-bottom: 2px solid var(--border);
+            color: white; font-size: 24px; text-align: center; width: 150px;
+            letter-spacing: 8px; outline: none; transition: 0.3s;
+        }
+        .lock-input:focus { border-bottom-color: var(--accent); }
 
         /* --- CHAT INTERFACE --- */
-        #chatOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 500; display: none; flex-direction: column; }
-        .chat-header { padding: 40px 25px 15px; display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); }
-        .msg-container { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { max-width: 80%; padding: 15px 20px; border-radius: 25px; font-size: 15px; line-height: 1.4; position: relative; }
-        .sent { align-self: flex-end; background: linear-gradient(135deg, var(--accent), #ff5e3a); color: white; border-bottom-right-radius: 5px; box-shadow: 0 10px 20px rgba(255,45,85,0.3); }
-        .received { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
+        .chat-full { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; }
+        .header { padding: 30px 20px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .bubble { max-width: 80%; padding: 14px 20px; border-radius: 25px; font-size: 15px; line-height: 1.5; }
+        .me { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 5px; }
+        .not-me { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
 
-        .input-area { padding: 20px; background: var(--bg); display: flex; gap: 12px; }
-        .input-glass { flex: 1; background: var(--glass); border: 1px solid var(--border); border-radius: 22px; padding: 15px; color: white; outline: none; }
-        .send-pill { width: 55px; height: 55px; border-radius: 22px; background: var(--accent); border: none; color: white; font-weight: 800; cursor: pointer; }
+        /* --- NAV BAR --- */
+        .nav {
+            position: fixed; bottom: 30px; left: 30px; right: 30px; height: 75px;
+            background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(20px);
+            border-radius: 35px; border: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+        }
+        .nav-icon { font-size: 24px; opacity: 0.3; transition: 0.4s; cursor: pointer; }
+        .nav-active { opacity: 1; color: var(--accent); transform: scale(1.2); text-shadow: 0 0 15px var(--accent); }
 
-        /* --- TYPOGRAPHY --- */
-        h1 { font-weight: 800; font-size: 32px; letter-spacing: -1.5px; margin: 0; background: linear-gradient(to right, #fff, #888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* --- BUTTONS --- */
+        .fab {
+            position: fixed; bottom: 120px; right: 30px; width: 65px; height: 65px;
+            border-radius: 22px; background: var(--accent); border: none;
+            color: white; font-size: 28px; box-shadow: 0 15px 30px rgba(255,45,85,0.3);
+        }
     </style>
 </head>
 <body>
 
-<div class="app-shell" id="app">
-    <div id="vAmis" class="view view-active">
-        <div style="margin-bottom: 30px;">
-            <p style="opacity: 0.5; font-size: 12px; text-transform: uppercase; letter-spacing: 2px;">Conversations</p>
-            <h1>Global Inbox.</h1>
-        </div>
-        <div id="inboxList"></div>
-        <button onclick="addFriend()" style="position:fixed; bottom:110px; right:30px; width:60px; height:60px; border-radius:50%; background:var(--glow); border:none; color:white; font-size:30px; box-shadow: 0 10px 25px rgba(88,86,214,0.4);">+</button>
+<div class="bg-glow"></div>
+
+<div id="authPage" style="position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center;">
+    <div style="text-align:center; width:80%;">
+        <h1 style="font-weight:800; font-size:42px; margin-bottom:5px; letter-spacing:-2px;">NEXUS</h1>
+        <p style="opacity:0.4; font-size:14px; margin-bottom:40px;">Expérience Sociale au Gabon 🇬🇦</p>
+        <input type="text" id="regName" placeholder="Ton Surnom" style="width:100%; background:var(--glass); border:1px solid var(--border); padding:20px; border-radius:20px; color:white; text-align:center; outline:none; margin-bottom:20px;">
+        <button onclick="register()" style="width:100%; padding:20px; border-radius:20px; background:white; color:black; border:none; font-weight:800; cursor:pointer;">COMMENCER</button>
+    </div>
+</div>
+
+<div class="app" id="app">
+    <div id="pageFriends" class="page active">
+        <h2 style="font-size:32px; font-weight:800; margin-bottom:30px;">Discussions</h2>
+        <div id="inbox"></div>
+        <button class="fab" onclick="addChat()">+</button>
     </div>
 
-    <div id="vCouple" class="view" style="padding:0;">
-        <div id="vaultLock">
-            <div class="vault-circle">🔒</div>
-            <h2 style="letter-spacing:-1px;">Espace Sécurisé</h2>
-            <p style="opacity:0.4; font-size:13px; margin-bottom:25px;">Biométrie ou Code requis</p>
-            <input type="password" id="vaultPass" placeholder="••••" style="background:var(--glass); border:1px solid var(--border); color:white; text-align:center; padding:15px; border-radius:15px; width:150px; font-size:20px; outline:none;">
-            <button onclick="openVault()" style="margin-top:20px; background:none; border:1px solid var(--accent); color:var(--accent); padding:10px 30px; border-radius:12px; font-weight:600;">Entrer</button>
+    <div id="pageCouple" class="page">
+        <div id="vaultLock" class="vault-lock">
+            <div class="vault-circle">❤️</div>
+            <p style="opacity:0.5; margin-bottom:20px;">Code de Synchronisation</p>
+            <input type="password" id="vaultCode" class="lock-input" maxlength="4" placeholder="••••">
+            <button onclick="unlockVault()" style="margin-top:40px; background:none; border: 1px solid var(--accent); color:var(--accent); padding:10px 30px; border-radius:30px;">DÉVERROUILLER</button>
         </div>
 
-        <div id="vaultContent" style="display:none; flex-direction:column; height:100vh;">
-            <div class="chat-header">
-                <div style="flex:1"><h1>Privé ❤️</h1><small id="loveDays" style="color:var(--accent)"></small></div>
+        <div id="vaultContent" style="display:none; height:100%; flex-direction:column;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h3 style="margin:0;">Notre Univers</h3>
+                <small id="days" style="color:var(--accent)"></small>
             </div>
-            <div id="coupleMsgs" class="msg-container"></div>
-            <div class="input-area">
-                <input type="text" id="coupleInput" class="input-glass" placeholder="Dire un secret...">
-                <button class="send-pill" onclick="pushMsg('couple')">➔</button>
+            <div id="coupleFlow" class="msg-area"></div>
+            <div style="display:flex; gap:10px; padding:10px;">
+                <input type="text" id="coupleIn" placeholder="Écris ici..." style="flex:1; background:var(--glass); border:none; padding:15px; border-radius:20px; color:white;">
+                <button onclick="pushMsg('couple')" style="background:var(--accent); border:none; width:50px; border-radius:18px; color:white;">➔</button>
             </div>
         </div>
     </div>
 
-    <div id="chatOverlay">
-        <div class="chat-header">
-            <button onclick="closeChat()" style="background:none; border:none
-                
+    <div id="chatView" class="chat-full">
+        <div class="header">
+            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
+            <b id="targetName">Nom</b>
+            <div style="width:24px;"></div>
+        </div>
+        <div id="msgFlow" class="msg-area"></div>
+        <div style="padding:20px; display:flex; gap:10px;">
+            <input type="text" id="msgIn" placeholder="Écris un message..." style="flex:1; background:var(--glass); border:none; padding:18px; border-radius:22px; color:white; outline:none;">
+            <button onclick="pushMsg('direct')" style="background:var(--primary); border:none; width:55px; border-radius:22px; color:white;">➔</button>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-icon nav-active" onclick="nav('pageFriends', this)">💬</div>
+        <div class="nav-icon" onclick="nav('pageCouple', this)">🔒</div>
+        <div class="nav-icon" onclick="localStorage.clear();location.reload()">⚙️</div>
+    </nav>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
+        databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let me = JSON.parse(localStorage.getItem('nexus_crystal_v1'));
+    let currentFriendId = null;
+
+    if(me) {
+        document.getElementById('authPage').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        initInbox();
+    }
+
+    function register() {
+        const n = document.getElementById('regName').value;
+        if(n) {
+            const data = { name: n, id: 'u'+Date.now(), pfp: 'https://ui-avatars.com/api/?name='+n+'&background=random&color=fff', coupleKey: '', loveDate: '' };
+            db.ref('users/'+data.id).set(data);
+            localStorage.setItem('nexus_crystal_v1', JSON.stringify(data));
+            location.reload();
+        }
+    }
+
+    function initInbox() {
+        db.ref('directs').on('value', s => {
+            const container = document.getElementById('inbox'); container.innerHTML = "";
+            s.forEach(c => {
+                if(c.key.includes(me.id)) {
+                    const otherId = c.key.replace(me.id, '').replace('_', '');
+                    db.ref('users/'+otherId).once('value', us => {
+                        const other = us.val();
+                        const last = Object.values(c.val()).pop();
+                        container.innerHTML += `
+                            <div class="inbox-card" onclick="openChat('${otherId}', '${other.name}')">
+                                <div class="avatar-wrap">
+                                    <img src="${other.pfp}" class="avatar-img">
+                                    <div class="online-glow"></div>
+                                </div>
+                                <div style="flex:1">
+                                    <b style="font-size:17px;">${other.name}</b>
+                                    <p style="margin:5px 0 0; opacity:0.4; font-size:14px;">${last.txt}</p>
+                                </div>
+                            </div>`;
+                    });
+                }
+            });
+        });
+    }
+
+    function addChat() {
+        const name = prompt("Pseudo de la personne :");
+        if(!name) return;
+        db.ref('users').once('value', s => {
+            s.forEach(c => {
+                if(c.val().name.toLowerCase() === name.toLowerCase()) {
+                    openChat(c.val().id, c.val().name);
+                }
+            });
+        });
+    }
+
+    function openChat(id, name) {
+        currentFriendId = id;
+        const chatId = me.id < id ? me.id+'_'+id : id+'_'+me.id;
+        document.getElementById('chatView').style.display = 'flex';
+        document.getElementById('targetName').innerText = name;
+        loadMsgs('directs/'+chatId, 'msgFlow');
+    }
+
+    function unlockVault() {
+        const code = document.getElementById('vaultCode').value.toLowerCase();
+        db.ref('users/'+me.id).once('value', s => {
+            if(code === s.val().coupleKey) {
+                document.getElementById('vaultLock').style.display = 'none';
+                document.getElementById('vaultContent').style.display = 'flex';
+                const diff = Math.floor((new Date() - new Date(s.val().loveDate)) / 86400000);
+                document.getElementById('days').innerText = diff + " Jours de Bonheur";
+                loadMsgs('couples/'+code+'/chat', 'coupleFlow');
+            } else { alert("Clé invalide"); }
+        });
+    }
+
+    function loadMsgs(path, containerId) {
+        db.ref(path).off();
+        db.ref(path).limitToLast(25).on('value', s => {
+            const b = document.getElementById(containerId); b.innerHTML = "";
+            s.forEach(c => {
+                const m = c.val();
+                b.innerHTML += `<div class="bubble ${m.sid===me.id?'me':'not-me'}">${m.txt}</div>`;
+            });
+            b.scrollTop = b.scrollHeight;
+        });
+    }
+
+    function pushMsg(type) {
+        const input = document.getElementById(type === 'couple' ? 'coupleIn' : 'msgIn');
+        if(!input.value) return;
+        if(type === 'couple') {
+            db.ref('users/'+me.id).once('value', s => {
+                db.ref('couples/'+s.val().coupleKey+'/chat').push({ sid: me.id, txt: input.value });
+            });
+        } else {
+            const chatId = me.id < currentFriendId ? me.id+'_'+currentFriendId : currentFriendId+'_'+me.id;
+            db.ref('directs/'+chatId).push({ sid: me.id, txt: input.value });
+        }
+        input.value = "";
+    }
+
+    function nav(id, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-icon').forEach(n => n.classList.remove('nav-active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('nav-active');
+        if(id === 'pageCouple') {
+            document.getElementById('vaultLock').style.display = 'flex';
+            document.getElementById('vaultContent').style.display = 'none';
+        }
+    }
+
+    function closeChat() { document.getElementById('chatView').style.display = 'none'; }
+    
+    // Pour configurer la vault au début (via console)
+    function setupVault(key, date) {
+        db.ref('users/'+me.id).update({ coupleKey: key.toLowerCase(), loveDate: date });
+    }
+</script>
+</body>
+</html>
