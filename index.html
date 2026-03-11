@@ -3,122 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Notre univers ❤️</title>
+    <title>Nexus Private</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --accent: #ff2d55; --primary: #5856d6; --bg: #0b0e14; --card: rgba(255,255,255,0.06); }
+        :root { --primary: #6366f1; --love: #ff4d6d; --bg: #0b0f1a; --glass: rgba(255,255,255,0.06); }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
         
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
-        
-        /* --- AUTH SCREEN --- */
-        #authScreen { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-box { background: var(--card); padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 100%; max-width: 350px; backdrop-filter: blur(20px); }
-
-        /* --- LAYOUT --- */
-        .app { height: 100vh; display: flex; flex-direction: column; display: none; }
+        .app { height: 100vh; display: flex; flex-direction: column; display:none; }
         .page { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 100px; }
-        .active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .active-page { display: block; animation: fade 0.3s; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- DASHBOARD CARDS (Style Original) --- */
-        .card { background: var(--card); border-radius: 25px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .btn-neon { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 700; width: 100%; cursor: pointer; box-shadow: 0 5px 15px rgba(88,86,214,0.3); }
+        /* --- DESIGN MESSAGERIE --- */
+        .user-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--glass); border-radius: 20px; margin-bottom: 10px; cursor: pointer; border: 1px solid transparent; }
+        .user-card:hover { border-color: var(--primary); }
+        .pfp { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #333; }
 
-        /* --- MESSAGERIE AMIS --- */
-        .inbox-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 20px; margin-bottom: 10px; cursor: pointer; }
-        #chatOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
-        
-        /* --- MESSAGES --- */
-        .msg-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; }
+        /* --- FENETRE DE CHAT (AMIS) --- */
+        #chatWindow { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; flex-direction: column; }
+        .chat-header { padding: 20px; background: var(--glass); display: flex; align-items: center; gap: 15px; }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .bubble { max-width: 75%; padding: 12px; border-radius: 18px; font-size: 14px; }
         .sent { align-self: flex-end; background: var(--primary); }
-        .received { align-self: flex-start; background: var(--card); }
+        .received { align-self: flex-start; background: var(--glass); }
 
         /* --- NAVBAR --- */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(11,14,20,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
-        .nav-btn { font-size: 24px; opacity: 0.3; cursor: pointer; }
-        .nav-active { opacity: 1; color: var(--accent); }
+        .nav { position: fixed; bottom: 0; width: 100%; display: flex; justify-content: space-around; padding: 20px 0; background: rgba(11,15,26,0.98); border-top: 1px solid var(--glass); }
+        .nav-btn { font-size: 22px; opacity: 0.4; cursor: pointer; transition: 0.3s; }
+        .nav-active { opacity: 1; color: var(--love); transform: scale(1.1); }
 
-        input { width: 100%; padding: 14px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 10px; box-sizing: border-box; }
+        input { width: 100%; padding: 15px; border-radius: 15px; background: var(--glass); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 15px; box-sizing: border-box; }
+        button.main-btn { width: 100%; padding: 16px; border-radius: 15px; background: var(--primary); color: white; border: none; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="authScreen">
-    <div class="auth-box">
-        <h1 style="margin-bottom:10px;">Nexus</h1>
-        <p style="opacity:0.5; font-size:13px; margin-bottom:30px;">Identifiez-vous pour accéder à l'univers</p>
-        <input type="text" id="regName" placeholder="Votre Pseudo">
-        <button class="btn-neon" onclick="login()">SE CONNECTER</button>
+<div id="authScreen" style="position:fixed; inset:0; z-index:9999; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--glass); padding:40px; border-radius:35px; width:100%; max-width:350px; text-align:center; backdrop-filter:blur(20px);">
+        <h2 style="margin-bottom:5px;">Nexus</h2>
+        <p style="font-size:12px; opacity:0.6; margin-bottom:25px;">Créer un compte indépendant</p>
+        <input type="text" id="regName" placeholder="Ton Pseudo">
+        <button class="main-btn" onclick="register()">S'INSCRIRE</button>
     </div>
 </div>
 
 <div class="app" id="mainApp">
-    <div id="pageFriends" class="page active">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2>Discussions Amis</h2>
-            <button onclick="startNewChat()" style="background:var(--card); border:none; color:white; padding:10px; border-radius:50%; width:40px;">+</button>
-        </div>
-        <div id="inboxList"></div>
+    <div id="pageFriends" class="page active-page">
+        <h3 style="margin-bottom:20px;">Utilisateurs au Gabon 🌎</h3>
+        <div id="usersList"></div>
     </div>
 
     <div id="pageCouple" class="page">
-        <div id="coupleLock" style="text-align:center; padding-top:50px;">
-            <div style="font-size:60px; margin-bottom:20px;">🔒</div>
-            <h3>Espace Privé Couple</h3>
-            <p style="opacity:0.5; margin-bottom:30px;">Entrez votre code secret</p>
-            <input type="password" id="unlockInput" style="max-width:200px; text-align:center;">
-            <button class="btn-neon" style="max-width:200px; margin-top:10px;" onclick="checkCoupleCode()">DÉVERROUILLER</button>
+        <div style="text-align:center; padding:20px; background:var(--glass); border-radius:30px; margin-bottom:20px; border: 1px solid var(--love);">
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+                <img id="myPfp" class="pfp"> ❤️ <img id="partnerPfp" class="pfp" src="https://via.placeholder.com/50">
+            </div>
+            <p id="counterLabel" style="font-size:12px;"></p>
         </div>
-
-        <div id="coupleContent" style="display:none; height:100%; flex-direction:column;">
-            <div class="card" style="text-align:center; margin-bottom:10px;">
-                <h3 id="coupleTitle" style="margin:0;">❤️ Notre Univers</h3>
-                <small id="daysCounter" style="color:var(--accent)"></small>
-            </div>
-            <div id="coupleMsgs" class="msg-box"></div>
-            <div style="display:flex; gap:10px; padding:10px; background:var(--card); border-radius:20px;">
-                <input type="text" id="coupleIn" placeholder="Message..." style="margin:0; border:none; background:none;">
-                <button onclick="sendMsg('couple')" style="background:var(--accent); border:none; color:white; border-radius:12px; width:45px;">➔</button>
-            </div>
+        <div id="coupleMessages" style="height:300px; overflow-y:auto; padding:10px;"></div>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <input type="text" id="coupleInput" placeholder="Message privé..." style="margin:0;">
+            <button onclick="sendCouple()" style="background:var(--love); width:50px; border:none; border-radius:15px; color:white;">➔</button>
         </div>
     </div>
 
     <div id="pageSettings" class="page">
-        <h2>Paramètres ⚙️</h2>
-        <div class="card">
-            <label>Mon Pseudo</label>
-            <input type="text" id="setPseudo">
-            
-            <label style="display:block; margin-top:20px;">Code Secret Couple</label>
-            <input type="text" id="setCoupleCode" placeholder="Ex: 1234">
-            
-            <label style="display:block; margin-top:20px;">Date de Rencontre</label>
-            <input type="date" id="setLoveDate">
-            
-            <button class="btn-neon" style="margin-top:30px; background:var(--accent);" onclick="updateSettings()">ENREGISTRER</button>
+        <h3>Paramètres ⚙️</h3>
+        <div style="background:var(--glass); border-radius:20px; padding:10px;">
+            <div style="padding:15px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <span>Ma Photo</span><input type="file" onchange="updatePhoto(this)" style="font-size:10px; margin-top:10px;">
+            </div>
+            <div style="padding:15px; cursor:pointer;" onclick="setCoupleDetails()">Config Couple (Code & Date)</div>
+            <div style="padding:15px; color:#ff4444; cursor:pointer;" onclick="localStorage.clear();location.reload()">Déconnexion</div>
         </div>
-        <p onclick="localStorage.clear();location.reload()" style="text-align:center; color:red; font-size:12px; cursor:pointer;">Se déconnecter</p>
     </div>
 
-    <div id="chatOverlay">
-        <div style="padding:20px; background:var(--card); display:flex; align-items:center; gap:15px;">
-            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:24px;">←</button>
-            <b id="chatNameDisplay">Ami</b>
+    <div id="chatWindow">
+        <div class="chat-header">
+            <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:20px;">←</button>
+            <img id="chatTargetPfp" class="pfp" style="width:35px; height:35px;">
+            <b id="chatTargetName">Ami</b>
         </div>
-        <div id="friendMsgs" class="msg-box"></div>
-        <div style="padding:20px; display:flex; gap:10px; border-top:1px solid rgba(255,255,255,0.05);">
-            <input type="text" id="friendIn" placeholder="Message privé..." style="margin:0;">
-            <button onclick="sendMsg('direct')" style="background:var(--primary); border:none; color:white; border-radius:12px; width:45px;">➔</button>
+        <div id="chatMsgArea" class="msg-area"></div>
+        <div style="padding:20px; display:flex; gap:10px; background:var(--bg);">
+            <input type="text" id="chatInput" placeholder="Écris ici..." style="margin:0;">
+            <button onclick="sendFriendMessage()" style="background:var(--primary); width:50px; border:none; border-radius:15px; color:white;">➔</button>
         </div>
     </div>
 
     <nav class="nav">
-        <div class="nav-btn nav-active" onclick="nav('pageFriends', this)">💬</div>
+        <div class="nav-btn nav-active" onclick="nav('pageFriends', this)">🌎</div>
         <div class="nav-btn" onclick="nav('pageCouple', this)">❤️</div>
         <div class="nav-btn" onclick="nav('pageSettings', this)">⚙️</div>
     </nav>
@@ -132,127 +110,114 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nx_orig_plus'));
-    let activeFriend = null;
+    let me = JSON.parse(localStorage.getItem('nexus_user_v5'));
+    let activeFriendId = null;
 
-    if(user) {
+    if(me) {
         document.getElementById('authScreen').style.display = 'none';
         document.getElementById('mainApp').style.display = 'flex';
-        initApp();
+        start();
     }
 
-    function login() {
-        const name = document.getElementById('regName').value;
+    function register() {
+        const name = document.getElementById('regName').value.trim();
         if(name) {
-            const data = { name, id: 'u'+Math.floor(Math.random()*100000), coupleCode: '', loveDate: '' };
-            db.ref('users/'+data.id).set(data);
-            localStorage.setItem('nx_orig_plus', JSON.stringify(data));
+            const id = 'u' + Math.floor(Math.random() * 1000000);
+            const data = { name, id, pfp: 'https://ui-avatars.com/api/?name='+name, coupleCode: '', date: '' };
+            db.ref('users/'+id).set(data);
+            localStorage.setItem('nexus_user_v5', JSON.stringify(data));
             location.reload();
         }
     }
 
-    function initApp() {
-        document.getElementById('setPseudo').value = user.name;
-        document.getElementById('setCoupleCode').value = user.coupleCode || "";
-        document.getElementById('setLoveDate').value = user.loveDate || "";
-
-        // Sync Inbox Amis
-        db.ref('directs').on('value', s => {
-            const inbox = document.getElementById('inboxList'); inbox.innerHTML = "";
+    function start() {
+        document.getElementById('myPfp').src = me.pfp;
+        
+        // Liste Globale des Utilisateurs
+        db.ref('users').on('value', s => {
+            const list = document.getElementById('usersList'); list.innerHTML = "";
             s.forEach(c => {
-                if(c.key.includes(user.id)) {
-                    const otherId = c.key.replace(user.id, '').replace('_', '');
-                    db.ref('users/'+otherId).once('value', us => {
-                        const other = us.val();
-                        inbox.innerHTML += `
-                            <div class="inbox-item" onclick="openChat('${otherId}', '${other.name}')">
-                                <div style="width:45px; height:45px; border-radius:12px; background:var(--primary); display:flex; align-items:center; justify-content:center;">${other.name[0]}</div>
-                                <div style="flex:1"><b>${other.name}</b><br><small style="opacity:0.4">Cliquer pour discuter</small></div>
-                            </div>`;
-                    });
+                const u = c.val();
+                if(u.id !== me.id) {
+                    list.innerHTML += `
+                        <div class="user-card" onclick="openFriendChat('${u.id}', '${u.name}', '${u.pfp}')">
+                            <img src="${u.pfp}" class="pfp">
+                            <div style="flex:1"><b>${u.name}</b><br><small style="opacity:0.5">Clique pour discuter</small></div>
+                        </div>`;
                 }
             });
         });
-    }
 
-    function startNewChat() {
-        const target = prompt("Pseudo de l'ami :");
-        if(!target) return;
-        db.ref('users').once('value', s => {
-            let found = false;
-            s.forEach(c => {
-                if(c.val().name.toLowerCase() === target.toLowerCase()) {
-                    openChat(c.val().id, c.val().name);
-                    found = true;
-                }
-            });
-            if(!found) alert("Ami non trouvé !");
-        });
-    }
-
-    function openChat(id, name) {
-        activeFriend = id;
-        const chatId = user.id < id ? user.id+'_'+id : id+'_'+user.id;
-        document.getElementById('chatOverlay').style.display = 'flex';
-        document.getElementById('chatNameDisplay').innerText = name;
-        loadMsgs('directs/'+chatId, 'friendMsgs');
-    }
-
-    function checkCoupleCode() {
-        const input = document.getElementById('unlockInput').value;
-        if(input && input === user.coupleCode) {
-            document.getElementById('coupleLock').style.display = 'none';
-            document.getElementById('coupleContent').style.display = 'flex';
-            if(user.loveDate) {
-                const diff = Math.floor((new Date() - new Date(user.loveDate)) / 86400000);
-                document.getElementById('daysCounter').innerText = `${diff} Jours de Bonheur`;
-            }
-            loadMsgs('couples/'+user.coupleCode+'/chat', 'coupleMsgs');
-        } else { alert("Code incorrect !"); }
-    }
-
-    function loadMsgs(path, containerId) {
-        db.ref(path).off();
-        db.ref(path).limitToLast(30).on('value', s => {
-            const b = document.getElementById(containerId); b.innerHTML = "";
-            s.forEach(c => {
-                const m = c.val();
-                b.innerHTML += `<div class="bubble ${m.sid===user.id?'sent':'received'}">${m.txt}</div>`;
-            });
-            b.scrollTop = b.scrollHeight;
-        });
-    }
-
-    function sendMsg(type) {
-        const input = document.getElementById(type === 'couple' ? 'coupleIn' : 'friendIn');
-        if(!input.value) return;
-        const path = type === 'couple' ? 'couples/'+user.coupleCode+'/chat' : 'directs/'+(user.id < activeFriend ? user.id+'_'+activeFriend : activeFriend+'_'+user.id);
-        db.ref(path).push({ sid: user.id, txt: input.value });
-        input.value = "";
-    }
-
-    function updateSettings() {
-        user.name = document.getElementById('setPseudo').value;
-        user.coupleCode = document.getElementById('setCoupleCode').value.toLowerCase();
-        user.loveDate = document.getElementById('setLoveDate').value;
-        db.ref('users/'+user.id).update(user);
-        localStorage.setItem('nx_orig_plus', JSON.stringify(user));
-        alert("Modifications enregistrées !");
-        location.reload();
-    }
-
-    function nav(id, el) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(n => n.classList.remove('nav-active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('nav-active');
-        if(id === 'pageCouple') {
-            document.getElementById('coupleLock').style.display = 'block';
-            document.getElementById('coupleContent').style.display = 'none';
+        // Chat Couple
+        if(me.coupleCode) {
+            loadChat(`couples/${me.coupleCode}/chat`, 'coupleMessages');
+            const d = new Date(me.date);
+            const diff = Math.floor((new Date() - d) / 86400000);
+            document.getElementById('counterLabel').innerText = `Ensemble depuis ${diff} jours`;
         }
     }
 
-    function closeChat() { document.getElementById('chatOverlay').style.display = 'none'; }
+    function openFriendChat(id, name, pfp) {
+        activeFriendId = id;
+        document.getElementById('chatWindow').style.display = 'flex';
+        document.getElementById('chatTargetName').innerText = name;
+        document.getElementById('chatTargetPfp').src = pfp;
+        
+        // Création d'un ID de chat unique entre les deux (ex: u123_u456)
+        const chatId = me.id < id ? me.id+'_'+id : id+'_'+me.id;
+        loadChat(`direct_chats/${chatId}`, 'chatMsgArea');
+    }
+
+    function loadChat(path, containerId) {
+        db.ref(path).off();
+        db.ref(path).limitToLast(30).on('value', s => {
+            const box = document.getElementById(containerId); box.innerHTML = "";
+            s.forEach(c => {
+                const m = c.val();
+                const isMe = m.senderId === me.id;
+                box.innerHTML += `<div class="bubble ${isMe?'sent':'received'}">${m.text}</div>`;
+            });
+            box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    function sendFriendMessage() {
+        const i = document.getElementById('chatInput');
+        if(!i.value) return;
+        const chatId = me.id < activeFriendId ? me.id+'_'+activeFriendId : activeFriendId+'_'+me.id;
+        db.ref(`direct_chats/${chatId}`).push({ senderId: me.id, text: i.value });
+        i.value = "";
+    }
+
+    function sendCouple() {
+        const i = document.getElementById('coupleInput');
+        if(!i.value || !me.coupleCode) return;
+        db.ref(`couples/${me.coupleCode}/chat`).push({ senderId: me.id, text: i.value });
+        i.value = "";
+    }
+
+    function closeChat() { document.getElementById('chatWindow').style.display = 'none'; }
+
+    function nav(id, btn) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-active'));
+        document.getElementById(id).classList.add('active-page');
+        btn.classList.add('nav-active');
+    }
+
+    function setCoupleDetails() {
+        const c = prompt("Code Secret Couple :");
+        const d = prompt("Date rencontre (AAAA-MM-JJ) :");
+        if(c && d) { me.coupleCode = c.toLowerCase(); me.date = d; save(); }
+    }
+
+    function updatePhoto(input) {
+        const r = new FileReader();
+        r.onload = e => { me.pfp = e.target.result; db.ref('users/'+me.id).update({pfp: me.pfp}); save(); };
+        r.readAsDataURL(input.files[0]);
+    }
+
+    function save() { localStorage.setItem('nexus_user_v5', JSON.stringify(me)); location.reload(); }
 </script>
 </body>
 </html>
