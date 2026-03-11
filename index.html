@@ -1,69 +1,93 @@
-jourTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nous 💖</title>
 
 <style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background-size: cover;
-  background-position: center;
-  font-family: Arial, sans-serif;
+:root {
+  --bg-image: url('https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=2070&auto=format&fit=crop');
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: white;
-  transition: background 1s ease;
+  overflow: hidden;
+  background-color: #333;
 }
 
 body::before {
   content: "";
   position: fixed;
-  top:0; left:0; right:0; bottom:0;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: var(--bg-image);
   background-size: cover;
   background-position: center;
-  filter: blur(5px) brightness(0.7);
+  filter: blur(8px) brightness(0.6);
   z-index: -1;
-  transition: background-image 1s ease;
+  transition: background-image 1s ease-in-out;
 }
 
-.card{
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(10px);
-  padding:30px;
-  border-radius:20px;
-  text-align:center;
-  width:85%;
-  max-width:350px;
-  box-shadow:0 0 20px rgba(255,0,128,0.3);
-  position: relative;
-  z-index: 1;
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  padding: 30px;
+  border-radius: 25px;
+  text-align: center;
+  width: 85%;
+  max-width: 350px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 
-h1{ margin-top:0; font-size:26px; }
+/* Style de la photo de profil */
+#profilePic {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ff4da6;
+  margin-bottom: 15px;
+  display: none; /* Caché tant qu'il n'y a pas d'image */
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 15px rgba(255, 77, 166, 0.4);
+}
 
-button{
-  padding:10px 20px;
-  border-radius:20px;
-  border:none;
-  background:#ff4da6;
-  color:white;
-  margin-top:15px;
-  cursor:pointer;
-  transition:0.3s;
+h1 { margin-top: 0; font-size: 24px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+button {
+  padding: 12px 20px;
+  border-radius: 25px;
+  border: none;
+  background: #ff4da6;
+  color: white;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
   width: 100%;
+  font-weight: bold;
 }
 
-.secondary{ background:gray; }
+button:active { transform: scale(0.95); }
 
-.days{ font-size:20px; margin:20px 0; }
+.secondary { background: rgba(255, 255, 255, 0.2); font-size: 13px; }
 
-.profile-btn {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.3);
-  margin-bottom: 10px;
+.days { font-size: 22px; margin: 15px 0; font-weight: bold; }
+
+input[type="date"] {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  margin: 10px 0;
+  width: 80%;
 }
 </style>
 </head>
@@ -71,11 +95,12 @@ button{
 <body>
 
 <div class="card">
+  <img id="profilePic" src="" alt="Notre Photo">
 
   <div id="selection">
     <h1>Qui est-ce ? ✨</h1>
-    <button class="profile-btn" onclick="ouvrirSite('Lui')">🙋‍♂️ C'est Lui</button>
-    <button class="profile-btn" onclick="ouvrirSite('Elle')">🙋‍♀️ C'est Elle</button>
+    <button onclick="ouvrirSite('Lui')">🙋‍♂️ C'est Lui</button>
+    <button onclick="ouvrirSite('Elle')">🙋‍♀️ C'est Elle</button>
   </div>
 
   <div id="contenu" style="display:none;">
@@ -83,58 +108,68 @@ button{
     <p id="petitMessage"></p>
 
     <div id="setup" style="display:none;">
-      <p>Choisis notre date 💞</p>
-      <input type="date" id="dateInput" style="padding:10px; border-radius:10px;">
+      <p>Personnalise votre espace 💞</p>
+      <input type="date" id="dateInput">
       <br>
-      <button onclick="saveDate()">Enregistrer</button>
+      <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="previewAndSavePhoto(this)">
+      <button class="secondary" onclick="document.getElementById('photoInput').click()">📸 Choisir une photo</button>
+      <br>
+      <button onclick="saveDate()">Enregistrer tout</button>
     </div>
 
-    <div id="main">
+    <div id="main" style="display:none;">
       <p class="days" id="days"></p>
       <button onclick="love()">❤️ Je pense à toi</button>
       <br>
-      <button class="secondary" onclick="editDate()">🔄 Modifier la date</button>
+      <button class="secondary" onclick="editDate()">🔄 Modifier (Date/Photo)</button>
       <br>
-      <button class="secondary" style="margin-top:5px; font-size:12px;" onclick="changerFond()">🌸 Changer le fond</button>
+      <button class="secondary" onclick="changerFond()">🌸 Changer le fond</button>
       <br>
-      <button class="secondary" style="margin-top:5px; font-size:12px;" onclick="location.reload()">↩ Changer de profil</button>
-      <br><br>
-      <!-- Lecteur Spotify -->
-      <iframe src="https://open.spotify.com/embed/track/1cek46u96NSWBTwqOTayTO" width="100%" height="80" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+      <button class="secondary" onclick="location.reload()">↩ Changer de profil</button>
     </div>
   </div>
-
 </div>
 
 <script>
-// Table des fonds
+// --- GESTION DES FONDS ---
 const fonds = [
-  '94a99c728e9fab72bb967717213d2490.jpg',
-  'a57e1c7c289e7753975d60a58fb6f6df.jpg'
+  'https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=2070&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1494972308845-d171197eaa97?q=80&w=2070&auto=format&fit=crop'
 ];
 let indexFond = 0;
 
-function changerFond(){
+function changerFond() {
   indexFond = (indexFond + 1) % fonds.length;
-  document.body.style.backgroundImage = `url('${fonds[indexFond]}')`;
-  document.body.style.transition = "background 1s ease";
-  document.querySelector('body::before');
-  document.querySelector('body::before').style.backgroundImage = `url('${fonds[indexFond]}')`;
+  document.documentElement.style.setProperty('--bg-image', `url('${fonds[indexFond]}')`);
 }
 
-// Fond initial via pseudo-element pour effet flou
-function setFondInitial(){
-  document.body.style.backgroundImage = `url('${fonds[indexFond]}')`;
-  const before = document.createElement('style');
-  before.innerHTML = `body::before { background-image: url('${fonds[indexFond]}'); }`;
-  document.head.appendChild(before);
+// --- GESTION DE LA PHOTO ---
+function previewAndSavePhoto(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64Image = e.target.result;
+      localStorage.setItem("couplePhoto", base64Image);
+      loadPhoto();
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
 }
 
-setFondInitial();
+function loadPhoto() {
+  const savedPhoto = localStorage.getItem("couplePhoto");
+  const imgElement = document.getElementById("profilePic");
+  if (savedPhoto) {
+    imgElement.src = savedPhoto;
+    imgElement.style.display = "block";
+  }
+}
 
+// --- LOGIQUE PRINCIPALE ---
 function ouvrirSite(qui) {
     document.getElementById("selection").style.display = "none";
     document.getElementById("contenu").style.display = "block";
+    loadPhoto(); // Charger la photo au moment du choix du profil
     
     const message = document.getElementById("petitMessage");
     const titre = document.getElementById("titreBienvenue");
@@ -146,33 +181,32 @@ function ouvrirSite(qui) {
         titre.innerText = "Salut BG ⚡";
         message.innerText = "Prêt pour une nouvelle journée ?";
     }
-
     showMain();
 }
 
-function calculateDays(dateString){
+function calculateDays(dateString) {
   let startDate = new Date(dateString);
   let today = new Date();
+  startDate.setHours(0,0,0,0);
+  today.setHours(0,0,0,0);
   let difference = today - startDate;
   return Math.floor(difference / (1000 * 60 * 60 * 24));
 }
 
-function saveDate(){
+function saveDate() {
   let date = document.getElementById("dateInput").value;
-  if(date){
-    localStorage.setItem("coupleDate", date);
-    showMain();
-  }
+  if(date) localStorage.setItem("coupleDate", date);
+  showMain();
 }
 
-function editDate(){
+function editDate() {
   document.getElementById("main").style.display = "none";
   document.getElementById("setup").style.display = "block";
 }
 
-function showMain(){
+function showMain() {
   let savedDate = localStorage.getItem("coupleDate");
-  if(savedDate){
+  if(savedDate) {
     let days = calculateDays(savedDate);
     document.getElementById("days").innerText = "Ensemble depuis " + days + " jours 💞";
     document.getElementById("setup").style.display = "none";
@@ -183,9 +217,13 @@ function showMain(){
   }
 }
 
-function love(){
+function love() {
   alert("Ton message a été envoyé 💘");
 }
+
+// Charger la photo dès le départ si elle existe
+window.onload = loadPhoto;
+
 </script>
 
 </body>
