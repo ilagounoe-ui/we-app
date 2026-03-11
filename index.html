@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Universal</title>
+    <title>Nexus Love & Friends</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -12,7 +12,7 @@
     <style>
         :root { 
             --primary: #6366f1; --love: #ff4d6d; --bg: #0f172a; 
-            --glass: rgba(255, 255, 255, 0.08); --online: #10b981; 
+            --glass: rgba(255, 255, 255, 0.05); --online: #10b981; 
         }
         
         body { 
@@ -21,91 +21,135 @@
             background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
         }
 
-        /* --- AUTH --- */
-        #authOverlay {
-            position: fixed; inset: 0; background: var(--bg); z-index: 1000;
+        /* --- ÉCRAN DE CONNEXION --- */
+        #loginOverlay {
+            position: fixed; inset: 0; background: var(--bg); z-index: 10000;
             display: flex; align-items: center; justify-content: center; padding: 25px;
         }
-        .auth-card {
-            background: var(--glass); backdrop-filter: blur(20px); padding: 30px;
-            border-radius: 30px; width: 100%; max-width: 320px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center;
+        .login-card {
+            background: var(--glass); backdrop-filter: blur(30px); padding: 40px 30px;
+            border-radius: 35px; width: 100%; max-width: 340px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
 
-        /* --- LAYOUT --- */
-        .main-app { height: 100vh; display: flex; flex-direction: column; visibility: hidden; }
+        /* --- LAYOUT PRINCIPAL --- */
+        .app-container { height: 100vh; display: flex; flex-direction: column; visibility: hidden; }
 
-        /* STORIES / ONLINE USERS */
-        .online-scroll {
-            padding: 15px; display: flex; gap: 12px; overflow-x: auto;
+        .header-top { padding: 20px; text-align: center; font-weight: 700; letter-spacing: 2px; font-size: 18px; color: white; }
+        
+        /* SOCIAL BAR (Style Image) */
+        .social-bar {
+            padding: 10px 20px; display: flex; gap: 18px; overflow-x: auto;
             border-bottom: 1px solid rgba(255,255,255,0.05); scrollbar-width: none;
         }
-        .user-node { display: flex; flex-direction: column; align-items: center; min-width: 55px; gap: 4px; }
-        .avatar {
-            width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--primary);
-            position: relative; padding: 2px;
+        .social-bar::-webkit-scrollbar { display: none; }
+        .user-circle { display: flex; flex-direction: column; align-items: center; min-width: 60px; gap: 6px; }
+        .avatar-ring {
+            width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--primary);
+            position: relative; padding: 3px;
         }
-        .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .dot { position: absolute; bottom: 2px; right: 2px; width: 10px; height: 10px; background: var(--online); border: 2px solid var(--bg); border-radius: 50%; }
+        .avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .online-status { position: absolute; bottom: 3px; right: 3px; width: 12px; height: 12px; background: var(--online); border: 2px solid var(--bg); border-radius: 50%; }
 
-        /* CONTENT */
-        .content-area { flex: 1; display: flex; flex-direction: column; padding: 15px; overflow: hidden; }
+        /* SWITCHER AMIS / COUPLE */
+        .mode-selector {
+            display: flex; background: rgba(255,255,255,0.05); border-radius: 20px; margin: 20px; padding: 5px;
+        }
+        .mode-btn {
+            flex: 1; padding: 12px; border: none; background: transparent; color: white;
+            font-weight: 600; border-radius: 15px; cursor: pointer; transition: 0.3s;
+        }
+        .mode-btn.active { background: var(--primary); }
+        .mode-btn.active.love-mode { background: var(--love); }
 
-        /* TABS (Garder l'esprit des premières versions) */
-        .tabs { display: flex; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 4px; margin-bottom: 15px; }
-        .tab { flex: 1; padding: 10px; border: none; background: transparent; color: white; font-weight: 600; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 13px; }
-        .tab.active { background: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .tab.active.couple-mode { background: var(--love); }
-
-        /* CHAT */
-        #chatBox { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; }
-        .bbl { max-width: 80%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+        /* MESSAGES & CONTENT */
+        .view-port { flex: 1; overflow-y: auto; padding: 0 20px 100px; display: flex; flex-direction: column; }
+        .msg-bubble { 
+            max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; 
+            margin-bottom: 10px; line-height: 1.5; animation: pop 0.3s ease;
+        }
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } }
         .me { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
-        .not-me { align-self: flex-start; background: var(--glass); border-bottom-left-radius: 4px; }
-        .love-bbl { background: var(--love) !important; }
+        .partner { align-self: flex-start; background: var(--glass); border-bottom-left-radius: 4px; }
+        .love-theme { background: var(--love) !important; }
 
-        /* INPUT */
-        .input-bar { display: flex; gap: 8px; background: var(--glass); padding: 8px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .input-bar input { flex: 1; background: transparent; border: none; color: white; padding: 8px 12px; outline: none; font-size: 14px; }
-        .input-bar button { width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: bold; }
+        /* ALBUM GRID */
+        .album-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .photo { width: 100%; height: 120px; border-radius: 20px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); }
 
-        button.love-btn { background: var(--love) !important; }
+        /* BARRE DE SAISIE */
+        .input-area {
+            position: fixed; bottom: 100px; left: 20px; right: 20px;
+            display: flex; gap: 10px; background: var(--glass); backdrop-filter: blur(20px);
+            padding: 8px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .input-area input { flex: 1; background: transparent; border: none; color: white; padding: 10px 15px; outline: none; }
+        .send-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--love); color: white; cursor: pointer; }
+
+        /* NAVIGATION BASSE (Comme l'image) */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(20px);
+            display: flex; justify-content: space-around; padding: 20px 0 30px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; opacity: 0.5; font-size: 10px; gap: 5px; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: var(--love); }
+        .nav-icon { font-size: 20px; }
+
+        input { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-bottom: 15px; box-sizing: border-box; }
+        .primary-btn { width: 100%; padding: 16px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="authOverlay">
-    <div class="auth-card">
-        <h2 style="margin:0 0 10px;">Nexus Universal ✨</h2>
-        <p style="font-size: 12px; opacity: 0.6; margin-bottom: 25px;">Rejoins la communauté ou ton espace privé</p>
-        <input type="text" id="regName" placeholder="Ton Pseudo" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white; margin-bottom:10px; box-sizing:border-box;">
-        <input type="text" id="regCode" placeholder="Code Secret (Optionnel)" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white; margin-bottom:20px; box-sizing:border-box;">
-        <button onclick="doAuth()" style="width:100%; padding:14px; border-radius:12px; border:none; background:var(--primary); color:white; font-weight:700; cursor:pointer;">DÉMARRER</button>
+<div id="loginOverlay">
+    <div class="login-card">
+        <h2 style="margin:0 0 10px;">Nexus Universal</h2>
+        <p style="font-size: 12px; opacity: 0.6; margin-bottom: 25px;">Connecte-toi pour rejoindre tes amis</p>
+        <input type="text" id="loginName" placeholder="Ton Pseudo">
+        <input type="password" id="loginCode" placeholder="Code de Connexion Amis">
+        <button class="primary-btn" onclick="login()">SE CONNECTER</button>
     </div>
 </div>
 
-<div class="main-app" id="app">
-    <div class="online-scroll" id="statusList"></div>
+<div class="app-container" id="app">
+    <div class="header-top">NEXUS <span style="font-weight:300; opacity:0.5; font-size:12px;">LOVE & FRIENDS</span></div>
+    
+    <div class="social-bar" id="onlineBar"></div>
 
-    <div class="content-area">
-        <div class="tabs">
-            <button class="tab active" id="tabPub" onclick="changeMode('public')">COMMUNAUTÉ</button>
-            <button class="tab" id="tabPriv" onclick="changeMode('private')">COUPLE ❤️</button>
-        </div>
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btnAmis" onclick="setMode('friends')">🌎 Amis</button>
+        <button class="mode-btn" id="btnCouple" onclick="unlockCouple()">❤️ Couple</button>
+    </div>
 
-        <div id="chatBox"></div>
-
-        <div class="input-bar">
-            <input type="text" id="textInput" placeholder="Écris ici...">
-            <button id="sendBtn" onclick="pushMsg()">➔</button>
+    <div class="view-port" id="contentView">
+        <div id="messageList" style="display:flex; flex-direction:column;"></div>
+        
+        <div id="albumView" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Nos Souvenirs 📸</h3>
+                <span id="dateRencontre" style="font-size:12px; color:var(--love)"></span>
+            </div>
+            <button onclick="document.getElementById('fileUp').click()" style="background:var(--glass); border:1px dashed white; color:white; padding:10px; width:100%; border-radius:15px; margin-bottom:15px;">+ Ajouter</button>
+            <input type="file" id="fileUp" style="display:none" onchange="uploadPhoto(this)">
+            <div class="album-grid" id="photoGrid"></div>
         </div>
     </div>
+
+    <div class="input-area" id="barreSaisie">
+        <input type="text" id="msgInput" placeholder="Écris quelque chose...">
+        <button class="send-btn" onclick="send()">➔</button>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="showSection('chat')"><span class="nav-icon">💬</span><span>Chat</span></div>
+        <div class="nav-item" onclick="showSection('album')"><span class="nav-icon">🖼️</span><span>Album</span></div>
+        <div class="nav-item" onclick="localStorage.clear();location.reload()"><span class="nav-icon">⚙️</span><span>Settings</span></div>
+    </nav>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG (TA CONFIG ACTUELLE) ---
     const firebaseConfig = {
         apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
         databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/",
@@ -113,89 +157,131 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_pro_v1'));
-    let currentMode = 'public';
+    let session = JSON.parse(localStorage.getItem('nexus_session'));
+    let currentMode = 'friends';
+    let coupleUnlocked = false;
 
-    if(user) {
-        document.getElementById('authOverlay').style.display = 'none';
+    if(session) {
+        document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('app').style.visibility = 'visible';
-        bootApp();
+        init();
     }
 
-    function doAuth() {
-        const n = document.getElementById('regName').value.trim();
-        const c = document.getElementById('regCode').value.trim().toLowerCase();
-        if(n) {
-            const d = { name: n, code: c || null, id: 'u' + Date.now() };
-            localStorage.setItem('nexus_pro_v1', JSON.stringify(d));
+    function login() {
+        const name = document.getElementById('loginName').value.trim();
+        const code = document.getElementById('loginCode').value.trim();
+        if(name && code) {
+            const data = { name, friendsCode: code, id: 'u'+Date.now() };
+            localStorage.setItem('nexus_session', JSON.stringify(data));
             location.reload();
         }
     }
 
-    function bootApp() {
+    function init() {
         // Présence
-        const sRef = db.ref('status/' + user.id);
-        sRef.set({ name: user.name, online: true });
-        sRef.onDisconnect().remove();
+        db.ref('presence/'+session.id).set({name: session.name});
+        db.ref('presence/'+session.id).onDisconnect().remove();
 
-        // Liste des connectés
-        db.ref('status').on('value', snap => {
-            const list = document.getElementById('statusList');
-            list.innerHTML = "";
-            snap.forEach(c => {
+        // Sync Online Bar
+        db.ref('presence').on('value', s => {
+            const bar = document.getElementById('onlineBar'); bar.innerHTML = "";
+            s.forEach(c => {
                 const u = c.val();
-                list.innerHTML += `
-                    <div class="user-node">
-                        <div class="avatar" style="border-color:${u.name === user.name ? 'var(--primary)' : 'rgba(255,255,255,0.1)'}">
+                bar.innerHTML += `
+                    <div class="user-circle">
+                        <div class="avatar-ring">
                             <img src="https://ui-avatars.com/api/?name=${u.name}&background=random&color=fff">
-                            <div class="dot"></div>
+                            <div class="online-status"></div>
                         </div>
-                        <span style="font-size:9px; opacity:0.7">${u.name}</span>
+                        <span style="font-size:10px; opacity:0.7">${u.name}</span>
                     </div>`;
             });
         });
 
-        loadData('public_chat');
+        loadChat('public_chat');
     }
 
-    function changeMode(m) {
-        if(m === 'private' && !user.code) return alert("Besoin d'un Code Secret pour l'espace Couple !");
-        
+    function unlockCouple() {
+        if(coupleUnlocked) {
+            setMode('couple');
+            return;
+        }
+        const secret = prompt("Entrez votre CODE SECRET DE COUPLE 🔐");
+        const date = prompt("Date de rencontre (JJ/MM/AAAA) ?");
+        if(secret && date) {
+            session.coupleCode = secret.toLowerCase();
+            session.anniversary = date;
+            coupleUnlocked = true;
+            document.getElementById('dateRencontre').innerText = "Depuis le " + date;
+            setMode('couple');
+        }
+    }
+
+    function setMode(m) {
         currentMode = m;
-        document.getElementById('tabPub').classList.toggle('active', m === 'public');
-        document.getElementById('tabPriv').classList.toggle('active', m === 'private');
-        document.getElementById('tabPriv').classList.toggle('couple-mode', m === 'private');
-        document.getElementById('sendBtn').classList.toggle('love-btn', m === 'private');
-
-        const path = (m === 'private') ? `couples/${user.code}/chat` : 'public_chat';
-        loadData(path);
+        document.getElementById('btnAmis').classList.toggle('active', m === 'friends');
+        document.getElementById('btnCouple').classList.toggle('active', m === 'couple');
+        document.getElementById('btnCouple').classList.toggle('love-mode', m === 'couple');
+        
+        const path = (m === 'couple') ? `couples/${session.coupleCode}/chat` : 'public_chat';
+        loadChat(path);
+        showSection('chat');
     }
 
-    function loadData(path) {
+    function loadChat(path) {
         db.ref(path).off();
-        db.ref(path).limitToLast(40).on('value', snap => {
-            const box = document.getElementById('chatBox');
-            box.innerHTML = "";
-            snap.forEach(c => {
+        db.ref(path).limitToLast(30).on('value', s => {
+            const list = document.getElementById('messageList'); list.innerHTML = "";
+            s.forEach(c => {
                 const m = c.val();
-                const isMe = m.sender === user.name;
-                box.innerHTML += `
-                    <div class="bbl ${isMe ? 'me' : 'not-me'} ${currentMode === 'private' ? 'love-bbl' : ''}">
-                        <div style="font-size:9px; font-weight:700; margin-bottom:2px; opacity:0.6">${isMe ? 'Moi' : m.sender}</div>
+                const isMe = m.sender === session.name;
+                list.innerHTML += `
+                    <div class="msg-bubble ${isMe ? 'me' : 'partner'} ${currentMode === 'couple' ? 'love-theme' : ''}">
+                        <div style="font-size:9px; font-weight:700; margin-bottom:3px; opacity:0.6">${isMe ? 'Moi' : m.sender}</div>
                         ${m.text}
                     </div>`;
             });
-            box.scrollTop = box.scrollHeight;
+            document.getElementById('contentView').scrollTop = document.getElementById('contentView').scrollHeight;
         });
     }
 
-    function pushMsg() {
-        const i = document.getElementById('textInput');
+    function showSection(type) {
+        const chat = document.getElementById('messageList');
+        const album = document.getElementById('albumView');
+        const bar = document.getElementById('barreSaisie');
+
+        if(type === 'album') {
+            if(!coupleUnlocked) return unlockCouple();
+            chat.style.display = 'none'; album.style.display = 'block'; bar.style.display = 'none';
+            loadAlbum();
+        } else {
+            chat.style.display = 'flex'; album.style.display = 'none'; bar.style.display = 'flex';
+        }
+    }
+
+    function loadAlbum() {
+        db.ref(`couples/${session.coupleCode}/album`).on('value', s => {
+            const grid = document.getElementById('photoGrid'); grid.innerHTML = "";
+            s.forEach(c => { grid.innerHTML = `<img src="${c.val()}" class="photo">` + grid.innerHTML; });
+        });
+    }
+
+    function uploadPhoto(i) {
+        if(i.files[0]) {
+            const r = new FileReader();
+            r.onload = e => db.ref(`couples/${session.coupleCode}/album`).push(e.target.result);
+            r.readAsDataURL(i.files[0]);
+        }
+    }
+
+    function send() {
+        const i = document.getElementById('msgInput');
         if(!i.value) return;
-        const path = (currentMode === 'private') ? `couples/${user.code}/chat` : 'public_chat';
-        db.ref(path).push({ sender: user.name, text: i.value, time: Date.now() });
+        const path = (currentMode === 'couple') ? `couples/${session.coupleCode}/chat` : 'public_chat';
+        db.ref(path).push({ sender: session.name, text: i.value });
         i.value = "";
     }
 </script>
 </body>
-</html>
+    </html>
+            
