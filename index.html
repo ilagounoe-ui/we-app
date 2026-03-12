@@ -15,213 +15,173 @@
             --bg-dark: #0f0c29; --bg-gradient: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
             --card-bg: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff; --text-sub: #b3b3b3;
-            --error: #ff5252;
+            --love-pink: #ff4b6e;
         }
         
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; }
 
-        /* --- NOUVELLE AUTH (Inscription/Connexion) --- */
-        #authLayer { position: fixed; inset: 0; background: var(--bg-gradient); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; transition: 0.5s; }
-        .auth-card { background: var(--card-bg); padding: 35px 25px; border-radius: 35px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 340px; text-align: center; }
-        .auth-logo { font-family: 'Pacifico', cursive; font-size: 32px; color: var(--accent); margin-bottom: 25px; }
-        .auth-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 14px; margin-bottom: 12px; border-radius: 18px; color: white; outline: none; box-sizing: border-box; }
-        .auth-btn { width: 100%; background: var(--accent); color: var(--bg-dark); border: none; padding: 15px; border-radius: 18px; font-weight: 700; cursor: pointer; margin-top: 5px; }
-        .toggle-auth { margin-top: 20px; font-size: 13px; color: var(--text-sub); cursor: pointer; text-decoration: underline; }
+        /* --- UI COMPONENTS --- */
+        .glass-card { background: var(--card-bg); border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; margin-bottom: 15px; }
+        
+        /* --- AUTH --- */
+        #authLayer { position: fixed; inset: 0; background: var(--bg-gradient); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 25px; }
+        .auth-card { width: 100%; max-width: 340px; text-align: center; }
+        .auth-logo { font-family: 'Pacifico', cursive; font-size: 35px; color: var(--accent); margin-bottom: 30px; }
+        .auth-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; margin-bottom: 12px; border-radius: 18px; color: white; outline: none; box-sizing: border-box; }
+        .auth-btn { width: 100%; background: var(--accent); color: var(--bg-dark); border: none; padding: 16px; border-radius: 18px; font-weight: 700; cursor: pointer; }
 
-        /* --- ALERTES STYLÉES --- */
-        #customAlert { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--error); color: white; padding: 15px 25px; border-radius: 20px; font-size: 14px; font-weight: 600; z-index: 11000; transition: 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #customAlert.show { transform: translateX(-50%) translateY(0); }
-
-        /* --- MAIN APP --- */
-        .main-header { background: rgba(15, 12, 41, 0.95); padding: 50px 20px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .top-bar h1 { font-family: 'Pacifico', cursive; font-size: 22px; color: var(--accent); margin: 0; }
-        .tabs { display: flex; gap: 8px; }
+        /* --- HEADER & TABS --- */
+        .main-header { padding: 50px 20px 10px; background: rgba(15, 12, 41, 0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tabs { display: flex; gap: 8px; margin-top: 15px; }
         .tab { flex: 1; padding: 10px; color: var(--text-sub); font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 15px; text-align: center; }
         .tab.active { background: var(--accent); color: var(--bg-dark); font-weight: 600; }
 
-        .content { height: calc(100vh - 150px); overflow-y: auto; padding: 15px; }
+        .content { height: calc(100vh - 160px); overflow-y: auto; padding: 20px; }
         .view { display: none; }
         .view.active { display: block; }
 
-        /* --- CHAT & ROWS --- */
-        .chat-row { display: flex; padding: 15px; align-items: center; background: var(--card-bg); border-radius: 25px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.03); }
+        /* --- LISTS --- */
+        .chat-row { display: flex; padding: 15px; align-items: center; background: var(--card-bg); border-radius: 22px; margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .chat-row:active { transform: scale(0.98); background: rgba(255,255,255,0.12); }
         .avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(45deg, var(--accent), #f48fb1); margin-right: 15px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-        .chat-info { flex: 1; }
-        .chat-name { font-weight: 600; }
-        .chat-msg { font-size: 11px; color: var(--text-sub); }
 
-        /* --- SETTINGS --- */
-        .settings-group { background: var(--card-bg); border-radius: 25px; overflow: hidden; margin-bottom: 15px; }
-        .setting-row { padding: 18px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        .profile-img { width: 80px; height: 80px; border-radius: 50%; background: var(--card-bg); border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 10px; }
+        /* --- COCON DESIGN --- */
+        .love-header { background: linear-gradient(135deg, #6a11cb, #ff4b6e); padding: 30px 20px; border-radius: 30px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .timer-box { display: flex; justify-content: space-around; margin-top: 15px; }
+        .timer-box b { font-size: 24px; display: block; }
 
-        /* --- FLOATING BUTTON --- */
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--bg-dark); box-shadow: 0 10px 20px rgba(187,134,252,0.3); }
+        /* --- SETTINGS DESIGN --- */
+        .settings-item { display: flex; align-items: center; gap: 15px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .settings-item:last-child { border-bottom: none; }
+        .settings-item i { font-size: 20px; width: 30px; text-align: center; }
 
+        /* --- OVERLAYS --- */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg-dark); z-index: 5000; display: none; flex-direction: column; }
-        .chat-head { padding: 50px 20px 15px; background: rgba(187, 134, 252, 0.1); display: flex; align-items: center; gap: 15px; }
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .overlay-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         .bubble { padding: 12px 18px; border-radius: 22px; max-width: 80%; font-size: 14px; }
         .m-me { align-self: flex-end; background: var(--accent); color: var(--bg-dark); }
         .m-they { align-self: flex-start; background: var(--card-bg); }
-        .input-bar { padding: 15px; display: flex; gap: 10px; align-items: center; }
+        .input-bar { padding: 15px; display: flex; gap: 10px; background: rgba(0,0,0,0.2); }
         .input-cont { flex: 1; background: var(--card-bg); border-radius: 30px; padding: 5px 20px; }
         .input-cont input { width: 100%; background: none; border: none; color: white; padding: 10px; outline: none; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: var(--bg-dark); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 
-<div id="customAlert">Oups ! Quelque chose manque... 🤭</div>
-
 <div id="authLayer">
-    <div class="auth-card" id="loginCard">
+    <div class="auth-card glass-card" id="loginUI">
         <div class="auth-logo">Notre Univers</div>
-        <input type="tel" class="auth-input" placeholder="Numéro de téléphone" id="lPhone">
+        <input type="tel" class="auth-input" placeholder="Numéro" id="lPhone">
         <input type="password" class="auth-input" placeholder="Mot de passe" id="lPass">
-        <button class="auth-btn" onclick="login()">SE CONNECTER 🪐</button>
-        <div class="toggle-auth" onclick="toggleAuth(false)">Pas de compte ? S'inscrire ici</div>
+        <button class="auth-btn" onclick="login()">CONNEXION 🪐</button>
+        <p style="margin-top:15px; font-size:12px; opacity:0.7" onclick="toggleUI(false)">Nouveau ? Créer un compte</p>
     </div>
-
-    <div class="auth-card" id="registerCard" style="display:none;">
-        <div class="auth-logo">Rejoindre l'Univers</div>
-        <input type="text" class="auth-input" placeholder="Ton Pseudo" id="rPseudo">
-        <input type="tel" class="auth-input" placeholder="Ton Numéro (+241...)" id="rPhone">
+    <div class="auth-card glass-card" id="regUI" style="display:none;">
+        <div class="auth-logo" style="font-size:25px">Nouvelle Étoile</div>
+        <input type="text" class="auth-input" placeholder="Pseudo" id="rPseudo">
+        <input type="tel" class="auth-input" placeholder="Numéro (+241...)" id="rPhone">
         <input type="password" class="auth-input" placeholder="Mot de passe" id="rPass">
-        <button class="auth-btn" onclick="register()">CRÉER MON COMPTE ✨</button>
-        <div class="toggle-auth" onclick="toggleAuth(true)">Déjà inscrit ? Connexion</div>
+        <button class="auth-btn" onclick="register()">S'INSCRIRE ✨</button>
+        <p style="margin-top:15px; font-size:12px; opacity:0.7" onclick="toggleUI(true)">Déjà inscrit ? Connexion</p>
     </div>
 </div>
 
 <div id="mainApp" style="display:none;">
     <header class="main-header">
-        <div class="top-bar">
-            <h1>Notre Univers</h1>
-            <div id="gradeTop" style="font-size: 10px; background: var(--accent-dark); padding: 4px 10px; border-radius: 12px; font-weight: bold;">Grade</div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 style="font-family:'Pacifico'; color:var(--accent); margin:0; font-size:22px;">Notre Univers</h1>
+            <div id="gradeDisp" style="font-size:10px; background:var(--accent-dark); padding:4px 10px; border-radius:10px; font-weight:600;">Grade</div>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('vChats', this)">Chats</div>
-            <div class="tab" onclick="switchTab('vCoconTab', this)">Cocon</div>
-            <div class="tab" onclick="switchTab('vSettings', this)">Réglages</div>
+            <div class="tab" onclick="switchTab('vCocon', this)">Cocon</div>
+            <div class="tab" onclick="switchTab('vSet', this)">Réglages</div>
         </div>
     </header>
 
     <div class="content">
-        <div id="vChats" class="view active"><div id="chatList"></div><div class="fab" onclick="addFriend()">+</div></div>
-        
-        <div id="vCoconTab" class="view">
-            <div style="background: linear-gradient(135deg, #6a11cb, #2575fc); padding: 30px; border-radius: 30px; text-align: center; margin-bottom: 20px;">
-                <h3 style="margin:0">Unis depuis...</h3>
-                <div style="display:flex; justify-content:space-around; margin-top:15px;" id="timer">
-                    <div class="unit"><b id="d-d">0</b><br><small>Jours</small></div>
-                    <div class="unit"><b id="d-h">0</b><br><small>Heures</small></div>
-                    <div class="unit"><b id="d-m">0</b><br><small>Mins</small></div>
+        <div id="vChats" class="view active">
+            <div id="chatList"></div>
+            <div class="fab" onclick="addFriend()">+</div>
+        </div>
+
+        <div id="vCocon" class="view">
+            <div class="love-header">
+                <div style="font-size:30px">💑</div>
+                <h4 id="coupleTitle" style="margin:10px 0 5px">Depuis le début...</h4>
+                <div class="timer-box" id="timer">
+                    <div><b id="d-d">0</b><small>Jours</small></div>
+                    <div><b id="d-h">0</b><small>Heures</small></div>
+                    <div><b id="d-m">0</b><small>Mins</small></div>
                 </div>
             </div>
-            <div class="settings-group">
-                <div class="setting-row" onclick="enterCocon()" style="background: rgba(187,134,252,0.1);">
-                    <span>🔐</span> <b>Ouvrir le Cocon Privé</b>
-                </div>
+            <div class="glass-card" onclick="enterCocon()" style="text-align:center; cursor:pointer; background:rgba(187,134,252,0.15)">
+                <span style="font-size:20px">🔐</span><br><b>Entrer dans le Cocon Privé</b>
             </div>
         </div>
 
-        <div id="vSettings" class="view">
-            <div class="profile-img" id="uAv" onclick="changeAvatar()">👤</div>
-            <h3 id="uPseudoDisp" style="text-align:center; margin:5px 0;">Pseudo</h3>
-            <p id="uPhoneDisp" style="text-align:center; color:var(--text-sub); font-size:12px;">+241...</p>
-            <div class="settings-group">
-                <div class="setting-row" onclick="updatePass()"><span>🔒</span> Modifier mot de passe</div>
-                <div class="setting-row" onclick="updateCode()"><span>🔑</span> Modifier code secret</div>
+        <div id="vSet" class="view">
+            <div style="text-align:center; margin-bottom:20px;">
+                <div id="uAv" onclick="editSet('avatar')" style="width:80px; height:80px; background:var(--card-bg); border-radius:50%; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; font-size:40px; border:2px solid var(--accent)">👤</div>
+                <h3 id="uName" style="margin:0">Pseudo</h3>
             </div>
-            <div class="settings-group">
-                <div class="setting-row" onclick="logout()" style="color:var(--error)"><span>🚪</span> Déconnexion</div>
+            <div class="glass-card">
+                <div class="settings-item" onclick="editSet('pseudo')"><i>👤</i> <span>Changer mon pseudo</span></div>
+                <div class="settings-item" onclick="editSet('pass')"><i>🔒</i> <span>Mot de passe</span></div>
+                <div class="settings-item" onclick="editSet('code')"><i>🔑</i> <span>Code secret Cocon</span></div>
+                <div class="settings-item" onclick="editSet('date')"><i>📅</i> <span>Date de rencontre</span></div>
             </div>
+            <button class="auth-btn" onclick="logout()" style="background:#ff5252; color:white;">DÉCONNEXION</button>
         </div>
     </div>
 </div>
 
-<div id="chatBox">
-    <div class="chat-head">
-        <span onclick="closeChat()" style="font-size:24px;">←</span>
-        <div class="avatar" id="chatAv" style="width:40px; height:40px;"></div>
-        <b id="chatName">Nom</b>
-    </div>
-    <div class="msg-area" id="msgArea"></div>
-    <div class="input-bar"><div class="input-cont"><input type="text" id="msgIn" placeholder="Message..."></div><button onclick="sendMsg()" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%">➔</button></div>
-</div>
+<div id="chatBox"><div class="overlay-head"><span onclick="closeOverlay('chatBox')" style="font-size:25px">←</span><div class="avatar" id="cAv" style="width:35px; height:35px"></div><b id="cName">Nom</b></div><div class="msg-area" id="mArea"></div><div class="input-bar"><div class="input-cont"><input type="text" id="mIn" placeholder="Message..."></div><button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%">➔</button></div></div>
 
-<div id="coconBox">
-    <div class="chat-head" style="background:#ff4b6e">
-        <span onclick="document.getElementById('coconBox').style.display='none'" style="font-size:24px;">←</span>
-        <b style="flex:1; text-align:center;">🌹 Notre Cocon Privé 🌹</b>
-    </div>
-    <div class="msg-area" id="coconArea"></div>
-    <div class="input-bar"><div class="input-cont"><input type="text" id="coconIn" placeholder="Secret..."></div><button onclick="sendCocon()" style="background:#ff4b6e; border:none; width:45px; height:45px; border-radius:50%">➔</button></div>
-</div>
+<div id="coconBox"><div class="overlay-head" style="background:#ff4b6e"><span onclick="closeOverlay('coconBox')" style="font-size:25px">←</span><b>🌹 Cocon Privé 🌹</b></div><div class="msg-area" id="coArea"></div><div class="input-bar"><div class="input-cont"><input type="text" id="coIn" placeholder="Secret..."></div><button onclick="sendMsg('cocon')" style="background:#ff4b6e; border:none; width:45px; height:45px; border-radius:50%">➔</button></div></div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nu_v28_user'));
-    let activeCId = null;
+    let user = JSON.parse(localStorage.getItem('nu_v29_user'));
+    let activeId = null;
 
-    function showAlert(txt, isError = true) {
-        const a = document.getElementById('customAlert');
-        a.innerText = txt;
-        a.style.background = isError ? "var(--error)" : "var(--accent-dark)";
-        a.classList.add('show');
-        setTimeout(() => a.classList.remove('show'), 3000);
-    }
-
-    function toggleAuth(showLogin) {
-        document.getElementById('loginCard').style.display = showLogin ? 'block' : 'none';
-        document.getElementById('registerCard').style.display = showLogin ? 'none' : 'block';
-    }
+    function toggleUI(showL) { document.getElementById('loginUI').style.display=showL?'block':'none'; document.getElementById('regUI').style.display=showL?'none':'block'; }
 
     async function register() {
-        const pseudo = document.getElementById('rPseudo').value.trim();
-        const phone = document.getElementById('rPhone').value.trim();
-        const pass = document.getElementById('rPass').value;
-        if(!pseudo || !phone || !pass) return showAlert("Remplis tous les champs ✨");
-        const id = "u_" + phone.replace(/\D/g,'');
-        const snap = await db.ref('users/'+id).once('value');
-        if(snap.exists()) return showAlert("Ce numéro est déjà utilisé !");
-        
-        const data = { id, phone, pseudo, pass, avatar: '👤', code: '0000', startDate: Date.now(), contacts: {} };
-        await db.ref('users/'+id).set(data);
-        showAlert("Bienvenue dans l'Univers ! 😍", false);
-        toggleAuth(true);
+        const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value;
+        if(!ps || !ph || !pa) return alert("Remplis tout !");
+        const id = "u_" + ph.replace(/\D/g,'');
+        await db.ref('users/'+id).set({ id, phone:ph, pseudo:ps, pass:pa, avatar:'👤', code:'0000', startDate:Date.now(), contacts:{} });
+        alert("Compte créé !"); toggleUI(true);
     }
 
     async function login() {
-        const phone = document.getElementById('lPhone').value.trim();
-        const pass = document.getElementById('lPass').value;
-        const id = "u_" + phone.replace(/\D/g,'');
-        const snap = await db.ref('users/'+id).once('value');
-        if(!snap.exists()) return showAlert("Compte introuvable. Inscris-toi !");
-        const data = snap.val();
-        if(data.pass === pass) {
-            user = data; localStorage.setItem('nu_v28_user', JSON.stringify(user)); startApp();
-        } else showAlert("Mot de passe incorrect... 🥺");
+        const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value;
+        const id = "u_" + ph.replace(/\D/g,'');
+        const s = await db.ref('users/'+id).once('value');
+        if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_v29_user', JSON.stringify(user)); startApp(); }
+        else alert("Identifiants incorrects");
     }
 
     function startApp() {
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'flex';
-        document.getElementById('uPseudoDisp').innerText = user.pseudo;
-        document.getElementById('uPhoneDisp').innerText = user.phone;
+        document.getElementById('authLayer').style.display='none';
+        document.getElementById('mainApp').style.display='flex';
+        document.getElementById('uName').innerText = user.pseudo;
         document.getElementById('uAv').innerText = user.avatar;
-        document.getElementById('gradeTop').innerText = (user.code.length < 10) ? "Débutant 🥚" : "Sérieux 💎";
+        document.getElementById('gradeDisp').innerText = (user.code.length > 10) ? "Légende 💎" : "Sérieux 🌟";
         updateTimer(); setInterval(updateTimer, 60000); loadChats();
     }
 
     function updateTimer() {
         const diff = Date.now() - (user.startDate || Date.now());
-        document.getElementById('d-d').innerText = Math.floor(diff / 86400000);
-        document.getElementById('d-h').innerText = Math.floor((diff / 3600000) % 24);
-        document.getElementById('d-m').innerText = Math.floor((diff / 60000) % 60);
+        document.getElementById('d-d').innerText = Math.floor(diff/86400000);
+        document.getElementById('d-h').innerText = Math.floor((diff/3600000)%24);
+        document.getElementById('d-m').innerText = Math.floor((diff/60000)%60);
     }
 
     function loadChats() {
@@ -230,10 +190,7 @@
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val();
-                    list.innerHTML += `<div class="chat-row" onclick="openChat('${u.id}', '${u.pseudo}', '${u.avatar}')">
-                        <div class="avatar">${u.avatar}</div>
-                        <div class="chat-info"><b>${u.pseudo}</b><br><small>${u.phone}</small></div>
-                    </div>`;
+                    list.innerHTML += `<div class="chat-row" onclick="openChat('${u.id}','${u.pseudo}','${u.avatar}')"><div class="avatar">${u.avatar}</div><div style="flex:1"><b>${u.pseudo}</b><br><small>${u.phone}</small></div></div>`;
                 });
             });
         });
@@ -244,61 +201,55 @@
         if(!tel) return;
         const id = "u_" + tel.replace(/\D/g,'');
         db.ref('users/'+id).once('value', s => {
-            if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); showAlert("Ami ajouté !", false); }
-            else showAlert("Utilisateur inconnu.");
+            if(s.exists()) {
+                db.ref(`users/${user.id}/contacts/${id}`).set(true);
+                openChat(s.val().id, s.val().pseudo, s.val().avatar); // Raccourci direct
+            } else alert("Inconnu");
         });
     }
 
-    function enterCocon() {
-        const p = prompt("Code secret du Cocon :");
-        if(p === user.code) {
-            document.getElementById('coconBox').style.display = 'flex';
-            db.ref('cocon/'+user.code).on('value', s => {
-                const area = document.getElementById('coconArea'); area.innerHTML = "";
-                s.forEach(snap => {
-                    const m = snap.val();
-                    area.innerHTML += `<div class="bubble ${m.sid===user.id?'m-me':'m-they'}">${m.txt}</div>`;
-                });
-                area.scrollTop = area.scrollHeight;
-            });
-        } else showAlert("Code erroné ! Ton sérieux baisse... 😏");
-    }
-
-    function sendCocon() {
-        const i = document.getElementById('coconIn'); if(!i.value.trim()) return;
-        db.ref('cocon/'+user.code).push({ sid: user.id, txt: i.value.trim(), t: Date.now() });
-        i.value = "";
-    }
-
     function openChat(id, name, av) {
-        activeCId = [user.id, id].sort().join('_');
-        document.getElementById('chatName').innerText = name;
-        document.getElementById('chatAv').innerText = av;
-        document.getElementById('chatBox').style.display = 'flex';
-        db.ref('msgs/'+activeCId).on('value', s => {
-            const area = document.getElementById('msgArea'); area.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val();
-                area.innerHTML += `<div class="bubble ${m.sid===user.id?'m-me':'m-they'}">${m.txt}</div>`;
-            });
+        activeId = [user.id, id].sort().join('_');
+        document.getElementById('cName').innerText = name; document.getElementById('cAv').innerText = av;
+        document.getElementById('chatBox').style.display='flex';
+        db.ref('msgs/'+activeId).on('value', s => {
+            const area = document.getElementById('mArea'); area.innerHTML = "";
+            s.forEach(snap => { const m = snap.val(); area.innerHTML += `<div class="bubble ${m.sid===user.id?'m-me':'m-they'}">${m.txt}</div>`; });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    function sendMsg() {
-        const i = document.getElementById('msgIn'); if(!i.value.trim()) return;
-        db.ref('msgs/'+activeCId).push({ sid: user.id, txt: i.value.trim(), t: Date.now() });
-        i.value = "";
+    function enterCocon() {
+        if(prompt("Code secret :") === user.code) {
+            document.getElementById('coconBox').style.display='flex';
+            db.ref('cocon/'+user.code).on('value', s => {
+                const area = document.getElementById('coArea'); area.innerHTML = "";
+                s.forEach(snap => { const m = snap.val(); area.innerHTML += `<div class="bubble ${m.sid===user.id?'m-me':'m-they'}">${m.txt}</div>`; });
+                area.scrollTop = area.scrollHeight;
+            });
+        } else alert("Code erroné !");
     }
 
-    function updateCode() {
-        const c = prompt("Nouveau code secret :");
-        if(c) { db.ref('users/'+user.id).update({code: c}); user.code = c; location.reload(); }
+    function sendMsg(path) {
+        const inp = (path === 'msgs') ? document.getElementById('mIn') : document.getElementById('coIn');
+        const target = (path === 'msgs') ? activeId : user.code;
+        if(!inp.value.trim()) return;
+        db.ref(path+'/'+target).push({ sid: user.id, txt: inp.value.trim(), t: Date.now() });
+        inp.value = "";
     }
 
-    function changeAvatar() {
-        const a = prompt("Emoji photo :");
-        if(a) { db.ref('users/'+user.id).update({avatar: a}); user.avatar = a; location.reload(); }
+    function editSet(type) {
+        let val = prompt("Nouvelle valeur :");
+        if(!val) return;
+        let update = {};
+        if(type === 'pseudo') update.pseudo = val;
+        if(type === 'pass') update.pass = val;
+        if(type === 'code') update.code = val;
+        if(type === 'avatar') update.avatar = val;
+        if(type === 'date') update.startDate = new Date(val).getTime();
+        db.ref('users/'+user.id).update(update);
+        alert("Mis à jour ! Recharge l'app.");
+        location.reload();
     }
 
     function switchTab(id, el) {
@@ -306,8 +257,7 @@
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
-
-    function closeChat() { document.getElementById('chatBox').style.display = 'none'; }
+    function closeOverlay(id) { document.getElementById(id).style.display='none'; }
     function logout() { localStorage.clear(); location.reload(); }
     if(user) startApp();
 </script>
