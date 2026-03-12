@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Redline v2</title>
+    <title>Nexus Redline v2.2</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -35,47 +35,35 @@
         .view-active { display: block; animation: slideUp 0.4s ease; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- DASHBOARD COUPLE --- */
-        .hero-card { 
-            background: linear-gradient(135deg, rgba(255,45,85,0.2) 0%, rgba(88,86,214,0.2) 100%);
-            border-radius: 35px; padding: 30px; border: 1px solid var(--border); position: relative; overflow: hidden; margin-bottom: 25px;
-        }
-        .days-circle { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; margin: 0 auto 15px; background: rgba(0,0,0,0.3); box-shadow: 0 0 20px rgba(255,45,85,0.2); }
+        /* --- CARDS & ROWS --- */
+        .hero-card { background: linear-gradient(135deg, rgba(255,45,85,0.2) 0%, rgba(88,86,214,0.2) 100%); border-radius: 35px; padding: 30px; border: 1px solid var(--border); margin-bottom: 25px; }
+        .days-circle { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; margin: 0 auto 15px; background: rgba(0,0,0,0.3); }
+        .user-row { background: var(--card); border-radius: 25px; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border: 1px solid transparent; position: relative; }
+        .pfp-img { width: 55px; height: 55px; border-radius: 20px; object-fit: cover; background: #222; }
 
-        /* --- MESSAGERIE --- */
-        .user-row { background: var(--card); border-radius: 25px; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border: 1px solid transparent; transition: 0.3s; }
-        .pfp-wrap { position: relative; width: 55px; height: 55px; }
-        .pfp-img { width: 100%; height: 100%; border-radius: 20px; object-fit: cover; background: #222; }
+        /* --- DROPDOWN & MENU --- */
+        .opt-btn { background: none; border: none; color: white; opacity: 0.4; font-size: 22px; padding: 10px; cursor: pointer; }
+        .dropdown { position: absolute; right: 10px; top: 50px; background: #1a1a1a; border: 1px solid var(--border); border-radius: 15px; display: none; flex-direction: column; z-index: 5000; width: 170px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .dropdown button { background: none; border: none; color: white; padding: 12px; text-align: left; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        /* --- CHAT UNIFIÉ --- */
-        .chat-container { background: var(--card); border-radius: 30px; padding: 20px; border: 1px solid var(--border); height: 350px; display: flex; flex-direction: column; }
-        .msg-list { flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; scrollbar-width: none; }
-        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; font-size: 14px; line-height: 1.4; }
-        .mine { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        /* --- CHAT --- */
+        .msg-list { flex: 1; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; scrollbar-width: none; }
+        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; font-size: 14px; }
+        .mine { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
         .theirs { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 4px; }
 
-        /* --- BARRE DE MESSAGE RELEVÉE --- */
-        .input-area { 
-            position: fixed; bottom: 95px; left: 20px; right: 20px; 
-            display: flex; gap: 10px; z-index: 100;
-        }
-        .msg-input { flex: 1; padding: 16px; border-radius: 22px; border: 1px solid var(--border); background: rgba(15,15,15,0.9); color: white; backdrop-filter: blur(10px); outline: none; }
-        .send-btn { background: var(--accent); border: none; border-radius: 20px; width: 55px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .input-area { position: fixed; bottom: 95px; left: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+        .msg-input { flex: 1; padding: 16px; border-radius: 22px; border: 1px solid var(--border); background: rgba(15,15,15,0.9); color: white; outline: none; }
+        .send-btn { background: var(--accent); border: none; border-radius: 20px; width: 55px; color: white; font-size: 20px; }
 
-        /* --- NAV BAR --- */
-        .bottom-bar { 
-            position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px;
-            background: rgba(255,255,255,0.05); backdrop-filter: blur(30px);
-            border-radius: 28px; border: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center; z-index: 1000;
-        }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; }
-        .nav-active { opacity: 1; color: var(--accent); transform: scale(1.1); }
+        /* --- BOTTOM BAR --- */
+        .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; background: rgba(255,255,255,0.05); backdrop-filter: blur(30px); border-radius: 28px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
+        .nav-item { font-size: 24px; opacity: 0.3; }
+        .nav-active { opacity: 1; color: var(--accent); }
 
-        /* --- CONFIG --- */
+        /* --- SETTINGS HELPERS --- */
         .config-box { background: var(--card); border-radius: 25px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .btn-grad { background: linear-gradient(to right, var(--accent), var(--primary)); border: none; padding: 18px; border-radius: 20px; color: white; font-weight: 700; width: 100%; cursor: pointer; margin-top: 10px; }
-        input[type="text"], input[type="date"], input[type="password"] { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); color: white; margin-top: 8px; box-sizing: border-box; }
+        .blocked-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body>
@@ -84,7 +72,7 @@
     <div class="auth-card">
         <div class="logo" style="margin-bottom: 30px; font-size: 32px;">NEXUS</div>
         <input type="text" id="regName" placeholder="Ton Surnom">
-        <button class="btn-grad" onclick="signUp()">INITIALISER</button>
+        <button onclick="signUp()" style="background: linear-gradient(to right, var(--accent), var(--primary)); border: none; padding: 18px; border-radius: 20px; color: white; font-weight: 700; width: 100%;">INITIALISER</button>
     </div>
 </div>
 
@@ -95,24 +83,12 @@
     </div>
 
     <div id="viewCouple" class="view view-active">
-        <div class="hero-card">
-            <div class="days-circle" id="daysNum">0</div>
-            <h2 style="margin: 0; text-align: center;">Ensemble ♾️</h2>
-            <p id="partnerName" style="text-align: center; opacity: 0.6; font-size: 13px; margin-top: 5px;">Configure ton amour</p>
-        </div>
-
-        <div class="chat-container">
-            <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-                <b style="font-size: 14px;">Cocon Privé ❤️</b>
-                <span id="typingStatus" style="color: var(--accent); font-size: 11px;"></span>
-            </div>
+        <div class="hero-card"><div class="days-circle" id="daysNum">0</div><h2 style="margin: 0; text-align: center;">Ensemble ♾️</h2><p id="partnerName" style="text-align: center; opacity: 0.6; font-size: 13px;">Configure ton amour</p></div>
+        <div style="background: var(--card); border-radius: 30px; padding: 20px; border: 1px solid var(--border); height: 350px; display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content: space-between; margin-bottom: 10px;"><b>Cocon Privé ❤️</b><span id="typingStatus" style="color: var(--accent); font-size: 11px;"></span></div>
             <div id="coupleMsgs" class="msg-list"></div>
         </div>
-        
-        <div class="input-area">
-            <input type="text" id="coupleIn" class="msg-input" placeholder="Lui dire quelque chose..." oninput="sendTyping()">
-            <button class="send-btn" onclick="pushMsg('couple')">➔</button>
-        </div>
+        <div class="input-area"><input type="text" id="coupleIn" class="msg-input" placeholder="Écris ici..." oninput="sendTyping()"><button class="send-btn" onclick="pushMsg('couple')">➔</button></div>
     </div>
 
     <div id="viewFriends" class="view">
@@ -123,34 +99,36 @@
             <div class="top-nav" style="background: var(--card); border-bottom: 1px solid var(--border);">
                 <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
                 <b id="chatName">Ami</b>
-                <div style="width:24px;"></div>
+                <button class="opt-btn" onclick="toggleDropdown('chatOpt')">⋮</button>
+                <div id="chatOpt" class="dropdown">
+                    <button onclick="deleteConv()">Supprimer la conversation</button>
+                    <button style="color:#ff3b30" onclick="blockUser()">Bloquer l'utilisateur</button>
+                </div>
             </div>
-            <div id="friendChatList" class="msg-list" style="padding: 20px; display: flex; flex-direction: column;"></div>
-            <div class="input-area" style="bottom: 30px;">
-                <input type="text" id="chatIn" class="msg-input" placeholder="Message privé...">
-                <button class="send-btn" style="background:var(--primary)" onclick="pushMsg('direct')">➔</button>
-            </div>
+            <div id="friendChatList" class="msg-list" style="padding: 20px;"></div>
+            <div class="input-area" style="bottom: 30px;"><input type="text" id="chatIn" class="msg-input" placeholder="Message privé..."><button class="send-btn" style="background:var(--primary)" onclick="pushMsg('direct')">➔</button></div>
         </div>
     </div>
 
     <div id="viewSettings" class="view">
-        <h3 style="margin-bottom:20px;">Profil & Sécurité</h3>
+        <h3 style="margin-bottom:20px;">Configuration</h3>
         
         <div class="config-box">
-            <label style="font-size: 12px; opacity: 0.6;">CHANGER MA PHOTO</label>
+            <label style="font-size: 11px; opacity: 0.5;">MON PROFIL</label>
             <input type="file" id="pfpUp" style="display:none" onchange="updatePfp(this)">
-            <button onclick="document.getElementById('pfpUp').click()" style="width:100%; padding:12px; margin-top:10px; border-radius:12px; border:1px solid var(--accent); background:none; color:white; font-size:13px;">Choisir une image</button>
+            <button onclick="document.getElementById('pfpUp').click()" style="width:100%; padding:12px; margin:10px 0; border-radius:12px; border:1px solid var(--accent); background:none; color:white;">Changer ma photo</button>
+            <input type="text" id="setPartner" placeholder="Surnom partenaire">
+            <input type="date" id="setDate">
+            <input type="password" id="setCoupleCode" placeholder="Code Secret">
         </div>
 
         <div class="config-box">
-            <label style="font-size: 12px; opacity: 0.6;">ESPACE COUPLE</label>
-            <input type="text" id="setPartner" placeholder="Surnom du/de la partenaire">
-            <input type="date" id="setDate">
-            <input type="password" id="setCoupleCode" placeholder="Code Secret (ex: 1234)">
+            <label style="font-size: 11px; opacity: 0.5; color: var(--accent);">UTILISATEURS BLOQUÉS</label>
+            <div id="blockedList" style="margin-top:10px;"></div>
         </div>
 
-        <button class="btn-grad" onclick="saveSettings()">SAUVEGARDER LES MODIFS</button>
-        <p onclick="localStorage.clear();location.reload()" style="color:var(--accent); text-align:center; margin-top:30px; font-size: 14px; font-weight:600;">Déconnexion</p>
+        <button onclick="saveSettings()" style="background: var(--accent); border:none; padding:18px; border-radius:20px; color:white; width:100%; font-weight:700;">ENREGISTRER TOUT</button>
+        <p onclick="localStorage.clear();location.reload()" style="text-align:center; color:#555; font-size: 13px; margin-top:20px;">Se déconnecter de Nexus</p>
     </div>
 
     <nav class="bottom-bar">
@@ -161,94 +139,120 @@
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
-        databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/",
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_redline_v2'));
-    let activeChatId = null;
+    let user = JSON.parse(localStorage.getItem('nx_redline_v2_2'));
+    let activeChatId = null, otherUserId = null;
 
-    if(user) {
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        init();
-    }
+    if(user) { document.getElementById('authLayer').style.display = 'none'; document.getElementById('app').style.display = 'flex'; init(); }
 
     function signUp() {
         const n = document.getElementById('regName').value;
         if(n) {
-            const data = { 
-                name: n, 
-                id: 'u'+Date.now(), 
-                pfp: 'https://ui-avatars.com/api/?name='+n+'&background=random&color=fff', 
-                partner: '', code: '', date: '' 
-            };
+            const data = { name: n, id: 'u'+Date.now(), pfp: 'https://ui-avatars.com/api/?name='+n, partner: '', code: '', date: '', blocked: {} };
             db.ref('users/'+data.id).set(data);
-            localStorage.setItem('nexus_redline_v2', JSON.stringify(data));
+            localStorage.setItem('nx_redline_v2_2', JSON.stringify(data));
             location.reload();
         }
     }
 
     function init() {
         document.getElementById('myAvatar').src = user.pfp;
-        document.getElementById('partnerName').innerText = user.partner ? "En couple avec " + user.partner : "Configure ton amour";
         document.getElementById('setPartner').value = user.partner || "";
         document.getElementById('setCoupleCode').value = user.code || "";
         document.getElementById('setDate').value = user.date || "";
 
-        if(user.date) {
-            const diff = Math.floor((new Date() - new Date(user.date)) / 86400000);
-            document.getElementById('daysNum').innerText = diff >= 0 ? diff : 0;
-        }
+        db.ref('users/'+user.id).on('value', s => { 
+            user = s.val();
+            updateBlockedUI();
+        });
 
-        // Liste des Amis
         db.ref('users').on('value', s => {
             const l = document.getElementById('friendsList'); l.innerHTML = "";
             s.forEach(c => {
                 const u = c.val();
-                if(u.id !== user.id) {
+                const isBlocked = user.blocked && user.blocked[u.id];
+                const isHidden = user.hidden && user.hidden[u.id];
+                if(u.id !== user.id && !isBlocked && !isHidden) {
                     l.innerHTML += `
-                        <div class="user-row" onclick="openDirect('${u.id}', '${u.name}')">
-                            <div class="pfp-wrap"><img src="${u.pfp}" class="pfp-img"></div>
-                            <div style="flex:1"><b>${u.name}</b><br><small style="opacity:0.4">Envoyer un message</small></div>
-                            <span style="color:var(--primary)">➔</span>
+                        <div class="user-row">
+                            <img src="${u.pfp}" class="pfp-img" onclick="openDirect('${u.id}', '${u.name}')">
+                            <div style="flex:1" onclick="openDirect('${u.id}', '${u.name}')"><b>${u.name}</b><br><small style="opacity:0.4">En ligne</small></div>
+                            <button class="opt-btn" onclick="toggleDropdown('opt_${u.id}')">⋮</button>
+                            <div id="opt_${u.id}" class="dropdown">
+                                <button onclick="hideFriend('${u.id}')">Supprimer l'ami</button>
+                                <button style="color:#ff3b30" onclick="blockUser('${u.id}')">Bloquer</button>
+                            </div>
                         </div>`;
                 }
             });
         });
 
-        // Sync Chat Couple
         if(user.code) {
+            if(user.date) {
+                const d = Math.floor((new Date() - new Date(user.date)) / 86400000);
+                document.getElementById('daysNum').innerText = d >= 0 ? d : 0;
+            }
             db.ref('couples/'+user.code+'/chat').limitToLast(30).on('value', s => {
                 const b = document.getElementById('coupleMsgs'); b.innerHTML = "";
-                s.forEach(c => {
-                    const m = c.val();
-                    b.innerHTML += `<div class="chat-bubble ${m.sid===user.id?'mine':'theirs'}">${m.txt}</div>`;
-                });
+                s.forEach(c => b.innerHTML += `<div class="chat-bubble ${c.val().sid===user.id?'mine':'theirs'}">${c.val().txt}</div>`);
                 b.scrollTop = b.scrollHeight;
-            });
-
-            db.ref('couples/'+user.code+'/typing').on('value', s => {
-                const t = s.val();
-                document.getElementById('typingStatus').innerText = (t && t !== user.id) ? "écrit..." : "";
             });
         }
     }
 
+    function toggleDropdown(id) {
+        const d = document.getElementById(id);
+        const isVisible = d.style.display === 'flex';
+        document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
+        d.style.display = isVisible ? 'none' : 'flex';
+    }
+
     function openDirect(id, name) {
-        activeChatId = user.id < id ? user.id+'_'+id : id+'_'+user.id;
+        otherUserId = id; activeChatId = user.id < id ? user.id+'_'+id : id+'_'+user.id;
         document.getElementById('chatOverlay').style.display = 'flex';
         document.getElementById('chatName').innerText = name;
-        db.ref('directs/'+activeChatId).limitToLast(50).on('value', s => {
+        db.ref('directs/'+activeChatId).on('value', s => {
             const b = document.getElementById('friendChatList'); b.innerHTML = "";
-            s.forEach(c => {
-                const m = c.val();
-                b.innerHTML += `<div class="chat-bubble ${m.sid===user.id?'mine':'theirs'}">${m.txt}</div>`;
-            });
+            s.forEach(c => b.innerHTML += `<div class="chat-bubble ${c.val().sid===user.id?'mine':'theirs'}">${c.val().txt}</div>`);
             b.scrollTop = b.scrollHeight;
+        });
+    }
+
+    function blockUser(id = otherUserId) {
+        if(confirm("Bloquer cet utilisateur ?")) {
+            db.ref('users/'+user.id+'/blocked/'+id).set(true);
+            closeChat();
+        }
+    }
+
+    function unblockUser(id) {
+        db.ref('users/'+user.id+'/blocked/'+id).remove();
+        db.ref('users/'+user.id+'/hidden/'+id).remove();
+    }
+
+    function hideFriend(id) {
+        db.ref('users/'+user.id+'/hidden/'+id).set(true);
+        toggleDropdown('opt_'+id);
+    }
+
+    function updateBlockedUI() {
+        const container = document.getElementById('blockedList');
+        container.innerHTML = "";
+        if(!user.blocked) { container.innerHTML = "<small style='opacity:0.3'>Aucun utilisateur bloqué</small>"; return; }
+        
+        Object.keys(user.blocked).forEach(id => {
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) {
+                    container.innerHTML += `
+                        <div class="blocked-item">
+                            <span>${s.val().name}</span>
+                            <button onclick="unblockUser('${id}')" style="background:none; border:1px solid #555; color:white; border-radius:8px; padding:5px 10px; font-size:11px;">Débloquer</button>
+                        </div>`;
+                }
+            });
         });
     }
 
@@ -256,47 +260,36 @@
         const id = (mode === 'couple') ? 'coupleIn' : 'chatIn';
         const input = document.getElementById(id);
         if(!input.value) return;
-        const path = (mode === 'couple') ? 'couples/'+user.code+'/chat' : 'directs/'+activeChatId;
-        db.ref(path).push({ sid: user.id, txt: input.value });
-        input.value = "";
-    }
-
-    function sendTyping() {
-        if(!user.code) return;
-        db.ref('couples/'+user.code+'/typing').set(user.id);
-        clearTimeout(window.tOut);
-        window.tOut = setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 2000);
-    }
-
-    function updatePfp(input) {
-        if(input.files[0]) {
-            const r = new FileReader();
-            r.onload = e => {
-                user.pfp = e.target.result;
-                document.getElementById('myAvatar').src = user.pfp;
-            };
-            r.readAsDataURL(input.files[0]);
+        if(mode === 'direct') {
+            db.ref('users/'+otherUserId+'/blocked/'+user.id).once('value', s => {
+                if(s.exists()) return alert("Action impossible.");
+                db.ref('directs/'+activeChatId).push({ sid: user.id, txt: input.value });
+            });
+        } else {
+            db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: input.value });
         }
+        input.value = "";
     }
 
     function saveSettings() {
         user.partner = document.getElementById('setPartner').value;
         user.date = document.getElementById('setDate').value;
         user.code = document.getElementById('setCoupleCode').value.toLowerCase();
-        localStorage.setItem('nexus_redline_v2', JSON.stringify(user));
         db.ref('users/'+user.id).update(user);
-        alert("Profil mis à jour !");
-        location.reload();
+        localStorage.setItem('nx_redline_v2_2', JSON.stringify(user));
+        alert("Nexus mis à jour !");
     }
 
     function nav(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
-        document.getElementById(id).classList.add('view-active');
-        el.classList.add('nav-active');
+        document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active');
     }
-
     function closeChat() { document.getElementById('chatOverlay').style.display = 'none'; }
+    function deleteConv() { if(confirm("Supprimer l'historique ?")) { db.ref('directs/'+activeChatId).remove(); closeChat(); } }
+    function updatePfp(input) { if(input.files[0]) { const r = new FileReader(); r.onload = e => { user.pfp = e.target.result; document.getElementById('myAvatar').src = user.pfp; }; r.readAsDataURL(input.files[0]); } }
+    function sendTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 2000); } }
 </script>
-</body>
+</body>                                         
 </html>
+                                                                        
