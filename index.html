@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Ultra v4.0</title>
+    <title>Nexus v4.1 - Gabon Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,125 +13,86 @@
         :root { --accent: #ff2d55; --primary: #5856d6; --bg: #050505; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
         
-        /* LOGIN PAGE */
+        /* ECRAN ACCUEIL / AUTH */
         #authLayer { position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
         .auth-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 35px; width: 100%; max-width: 320px; text-align: center; }
-        
-        /* APP STRUCTURE */
+        .tab-auth { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 15px; }
+        .btn-tab { flex: 1; padding: 10px; border-radius: 12px; border: none; background: none; color: white; font-size: 12px; cursor: pointer; }
+        .tab-active { background: var(--accent); font-weight: 800; }
+
+        /* APP LOGIC */
         .app-shell { height: 100vh; display: flex; flex-direction: column; display: none; }
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .logo { font-weight: 800; font-size: 24px; background: linear-gradient(to right, var(--accent), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
         .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 200px; }
         .view-active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* CHAT BUBBLES */
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 0; }
-        .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
+        
+        /* CHAT STYLE */
+        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        .bubble-container { display: flex; flex-direction: column; max-width: 80%; }
         .mine { align-self: flex-end; align-items: flex-end; }
         .theirs { align-self: flex-start; align-items: flex-start; }
-        
-        .bubble { padding: 12px 16px; border-radius: 20px; font-size: 14px; position: relative; }
-        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; }
+        .bubble { padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; position: relative; }
+        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; color: white; }
         .theirs .bubble { background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .timestamp { font-size: 9px; opacity: 0.4; margin-top: 4px; }
-        
-        .typing { font-size: 11px; opacity: 0.6; font-style: italic; margin-bottom: 5px; color: var(--accent); display: none; }
+        .time { font-size: 9px; opacity: 0.4; margin-top: 4px; }
 
         /* NAV */
         .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: rgba(15,15,15,0.95); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; }
-        .nav-active { opacity: 1; color: var(--accent); transform: scale(1.2); }
+        .nav-item { font-size: 24px; opacity: 0.3; }
+        .nav-active { opacity: 1; color: var(--accent); }
 
-        input { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 10px; box-sizing: border-box; font-family: 'Outfit'; }
-        button { cursor: pointer; transition: 0.2s; }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 800; width: 100%; }
+        input { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 800; width: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="authLayer">
     <div class="auth-card">
-        <div class="logo" style="font-size:32px; margin-bottom:10px;">NEXUS</div>
-        <p style="font-size:12px; opacity:0.5; margin-bottom:20px;">Accès Sécurisé 🔒</p>
-        <input type="text" id="logUser" placeholder="Surnom">
-        <input type="password" id="logPass" placeholder="Mot de passe">
-        <button class="btn-main" onclick="handleAuth()">SE CONNECTER</button>
+        <div style="font-size:28px; font-weight:800; margin-bottom:20px; letter-spacing:-1px;">NEXUS</div>
+        <div class="tab-auth">
+            <button id="btnConn" class="btn-tab tab-active" onclick="toggleAuth('login')">CONNEXION</button>
+            <button id="btnInsc" class="btn-tab" onclick="toggleAuth('signup')">S'INSCRIRE</button>
+        </div>
+        
+        <input type="text" id="authName" placeholder="Ton Surnom">
+        <input type="password" id="authPass" placeholder="Mot de passe">
+        <button class="btn-main" id="mainAuthBtn" onclick="handleAuth()">ENTRER</button>
     </div>
 </div>
 
 <div class="app-shell" id="app">
-    <div class="top-nav">
-        <div class="logo">NEXUS</div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div id="onlineTag" style="width:8px; height:8px; background:#4cd964; border-radius:50%;"></div>
-            <img id="myAvatar" src="" style="width:35px; height:35px; border-radius:10px; object-fit:cover;">
-        </div>
+    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+        <div style="font-weight: 800; color: var(--accent);">NEXUS</div>
+        <img id="myAvatar" src="" style="width:35px; height:35px; border-radius:10px; object-fit:cover; border:2px solid var(--accent);">
     </div>
 
-    <div id="vSocial" class="view view-active">
-        <div style="display:flex; gap:20px; margin-bottom:15px; font-weight:600; font-size:14px;">
-            <span id="t1" onclick="setSoc('chats')" style="color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:5px;">CHATS</span>
-            <span id="t2" onclick="setSoc('disc')" style="opacity:0.4;">DÉCOUVRIR 🇬🇦</span>
+    <div id="vWorld" class="view view-active">
+        <div style="margin-bottom: 20px; display: flex; gap: 15px;">
+            <span onclick="setTab('chats')" id="tChats" style="color:var(--accent); font-weight:800; border-bottom:2px solid var(--accent);">DISCUSSIONS</span>
+            <span onclick="setTab('disc')" id="tDisc" style="opacity:0.4;">DÉCOUVRIR</span>
         </div>
-        <div id="sChats"></div>
-        <div id="sDisc" style="display:none;"></div>
+        <div id="listChats"></div>
+        <div id="listDisc" style="display:none;"></div>
     </div>
 
     <div id="vCouple" class="view">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="btn-main" style="background:var(--card); font-size:12px; border:1px solid var(--border);" onclick="document.getElementById('imgIn').click()">🖼️ Photo</button>
-            <button class="btn-main" style="background:var(--card); font-size:12px; border:1px solid var(--border);" onclick="coupleGame()">🎲 Défi</button>
-            <input type="file" id="imgIn" hidden onchange="uploadFile(this)">
+            <button class="btn-tab" style="background:var(--card); border:1px solid var(--border);" onclick="document.getElementById('fileIn').click()">📷 Photo</button>
+            <button class="btn-tab" style="background:var(--card); border:1px solid var(--border);" onclick="sendGame()">🎮 Défi</button>
+            <input type="file" id="fileIn" hidden accept="image/*" onchange="uploadImg(this)">
         </div>
-        <div id="typingCouple" class="typing">Alicia écrit...</div>
-        <div id="coupleMsgs" class="msg-list" style="height:350px; background:var(--card); border-radius:25px; padding:15px; border:1px solid var(--border);"></div>
+        <div id="coupleTyping" style="font-size:11px; color:var(--accent); margin-bottom:5px; height:15px;"></div>
+        <div id="coupleBox" class="msg-list" style="height:350px; background:var(--card); border-radius:25px; border:1px solid var(--border);"></div>
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <input type="text" id="cIn" placeholder="Écris ici..." style="margin:0;" oninput="sendTyping()">
+            <input type="text" id="cIn" placeholder="Message secret..." style="margin:0;" oninput="emitTyping()">
             <button onclick="pushMsg('couple')" style="background:var(--accent); border:none; width:55px; border-radius:15px; color:white;">➔</button>
         </div>
     </div>
 
-    <div id="vSets" class="view">
-        <h3>Paramètres</h3>
-        <div style="background:var(--card); padding:20px; border-radius:25px; border:1px solid var(--border);">
-            <button onclick="document.getElementById('pfpIn').click()" style="background:var(--accent); border:none; color:white; padding:10px; border-radius:10px; width:100%; margin-bottom:15px;">Changer ma photo</button>
-            <input type="file" id="pfpIn" hidden onchange="changePFP(this)">
-            
-            <label style="font-size:10px; opacity:0.5;">DATE DE RENCONTRE</label>
-            <input type="date" id="setMeet">
-            
-            <label style="font-size:10px; opacity:0.5;">CODE SECRET COUPLE</label>
-            <input type="password" id="setCode" placeholder="Code secret">
-            
-            <button class="btn-main" onclick="saveSettings()">ENREGISTRER TOUT</button>
-        </div>
-        
-        <div id="blockedArea" style="margin-top:20px;">
-            <p style="font-size:12px; opacity:0.4;">UTILISATEURS BLOQUÉS</p>
-            <div id="blockedList"></div>
-        </div>
-        <button onclick="localStorage.clear();location.reload();" style="color:red; background:none; border:none; width:100%; margin-top:20px;">Se déconnecter de Nexus</button>
-    </div>
-
-    <div id="dmOverlay" style="display:none; position:fixed; inset:0; background:#000; z-index:6000; flex-direction:column;">
-        <div class="top-nav">
-            <button onclick="closeDM()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
-            <b id="dmTitle">Chat</b>
-            <button onclick="blockUser()" style="color:var(--accent); background:none; border:none;">Bloquer</button>
-        </div>
-        <div id="dmMsgs" class="msg-list" style="padding:20px;"></div>
-        <div style="padding:20px; display:flex; gap:10px;">
-            <input type="text" id="dmIn" placeholder="Message..." style="margin:0;">
-            <button onclick="pushMsg('dm')" style="background:var(--primary); border:none; width:55px; border-radius:15px; color:white;">➔</button>
-        </div>
-    </div>
-
     <nav class="bottom-bar">
-        <div class="nav-item nav-active" onclick="nv('vSocial', this)">🌎</div>
+        <div class="nav-item nav-active" onclick="nv('vWorld', this)">🌎</div>
         <div class="nav-item" onclick="nv('vCouple', this)">❤</div>
-        <div class="nav-item" onclick="nv('vSets', this)">⚙</div>
+        <div class="nav-item" onclick="location.reload()">⚙</div>
     </nav>
 </div>
 
@@ -140,162 +101,105 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const KEY = 'nexus_v4_0';
-    let user = JSON.parse(localStorage.getItem(KEY));
-    let curDM = null, curOther = null;
+    let authMode = 'login';
+    let user = JSON.parse(localStorage.getItem('nexus_user'));
+
+    function toggleAuth(mode) {
+        authMode = mode;
+        document.getElementById('btnConn').className = mode === 'login' ? 'btn-tab tab-active' : 'btn-tab';
+        document.getElementById('btnInsc').className = mode === 'signup' ? 'btn-tab tab-active' : 'btn-tab';
+        document.getElementById('mainAuthBtn').innerText = mode === 'login' ? 'SE CONNECTER' : 'CRÉER MON COMPTE';
+    }
 
     function handleAuth() {
-        const n = document.getElementById('logUser').value;
-        const p = document.getElementById('logPass').value;
-        if(!n || !p) return alert("Remplis tout !");
-        
-        db.ref('users').orderByChild('name').equalTo(n).once('value', s => {
-            if(s.exists()) {
-                const uData = Object.values(s.val())[0];
-                if(uData.pass === p) login(uData);
-                else alert("Mauvais mot de passe !");
-            } else {
-                const newUser = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n, code: '', meet: '', blocked: {} };
-                db.ref('users/'+newUser.id).set(newUser);
-                login(newUser);
-            }
-        });
+        const n = document.getElementById('authName').value;
+        const p = document.getElementById('authPass').value;
+        if(!n || !p) return alert("Remplis les champs !");
+
+        if(authMode === 'signup') {
+            const id = 'u' + Date.now();
+            const newUser = { id, name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n, code: '', meet: '', blocked: {} };
+            db.ref('users/'+id).set(newUser).then(() => start(newUser));
+        } else {
+            db.ref('users').orderByChild('name').equalTo(n).once('value', s => {
+                if(s.exists()) {
+                    const u = Object.values(s.val())[0];
+                    if(u.pass === p) start(u); else alert("Mot de passe incorrect");
+                } else alert("Utilisateur inconnu");
+            });
+        }
     }
 
-    function login(u) {
+    function start(u) {
         user = u;
-        localStorage.setItem(KEY, JSON.stringify(u));
+        localStorage.setItem('nexus_user', JSON.stringify(u));
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
-        Notification.requestPermission();
-        init();
+        document.getElementById('myAvatar').src = u.pfp;
+        initApp();
     }
 
-    if(user) login(user);
+    if(user) start(user);
 
-    function init() {
-        document.getElementById('myAvatar').src = user.pfp;
-        document.getElementById('setMeet').value = user.meet || "";
-        document.getElementById('setCode').value = user.code || "";
-
-        // LISTENERS
-        db.ref('users/'+user.id).on('value', s => { user = s.val(); updateBlockedList(); });
-
-        // DISCOVER
+    function initApp() {
+        // Liste Découverte
         db.ref('users').on('value', s => {
-            const l = document.getElementById('sDisc'); l.innerHTML = "";
+            const l = document.getElementById('listDisc'); l.innerHTML = "";
             s.forEach(c => {
                 const u = c.val();
-                if(u.id !== user.id && (!user.blocked || !user.blocked[u.id])) {
-                    l.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:20px; display:flex; align-items:center; gap:12px; margin-bottom:10px; border:1px solid var(--border);" onclick="opDM('${u.id}','${u.name}')"><img src="${u.pfp}" style="width:45px; height:45px; border-radius:12px; object-fit:cover;"><div><b>${u.name}</b></div></div>`;
-                }
+                if(u.id !== user.id) l.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:20px; margin-bottom:10px; display:flex; align-items:center; gap:10px;"><img src="${u.pfp}" style="width:40px; height:40px; border-radius:10px;"><b>${u.name}</b></div>`;
             });
         });
 
-        // CHATS
-        db.ref('users/'+user.id+'/lastChats').on('value', s => {
-            const l = document.getElementById('sChats'); l.innerHTML = "";
-            s.forEach(c => {
-                const d = c.val();
-                db.ref('users/'+d.with).once('value', us => {
-                    const u = us.val();
-                    l.innerHTML = `<div style="background:var(--card); padding:15px; border-radius:20px; display:flex; align-items:center; gap:12px; margin-bottom:10px; border:1px solid var(--border);" onclick="opDM('${u.id}','${u.name}')"><img src="${u.pfp}" style="width:45px; height:45px; border-radius:12px; object-fit:cover;"><div style="flex:1"><b>${u.name}</b><br><small style="opacity:0.4">${d.txt}</small></div></div>` + l.innerHTML;
-                });
-            });
-        });
-
-        // COUPLE CHAT
+        // Chat Couple
         if(user.code) {
-            db.ref('couples/'+user.code+'/chat').limitToLast(15).on('value', s => {
-                const b = document.getElementById('coupleMsgs'); b.innerHTML = "";
+            db.ref('couples/'+user.code+'/chat').on('value', s => {
+                const b = document.getElementById('coupleBox'); b.innerHTML = "";
                 s.forEach(c => {
                     const m = c.val();
-                    const time = new Date(m.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const cnt = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;">` : m.txt;
-                    b.innerHTML += `<div class="bubble-wrap ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${cnt}</div><div class="timestamp">${time}</div></div>`;
+                    const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;">` : m.txt;
+                    b.innerHTML += `<div class="bubble-container ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${content}</div><div class="time">${time}</div></div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
-            // Typing
+            
             db.ref('couples/'+user.code+'/typing').on('value', s => {
-                document.getElementById('typingCouple').style.display = (s.val() && s.val() !== user.id) ? 'block' : 'none';
+                const t = s.val();
+                document.getElementById('coupleTyping').innerText = (t && t !== user.id) ? "Alicia écrit..." : "";
             });
         }
     }
 
     function pushMsg(mode) {
-        const i = document.getElementById(mode==='couple'?'cIn':'dmIn');
-        if(!i.value) return;
-        const msg = { sid: user.id, txt: i.value, t: Date.now() };
-        if(mode==='couple') {
-            db.ref('couples/'+user.code+'/chat').push(msg);
-            db.ref('couples/'+user.code+'/typing').set(false);
-        } else {
-            db.ref('directs/'+curDM).push(msg);
-            db.ref('users/'+user.id+'/lastChats/'+curOther).set({with:curOther, txt:i.value});
-            db.ref('users/'+curOther+'/lastChats/'+user.id).set({with:user.id, txt:i.value});
-        }
+        const i = document.getElementById('cIn');
+        if(!i.value || !user.code) return;
+        db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: i.value, t: Date.now() });
+        db.ref('couples/'+user.code+'/typing').set(false);
         i.value = "";
     }
 
-    function sendTyping() { if(user.code) db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(()=>db.ref('couples/'+user.code+'/typing').set(false), 3000); }
-
-    function coupleGame() {
-        const q = ["Action: Selfie grimace !","Vérité: Ton secret ?","Action: Message vocal de 5s","Vérité: Ton plus beau souvenir ?"];
-        db.ref('couples/'+user.code+'/chat').push({sid:'sys', txt:"🎲 DÉFI : "+q[Math.floor(Math.random()*q.length)], t:Date.now()});
-    }
-
-    function changePFP(el) {
+    function uploadImg(el) {
         const reader = new FileReader();
         reader.onload = () => {
-            db.ref('users/'+user.id).update({pfp: reader.result});
-            document.getElementById('myAvatar').src = reader.result;
+            db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: reader.result, type: 'img', t: Date.now() });
         };
         reader.readAsDataURL(el.files[0]);
     }
 
-    function saveSettings() {
-        db.ref('users/'+user.id).update({ meet: document.getElementById('setMeet').value, code: document.getElementById('setCode').value.toLowerCase() });
-        alert("Nexus mis à jour !");
+    function sendGame() {
+        const defis = ["Action : Selfie grimace !", "Vérité : Ta plus grosse bêtise ?", "Action : Envoie un vocal de 5s", "Vérité : Ton premier crush ?"];
+        const d = defis[Math.floor(Math.random()*defis.length)];
+        db.ref('couples/'+user.code+'/chat').push({ sid: 'sys', txt: "🎲 DÉFI : " + d, t: Date.now() });
     }
 
-    function opDM(id, n) {
-        curOther = id; curDM = user.id < id ? user.id+'_'+id : id+'_'+user.id;
-        document.getElementById('dmOverlay').style.display='flex';
-        document.getElementById('dmTitle').innerText = n;
-        db.ref('directs/'+curDM).on('value', s => {
-            const b = document.getElementById('dmMsgs'); b.innerHTML = "";
-            s.forEach(c => {
-                const m = c.val();
-                const time = new Date(m.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                b.innerHTML += `<div class="bubble-wrap ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${m.txt}</div><div class="timestamp">${time}</div></div>`;
-            });
-            b.scrollTop = b.scrollHeight;
-        });
-    }
-
-    function updateBlockedList() {
-        const l = document.getElementById('blockedList'); l.innerHTML = "";
-        if(user.blocked) {
-            Object.keys(user.blocked).forEach(id => {
-                db.ref('users/'+id).once('value', s => {
-                    const u = s.val();
-                    l.innerHTML += `<div style="display:flex; justify-content:space-between; margin-top:10px;"><span>${u.name}</span><button onclick="db.ref('users/${user.id}/blocked/${id}').remove()" style="color:var(--accent); background:none; border:none;">Débloquer</button></div>`;
-                });
-            });
-        }
-    }
-
-    function blockUser() { db.ref('users/'+user.id+'/blocked/'+curOther).set(true); closeDM(); }
-    function closeDM() { document.getElementById('dmOverlay').style.display='none'; }
-    function nv(id, el) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('view-active')); document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('nav-active')); document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active'); }
-    function setSoc(t) {
-        document.getElementById('sChats').style.display = t==='chats'?'block':'none';
-        document.getElementById('sDisc').style.display = t==='disc'?'block':'none';
-        document.getElementById('t1').style.color = t==='chats'?'var(--accent)':'white';
-        document.getElementById('t1').style.opacity = t==='chats'?'1':'0.4';
-        document.getElementById('t2').style.color = t==='disc'?'var(--accent)':'white';
-        document.getElementById('t2').style.opacity = t==='disc'?'1':'0.4';
+    function emitTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 3000); } }
+    function nv(id, el) { document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active')); document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active'); }
+    function setTab(t) {
+        document.getElementById('listChats').style.display = t === 'chats' ? 'block' : 'none';
+        document.getElementById('listDisc').style.display = t === 'disc' ? 'block' : 'none';
+        document.getElementById('tChats').style.opacity = t === 'chats' ? '1' : '0.4';
+        document.getElementById('tDisc').style.opacity = t === 'disc' ? '1' : '0.4';
     }
 </script>
 </body>
