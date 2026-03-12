@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus Redline v2.2</title>
+    <title>Nexus Redline v2.3 - Fixed</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -22,48 +22,55 @@
         }
 
         /* --- AUTH --- */
-        #authLayer { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        #authLayer { position: fixed; inset: 0; z-index: 10000; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .auth-card { background: var(--card); padding: 40px; border-radius: 40px; border: 1px solid var(--border); text-align: center; width: 80%; backdrop-filter: blur(20px); }
 
         /* --- LAYOUT --- */
         .app-shell { height: 100vh; display: flex; flex-direction: column; display: none; }
-        .top-nav { padding: 25px 20px 10px; display: flex; justify-content: space-between; align-items: center; }
+        .top-nav { padding: 25px 20px 10px; display: flex; justify-content: space-between; align-items: center; z-index: 500; }
         .logo { font-weight: 800; font-size: 24px; letter-spacing: -1px; background: linear-gradient(to right, #ff2d55, #5856d6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* --- PAGES --- */
-        .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 160px; scrollbar-width: none; }
-        .view-active { display: block; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 180px; scrollbar-width: none; }
+        .view-active { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* --- CARDS & ROWS --- */
+        /* --- COMPONENTS --- */
         .hero-card { background: linear-gradient(135deg, rgba(255,45,85,0.2) 0%, rgba(88,86,214,0.2) 100%); border-radius: 35px; padding: 30px; border: 1px solid var(--border); margin-bottom: 25px; }
         .days-circle { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; margin: 0 auto 15px; background: rgba(0,0,0,0.3); }
         .user-row { background: var(--card); border-radius: 25px; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 12px; border: 1px solid transparent; position: relative; }
         .pfp-img { width: 55px; height: 55px; border-radius: 20px; object-fit: cover; background: #222; }
 
-        /* --- DROPDOWN & MENU --- */
-        .opt-btn { background: none; border: none; color: white; opacity: 0.4; font-size: 22px; padding: 10px; cursor: pointer; }
-        .dropdown { position: absolute; right: 10px; top: 50px; background: #1a1a1a; border: 1px solid var(--border); border-radius: 15px; display: none; flex-direction: column; z-index: 5000; width: 170px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .dropdown button { background: none; border: none; color: white; padding: 12px; text-align: left; font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-        /* --- CHAT --- */
-        .msg-list { flex: 1; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; scrollbar-width: none; }
-        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; font-size: 14px; }
+        /* --- MESSAGES --- */
+        .chat-container { background: var(--card); border-radius: 30px; padding: 20px; border: 1px solid var(--border); height: 350px; display: flex; flex-direction: column; }
+        .msg-list { flex: 1; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; scrollbar-width: none; }
+        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 20px; margin-bottom: 8px; font-size: 14px; word-wrap: break-word; }
         .mine { align-self: flex-end; background: var(--primary); border-bottom-right-radius: 4px; }
         .theirs { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 4px; }
 
-        .input-area { position: fixed; bottom: 95px; left: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
-        .msg-input { flex: 1; padding: 16px; border-radius: 22px; border: 1px solid var(--border); background: rgba(15,15,15,0.9); color: white; outline: none; }
-        .send-btn { background: var(--accent); border: none; border-radius: 20px; width: 55px; color: white; font-size: 20px; }
+        /* --- INPUTS RELEVÉS (FIXED) --- */
+        .input-area { position: fixed; bottom: 105px; left: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .msg-input { flex: 1; padding: 16px; border-radius: 22px; border: 1px solid var(--border); background: rgba(20,20,20,0.95); color: white; outline: none; backdrop-filter: blur(10px); }
+        .send-btn { background: var(--accent); border: none; border-radius: 20px; width: 55px; color: white; font-size: 20px; cursor: pointer; }
 
-        /* --- BOTTOM BAR --- */
-        .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 65px; background: rgba(255,255,255,0.05); backdrop-filter: blur(30px); border-radius: 28px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-        .nav-item { font-size: 24px; opacity: 0.3; }
-        .nav-active { opacity: 1; color: var(--accent); }
+        /* --- BARRE DE NAVIGATION (TOP PRIORITY) --- */
+        .bottom-bar { 
+            position: fixed; bottom: 25px; left: 20px; right: 20px; height: 70px;
+            background: rgba(30,30,30,0.8); backdrop-filter: blur(25px);
+            border-radius: 30px; border: 1px solid var(--border);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 9999; /* Priorité absolue pour le clic */
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
+        }
+        .nav-item { font-size: 26px; opacity: 0.3; transition: 0.2s; cursor: pointer; padding: 10px; }
+        .nav-active { opacity: 1; color: var(--accent); transform: scale(1.1); }
 
-        /* --- SETTINGS HELPERS --- */
+        /* --- OPTIONS --- */
+        .dropdown { position: absolute; right: 10px; top: 50px; background: #1a1a1a; border: 1px solid var(--border); border-radius: 15px; display: none; flex-direction: column; z-index: 10001; width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .dropdown button { background: none; border: none; color: white; padding: 14px; text-align: left; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
         .config-box { background: var(--card); border-radius: 25px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .blocked-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        input[type="text"], input[type="date"], input[type="password"] { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; margin-top: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -84,35 +91,40 @@
 
     <div id="viewCouple" class="view view-active">
         <div class="hero-card"><div class="days-circle" id="daysNum">0</div><h2 style="margin: 0; text-align: center;">Ensemble ♾️</h2><p id="partnerName" style="text-align: center; opacity: 0.6; font-size: 13px;">Configure ton amour</p></div>
-        <div style="background: var(--card); border-radius: 30px; padding: 20px; border: 1px solid var(--border); height: 350px; display: flex; flex-direction: column;">
+        <div class="chat-container">
             <div style="display:flex; justify-content: space-between; margin-bottom: 10px;"><b>Cocon Privé ❤️</b><span id="typingStatus" style="color: var(--accent); font-size: 11px;"></span></div>
             <div id="coupleMsgs" class="msg-list"></div>
         </div>
-        <div class="input-area"><input type="text" id="coupleIn" class="msg-input" placeholder="Écris ici..." oninput="sendTyping()"><button class="send-btn" onclick="pushMsg('couple')">➔</button></div>
+        <div class="input-area" id="inputCouple">
+            <input type="text" id="coupleIn" class="msg-input" placeholder="Écris ici..." oninput="sendTyping()">
+            <button class="send-btn" onclick="pushMsg('couple')">➔</button>
+        </div>
     </div>
 
     <div id="viewFriends" class="view">
         <h3 style="margin-bottom: 20px;">Utilisateurs Gabon 🇬🇦</h3>
         <div id="friendsList"></div>
         
-        <div id="chatOverlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:2000; flex-direction:column;">
+        <div id="chatOverlay" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:10002; flex-direction:column;">
             <div class="top-nav" style="background: var(--card); border-bottom: 1px solid var(--border);">
                 <button onclick="closeChat()" style="background:none; border:none; color:white; font-size:24px;">✕</button>
                 <b id="chatName">Ami</b>
-                <button class="opt-btn" onclick="toggleDropdown('chatOpt')">⋮</button>
+                <button style="background:none; border:none; color:white; font-size:22px;" onclick="toggleDropdown('chatOpt')">⋮</button>
                 <div id="chatOpt" class="dropdown">
                     <button onclick="deleteConv()">Supprimer la conversation</button>
                     <button style="color:#ff3b30" onclick="blockUser()">Bloquer l'utilisateur</button>
                 </div>
             </div>
             <div id="friendChatList" class="msg-list" style="padding: 20px;"></div>
-            <div class="input-area" style="bottom: 30px;"><input type="text" id="chatIn" class="msg-input" placeholder="Message privé..."><button class="send-btn" style="background:var(--primary)" onclick="pushMsg('direct')">➔</button></div>
+            <div class="input-area" style="bottom: 30px; z-index:10003;">
+                <input type="text" id="chatIn" class="msg-input" placeholder="Message privé...">
+                <button class="send-btn" style="background:var(--primary)" onclick="pushMsg('direct')">➔</button>
+            </div>
         </div>
     </div>
 
     <div id="viewSettings" class="view">
         <h3 style="margin-bottom:20px;">Configuration</h3>
-        
         <div class="config-box">
             <label style="font-size: 11px; opacity: 0.5;">MON PROFIL</label>
             <input type="file" id="pfpUp" style="display:none" onchange="updatePfp(this)">
@@ -121,14 +133,12 @@
             <input type="date" id="setDate">
             <input type="password" id="setCoupleCode" placeholder="Code Secret">
         </div>
-
         <div class="config-box">
             <label style="font-size: 11px; opacity: 0.5; color: var(--accent);">UTILISATEURS BLOQUÉS</label>
             <div id="blockedList" style="margin-top:10px;"></div>
         </div>
-
         <button onclick="saveSettings()" style="background: var(--accent); border:none; padding:18px; border-radius:20px; color:white; width:100%; font-weight:700;">ENREGISTRER TOUT</button>
-        <p onclick="localStorage.clear();location.reload()" style="text-align:center; color:#555; font-size: 13px; margin-top:20px;">Se déconnecter de Nexus</p>
+        <p onclick="localStorage.clear();location.reload()" style="text-align:center; color:#555; font-size: 13px; margin-top:20px; cursor:pointer;">Se déconnecter</p>
     </div>
 
     <nav class="bottom-bar">
@@ -143,7 +153,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nx_redline_v2_2'));
+    let user = JSON.parse(localStorage.getItem('nx_redline_v2_3'));
     let activeChatId = null, otherUserId = null;
 
     if(user) { document.getElementById('authLayer').style.display = 'none'; document.getElementById('app').style.display = 'flex'; init(); }
@@ -153,17 +163,13 @@
         if(n) {
             const data = { name: n, id: 'u'+Date.now(), pfp: 'https://ui-avatars.com/api/?name='+n, partner: '', code: '', date: '', blocked: {} };
             db.ref('users/'+data.id).set(data);
-            localStorage.setItem('nx_redline_v2_2', JSON.stringify(data));
+            localStorage.setItem('nx_redline_v2_3', JSON.stringify(data));
             location.reload();
         }
     }
 
     function init() {
         document.getElementById('myAvatar').src = user.pfp;
-        document.getElementById('setPartner').value = user.partner || "";
-        document.getElementById('setCoupleCode').value = user.code || "";
-        document.getElementById('setDate').value = user.date || "";
-
         db.ref('users/'+user.id).on('value', s => { 
             user = s.val();
             updateBlockedUI();
@@ -173,14 +179,12 @@
             const l = document.getElementById('friendsList'); l.innerHTML = "";
             s.forEach(c => {
                 const u = c.val();
-                const isBlocked = user.blocked && user.blocked[u.id];
-                const isHidden = user.hidden && user.hidden[u.id];
-                if(u.id !== user.id && !isBlocked && !isHidden) {
+                if(u.id !== user.id && (!user.blocked || !user.blocked[u.id]) && (!user.hidden || !user.hidden[u.id])) {
                     l.innerHTML += `
                         <div class="user-row">
                             <img src="${u.pfp}" class="pfp-img" onclick="openDirect('${u.id}', '${u.name}')">
-                            <div style="flex:1" onclick="openDirect('${u.id}', '${u.name}')"><b>${u.name}</b><br><small style="opacity:0.4">En ligne</small></div>
-                            <button class="opt-btn" onclick="toggleDropdown('opt_${u.id}')">⋮</button>
+                            <div style="flex:1" onclick="openDirect('${u.id}', '${u.name}')"><b>${u.name}</b><br><small style="opacity:0.4">Nexus User</small></div>
+                            <button style="background:none;border:none;color:white;font-size:20px;" onclick="toggleDropdown('opt_${u.id}')">⋮</button>
                             <div id="opt_${u.id}" class="dropdown">
                                 <button onclick="hideFriend('${u.id}')">Supprimer l'ami</button>
                                 <button style="color:#ff3b30" onclick="blockUser('${u.id}')">Bloquer</button>
@@ -203,6 +207,16 @@
         }
     }
 
+    function nav(id, el) {
+        // Cacher les inputs si on va dans les réglages pour éviter les bugs visuels
+        document.getElementById('inputCouple').style.display = (id === 'viewCouple') ? 'flex' : 'none';
+        
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
+        document.getElementById(id).classList.add('view-active');
+        el.classList.add('nav-active');
+    }
+
     function toggleDropdown(id) {
         const d = document.getElementById(id);
         const isVisible = d.style.display === 'flex';
@@ -218,41 +232,6 @@
             const b = document.getElementById('friendChatList'); b.innerHTML = "";
             s.forEach(c => b.innerHTML += `<div class="chat-bubble ${c.val().sid===user.id?'mine':'theirs'}">${c.val().txt}</div>`);
             b.scrollTop = b.scrollHeight;
-        });
-    }
-
-    function blockUser(id = otherUserId) {
-        if(confirm("Bloquer cet utilisateur ?")) {
-            db.ref('users/'+user.id+'/blocked/'+id).set(true);
-            closeChat();
-        }
-    }
-
-    function unblockUser(id) {
-        db.ref('users/'+user.id+'/blocked/'+id).remove();
-        db.ref('users/'+user.id+'/hidden/'+id).remove();
-    }
-
-    function hideFriend(id) {
-        db.ref('users/'+user.id+'/hidden/'+id).set(true);
-        toggleDropdown('opt_'+id);
-    }
-
-    function updateBlockedUI() {
-        const container = document.getElementById('blockedList');
-        container.innerHTML = "";
-        if(!user.blocked) { container.innerHTML = "<small style='opacity:0.3'>Aucun utilisateur bloqué</small>"; return; }
-        
-        Object.keys(user.blocked).forEach(id => {
-            db.ref('users/'+id).once('value', s => {
-                if(s.exists()) {
-                    container.innerHTML += `
-                        <div class="blocked-item">
-                            <span>${s.val().name}</span>
-                            <button onclick="unblockUser('${id}')" style="background:none; border:1px solid #555; color:white; border-radius:8px; padding:5px 10px; font-size:11px;">Débloquer</button>
-                        </div>`;
-                }
-            });
         });
     }
 
@@ -276,20 +255,34 @@
         user.date = document.getElementById('setDate').value;
         user.code = document.getElementById('setCoupleCode').value.toLowerCase();
         db.ref('users/'+user.id).update(user);
-        localStorage.setItem('nx_redline_v2_2', JSON.stringify(user));
+        localStorage.setItem('nx_redline_v2_3', JSON.stringify(user));
         alert("Nexus mis à jour !");
     }
 
-    function nav(id, el) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
-        document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active');
+    function blockUser(id = otherUserId) {
+        if(confirm("Bloquer cet utilisateur ?")) { db.ref('users/'+user.id+'/blocked/'+id).set(true); closeChat(); }
     }
+
+    function unblockUser(id) {
+        db.ref('users/'+user.id+'/blocked/'+id).remove();
+        db.ref('users/'+user.id+'/hidden/'+id).remove();
+    }
+
+    function updateBlockedUI() {
+        const container = document.getElementById('blockedList'); container.innerHTML = "";
+        if(!user.blocked) { container.innerHTML = "<small style='opacity:0.3'>Aucun bloqué</small>"; return; }
+        Object.keys(user.blocked).forEach(id => {
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) container.innerHTML += `<div class="blocked-item"><span>${s.val().name}</span><button onclick="unblockUser('${id}')" style="background:none; border:1px solid #555; color:white; border-radius:8px; padding:5px 10px; font-size:11px;">Débloquer</button></div>`;
+            });
+        });
+    }
+
     function closeChat() { document.getElementById('chatOverlay').style.display = 'none'; }
+    function hideFriend(id) { db.ref('users/'+user.id+'/hidden/'+id).set(true); toggleDropdown('opt_'+id); }
     function deleteConv() { if(confirm("Supprimer l'historique ?")) { db.ref('directs/'+activeChatId).remove(); closeChat(); } }
     function updatePfp(input) { if(input.files[0]) { const r = new FileReader(); r.onload = e => { user.pfp = e.target.result; document.getElementById('myAvatar').src = user.pfp; }; r.readAsDataURL(input.files[0]); } }
     function sendTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 2000); } }
 </script>
-</body>                                         
+</body>
 </html>
-                                                                        
