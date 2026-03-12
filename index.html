@@ -3,124 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nexus v6 - Elite Edition</title>
+    <title>Nexus Elite v6.5</title>
     
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#050505">
     <link rel="manifest" href="manifest.json">
-
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
         :root { --accent: #ff2d55; --primary: #5856d6; --bg: #050505; --card: rgba(255, 255, 255, 0.06); --border: rgba(255, 255, 255, 0.1); }
-        
         body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
         /* SPLASH SCREEN */
-        #splash { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease, visibility 0.8s; }
-        .loader-logo { font-size: 50px; font-weight: 800; letter-spacing: -3px; background: linear-gradient(45deg, var(--accent), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } }
+        #splash { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .loader-logo { font-size: 50px; font-weight: 800; background: linear-gradient(45deg, var(--accent), var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-        /* UI COMPONENTS */
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); }
-        #authLayer { position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
-        
+        /* UI */
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border); }
         .app-shell { height: 100vh; display: flex; flex-direction: column; display: none; }
-        .top-nav { padding: 50px 20px 20px; display: flex; justify-content: space-between; align-items: center; }
-        
         .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 120px; }
-        .view-active { display: block; animation: slideUp 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .view-active { display: block; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MESSAGES */
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 15px; border-radius: 30px; }
-        .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
+        /* MESSAGES & HEURE */
+        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 15px; }
+        .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; margin-bottom: 4px; }
         .mine { align-self: flex-end; align-items: flex-end; }
         .theirs { align-self: flex-start; align-items: flex-start; }
-        .bubble { padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.4; }
-        .mine .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .bubble { padding: 12px 16px; border-radius: 20px; font-size: 15px; }
+        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; }
         .theirs .bubble { background: var(--card); border-bottom-left-radius: 4px; }
+        .m-time { font-size: 9px; opacity: 0.4; margin-top: 2px; padding: 0 5px; }
 
-        /* INPUTS & BUTTONS */
-        input { width: 100%; padding: 18px; border-radius: 20px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; margin-bottom: 12px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.08); }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 18px; border-radius: 20px; font-weight: 800; width: 100%; cursor: pointer; transition: 0.3s; }
-        .btn-main:active { transform: scale(0.95); }
+        /* COMPARTIMENT JEUX */
+        .game-zone { background: linear-gradient(135deg, #1a1a1a, #000); border-radius: 25px; padding: 20px; margin-top: 10px; border: 1px solid var(--accent); }
+        
+        /* EMOJIS FLOTTANTS */
+        .floating-heart { position: fixed; bottom: 100px; font-size: 24px; animation: floatUp 2s forwards; z-index: 1000; pointer-events: none; }
+        @keyframes floatUp { from { transform: translateY(0) scale(1); opacity: 1; } to { transform: translateY(-300px) scale(2); opacity: 0; } }
 
-        .bottom-bar { position: fixed; bottom: 25px; left: 20px; right: 20px; height: 75px; border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
-        .nav-item { font-size: 26px; transition: 0.3s; filter: grayscale(1) opacity(0.3); }
-        .nav-active { filter: grayscale(0) opacity(1); transform: translateY(-5px); }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 18px; font-weight: 800; cursor: pointer; width: 100%; }
+        .bottom-bar { position: fixed; bottom: 25px; left: 20px; right: 20px; height: 70px; border-radius: 30px; display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
+        .nav-item { font-size: 24px; opacity: 0.3; }
+        .nav-active { opacity: 1; transform: translateY(-5px); }
     </style>
 </head>
 <body>
 
 <div id="splash">
     <div class="loader-logo">NEXUS</div>
-    <div style="margin-top:20px; font-size:10px; letter-spacing:3px; opacity:0.4; font-weight:300;">INITIALISATION DU SYSTÈME</div>
 </div>
 
-<div id="authLayer">
-    <div class="glass" style="padding: 40px; border-radius: 45px; width: 80%; text-align: center;">
-        <div style="font-size:32px; font-weight:800; margin-bottom:30px; letter-spacing:-1.5px;">NEXUS</div>
-        <input type="text" id="aName" placeholder="Surnom" style="text-transform: lowercase;">
-        <input type="password" id="aPass" placeholder="Mot de passe">
-        <button class="btn-main" onclick="handleAuth()">ENTRER</button>
-        <div id="authMsg" style="color:var(--accent); font-size:12px; margin-top:15px;"></div>
+<div id="authLayer" style="position:fixed; inset:0; background:#000; z-index:10000; display:flex; align-items:center; justify-content:center;">
+    <div class="glass" style="padding:40px; border-radius:40px; width:280px; text-align:center;">
+        <h2 style="margin-bottom:20px;">Connexion</h2>
+        <input type="text" id="aName" placeholder="Pseudo" style="width:100%; padding:15px; border-radius:15px; border:none; background:#111; color:white; margin-bottom:10px;">
+        <input type="password" id="aPass" placeholder="Code" style="width:100%; padding:15px; border-radius:15px; border:none; background:#111; color:white; margin-bottom:20px;">
+        <button class="btn-main" onclick="handleAuth()">LANCER</button>
     </div>
 </div>
 
 <div class="app-shell" id="app">
-    <div class="top-nav">
-        <div style="font-weight: 800; font-size: 24px;">NEXUS</div>
-        <img id="myAvatar" src="" style="width:45px; height:45px; border-radius:18px; border:2px solid var(--accent); object-fit:cover;">
-    </div>
-
     <div id="vWorld" class="view view-active">
-        <div style="display: flex; gap: 20px; margin-bottom: 25px; font-size: 14px; font-weight: 700;">
-            <span onclick="setTab('chats')" id="tC" style="color:var(--accent);">MES DISCUSSIONS</span>
-            <span onclick="setTab('disc')" id="tD" style="opacity:0.3;">DÉCOUVRIR</span>
-        </div>
+        <h3 style="margin-top:40px;">Discussions</h3>
         <div id="listChats"></div>
-        <div id="listDisc" style="display:none;"></div>
-    </div>
-
-    <div id="vPrivate" class="view">
-        <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
-            <span onclick="closePrivateChat()" style="font-size:24px; padding:10px;">✕</span>
-            <img id="pChatPfp" src="" style="width:42px;height:42px;border-radius:15px;object-fit:cover;">
-            <b id="pChatName" style="font-size:18px;"></b>
-        </div>
-        <div id="pChatBox" class="msg-list glass" style="height:calc(100vh - 350px);"></div>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <input type="text" id="pChatInput" placeholder="Écris ici..." style="margin:0;">
-            <button onclick="sendPrivateMsg()" class="btn-main" style="width:65px;">➔</button>
-        </div>
+        <h3 style="margin-top:20px; opacity:0.5;">Découvrir</h3>
+        <div id="listDisc"></div>
     </div>
 
     <div id="vCouple" class="view">
-        <div id="dayCounter" style="background:linear-gradient(90deg, var(--accent), var(--primary)); padding:15px; border-radius:22px; text-align:center; font-weight:800; font-size:14px; margin-bottom:20px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);"></div>
-        <div id="cBox" class="msg-list glass" style="height:calc(100vh - 350px);"></div>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <input type="text" id="cInput" placeholder="Message à ton duo..." style="margin:0;">
-            <button onclick="sendMsg()" class="btn-main" style="width:65px;">➔</button>
+        <div id="dayCounter" style="margin-top:40px; padding:15px; text-align:center; font-weight:800; border-radius:20px; background:var(--card);"></div>
+        
+        <div class="game-zone">
+            <div style="font-size:12px; font-weight:800; color:var(--accent); margin-bottom:10px;">🕹️ NEXUS GAMES</div>
+            <button onclick="playGame('action')" style="background:none; border:1px solid white; color:white; padding:8px; border-radius:10px; font-size:11px;">Action</button>
+            <button onclick="playGame('verite')" style="background:none; border:1px solid white; color:white; padding:8px; border-radius:10px; font-size:11px;">Vérité</button>
+        </div>
+
+        <div id="cBox" class="msg-list" style="height:300px; margin-top:15px;"></div>
+        <div style="display:flex; gap:10px; padding-top:10px;">
+            <input type="text" id="cInput" placeholder="Message..." style="flex:1; padding:15px; border-radius:15px; border:none; background:var(--card); color:white;">
+            <button onclick="sendMsg()" class="btn-main" style="width:50px;">➔</button>
         </div>
     </div>
 
     <div id="vSets" class="view">
-        <h2 style="font-weight:800; margin-bottom:25px;">Configuration</h2>
-        <div class="glass" style="padding:25px; border-radius:30px;">
-            <p style="font-size:12px; opacity:0.5; margin-bottom:5px;">CODE SECRET DUO</p>
-            <input type="password" id="setCode" placeholder="Ex: amour2026">
-            <p style="font-size:12px; opacity:0.5; margin-bottom:5px;">DATE DE RENCONTRE</p>
-            <input type="date" id="setMeet">
-            <p style="font-size:12px; opacity:0.5; margin-bottom:5px;">NOM DU PARTENAIRE</p>
-            <input type="text" id="setPartner" placeholder="N'neka Alicia">
-            <button onclick="saveSets()" class="btn-main" style="margin-top:10px;">METTRE À JOUR</button>
+        <h2 style="margin-top:40px;">Réglages</h2>
+        <div class="glass" style="padding:20px; border-radius:25px;">
+            <p>Mon Duo : <input type="text" id="setCode" placeholder="Code Secret"></p>
+            <p>Date : <input type="date" id="setMeet"></p>
+            <button onclick="saveSets()" class="btn-main">Sauvegarder</button>
         </div>
-        <button onclick="localStorage.clear();location.reload();" style="width:100%; background:none; border:none; color:grey; margin-top:40px; font-size:12px;">Réinitialiser l'application</button>
+
+        <h4 style="margin-top:30px; color:var(--accent);">Gestion des contacts</h4>
+        <div id="blockedArea" class="glass" style="padding:15px; border-radius:20px;">
+            </div>
     </div>
 
     <nav class="bottom-bar glass">
@@ -131,175 +109,122 @@
 </div>
 
 <script>
-    // 1. FIREBASE CONFIG
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_v6_elite'));
-    let currentPrivateChatId = null;
+    let user = JSON.parse(localStorage.getItem('nexus_v6_5'));
 
-    // 2. SPLASH SCREEN & VIBRATE
-    window.addEventListener('load', () => {
-        setTimeout(() => {
-            const s = document.getElementById('splash');
-            s.style.opacity = '0';
-            setTimeout(() => s.style.display = 'none', 800);
-        }, 2500);
-    });
+    // SPLASH
+    window.onload = () => { setTimeout(() => { document.getElementById('splash').style.display='none'; }, 2000); };
 
-    function doVibrate() {
-        if ("vibrate" in navigator) navigator.vibrate(80);
-    }
-
-    // 3. AUTHENTICATION
+    // AUTH
     async function handleAuth() {
         const n = document.getElementById('aName').value.trim().toLowerCase();
-        const p = document.getElementById('aPass').value.trim();
-        const msg = document.getElementById('authMsg');
-        if(!n || !p) return;
-
-        msg.innerText = "Vérification...";
-        try {
-            const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
-            if(s.exists()) {
-                const u = Object.values(s.val())[0];
-                if(u.pass === p) startApp(u);
-                else msg.innerText = "Mot de passe erroné";
-            } else {
-                const nu = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?background=5856d6&color=fff&name='+n, code: '', meet: '', partner: '', contacts:{} };
-                await db.ref('users/'+nu.id).set(nu);
-                startApp(nu);
-            }
-        } catch(e) { msg.innerText = "Erreur de connexion"; }
-    }
-
-    function startApp(u) {
-        user = u;
-        localStorage.setItem('nexus_v6_elite', JSON.stringify(u));
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        initApp();
-    }
-
-    if(user) startApp(user);
-
-    // 4. CORE LOGIC
-    function initApp() {
-        document.getElementById('myAvatar').src = user.pfp;
-        document.getElementById('setMeet').value = user.meet || "";
-        document.getElementById('setCode').value = user.code || "";
-        document.getElementById('setPartner').value = user.partner || "";
-        
-        loadWorld();
-        if(user.meet) updateCounter();
-
-        // Listener Couple
-        if(user.code) {
-            db.ref('couples/'+user.code+'/chat').limitToLast(20).on('value', s => {
-                const box = document.getElementById('cBox');
-                box.innerHTML = "";
-                s.forEach(snap => {
-                    const m = snap.val();
-                    const mine = m.sid === user.id;
-                    if(!mine && (Date.now() - m.t < 2000)) doVibrate();
-                    box.innerHTML += `<div class="bubble-wrap ${mine?'mine':'theirs'}"><div class="bubble">${m.txt}</div></div>`;
-                });
-                box.scrollTop = box.scrollHeight;
-            });
+        const p = document.getElementById('aPass').value;
+        const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
+        if(s.exists()){
+            const u = Object.values(s.val())[0];
+            if(u.pass === p) login(u);
+        } else {
+            const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n, code:'', contacts:{}, blocked:{} };
+            await db.ref('users/'+nu.id).set(nu);
+            login(nu);
         }
     }
 
-    function loadWorld() {
-        db.ref('users').on('value', s => {
-            const disc = document.getElementById('listDisc');
-            const chat = document.getElementById('listChats');
-            disc.innerHTML = ""; chat.innerHTML = "";
-            s.forEach(snap => {
-                const u = snap.val();
-                if(u.id === user.id) return;
-                const html = `<div class="glass" onclick="openPrivateChat('${u.id}', '${u.name}', '${u.pfp}')" style="padding:15px; border-radius:22px; margin-bottom:12px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-                    <img src="${u.pfp}" style="width:45px;height:45px;border-radius:14px;object-fit:cover;">
-                    <b style="text-transform:capitalize; flex:1;">${u.name}</b>
-                    <span style="opacity:0.3;">➔</span>
-                </div>`;
-                if(user.contacts && user.contacts[u.id]) chat.innerHTML += html;
-                else disc.innerHTML += html;
-            });
-        });
+    function login(u) {
+        user = u;
+        localStorage.setItem('nexus_v6_5', JSON.stringify(u));
+        document.getElementById('authLayer').style.display='none';
+        document.getElementById('app').style.display='flex';
+        initApp();
     }
 
-    function openPrivateChat(id, name, pfp) {
-        currentPrivateChatId = [user.id, id].sort().join('_');
-        document.getElementById('pChatName').innerText = name;
-        document.getElementById('pChatPfp').src = pfp;
-        nv('vPrivate');
-        db.ref('pchats/'+currentPrivateChatId).limitToLast(30).on('value', s => {
-            const box = document.getElementById('pChatBox');
-            box.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val();
-                if(m.sid !== user.id && (Date.now() - m.t < 2000)) doVibrate();
-                box.innerHTML += `<div class="bubble-wrap ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${m.txt}</div></div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-    }
+    if(user) login(user);
 
-    function sendPrivateMsg() {
-        const i = document.getElementById('pChatInput');
-        if(!i.value.trim()) return;
-        const targetId = currentPrivateChatId.replace(user.id,'').replace('_','');
-        db.ref('pchats/'+currentPrivateChatId).push({ sid: user.id, txt: i.value.trim(), t: Date.now() });
-        db.ref('users/'+user.id+'/contacts/'+targetId).set(true);
-        db.ref('users/'+targetId+'/contacts/'+user.id).set(true);
-        i.value = "";
+    function initApp() {
+        if(user.code) {
+            db.ref('couples/'+user.code+'/chat').limitToLast(20).on('value', s => {
+                const b = document.getElementById('cBox'); b.innerHTML = "";
+                s.forEach(snap => {
+                    const m = snap.val();
+                    const mine = m.sid === user.id;
+                    const time = new Date(m.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    b.innerHTML += `
+                        <div class="bubble-wrap ${mine?'mine':'theirs'}">
+                            <div class="bubble">${m.txt}</div>
+                            <div class="m-time">${time}</div>
+                        </div>`;
+                });
+                b.scrollTop = b.scrollHeight;
+            });
+        }
+        loadContacts();
     }
 
     function sendMsg() {
         const i = document.getElementById('cInput');
-        if(!i.value.trim() || !user.code) return;
-        db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: i.value.trim(), t: Date.now() });
+        if(!i.value || !user.code) return;
+        if(i.value.includes('❤️')) spawnHeart();
+        db.ref('couples/'+user.code+'/chat').push({ sid:user.id, txt:i.value, t:Date.now() });
         i.value = "";
     }
 
-    function saveSets() {
-        const up = { 
-            meet: document.getElementById('setMeet').value, 
-            partner: document.getElementById('setPartner').value, 
-            code: document.getElementById('setCode').value.toLowerCase().trim() 
-        };
-        db.ref('users/'+user.id).update(up).then(() => {
-            user = {...user, ...up};
-            localStorage.setItem('nexus_v6_elite', JSON.stringify(user));
-            alert("Nexus mis à jour !");
-            location.reload();
+    function spawnHeart() {
+        const h = document.createElement('div');
+        h.className = 'floating-heart';
+        h.innerText = '❤️';
+        h.style.left = Math.random() * 80 + 10 + '%';
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 2000);
+    }
+
+    function playGame(type) {
+        const actions = ["Fais 10 pompes", "Envoie une photo de tes pieds", "Chante une chanson mignonne"];
+        const verites = ["Ton plus gros secret ?", "Ta première impression sur moi ?", "Une chose que tu n'as jamais dit ?"];
+        const list = type === 'action' ? actions : verites;
+        const res = list[Math.floor(Math.random()*list.length)];
+        db.ref('couples/'+user.code+'/chat').push({ sid:'sys', txt: `🎮 JEU (${type}) : ${res}`, t:Date.now() });
+    }
+
+    function loadContacts() {
+        db.ref('users').on('value', s => {
+            const d = document.getElementById('listDisc'); d.innerHTML = "";
+            s.forEach(snap => {
+                const u = snap.val();
+                if(u.id === user.id || (user.blocked && user.blocked[u.id])) return;
+                d.innerHTML += `
+                    <div class="glass" style="padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between;">
+                        <b>${u.name}</b>
+                        <button onclick="blockUser('${u.id}')" style="color:red; background:none; border:none; font-size:10px;">Bloquer</button>
+                    </div>`;
+            });
         });
     }
 
-    function updateCounter() {
-        const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
-        document.getElementById('dayCounter').innerText = `✨ ${diff} JOURS DE BONHEUR ✨`;
+    function blockUser(id) {
+        db.ref('users/'+user.id+'/blocked/'+id).set(true);
+        user.blocked = user.blocked || {};
+        user.blocked[id] = true;
+        localStorage.setItem('nexus_v6_5', JSON.stringify(user));
+        alert("Utilisateur bloqué.");
     }
 
     function nv(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
         document.getElementById(id).classList.add('view-active');
-        if(el) el.classList.add('nav-active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
+        el.classList.add('nav-active');
     }
 
-    function setTab(t) {
-        document.getElementById('listChats').style.display = t==='chats'?'block':'none';
-        document.getElementById('listDisc').style.display = t==='disc'?'block':'none';
-        document.getElementById('tC').style.opacity = t==='chats'?'1':'0.3';
-        document.getElementById('tD').style.opacity = t==='disc'?'1':'0.3';
-    }
-
-    function closePrivateChat() { nv('vWorld', document.querySelector('.nav-item')); }
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+    function saveSets() {
+        const c = document.getElementById('setCode').value;
+        const m = document.getElementById('setMeet').value;
+        db.ref('users/'+user.id).update({ code:c, meet:m });
+        user.code = c; user.meet = m;
+        localStorage.setItem('nexus_v6_5', JSON.stringify(user));
+        location.reload();
     }
 </script>
 </body>
