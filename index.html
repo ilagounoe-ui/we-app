@@ -21,73 +21,70 @@
             --wa-danger: #f15c6d;
             --love-pink: #ff4b6e;
             --love-bg: #1a0a0d;
+            --auth-gradient: linear-gradient(135deg, #00a884 0%, #111b21 100%);
         }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; transition: background 0.5s; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; }
 
-        /* --- AUTHENTIFICATION LUMINEUSE (v.10) --- */
-        #authLayer { 
-            position: fixed; inset:0; 
-            background: linear-gradient(135deg, #00a884 0%, #111b21 100%); 
-            z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; 
-        }
+        /* --- AUTHENTIFICATION ÉCLAIRCIE (v.10) --- */
+        #authLayer { position: fixed; inset:0; background: var(--auth-gradient); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .auth-card { 
-            width: 100%; max-width: 340px; text-align: center; 
-            background: rgba(255, 255, 255, 0.98); 
-            padding: 40px 25px; border-radius: 28px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4); color: #111b21;
+            width: 100%; max-width: 350px; text-align: center; background: rgba(255, 255, 255, 0.98); 
+            padding: 40px 25px; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: #111b21;
         }
-        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 32px; margin: 0 0 15px; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; }
-        .auth-tab { flex: 1; padding: 10px; cursor: pointer; font-weight: 700; color: #a0a0a0; transition: 0.3s; }
-        .auth-tab.active { color: var(--wa-green); border-bottom: 3px solid var(--wa-green); }
-        .auth-card input { 
-            width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 12px; 
-            border: 1px solid #ddd; background: #f9f9f9; color: #111b21; box-sizing: border-box; outline: none; font-size: 16px; 
-        }
+        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 32px; margin-bottom: 20px; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; }
+        .auth-tab { flex: 1; padding: 12px; cursor: pointer; font-weight: 700; color: #999; transition: 0.3s; }
+        .auth-tab.active { color: var(--wa-green); border-bottom: 4px solid var(--wa-green); }
+        .auth-card input { width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 15px; border: 1px solid #ddd; background: #f9f9f9; box-sizing: border-box; outline: none; font-size: 16px; }
 
-        /* --- DESIGN GLOBAL & NAVIGATION --- */
-        .header { background: var(--wa-panel); padding: 50px 16px 12px; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; }
-        .header h1 { font-size: 20px; margin: 0; font-weight: 600; }
+        /* --- STRUCTURE APP --- */
+        .header { background: var(--wa-panel); padding: 50px 16px 12px; display: flex; justify-content: space-between; align-items: center; z-index: 10; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .header h1 { font-size: 22px; margin: 0; font-weight: 700; }
         .view { height: calc(100vh - 130px); overflow-y: auto; display: none; padding-bottom: 80px; }
         .view-active { display: block; }
 
-        .chat-item { display: flex; padding: 14px 16px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        .avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover; background: #374045; }
+        /* --- CHAT LIST --- */
+        .chat-item { display: flex; padding: 15px 20px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; transition: background 0.2s; }
+        .chat-item:active { background: rgba(255,255,255,0.05); }
+        .avatar { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; object-fit: cover; background: #374045; border: 1px solid rgba(255,255,255,0.1); }
+        .chat-info { flex: 1; }
+        .chat-info b { font-size: 17px; color: #fff; text-transform: capitalize; }
+        .chat-info p { margin: 3px 0 0; font-size: 13px; color: var(--wa-secondary); }
 
-        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 6px; background-color: #0b141a; height: calc(100vh - 200px); overflow-y: auto; scroll-behavior: smooth; }
-        .bubble { padding: 9px 13px; border-radius: 14px; max-width: 80%; font-size: 15px; line-height: 1.4; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+        /* --- MESSAGES & CONFIRMATIONS (Double Check) --- */
+        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 8px; background-color: #0b141a; height: calc(100vh - 200px); overflow-y: auto; scroll-behavior: smooth; }
+        .bubble { padding: 10px 14px; border-radius: 14px; max-width: 80%; font-size: 15px; line-height: 1.4; position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.4); }
         .mine { align-self: flex-end; background: var(--wa-bubble-me); border-top-right-radius: 2px; }
         .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-top-left-radius: 2px; }
-        .m-meta { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; margin-top: 4px; }
+        .m-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+        .seen-check { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: bold; }
+        .seen-blue { color: #53bdeb; } /* Double check bleu */
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
-        .nav-tab { color: var(--wa-secondary); font-size: 12px; text-align: center; opacity: 0.6; cursor: pointer; transition: 0.3s; }
-        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 700; }
-        .nav-tab span { font-size: 22px; display: block; }
-
-        /* --- MODE COCON (v.9 Fusion) --- */
+        /* --- MODE COCON --- */
         .cocon-active .header { background: #3d141b; border-bottom: 2px solid var(--love-pink); }
         .cocon-active .msg-container { background-color: var(--love-bg); background-image: url('https://www.transparenttextures.com/patterns/heart.png'); }
         .cocon-active .bubble.mine { background: var(--love-pink); }
         .cocon-active .nav-tab.active { color: var(--love-pink); }
+        .typing-indicator { font-size: 11px; color: var(--wa-green); font-style: italic; margin-top: 2px; }
+        .love-typing { color: var(--love-pink); }
 
-        .counter-badge {
-            background: rgba(255, 75, 110, 0.2);
-            color: var(--love-pink);
-            padding: 5px 15px; border-radius: 20px; font-weight: 700; font-size: 12px;
-            border: 1px solid var(--love-pink); animation: pulse 2s infinite;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .counter-badge { background: rgba(255, 75, 110, 0.15); color: var(--love-pink); padding: 5px 15px; border-radius: 20px; font-weight: 700; border: 1px solid var(--love-pink); display: inline-block; animation: pulse 2.5s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+        /* --- NAVIGATION --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); }
+        .nav-tab { color: var(--wa-secondary); font-size: 12px; text-align: center; opacity: 0.6; cursor: pointer; }
+        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 700; }
+        .nav-tab span { font-size: 24px; display: block; }
+
+        /* --- INPUTS --- */
+        .input-area { background: var(--wa-panel); padding: 10px 15px; display: flex; align-items: center; gap: 10px; position: fixed; bottom: 65px; width: 100%; box-sizing: border-box; }
+        .input-area input { flex: 1; background: #2a3942; border: none; padding: 14px 20px; border-radius: 25px; color: white; outline: none; font-size: 16px; }
+        .send-btn { background: var(--wa-green); border: none; width: 48px; height: 48px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: 0.3s; }
+        .send-btn:active { transform: scale(0.9); }
 
         .lock-screen { position: absolute; inset: 0; background: var(--wa-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-        /* --- INPUT AREA --- */
-        .input-area { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 8px; position: fixed; bottom: 65px; width: 100%; box-sizing: border-box; }
-        .input-area input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; }
-        .send-btn { background: var(--wa-green); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-        /* OVERLAYS */
         #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
     </style>
 </head>
@@ -100,13 +97,14 @@
             <div id="tabLogin" class="auth-tab active" onclick="setAuthMode('login')">Connexion</div>
             <div id="tabSignup" class="auth-tab" onclick="setAuthMode('signup')">S'inscrire</div>
         </div>
-        <input type="text" id="aName" placeholder="Surnom">
+        <input type="text" id="aName" placeholder="Ton Surnom">
         <input type="password" id="aPass" placeholder="Mot de passe">
-        <button onclick="handleAuth()" class="send-btn" style="width:100%; border-radius:12px; font-weight:700; font-size:16px;">VALIDER</button>
+        <button onclick="handleAuth()" class="send-btn" style="width:100%; border-radius:15px; font-weight:700;">VALIDER</button>
     </div>
 </div>
 
 <div id="app" style="display:none;">
+    
     <div id="vWorld" class="view view-active">
         <div class="header"><h1>Communauté</h1></div>
         <div id="listFriends"></div>
@@ -114,24 +112,26 @@
 
     <div id="vCouple" class="view">
         <div id="lockCocon" class="lock-screen">
-            <span style="font-size:60px;">🔐</span>
+            <span style="font-size:70px; margin-bottom:20px;">🔐</span>
             <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Espace Secret</h2>
-            <input type="password" id="unlockCode" placeholder="Code secret..." style="width:220px; padding:15px; border-radius:15px; border:none; background:var(--wa-panel); color:white; text-align:center; margin: 20px 0; outline:none;">
-            <button class="send-btn" style="background:var(--love-pink); width:200px; border-radius:12px; font-weight:700;" onclick="verifyCocon()">DÉVERROUILLER</button>
+            <input type="password" id="unlockCode" placeholder="Code secret..." style="width:230px; padding:16px; border-radius:15px; border:none; background:var(--wa-panel); color:white; text-align:center; margin: 20px 0; outline:none; font-size:18px;">
+            <button class="send-btn" style="background:var(--love-pink); width:200px; border-radius:15px; font-weight:700;" onclick="verifyCocon()">DÉVERROUILLER</button>
         </div>
+        
         <div id="coconContent" style="display:none;">
             <div class="header">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:24px;">💖</span>
+                    <span style="font-size:26px;">💖</span>
                     <div>
-                        <h1 style="font-size:16px; font-family:'Pacifico';">Cocon Privé</h1>
+                        <h1 style="font-size:18px; font-family:'Pacifico';">Cocon Privé</h1>
                         <div id="dayCounter"></div>
                     </div>
                 </div>
+                <div id="coupleTyping" class="typing-indicator love-typing"></div>
             </div>
             <div id="cBox" class="msg-container"></div>
             <div class="input-area">
-                <input type="text" id="cInput" placeholder="Message à ton amour...">
+                <input type="text" id="cInput" placeholder="Message secret..." oninput="updateTyping('couple')">
                 <button class="send-btn" style="background:var(--love-pink);" onclick="sendCoupleMsg()">❤️</button>
             </div>
         </div>
@@ -141,19 +141,19 @@
         <div class="header"><h1>Réglages</h1></div>
         <div style="padding: 20px;">
             <div style="background:var(--wa-panel); padding:20px; border-radius:20px; margin-bottom:15px;">
-                <label style="color:var(--wa-green); font-size:11px; font-weight:700; text-transform:uppercase;">Mon Avatar (URL)</label>
-                <input type="text" id="setAvatar" style="width:100%; background:transparent; border:none; color:white; font-size:14px; margin-top:8px; outline:none;" placeholder="Lien .jpg ou .png">
+                <label style="color:var(--wa-green); font-size:11px; font-weight:700; text-transform:uppercase;">Photo de profil (Lien URL)</label>
+                <input type="text" id="setAvatar" style="width:100%; background:transparent; border:none; color:white; font-size:15px; margin-top:8px; outline:none;" placeholder="Lien image...">
             </div>
             <div style="background:var(--wa-panel); padding:20px; border-radius:20px; margin-bottom:15px;">
-                <label style="color:var(--wa-green); font-size:11px; font-weight:700; text-transform:uppercase;">Code Secret Cocon</label>
+                <label style="color:var(--wa-green); font-size:11px; font-weight:700; text-transform:uppercase;">Code de déverrouillage</label>
                 <input type="text" id="setCode" style="width:100%; background:transparent; border:none; color:white; font-size:18px; margin-top:8px; outline:none;">
             </div>
             <div style="background:var(--wa-panel); padding:20px; border-radius:20px; margin-bottom:20px;">
                 <label style="color:var(--wa-green); font-size:11px; font-weight:700; text-transform:uppercase;">Date de rencontre</label>
                 <input type="date" id="setMeet" style="width:100%; background:transparent; border:none; color:white; font-size:16px; margin-top:8px; outline:none; color-scheme:dark;">
             </div>
-            <button class="send-btn" style="width:100%; border-radius:15px; font-weight:700;" onclick="saveSettings()">ENREGISTRER</button>
-            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:30px; font-size:14px; cursor:pointer; font-weight:700;">DÉCONNEXION</p>
+            <button class="send-btn" style="width:100%; border-radius:15px; font-weight:700;" onclick="saveSettings()">SAUVEGARDER</button>
+            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:40px; font-size:14px; cursor:pointer; font-weight:700;">SE DÉCONNECTER</p>
         </div>
     </div>
 
@@ -166,10 +166,20 @@
 
 <div id="friendOverlay">
     <div class="header">
-        <div style="display:flex; align-items:center; gap:15px;"><span onclick="closeFriendChat()" style="font-size:28px; cursor:pointer;">←</span><b id="fNameTitle">Ami</b></div>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span onclick="closeFriendChat()" style="font-size:30px; cursor:pointer;">←</span>
+            <img id="fChatAvatar" src="" class="avatar" style="width:40px; height:40px; margin:0;">
+            <div>
+                <b id="fNameTitle" style="font-size:18px;">Ami</b>
+                <div id="friendTyping" class="typing-indicator"></div>
+            </div>
+        </div>
     </div>
     <div id="fBox" class="msg-container"></div>
-    <div class="input-area" style="bottom: 0;"><input type="text" id="fInput" placeholder="Message..."><button class="send-btn" onclick="sendFriendMsg()">➔</button></div>
+    <div class="input-area" style="bottom: 0;">
+        <input type="text" id="fInput" placeholder="Message..." oninput="updateTyping('friend')">
+        <button class="send-btn" onclick="sendFriendMsg()">➔</button>
+    </div>
 </div>
 
 <script>
@@ -177,46 +187,39 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nu_v_final_user'));
+    let user = JSON.parse(localStorage.getItem('nu_v11_user'));
     let authMode = 'login';
     let currentFCId = null;
+    let isTyping = false;
 
-    function setAuthMode(mode) {
-        authMode = mode;
-        document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
-        document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
-    }
+    function setAuthMode(m) { authMode = m; document.getElementById('tabLogin').classList.toggle('active', m === 'login'); document.getElementById('tabSignup').classList.toggle('active', m === 'signup'); }
 
     async function handleAuth() {
         const n = document.getElementById('aName').value.trim().toLowerCase();
         const p = document.getElementById('aPass').value;
-        if(!n || !p) return alert("Champs vides !");
-
+        if(!n || !p) return alert("Champs vides");
         const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
-
         if (authMode === 'login') {
             if (s.exists()) {
                 const u = Object.values(s.val())[0];
                 if (u.pass === p) login(u); else alert("Mot de passe incorrect");
             } else alert("Compte inconnu");
         } else {
-            if (s.exists()) alert("Ce nom existe déjà");
+            if (s.exists()) alert("Surnom déjà pris");
             else {
-                const nu = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n+'&background=random', code: '', meet: '' };
-                await db.ref('users/'+nu.id).set(nu);
-                login(nu);
+                const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n, code:'', meet:'' };
+                await db.ref('users/'+nu.id).set(nu); login(nu);
             }
         }
     }
 
     function login(u) {
-        user = u; localStorage.setItem('nu_v_final_user', JSON.stringify(u));
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
+        user = u; localStorage.setItem('nu_v11_user', JSON.stringify(u));
+        document.getElementById('authLayer').style.display='none'; document.getElementById('app').style.display='block';
         initApp();
     }
 
-    function logout() { localStorage.removeItem('nu_v_final_user'); location.reload(); }
+    function logout() { localStorage.removeItem('nu_v11_user'); location.reload(); }
     if(user) login(user);
 
     function initApp() {
@@ -225,10 +228,18 @@
         document.getElementById('setAvatar').value = user.pfp || "";
         loadFriends();
         if(user.code) {
-            db.ref('couples/'+user.code+'/chat').limitToLast(50).on('value', s => {
+            db.ref('couples/'+user.code+'/chat').on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
-                s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
+                s.forEach(snap => {
+                    const m = snap.val();
+                    renderMsg(b, m, m.sid === user.id);
+                    if(m.sid !== user.id && !m.seen) db.ref('couples/'+user.code+'/chat/'+snap.key).update({seen:true});
+                });
                 b.scrollTop = b.scrollHeight;
+            });
+            db.ref('couples/'+user.code+'/typing').on('value', s => {
+                const t = s.val();
+                document.getElementById('coupleTyping').innerText = (t && t !== user.id) ? "est en train d'écrire..." : "";
             });
             updateCounter();
         }
@@ -236,7 +247,14 @@
 
     function renderMsg(container, m, mine) {
         const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t}</div></div>`;
+        const seenClass = m.seen ? "seen-blue" : "";
+        container.innerHTML += `
+            <div class="bubble ${mine?'mine':'theirs'}">
+                ${m.txt}
+                <div class="m-meta">
+                    ${t} ${mine ? `<span class="seen-check ${seenClass}">✔✔</span>` : ''}
+                </div>
+            </div>`;
     }
 
     function loadFriends() {
@@ -252,25 +270,42 @@
     function openFriendChat(fId, fName, fPfp) {
         currentFCId = [user.id, fId].sort().join('_');
         document.getElementById('fNameTitle').innerText = fName;
+        document.getElementById('fChatAvatar').src = fPfp;
         document.getElementById('friendOverlay').style.display = 'flex';
-        db.ref('private_chats/'+currentFCId).limitToLast(50).on('value', s => {
+        db.ref('private_chats/'+currentFCId+'/chat').on('value', s => {
             const b = document.getElementById('fBox'); b.innerHTML = "";
-            s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
+            s.forEach(snap => {
+                const m = snap.val();
+                renderMsg(b, m, m.sid === user.id);
+                if(m.sid !== user.id && !m.seen) db.ref('private_chats/'+currentFCId+'/chat/'+snap.key).update({seen:true});
+            });
             b.scrollTop = b.scrollHeight;
         });
+        db.ref('private_chats/'+currentFCId+'/typing').on('value', s => {
+            const t = s.val();
+            document.getElementById('friendTyping').innerText = (t && t !== user.id) ? "écrit..." : "";
+        });
+    }
+
+    function updateTyping(mode) {
+        const path = mode === 'couple' ? 'couples/'+user.code+'/typing' : 'private_chats/'+currentFCId+'/typing';
+        if(!isTyping) {
+            isTyping = true; db.ref(path).set(user.id);
+            setTimeout(() => { isTyping = false; db.ref(path).set(null); }, 3000);
+        }
     }
 
     function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; }
 
     function sendFriendMsg() {
         const i = document.getElementById('fInput'); if(!i.value.trim()) return;
-        db.ref('private_chats/'+currentFCId).push({sid:user.id, txt:i.value.trim(), t:Date.now()});
+        db.ref('private_chats/'+currentFCId+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
         i.value = "";
     }
 
     function sendCoupleMsg() {
         const i = document.getElementById('cInput'); if(!i.value.trim()) return;
-        db.ref('couples/'+user.code+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now()});
+        db.ref('couples/'+user.code+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
         i.value = "";
     }
 
@@ -279,12 +314,8 @@
         document.getElementById(id).classList.add('view-active');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
-        if(id === 'vCouple') { document.body.classList.add('cocon-active'); } 
-        else { 
-            document.body.classList.remove('cocon-active');
-            document.getElementById('lockCocon').style.display = 'flex';
-            document.getElementById('coconContent').style.display = 'none';
-        }
+        if(id === 'vCouple') document.body.classList.add('cocon-active');
+        else { document.body.classList.remove('cocon-active'); document.getElementById('lockCocon').style.display = 'flex'; document.getElementById('coconContent').style.display = 'none'; }
     }
 
     function verifyCocon() {
@@ -301,16 +332,8 @@
     }
 
     function saveSettings() {
-        const updates = { 
-            code: document.getElementById('setCode').value.trim(), 
-            meet: document.getElementById('setMeet').value,
-            pfp: document.getElementById('setAvatar').value.trim() 
-        };
-        db.ref('users/'+user.id).update(updates).then(() => {
-            user = {...user, ...updates};
-            localStorage.setItem('nu_v_final_user', JSON.stringify(user));
-            alert("Sauvegardé !"); location.reload();
-        });
+        const u = { code: document.getElementById('setCode').value.trim(), meet: document.getElementById('setMeet').value, pfp: document.getElementById('setAvatar').value.trim() };
+        db.ref('users/'+user.id).update(u).then(() => { user = {...user, ...u}; localStorage.setItem('nu_v11_user', JSON.stringify(user)); location.reload(); });
     }
 </script>
 </body>
