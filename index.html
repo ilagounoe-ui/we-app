@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers</title>
+    <title>Notre Univers❤️</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -19,223 +19,313 @@
             --wa-text: #e9edef;
             --wa-secondary: #8696a0;
             --wa-danger: #f15c6d;
+            --love-pink: #ff4b6e;
+            --love-bg: #1a0a0d;
         }
         
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; }
 
-        /* HEADER */
+        /* --- ÉCRAN DE CONNEXION --- */
+        #authLayer { position: fixed; inset:0; background: var(--wa-bg); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { width: 100%; max-width: 320px; text-align: center; background: var(--wa-panel); padding: 40px 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 28px; margin-bottom: 5px; }
+        .auth-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: #2a3942; color: white; box-sizing: border-box; outline: none; font-size: 16px; }
+        .btn-main { width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:10px; font-weight:700; cursor:pointer; font-size: 16px; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* --- HEADER --- */
         .header { background: var(--wa-panel); padding: 50px 16px 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.4); z-index: 10; position: relative; }
         .header h1 { font-size: 20px; margin: 0; color: var(--wa-text); font-weight: 600; }
 
-        /* VUES */
-        .view { height: calc(100vh - 130px); overflow-y: auto; display: none; padding-bottom: 70px; }
+        /* --- NAVIGATION --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 65px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); z-index: 50; }
+        .nav-tab { color: var(--wa-secondary); font-size: 12px; text-align: center; opacity: 0.6; cursor: pointer; width: 33%; transition: 0.3s; }
+        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 600; }
+        .nav-tab span { font-size: 22px; display: block; margin-bottom: 2px; }
+
+        /* --- VUES --- */
+        .view { height: calc(100vh - 130px); overflow-y: auto; display: none; padding-bottom: 80px; }
         .view-active { display: block; }
 
-        /* LISTE STYLE WHATSAPP */
-        .chat-item { display: flex; padding: 12px 16px; align-items: center; border-bottom: 1px solid rgba(134, 150, 160, 0.15); cursor: pointer; }
+        /* --- LISTE AMIS --- */
+        .chat-item { display: flex; padding: 12px 16px; align-items: center; border-bottom: 1px solid rgba(134, 150, 160, 0.1); cursor: pointer; }
         .chat-item:active { background: #2a3942; }
-        .avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--wa-secondary); margin-right: 15px; object-fit: cover; }
+        .avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--wa-secondary); margin-right: 15px; object-fit: cover; border: 2px solid transparent; }
         .chat-info { flex: 1; }
         .chat-info b { font-size: 16px; display: block; margin-bottom: 2px; text-transform: capitalize; }
         .chat-info p { margin: 0; font-size: 13px; color: var(--wa-secondary); }
-        .btn-block { color: var(--wa-danger); font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 5px; }
+        .btn-block { color: var(--wa-danger); font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--wa-danger); padding: 4px 8px; border-radius: 4px; }
 
-        /* BULLES DE CHAT */
-        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 4px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; height: calc(100vh - 190px); overflow-y: auto; }
-        .bubble { padding: 8px 12px; border-radius: 8px; max-width: 85%; font-size: 14.5px; position: relative; line-height: 1.4; word-wrap: break-word; }
-        .mine { align-self: flex-end; background: var(--wa-bubble-me); border-top-right-radius: 0; }
-        .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-top-left-radius: 0; }
+        /* --- BULLES DE CHAT --- */
+        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 4px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; background-color: #0b141a; height: calc(100vh - 200px); overflow-y: auto; scroll-behavior: smooth; }
+        .bubble { padding: 8px 12px; border-radius: 12px; max-width: 80%; font-size: 15px; position: relative; line-height: 1.4; word-wrap: break-word; box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .mine { align-self: flex-end; background: var(--wa-bubble-me); border-top-right-radius: 2px; }
+        .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-top-left-radius: 2px; }
         .m-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 4px; }
-        .seen-check { color: #53bdeb; font-weight: bold; }
-        .unseen { color: rgba(255,255,255,0.5); }
+        .seen-check { color: #53bdeb; }
 
-        /* BARRE D'ENTRÉE */
-        .input-area { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 8px; position: fixed; bottom: 60px; width: 100%; box-sizing: border-box; }
-        .input-area input { flex: 1; background: #2a3942; border: none; padding: 12px 15px; border-radius: 20px; color: white; outline: none; font-size: 15px; }
-        .send-btn { background: var(--wa-green); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* --- BARRE D'ENTRÉE --- */
+        .input-area { background: var(--wa-panel); padding: 10px; display: flex; align-items: center; gap: 8px; position: fixed; bottom: 65px; width: 100%; box-sizing: border-box; }
+        .input-area input { flex: 1; background: #2a3942; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; font-size: 15px; }
+        .send-btn { background: var(--wa-green); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
-        /* NAV DU BAS */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); z-index: 50; }
-        .nav-tab { color: var(--wa-secondary); font-size: 12px; text-align: center; opacity: 0.6; cursor: pointer; width: 33%; }
-        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 600; }
-        .nav-tab span { font-size: 20px; display: block; margin-bottom: 2px; }
+        /* --- STYLE MIGNON (COCON PRIVÉ) --- */
+        .cocon-mode .header { background: #3d141b; border-bottom: 2px solid var(--love-pink); }
+        .cocon-mode .msg-container { background-color: var(--love-bg); background-image: url('https://www.transparenttextures.com/patterns/heart.png'); }
+        .cocon-mode .bubble.mine { background: var(--love-pink); }
+        .cocon-mode .send-btn { background: var(--love-pink); }
+        .cocon-mode .nav-tab.active { color: var(--love-pink); }
+        .lock-screen { position: absolute; inset: 0; background: var(--wa-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
 
-        /* MODALS */
-        #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
-        #authLayer { position: fixed; inset:0; background: var(--wa-bg); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 320px; text-align: center; background: var(--wa-panel); padding: 30px; border-radius: 15px; }
-        .auth-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #2a3942; color: white; box-sizing: border-box; outline: none; }
+        /* --- PARAMÈTRES --- */
+        .settings-header { padding: 30px 20px 10px; font-size: 24px; font-weight: 700; color: white; }
+        .set-section { padding: 10px 20px; margin-bottom: 10px; }
+        .set-title { font-size: 12px; color: var(--wa-green); font-weight: 700; text-transform: uppercase; margin-bottom: 15px; }
+        .set-item { background: var(--wa-panel); padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .set-item input { background: transparent; border: none; color: white; text-align: right; outline: none; width: 60%; font-size: 15px; }
         
-        /* PARAMÈTRES */
-        .settings-header { padding: 30px 20px 10px; font-size: 22px; font-weight: 700; color: white; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .set-section { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .set-title { font-size: 12px; color: var(--wa-secondary); font-weight: 600; margin-bottom: 15px; text-transform: uppercase; }
-        .set-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; color: var(--wa-text); }
-        .set-item input { background: transparent; border: none; color: var(--wa-green); text-align: right; outline: none; }
-        
-        .toggle-switch { width: 44px; height: 24px; background: #374045; border-radius: 24px; position: relative; transition: 0.3s; }
-        .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: var(--wa-secondary); border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+        .toggle-switch { width: 44px; height: 24px; background: #374045; border-radius: 24px; position: relative; cursor: pointer; }
+        .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
         .toggle-on { background: var(--wa-green); }
-        .toggle-on::after { background: white; transform: translateX(20px); }
+        .toggle-on::after { transform: translateX(20px); }
+
+        /* OVERLAYS */
+        #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
     </style>
 </head>
-<body>
+<body class="world-mode">
 
 <div id="authLayer">
     <div class="auth-card">
-        <h1 style="color:var(--wa-green); margin-bottom:5px; font-size:24px;">NOTRE UNIVERS</h1>
-        <p style="color:var(--wa-secondary); font-size:13px; margin-bottom:25px;">Espace de connexion</p>
+        <h1>Notre Univers</h1>
+        <p style="color:var(--wa-secondary); font-size:13px; margin-bottom:25px;">Connecte-toi pour rejoindre l'espace</p>
         <input type="text" id="aName" placeholder="Ton Surnom">
         <input type="password" id="aPass" placeholder="Mot de passe">
-        <button onclick="handleAuth()" style="width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:8px; font-weight:700; cursor:pointer;">ACTIVER</button>
+        <button class="btn-main" onclick="handleAuth()">ENTRER</button>
     </div>
 </div>
 
 <div id="friendOverlay">
     <div class="header">
         <div style="display:flex; align-items:center; gap:15px;">
-            <span onclick="closeFriendChat()" style="font-size:24px; cursor:pointer;">←</span>
-            <img id="fChatAvatar" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
+            <span onclick="closeFriendChat()" style="font-size:26px; cursor:pointer;">←</span>
+            <img id="fChatAvatar" src="" class="avatar" style="width:40px; height:40px; margin:0;">
             <b id="fNameTitle">Ami</b>
         </div>
     </div>
     <div id="fBox" class="msg-container" style="height: calc(100vh - 130px);"></div>
     <div class="input-area" style="bottom: 0;">
-        <input type="text" id="fInput" placeholder="Message...">
+        <input type="text" id="fInput" placeholder="Écris un message...">
         <button class="send-btn" onclick="sendFriendMsg()">➔</button>
     </div>
 </div>
 
-<div class="app-shell" id="app" style="display:none;">
+<div id="app" style="display:none;">
     
     <div id="vWorld" class="view view-active">
-        <div class="header" style="padding-top:20px;">
-            <h1 style="font-size:22px;">Communauté</h1>
+        <div class="header">
+            <h1>Notre Univers</h1>
+            <span style="color:var(--wa-green); font-size:13px; font-weight:700;">EN LIGNE</span>
         </div>
         <div id="listFriends"></div>
     </div>
 
-    <div id="vCouple" class="view">
-        <div class="header" style="padding-top:20px; display:flex; align-items:center; gap:10px;">
-            <div style="width:36px; height:36px; background:var(--wa-danger); border-radius:50%; display:flex; align-items:center; justify-content:center;">❤️</div>
-            <div style="flex:1;">
-                <h1 style="font-size:16px; margin:0;">Cocon Privé</h1>
-                <div id="dayCounter" style="font-size:12px; color:var(--wa-secondary);">Chargement...</div>
-            </div>
+    <div id="vCouple" class="view cocon-mode">
+        <div id="lockCocon" class="lock-screen">
+            <span style="font-size:50px; margin-bottom:20px;">🔐</span>
+            <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Espace Secret</h2>
+            <p style="color:var(--wa-secondary); font-size:14px; margin-bottom:20px;">Entre ton code secret pour voir vos messages</p>
+            <input type="password" id="unlockCode" placeholder="Code secret..." style="width:200px; padding:12px; border-radius:10px; border:none; background:var(--wa-panel); color:white; text-align:center; margin-bottom:15px; outline:none;">
+            <button class="btn-main" style="background:var(--love-pink); width:200px;" onclick="verifyCocon()">DÉVERROUILLER</button>
         </div>
-        <div id="cBox" class="msg-container"></div>
-        <div class="input-area">
-            <input type="text" id="cInput" placeholder="Message privé...">
-            <button class="send-btn" onclick="sendCoupleMsg()">➔</button>
+
+        <div id="coconContent" style="display:none;">
+            <div class="header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:22px;">💖</span>
+                    <div>
+                        <h1 style="font-size:18px; font-family:'Pacifico';">Cocon Privé</h1>
+                        <div id="dayCounter" style="font-size:11px; color:var(--love-pink); font-weight:700;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="cBox" class="msg-container"></div>
+            <div class="input-area">
+                <input type="text" id="cInput" placeholder="Message pour ton amour...">
+                <button class="send-btn" onclick="sendCoupleMsg()">❤️</button>
+            </div>
         </div>
     </div>
 
     <div id="vSets" class="view">
         <div class="settings-header">Réglages</div>
+        
         <div class="set-section">
-            <div class="set-title">Profil</div>
+            <div class="set-title">Mon Profil</div>
             <div class="set-item" onclick="changeAvatar()">
                 <span>Photo de profil</span>
-                <span style="color:var(--wa-green); font-size:13px;">Modifier ➔</span>
+                <img id="myPfpPreview" src="" class="avatar" style="width:30px; height:30px; margin:0;">
             </div>
             <div class="set-item">
-                <span>Surnom</span>
+                <span>Mon Surnom</span>
                 <input type="text" id="setPseudo" readonly>
             </div>
         </div>
+
         <div class="set-section">
-            <div class="set-title">Couple</div>
-            <div class="set-item"><span>Code Secret</span><input type="text" id="setCode"></div>
-            <div class="set-item"><span>Rencontre</span><input type="date" id="setMeet"></div>
+            <div class="set-title">Sécurité Couple</div>
+            <div class="set-item">
+                <span>Code Secret</span>
+                <input type="text" id="setCode" placeholder="Ex: AMOUR123">
+            </div>
+            <div class="set-item">
+                <span>Date de rencontre</span>
+                <input type="date" id="setMeet">
+            </div>
         </div>
+
         <div class="set-section">
-            <div class="set-title">Options</div>
+            <div class="set-title">Notifications</div>
             <div class="set-item" onclick="toggleDND()">
                 <span>Mode "Ne pas déranger"</span>
                 <div class="toggle-switch" id="dndToggle"></div>
             </div>
         </div>
-        <div style="padding: 25px 20px;">
-            <button style="width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:8px; font-weight:700;" onclick="saveSettings()">ENREGISTRER</button>
-            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); font-size:13px; margin-top:20px; cursor:pointer;">Se déconnecter</p>
+
+        <div style="padding: 20px;">
+            <button class="btn-main" onclick="saveSettings()">SAUVEGARDER</button>
+            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:30px; font-size:14px; font-weight:700; cursor:pointer;">DÉCONNEXION</p>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-tab active" onclick="nv('vWorld', this)"><span>🌎</span>Monde</div>
-        <div class="nav-tab" onclick="nv('vCouple', this)"><span>❤️</span>Couple</div>
+        <div class="nav-tab" onclick="nv('vCouple', this)"><span>❤️</span>Cocon</div>
         <div class="nav-tab" onclick="nv('vSets', this)"><span>⚙️</span>Réglages</div>
     </nav>
 </div>
 
 <script>
+    // --- CONFIGURATION FIREBASE ---
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // On utilise une clé fixe pour éviter les problèmes de reconnexion
-    let user = JSON.parse(localStorage.getItem('notre_univers_user'));
+    let user = JSON.parse(localStorage.getItem('nu_v9_user'));
     let currentFCId = null;
 
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
-
+    // --- 1. AUTHENTIFICATION (SÉCURISÉE CONTRE LES DOUBLONS) ---
     async function handleAuth() {
         const n = document.getElementById('aName').value.trim().toLowerCase();
         const p = document.getElementById('aPass').value;
-        if(!n || !p) return;
+        if(!n || !p) return alert("Remplis tout !");
 
+        // ON CHERCHE SI LE NOM EXISTE DÉJÀ
         const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
+        
         if(s.exists()){
+            // L'utilisateur existe déjà
             const u = Object.values(s.val())[0];
-            if(u.pass === p) login(u); else alert("Code incorrect");
+            if(u.pass === p) {
+                login(u);
+            } else {
+                alert("Ce nom est déjà pris ou le mot de passe est faux.");
+            }
         } else {
-            const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n, code:'', meet:'', dnd:false };
-            await db.ref('users/'+nu.id).set(nu);
+            // Nouvel utilisateur (Vraie création unique)
+            const nu = { 
+                id: 'u' + Date.now(), 
+                name: n, 
+                pass: p, 
+                pfp: 'https://ui-avatars.com/api/?name='+n+'&background=random', 
+                code: '', 
+                meet: '', 
+                dnd: false 
+            };
+            await db.ref('users/' + nu.id).set(nu);
             login(nu);
         }
     }
 
     function login(u) {
         user = u;
-        localStorage.setItem('notre_univers_user', JSON.stringify(u));
+        localStorage.setItem('nu_v9_user', JSON.stringify(u));
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         initApp();
     }
 
-    function logout() { localStorage.removeItem('notre_univers_user'); location.reload(); }
+    function logout() { localStorage.removeItem('nu_v9_user'); location.reload(); }
 
     if(user) login(user);
 
+    // --- 2. INITIALISATION ---
     function initApp() {
         document.getElementById('setPseudo').value = user.name;
+        document.getElementById('myPfpPreview').src = user.pfp;
         document.getElementById('setCode').value = user.code || "";
         document.getElementById('setMeet').value = user.meet || "";
         if(user.dnd) document.getElementById('dndToggle').classList.add('toggle-on');
 
+        loadFriends();
+        
+        // On écoute le cocon mais il reste caché par le verrou
         if(user.code) {
-            db.ref('couples/'+user.code+'/chat').limitToLast(30).on('value', s => {
+            db.ref('couples/'+user.code+'/chat').limitToLast(40).on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
                 s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
                 b.scrollTop = b.scrollHeight;
             });
             updateCounter();
         }
-        loadFriends();
     }
 
+    // --- 3. GESTION DU COCON (SECRET & MIGNON) ---
+    function verifyCocon() {
+        const input = document.getElementById('unlockCode').value;
+        if(!user.code) return alert("Configure un code secret dans les Réglages d'abord !");
+        
+        if(input === user.code) {
+            document.getElementById('lockCocon').style.display = 'none';
+            document.getElementById('coconContent').style.display = 'block';
+            document.body.className = "cocon-mode"; // Change tout le look de l'appli
+            setTimeout(() => { document.getElementById('cBox').scrollTop = 99999; }, 100);
+        } else {
+            alert("Code secret erroné... 🔐");
+        }
+    }
+
+    // --- 4. MESSAGERIE ---
     function renderMsg(container, m, mine) {
         const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t} ${mine?`<span class="seen-check ${m.seen?'':'unseen'}">✔✔</span>`:''}</div></div>`;
+        container.innerHTML += `
+            <div class="bubble ${mine?'mine':'theirs'}">
+                ${m.txt}
+                <div class="m-meta">
+                    ${t} ${mine ? `<span class="seen-check">✔✔</span>` : ''}
+                </div>
+            </div>`;
     }
 
     function loadFriends() {
         db.ref('users').on('value', s => {
             const d = document.getElementById('listFriends'); d.innerHTML = "";
+            let count = 0;
             s.forEach(snap => {
-                const u = snap.val(); if(u.id === user.id) return;
-                d.innerHTML += `<div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')"><img src="${u.pfp}" class="avatar"><div class="chat-info"><b>${u.name}</b><p>En ligne</p></div><div class="btn-block">Bloquer</div></div>`;
+                const u = snap.val(); 
+                if(u.id === user.id) return;
+                count++;
+                d.innerHTML += `
+                    <div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')">
+                        <img src="${u.pfp}" class="avatar">
+                        <div class="chat-info">
+                            <b>${u.name}</b>
+                            <p>Membre de Notre Univers</p>
+                        </div>
+                        <div class="btn-block" onclick="event.stopPropagation(); alert('Bloqué')">Bloquer</div>
+                    </div>`;
             });
+            console.log("Nombre d'utilisateurs réels :", count + 1);
         });
     }
 
@@ -244,14 +334,17 @@
         document.getElementById('fNameTitle').innerText = fName;
         document.getElementById('fChatAvatar').src = fPfp;
         document.getElementById('friendOverlay').style.display = 'flex';
-        db.ref('private_chats/'+currentFCId).limitToLast(30).on('value', s => {
+        db.ref('private_chats/'+currentFCId).limitToLast(40).on('value', s => {
             const b = document.getElementById('fBox'); b.innerHTML = "";
             s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
             b.scrollTop = b.scrollHeight;
         });
     }
 
-    function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; }
+    function closeFriendChat() { 
+        document.getElementById('friendOverlay').style.display='none'; 
+        if(currentFCId) db.ref('private_chats/'+currentFCId).off();
+    }
 
     function sendFriendMsg() {
         const i = document.getElementById('fInput'); if(!i.value.trim()) return;
@@ -260,43 +353,37 @@
     }
 
     function sendCoupleMsg() {
-        const i = document.getElementById('cInput'); if(!i.value.trim() || !user.code) return;
+        const i = document.getElementById('cInput'); if(!i.value.trim()) return;
         db.ref('couples/'+user.code+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
         i.value = "";
     }
 
+    // --- 5. LOGIQUE PARAMÈTRES & NAV ---
     function nv(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
         document.getElementById(id).classList.add('view-active');
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
+        
+        // Sortir du mode mignon si on quitte le cocon
+        if(id !== 'vCouple') {
+            document.body.className = "world-mode";
+            document.getElementById('lockCocon').style.display = 'flex';
+            document.getElementById('coconContent').style.display = 'none';
+            document.getElementById('unlockCode').value = "";
+        }
     }
 
     function updateCounter() {
         if(!user.meet) return;
         const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
-        document.getElementById('dayCounter').innerText = `${diff} jours de bonheur ❤️`;
+        document.getElementById('dayCounter').innerText = `${diff} jours d'amour ✨`;
     }
 
     function toggleDND() { 
-        const t = document.getElementById('dndToggle'); 
-        t.classList.toggle('toggle-on'); 
+        const t = document.getElementById('dndToggle'); t.classList.toggle('toggle-on'); 
         user.dnd = t.classList.contains('toggle-on'); 
     }
 
     function changeAvatar() {
-        const url = prompt("Lien de ton image (.jpg, .png) :");
-        if(url) { user.pfp = url; alert("Avatar prêt ! Enregistre pour finir."); }
-    }
-
-    function saveSettings() {
-        const updates = { code: document.getElementById('setCode').value, meet: document.getElementById('setMeet').value, dnd: user.dnd, pfp: user.pfp };
-        db.ref('users/'+user.id).update(updates).then(() => {
-            user = {...user, ...updates};
-            localStorage.setItem('notre_univers_user', JSON.stringify(user));
-            alert("Enregistré !"); location.reload();
-        });
-    }
-</script>
-</body>
-</html>
+        const url = prompt("Lien de ton image (direct) :")
