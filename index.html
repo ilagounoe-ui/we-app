@@ -3,69 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus v4.2 - Fix Edition</title>
+    <title>Nexus v4.3 - Stable</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --accent: #ff2d55; --primary: #5856d6; --bg: #050505; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
+        :root { --accent: #ff2d55; --primary: #5856d6; --bg: #050505; --card: rgba(255, 255, 255, 0.08); --border: rgba(255, 255, 255, 0.12); }
         body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
         
-        /* AUTH */
+        /* AUTH PAGE */
         #authLayer { position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
-        .auth-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 35px; width: 100%; max-width: 320px; text-align: center; }
-
-        /* APP */
+        .auth-card { background: var(--card); border: 1px solid var(--border); padding: 35px; border-radius: 40px; width: 100%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        /* APP CONTAINER */
         .app-shell { height: 100vh; display: flex; flex-direction: column; display: none; }
-        .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 200px; }
+        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 180px; }
         .view-active { display: block; }
 
-        /* CHAT */
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+        /* BUBBLES */
+        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 10px; scrollbar-width: none; }
         .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
         .mine { align-self: flex-end; align-items: flex-end; }
         .theirs { align-self: flex-start; align-items: flex-start; }
-        .bubble { padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; position: relative; }
-        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; }
+        .bubble { padding: 12px 18px; border-radius: 22px; font-size: 14px; line-height: 1.5; }
+        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(88, 86, 214, 0.3); }
         .theirs .bubble { background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .time { font-size: 9px; opacity: 0.3; margin-top: 4px; }
+        .time { font-size: 9px; opacity: 0.4; margin-top: 5px; font-weight: 300; }
 
-        /* UI ELEMENTS */
-        .user-row { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); position: relative; }
-        .dropdown { position: absolute; right: 10px; top: 50px; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; display: none; flex-direction: column; z-index: 2000; }
-        .dropdown button { background: none; border: none; color: white; padding: 12px; font-size: 11px; text-align: left; border-bottom: 1px solid var(--border); }
+        /* SETTINGS & UI */
+        .user-row { background: var(--card); padding: 15px; border-radius: 22px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); }
+        input { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 12px; box-sizing: border-box; font-family: 'Outfit'; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 800; width: 100%; cursor: pointer; letter-spacing: 1px; }
 
-        /* NAV */
-        .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: rgba(15,15,15,0.95); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
-        .nav-item { font-size: 24px; opacity: 0.3; }
-        .nav-active { opacity: 1; color: var(--accent); }
-
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 10px; box-sizing: border-box; }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; }
+        /* NAVIGATION */
+        .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 75px; background: rgba(18,18,18,0.96); backdrop-filter: blur(25px); border-radius: 35px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
+        .nav-item { font-size: 26px; opacity: 0.3; transition: 0.3s; padding: 10px; }
+        .nav-active { opacity: 1; color: var(--accent); transform: translateY(-5px); }
+        
+        #dayCounter { background: linear-gradient(45deg, var(--accent), var(--primary)); padding: 8px 15px; border-radius: 12px; font-size: 12px; font-weight: 800; display: none; margin-bottom: 15px; text-align: center; }
     </style>
 </head>
 <body>
 
 <div id="authLayer">
     <div class="auth-card">
-        <div style="font-size:28px; font-weight:800; margin-bottom:20px;">NEXUS</div>
+        <div style="font-size:32px; font-weight:800; margin-bottom:8px; letter-spacing:-1.5px;">NEXUS</div>
+        <p style="font-size:11px; opacity:0.5; margin-bottom:25px;">CONNECTE-TOI OU CRÉE TON COMPTE</p>
         <input type="text" id="aName" placeholder="Surnom">
         <input type="password" id="aPass" placeholder="Mot de passe">
         <button class="btn-main" onclick="handleAuth()">ENTRER</button>
+        <div id="authMsg" style="font-size:10px; margin-top:15px; color:var(--accent);"></div>
     </div>
 </div>
 
 <div class="app-shell" id="app">
-    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <div style="font-weight: 800; color: var(--accent);">NEXUS</div>
-        <img id="myAvatar" src="" style="width:35px; height:35px; border-radius:10px; border:2px solid var(--accent); object-fit:cover;">
+    <div class="top-nav">
+        <div style="font-weight: 800; font-size: 20px;">NEXUS</div>
+        <img id="myAvatar" src="" style="width:40px; height:40px; border-radius:14px; border:2px solid var(--accent); object-fit:cover;">
     </div>
 
     <div id="vWorld" class="view view-active">
-        <div style="margin-bottom: 20px; display: flex; gap: 15px; font-size: 13px;">
-            <span onclick="setTab('chats')" id="tC" style="color:var(--accent); font-weight:800;">DISCUSSIONS</span>
+        <div style="margin-bottom: 20px; display: flex; gap: 20px; font-size: 14px; font-weight: 600;">
+            <span onclick="setTab('chats')" id="tC" style="color:var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 5px;">CHATS</span>
             <span onclick="setTab('disc')" id="tD" style="opacity:0.4;">DÉCOUVRIR</span>
         </div>
         <div id="listChats"></div>
@@ -73,43 +75,44 @@
     </div>
 
     <div id="vCouple" class="view">
+        <div id="dayCounter"></div>
         <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border);" onclick="document.getElementById('fIn').click()">📷 Photo</button>
-            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border);" onclick="sendDefi()">🎮 Défi</button>
+            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border); padding:10px;" onclick="document.getElementById('fIn').click()">📷 Photo</button>
+            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border); padding:10px;" onclick="sendDefi()">🎮 Défi Duo</button>
             <input type="file" id="fIn" hidden onchange="uploadPhoto(this)">
         </div>
-        <div id="cTyping" style="font-size:11px; color:var(--accent); height:15px;"></div>
-        <div id="cBox" class="msg-list" style="height:350px; background:var(--card); border-radius:25px; border:1px solid var(--border);"></div>
+        <div id="cTyping" style="font-size:11px; color:var(--accent); height:15px; margin-left:10px; font-style:italic;"></div>
+        <div id="cBox" class="msg-list" style="height:380px; background:var(--card); border-radius:30px; border:1px solid var(--border);"></div>
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <input type="text" id="cInput" placeholder="Secret..." style="margin:0;" oninput="emitTyping()">
-            <button onclick="sendMsg('couple')" style="background:var(--accent); border:none; width:50px; border-radius:12px; color:white;">➔</button>
+            <input type="text" id="cInput" placeholder="Écris ici..." style="margin:0;" oninput="emitTyping()">
+            <button onclick="sendMsg('couple')" style="background:var(--accent); border:none; width:60px; border-radius:18px; color:white; font-size:20px;">➔</button>
         </div>
     </div>
 
     <div id="vSets" class="view">
-        <h3>Paramètres</h3>
-        <div style="background:var(--card); padding:20px; border-radius:25px; border:1px solid var(--border);">
-            <button onclick="document.getElementById('pIn').click()" style="background:var(--primary); border:none; color:white; padding:10px; border-radius:10px; width:100%; margin-bottom:15px;">Changer ma photo</button>
+        <h3 style="margin-bottom:20px;">Réglages</h3>
+        <div style="background:var(--card); padding:25px; border-radius:30px; border:1px solid var(--border);">
+            <button onclick="document.getElementById('pIn').click()" style="background:var(--primary); border:none; color:white; padding:15px; border-radius:15px; width:100%; margin-bottom:20px; font-weight:800;">Changer ma photo</button>
             <input type="file" id="pIn" hidden onchange="changePfp(this)">
             
-            <label style="font-size:10px; opacity:0.5;">DATE DE RENCONTRE</label>
+            <label style="font-size:10px; opacity:0.5; letter-spacing:1px;">DATE DE RENCONTRE</label>
             <input type="date" id="setMeet">
             
-            <label style="font-size:10px; opacity:0.5; margin-top:10px; display:block;">NOM PARTENAIRE</label>
-            <input type="text" id="setPartner">
+            <label style="font-size:10px; opacity:0.5; letter-spacing:1px; margin-top:10px; display:block;">NOM PARTENAIRE</label>
+            <input type="text" id="setPartner" placeholder="N'neka Alicia">
 
-            <label style="font-size:10px; opacity:0.5;">CODE SECRET COUPLE</label>
-            <input type="password" id="setCode" placeholder="Code secret">
+            <label style="font-size:10px; opacity:0.5; letter-spacing:1px; margin-top:10px; display:block;">CODE SECRET COUPLE</label>
+            <input type="password" id="setCode" placeholder="Ex: amourtoujours">
             
-            <button class="btn-main" onclick="saveSets()">ENREGISTRER</button>
+            <button class="btn-main" onclick="saveSets()" style="margin-top:10px;">SAUVEGARDER</button>
         </div>
-        <button onclick="localStorage.clear();location.reload();" style="color:#555; background:none; border:none; width:100%; margin-top:20px;">Déconnexion</button>
+        <button onclick="localStorage.clear();location.reload();" style="color:rgba(255,255,255,0.2); background:none; border:none; width:100%; margin-top:30px; font-size:12px;">Déconnexion / Reset</button>
     </div>
 
     <nav class="bottom-bar">
         <div class="nav-item nav-active" onclick="nv('vWorld', this)">🌎</div>
         <div class="nav-item" onclick="nv('vCouple', this)">❤</div>
-        <div class="nav-item" onclick="nv('vSets', this)">⚙</div>
+        <div class="nav-item" onclick="nv('vSets', this)">⚙️</div>
     </nav>
 </div>
 
@@ -118,70 +121,76 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_v4_2'));
+    let user = JSON.parse(localStorage.getItem('nexus_final_v4'));
 
     function handleAuth() {
-        const n = document.getElementById('aName').value;
-        const p = document.getElementById('aPass').value;
-        if(!n || !p) return alert("Remplis tout !");
+        const n = document.getElementById('aName').value.trim();
+        const p = document.getElementById('aPass').value.trim();
+        const msg = document.getElementById('authMsg');
         
+        if(!n || !p) { msg.innerText = "Champs obligatoires !"; return; }
+        
+        msg.innerText = "Vérification...";
         db.ref('users').orderByChild('name').equalTo(n).once('value', s => {
             if(s.exists()) {
                 const u = Object.values(s.val())[0];
-                if(u.pass === p) start(u); else alert("Erreur pass");
+                if(u.pass === p) { startApp(u); } 
+                else { msg.innerText = "Mot de passe incorrect."; }
             } else {
-                const nu = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n, code: '', meet: '', ignored: {} };
-                db.ref('users/'+nu.id).set(nu); start(nu);
+                const nu = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?background=ff2d55&color=fff&name='+n, code: '', meet: '', partner: '', ignored: {} };
+                db.ref('users/'+nu.id).set(nu).then(() => startApp(nu));
             }
         });
     }
 
-    function start(u) {
-        user = u; localStorage.setItem('nexus_v4_2', JSON.stringify(u));
+    function startApp(u) {
+        user = u; localStorage.setItem('nexus_final_v4', JSON.stringify(u));
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
-        init();
+        initUI();
     }
 
-    if(user) start(user);
+    if(user) startApp(user);
 
-    function init() {
+    function initUI() {
         document.getElementById('myAvatar').src = user.pfp;
         document.getElementById('setMeet').value = user.meet || "";
         document.getElementById('setPartner').value = user.partner || "";
         document.getElementById('setCode').value = user.code || "";
+        updateCounter();
 
-        // Discover with "Ignorer"
+        // DECOUVERTE
         db.ref('users').on('value', s => {
             const l = document.getElementById('listDisc'); l.innerHTML = "";
             s.forEach(c => {
                 const u = c.val();
                 if(u.id !== user.id && (!user.ignored || !user.ignored[u.id])) {
-                    l.innerHTML += `<div class="user-row"><img src="${u.pfp}" style="width:40px;height:40px;border-radius:10px;"><b>${u.name}</b><button onclick="tgl('opt_${u.id}')" style="margin-left:auto;background:none;border:none;color:white;">⋮</button><div id="opt_${u.id}" class="dropdown"><button onclick="ign('${u.id}')">Ignorer</button></div></div>`;
+                    l.innerHTML += `<div class="user-row"><img src="${u.pfp}" style="width:45px;height:45px;border-radius:12px;object-fit:cover;"><b>${u.name}</b><button onclick="ign('${u.id}')" style="margin-left:auto;background:rgba(255,255,255,0.05);border:none;color:white;padding:8px;border-radius:10px;font-size:10px;">Ignorer</button></div>`;
                 }
             });
         });
 
-        // Couple Chat
+        // CHAT COUPLE
         if(user.code) {
-            db.ref('couples/'+user.code+'/chat').on('value', s => {
+            db.ref('couples/'+user.code+'/chat').limitToLast(25).on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
                 s.forEach(c => {
                     const m = c.val();
                     const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    const cnt = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;">` : m.txt;
+                    const cnt = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:18px; display:block;">` : m.txt;
                     b.innerHTML += `<div class="bubble-wrap ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${cnt}</div><div class="time">${t}</div></div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
             db.ref('couples/'+user.code+'/typing').on('value', s => {
-                document.getElementById('cTyping').innerText = (s.val() && s.val() !== user.id) ? "Alicia écrit..." : "";
+                const t = s.val();
+                document.getElementById('cTyping').innerText = (t && t !== user.id) ? (user.partner || "Ton partenaire") + " écrit..." : "";
             });
         }
     }
 
     function sendMsg() {
-        const i = document.getElementById('cInput'); if(!i.value) return;
+        const i = document.getElementById('cInput'); if(!i.value || !user.code) return;
         db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: i.value, t: Date.now() });
         db.ref('couples/'+user.code+'/typing').set(false); i.value = "";
     }
@@ -192,11 +201,12 @@
     }
 
     function sendDefi() {
-        const d = ["Action: Selfie rigolo !","Vérité: Ton secret ?","Action: Vocal de 5s"];
+        const d = ["Action: Envoie un selfie maintenant !","Vérité: Dis-moi un truc que j'ignore","Action: Chante une chanson en vocal","Vérité: Quel est ton plus grand rêve ?"];
         db.ref('couples/'+user.code+'/chat').push({ sid: 'sys', txt: "🎲 " + d[Math.floor(Math.random()*d.length)], t: Date.now() });
     }
 
-    function ign(id) { db.ref('users/'+user.id+'/ignored/'+id).set(true); }
+    function ign(id) { db.ref('users/'+user.id+'/ignored/'+id).set(true); db.ref('users/'+user.id+'/ignored/'+id).once('value', () => location.reload()); }
+    
     function changePfp(el) {
         const r = new FileReader(); r.onload = () => { db.ref('users/'+user.id).update({pfp: r.result}); document.getElementById('myAvatar').src = r.result; };
         r.readAsDataURL(el.files[0]);
@@ -204,7 +214,16 @@
 
     function saveSets() {
         const up = { meet: document.getElementById('setMeet').value, partner: document.getElementById('setPartner').value, code: document.getElementById('setCode').value.toLowerCase() };
-        db.ref('users/'+user.id).update(up).then(() => alert("Nexus mis à jour !"));
+        db.ref('users/'+user.id).update(up).then(() => { alert("Nexus mis à jour !"); location.reload(); });
+    }
+
+    function updateCounter() {
+        if(user.meet) {
+            const start = new Date(user.meet); const now = new Date();
+            const diff = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+            const el = document.getElementById('dayCounter');
+            el.innerText = `✨ ${diff} JOURS DE BONHEUR ✨`; el.style.display = 'block';
+        }
     }
 
     function nv(id, el) { 
@@ -212,14 +231,15 @@
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
         document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active');
     }
-    function tgl(id) { const d = document.getElementById(id); d.style.display = d.style.display === 'flex' ? 'none' : 'flex'; }
     function setTab(t) {
         document.getElementById('listChats').style.display = t === 'chats' ? 'block' : 'none';
         document.getElementById('listDisc').style.display = t === 'disc' ? 'block' : 'none';
         document.getElementById('tC').style.opacity = t === 'chats' ? '1' : '0.4';
         document.getElementById('tD').style.opacity = t === 'disc' ? '1' : '0.4';
+        document.getElementById('tC').style.borderBottom = t === 'chats' ? '2px solid var(--accent)' : 'none';
+        document.getElementById('tD').style.borderBottom = t === 'disc' ? '2px solid var(--accent)' : 'none';
     }
-    function emitTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 3000); } }
+    function emitTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 4000); } }
 </script>
 </body>
 </html>
