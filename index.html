@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nexus v8.5</title>
+    <title>Notre Univers</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -60,22 +60,19 @@
         .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 600; }
         .nav-tab span { font-size: 20px; display: block; margin-bottom: 2px; }
 
-        /* MODAL AMIS */
+        /* MODALS */
         #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
-
-        /* AUTH LAYER */
         #authLayer { position: fixed; inset:0; background: var(--wa-bg); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 320px; text-align: center; background: var(--wa-panel); padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .auth-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #2a3942; color: white; box-sizing: border-box; font-size: 15px; outline: none; }
+        .auth-card { width: 100%; max-width: 320px; text-align: center; background: var(--wa-panel); padding: 30px; border-radius: 15px; }
+        .auth-card input { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #2a3942; color: white; box-sizing: border-box; outline: none; }
         
         /* PARAMÈTRES */
         .settings-header { padding: 30px 20px 10px; font-size: 22px; font-weight: 700; color: white; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .set-section { padding: 10px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .set-title { font-size: 12px; color: var(--wa-secondary); font-weight: 600; margin-bottom: 15px; margin-top: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .set-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; cursor: pointer; color: var(--wa-text); font-size: 15px; }
-        .set-item input[type="text"], .set-item input[type="date"] { background: transparent; border: none; color: var(--wa-green); text-align: right; font-family: inherit; font-size: 15px; outline: none; width: 150px; }
+        .set-title { font-size: 12px; color: var(--wa-secondary); font-weight: 600; margin-bottom: 15px; text-transform: uppercase; }
+        .set-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; color: var(--wa-text); }
+        .set-item input { background: transparent; border: none; color: var(--wa-green); text-align: right; outline: none; }
         
-        /* TOGGLE SWITCH */
         .toggle-switch { width: 44px; height: 24px; background: #374045; border-radius: 24px; position: relative; transition: 0.3s; }
         .toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: var(--wa-secondary); border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
         .toggle-on { background: var(--wa-green); }
@@ -86,11 +83,11 @@
 
 <div id="authLayer">
     <div class="auth-card">
-        <h1 style="color:white; margin-bottom:5px; font-size:28px;">NEXUS</h1>
-        <p style="color:var(--wa-secondary); font-size:13px; margin-bottom:25px;">Connexion globale</p>
+        <h1 style="color:var(--wa-green); margin-bottom:5px; font-size:24px;">NOTRE UNIVERS</h1>
+        <p style="color:var(--wa-secondary); font-size:13px; margin-bottom:25px;">Espace de connexion</p>
         <input type="text" id="aName" placeholder="Ton Surnom">
         <input type="password" id="aPass" placeholder="Mot de passe">
-        <button onclick="handleAuth()" style="width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:8px; font-weight:700; font-size:15px; cursor:pointer;">ACTIVER NEXUS</button>
+        <button onclick="handleAuth()" style="width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:8px; font-weight:700; cursor:pointer;">ACTIVER</button>
     </div>
 </div>
 
@@ -99,9 +96,8 @@
         <div style="display:flex; align-items:center; gap:15px;">
             <span onclick="closeFriendChat()" style="font-size:24px; cursor:pointer;">←</span>
             <img id="fChatAvatar" src="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">
-            <b id="fNameTitle" style="font-size:16px; text-transform:capitalize;">Ami</b>
+            <b id="fNameTitle">Ami</b>
         </div>
-        <div style="color:var(--wa-secondary); font-size:20px;">⋮</div>
     </div>
     <div id="fBox" class="msg-container" style="height: calc(100vh - 130px);"></div>
     <div class="input-area" style="bottom: 0;">
@@ -113,70 +109,55 @@
 <div class="app-shell" id="app" style="display:none;">
     
     <div id="vWorld" class="view view-active">
-        <div class="header" style="padding-top:20px; padding-bottom:15px; box-shadow:none; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div class="header" style="padding-top:20px;">
             <h1 style="font-size:22px;">Communauté</h1>
         </div>
         <div id="listFriends"></div>
     </div>
 
     <div id="vCouple" class="view">
-        <div class="header" style="padding-top:20px; padding-bottom:15px; display:flex; align-items:center; gap:10px;">
-            <div style="width:36px; height:36px; background:var(--wa-danger); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px;">❤️</div>
+        <div class="header" style="padding-top:20px; display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; background:var(--wa-danger); border-radius:50%; display:flex; align-items:center; justify-content:center;">❤️</div>
             <div style="flex:1;">
                 <h1 style="font-size:16px; margin:0;">Cocon Privé</h1>
-                <div id="dayCounter" style="font-size:12px; color:var(--wa-secondary);">Calcul des jours...</div>
+                <div id="dayCounter" style="font-size:12px; color:var(--wa-secondary);">Chargement...</div>
             </div>
         </div>
         <div id="cBox" class="msg-container"></div>
         <div class="input-area">
-            <input type="text" id="cInput" placeholder="Message pour N'neka...">
+            <input type="text" id="cInput" placeholder="Message privé...">
             <button class="send-btn" onclick="sendCoupleMsg()">➔</button>
         </div>
     </div>
 
     <div id="vSets" class="view">
-        <div class="settings-header">Paramètres</div>
-
+        <div class="settings-header">Réglages</div>
         <div class="set-section">
-            <div class="set-title">Profil Personnel</div>
+            <div class="set-title">Profil</div>
             <div class="set-item" onclick="changeAvatar()">
                 <span>Photo de profil</span>
                 <span style="color:var(--wa-green); font-size:13px;">Modifier ➔</span>
             </div>
             <div class="set-item">
-                <span>Surnom affiché</span>
-                <input type="text" id="setPseudo" readonly style="color:var(--wa-secondary);">
+                <span>Surnom</span>
+                <input type="text" id="setPseudo" readonly>
             </div>
         </div>
-
         <div class="set-section">
-            <div class="set-title">Espace Couple</div>
-            <div class="set-item">
-                <span>Code Secret</span>
-                <input type="text" id="setCode" placeholder="Ex: AMOUR2026">
-            </div>
-            <div class="set-item">
-                <span>Date de rencontre</span>
-                <input type="date" id="setMeet">
-            </div>
+            <div class="set-title">Couple</div>
+            <div class="set-item"><span>Code Secret</span><input type="text" id="setCode"></div>
+            <div class="set-item"><span>Rencontre</span><input type="date" id="setMeet"></div>
         </div>
-
         <div class="set-section">
-            <div class="set-title">Notifications & Études</div>
+            <div class="set-title">Options</div>
             <div class="set-item" onclick="toggleDND()">
-                <div>
-                    <span style="display:block;">Mode "Ne pas déranger"</span>
-                    <span style="font-size:11px; color:var(--wa-secondary);">Coupe les alertes pour étudier tranquille</span>
-                </div>
+                <span>Mode "Ne pas déranger"</span>
                 <div class="toggle-switch" id="dndToggle"></div>
             </div>
         </div>
-
         <div style="padding: 25px 20px;">
-            <button style="width:100%; padding:14px; background:var(--wa-panel); border:1px solid var(--wa-green); color:var(--wa-green); border-radius:8px; font-weight:700; font-size:15px; cursor:pointer;" onclick="saveSettings()">ENREGISTRER LES MODIFICATIONS</button>
-            <div style="text-align:center; margin-top:20px;">
-                <button style="background:transparent; border:none; color:var(--wa-danger); font-size:13px; cursor:pointer;" onclick="logout()">Se déconnecter</button>
-            </div>
+            <button style="width:100%; padding:14px; background:var(--wa-green); border:none; color:white; border-radius:8px; font-weight:700;" onclick="saveSettings()">ENREGISTRER</button>
+            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); font-size:13px; margin-top:20px; cursor:pointer;">Se déconnecter</p>
         </div>
     </div>
 
@@ -188,56 +169,27 @@
 </div>
 
 <script>
-    // --- 1. INITIALISATION FIREBASE ---
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- 2. VARIABLES GLOBALES ---
-    let user = JSON.parse(localStorage.getItem('nexus_v8_5'));
+    // On utilise une clé fixe pour éviter les problèmes de reconnexion
+    let user = JSON.parse(localStorage.getItem('notre_univers_user'));
     let currentFCId = null;
 
-    // --- 3. SERVICE WORKER (NOTIFICATIONS) ---
-    if ('serviceWorker' in navigator) { 
-        navigator.serviceWorker.register('sw.js').catch(err => console.log("SW non trouvé, mais l'app continue.")); 
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-    function triggerNotify() {
-        if (!document.hidden || (user && user.dnd)) return; // Si DND activé, on ne sonne pas
-        if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("Nexus", { body: "Nouveau message", icon: "https://ui-avatars.com/api/?name=N&background=00a884" });
-        }
-    }
-
-    // --- 4. AUTHENTIFICATION ---
     async function handleAuth() {
-        if ("Notification" in window && Notification.permission !== "granted") {
-            await Notification.requestPermission();
-        }
         const n = document.getElementById('aName').value.trim().toLowerCase();
         const p = document.getElementById('aPass').value;
-        if(!n || !p) return alert("Remplis tous les champs !");
+        if(!n || !p) return;
 
         const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
         if(s.exists()){
             const u = Object.values(s.val())[0];
-            if(u.pass === p) {
-                login(u);
-            } else {
-                alert("Mot de passe incorrect");
-            }
+            if(u.pass === p) login(u); else alert("Code incorrect");
         } else {
-            // Création nouvel utilisateur
-            const nu = { 
-                id: 'u' + Date.now(), 
-                name: n, 
-                pass: p, 
-                pfp: 'https://ui-avatars.com/api/?name=' + n + '&background=random', 
-                code: '', 
-                meet: '',
-                dnd: false 
-            };
+            const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n, code:'', meet:'', dnd:false };
             await db.ref('users/'+nu.id).set(nu);
             login(nu);
         }
@@ -245,80 +197,44 @@
 
     function login(u) {
         user = u;
-        localStorage.setItem('nexus_v8_5', JSON.stringify(u));
+        localStorage.setItem('notre_univers_user', JSON.stringify(u));
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         initApp();
     }
 
-    function logout() {
-        localStorage.removeItem('nexus_v8_5');
-        location.reload();
-    }
+    function logout() { localStorage.removeItem('notre_univers_user'); location.reload(); }
 
     if(user) login(user);
 
-    // --- 5. INITIALISATION DE L'APPLICATION ---
     function initApp() {
-        // Remplir les paramètres
         document.getElementById('setPseudo').value = user.name;
-        if(user.code) document.getElementById('setCode').value = user.code;
-        if(user.meet) document.getElementById('setMeet').value = user.meet;
+        document.getElementById('setCode').value = user.code || "";
+        document.getElementById('setMeet').value = user.meet || "";
         if(user.dnd) document.getElementById('dndToggle').classList.add('toggle-on');
 
-        // Charger le Cocon Privé
         if(user.code) {
             db.ref('couples/'+user.code+'/chat').limitToLast(30).on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
-                s.forEach(snap => {
-                    const m = snap.val();
-                    const mine = m.sid === user.id;
-                    if(!mine && !m.seen) db.ref('couples/'+user.code+'/chat/'+snap.key).update({seen: true});
-                    renderMsg(b, m, mine);
-                });
+                s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
                 b.scrollTop = b.scrollHeight;
-            });
-
-            // Écouteur pour Notifications
-            db.ref('couples/'+user.code+'/chat').limitToLast(1).on('child_added', snap => {
-                const m = snap.val();
-                if(m.sid !== user.id && (Date.now() - m.t < 5000)) triggerNotify();
             });
             updateCounter();
         }
-
-        // Charger la liste d'amis
         loadFriends();
     }
 
-    // --- 6. GESTION DES MESSAGES (UI) ---
     function renderMsg(container, m, mine) {
-        const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        container.innerHTML += `
-            <div class="bubble ${mine ? 'mine' : 'theirs'}">
-                ${m.txt}
-                <div class="m-meta">
-                    ${time} ${mine ? `<span class="seen-check ${m.seen ? '' : 'unseen'}">✔${m.seen ? '✔' : ''}</span>` : ''}
-                </div>
-            </div>`;
+        const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t} ${mine?`<span class="seen-check ${m.seen?'':'unseen'}">✔✔</span>`:''}</div></div>`;
     }
 
-    // --- 7. LISTE D'AMIS ET CHAT PRIVÉ ---
     function loadFriends() {
         db.ref('users').on('value', s => {
             const d = document.getElementById('listFriends'); d.innerHTML = "";
             s.forEach(snap => {
-                const u = snap.val();
-                if(u.id === user.id) return;
-                d.innerHTML += `
-                    <div class="chat-item" onclick="openFriendChat('${u.id}', '${u.name}', '${u.pfp}')">
-                        <img src="${u.pfp}" class="avatar">
-                        <div class="chat-info">
-                            <b>${u.name}</b>
-                            <p>Appuyer pour discuter</p>
-                        </div>
-                        <div class="btn-block" onclick="event.stopPropagation(); alert('Contact bloqué (Simulation)')">Bloquer</div>
-                    </div>`;
+                const u = snap.val(); if(u.id === user.id) return;
+                d.innerHTML += `<div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')"><img src="${u.pfp}" class="avatar"><div class="chat-info"><b>${u.name}</b><p>En ligne</p></div><div class="btn-block">Bloquer</div></div>`;
             });
         });
     }
@@ -328,40 +244,27 @@
         document.getElementById('fNameTitle').innerText = fName;
         document.getElementById('fChatAvatar').src = fPfp;
         document.getElementById('friendOverlay').style.display = 'flex';
-        
-        db.ref('private_chats/' + currentFCId).limitToLast(30).on('value', s => {
+        db.ref('private_chats/'+currentFCId).limitToLast(30).on('value', s => {
             const b = document.getElementById('fBox'); b.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val();
-                const mine = m.sid === user.id;
-                if(!mine && !m.seen) db.ref('private_chats/'+currentFCId+'/'+snap.key).update({seen: true});
-                renderMsg(b, m, mine);
-            });
+            s.forEach(snap => renderMsg(b, snap.val(), snap.val().sid === user.id));
             b.scrollTop = b.scrollHeight;
         });
     }
 
-    function closeFriendChat() { 
-        document.getElementById('friendOverlay').style.display = 'none'; 
-        if(currentFCId) db.ref('private_chats/'+currentFCId).off();
-        currentFCId = null;
-    }
+    function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; }
 
     function sendFriendMsg() {
-        const i = document.getElementById('fInput');
-        if(!i.value.trim() || !currentFCId) return;
-        db.ref('private_chats/'+currentFCId).push({ sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false });
+        const i = document.getElementById('fInput'); if(!i.value.trim()) return;
+        db.ref('private_chats/'+currentFCId).push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
         i.value = "";
     }
 
     function sendCoupleMsg() {
-        const i = document.getElementById('cInput');
-        if(!i.value.trim() || !user.code) return alert("Associe un code de couple dans les paramètres d'abord !");
-        db.ref('couples/'+user.code+'/chat').push({ sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false });
+        const i = document.getElementById('cInput'); if(!i.value.trim() || !user.code) return;
+        db.ref('couples/'+user.code+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
         i.value = "";
     }
 
-    // --- 8. NAVIGATION ---
     function nv(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
         document.getElementById(id).classList.add('view-active');
@@ -369,29 +272,31 @@
         el.classList.add('active');
     }
 
-    // --- 9. PARAMÈTRES ET FONCTIONS AVANCÉES ---
     function updateCounter() {
-        if(!user.meet) {
-            document.getElementById('dayCounter').innerText = "Date de rencontre non définie";
-            return;
-        }
+        if(!user.meet) return;
         const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
-        document.getElementById('dayCounter').innerText = `Ensemble depuis ${diff} jours ✨`;
+        document.getElementById('dayCounter').innerText = `${diff} jours de bonheur ❤️`;
     }
 
-    function toggleDND() {
-        const t = document.getElementById('dndToggle');
-        t.classList.toggle('toggle-on');
-        user.dnd = t.classList.contains('toggle-on');
+    function toggleDND() { 
+        const t = document.getElementById('dndToggle'); 
+        t.classList.toggle('toggle-on'); 
+        user.dnd = t.classList.contains('toggle-on'); 
     }
 
     function changeAvatar() {
-        const newUrl = prompt("Colle ici le lien direct de ton image (se terminant par .jpg ou .png) :\nAstuce: Tu peux copier le lien d'une image sur internet.");
-        if(newUrl && newUrl.trim() !== "") {
-            user.pfp = newUrl.trim();
-            alert("Avatar mis à jour ! N'oublie pas d'enregistrer.");
-        }
+        const url = prompt("Lien de ton image (.jpg, .png) :");
+        if(url) { user.pfp = url; alert("Avatar prêt ! Enregistre pour finir."); }
     }
 
     function saveSettings() {
-        const c = document.getElementById('setCode').valu
+        const updates = { code: document.getElementById('setCode').value, meet: document.getElementById('setMeet').value, dnd: user.dnd, pfp: user.pfp };
+        db.ref('users/'+user.id).update(updates).then(() => {
+            user = {...user, ...updates};
+            localStorage.setItem('notre_univers_user', JSON.stringify(user));
+            alert("Enregistré !"); location.reload();
+        });
+    }
+</script>
+</body>
+</html>
