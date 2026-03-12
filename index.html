@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.13</title>
+    <title>Notre Univers v.14</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -17,49 +17,41 @@
             --love-pink: #ff4b6e; --love-bg: #1a0a0d;
         }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; transition: background 0.3s; }
 
-        /* --- AUTHENTIFICATION (Style v.10 amélioré) --- */
+        /* --- AUTHENTIFICATION --- */
         #authLayer { position: fixed; inset:0; background: linear-gradient(135deg, #00a884 0%, #111b21 100%); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 360px; text-align: center; background: white; padding: 40px 25px; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); color: #111b21; }
-        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 35px; margin: 0 0 20px; }
+        .auth-card { width: 100%; max-width: 360px; text-align: center; background: #fff; padding: 40px 25px; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); color: #111b21; }
+        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 35px; margin-bottom: 25px; }
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; }
         .auth-tab { flex: 1; padding: 12px; cursor: pointer; font-weight: 700; color: #bbb; transition: 0.3s; }
         .auth-tab.active { color: var(--wa-green); border-bottom: 4px solid var(--wa-green); }
         .auth-card input { width: 100%; padding: 18px; margin-bottom: 12px; border-radius: 18px; border: 1px solid #ddd; background: #fdfdfd; box-sizing: border-box; outline: none; font-size: 16px; }
 
-        /* --- HEADER --- */
+        /* --- UI STRUCTURE --- */
         .header { background: var(--wa-panel); padding: 55px 20px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .header h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
+        .header h1 { font-size: 22px; margin: 0; font-weight: 700; }
+        
+        .view { height: calc(100vh - 135px); overflow-y: auto; display: none; padding-bottom: 90px; }
+        .view-active { display: block; }
 
-        /* --- VIEWS --- */
-        .view { height: calc(100vh - 130px); overflow-y: auto; display: none; padding-bottom: 90px; transition: 0.3s opacity; }
-        .view-active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* --- CHAT LIST --- */
-        .chat-item { display: flex; padding: 18px 20px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
-        .avatar { width: 58px; height: 58px; border-radius: 50%; margin-right: 18px; object-fit: cover; background: #374045; border: 1px solid rgba(255,255,255,0.1); }
-        .chat-info { flex: 1; }
-        .chat-info b { font-size: 17px; color: #fff; text-transform: capitalize; }
-        .chat-info p { margin: 4px 0 0; font-size: 13px; color: var(--wa-secondary); }
-
-        /* --- MESSAGES --- */
-        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 10px; background-color: #0b141a; height: calc(100vh - 210px); overflow-y: auto; }
-        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 82%; font-size: 15px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        /* --- MESSAGES & LECTURE --- */
+        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 10px; background-color: #0b141a; height: calc(100vh - 215px); overflow-y: auto; scroll-behavior: smooth; }
+        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 82%; font-size: 15px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); animation: pop 0.2s ease-out; }
+        @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .mine { align-self: flex-end; background: var(--wa-bubble-me); border-bottom-right-radius: 4px; }
         .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-bottom-left-radius: 4px; }
         .m-meta { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 5px; }
         .seen-blue { color: #53bdeb; font-weight: bold; }
 
-        /* --- COCON MODE --- */
+        /* --- COCON IMMERSIF --- */
         .cocon-active .header { background: #3d141b; border-bottom: 2px solid var(--love-pink); }
         .cocon-active .msg-container { background-color: var(--love-bg); background-image: url('https://www.transparenttextures.com/patterns/heart.png'); }
         .cocon-active .bubble.mine { background: var(--love-pink); }
         .cocon-active .nav-tab.active { color: var(--love-pink); }
-        .exit-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--love-pink); color: var(--love-pink); padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .exit-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--love-pink); color: var(--love-pink); padding: 7px 14px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
-        /* --- PARAMETRES v.9 STYLE --- */
+        /* --- PARAMETRES v.9 COMPLET --- */
         .param-group { padding: 20px; }
         .card { background: var(--wa-panel); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
         .card label { color: var(--wa-green); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; }
@@ -71,18 +63,19 @@
         .switch-on { background: var(--wa-green); }
         .switch-on::after { left: 23px; }
 
-        /* --- NAVIGATION --- */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: env(safe-area-inset-bottom); }
-        .nav-tab { color: var(--wa-secondary); font-size: 11px; text-align: center; opacity: 0.5; transition: 0.3s; }
-        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 700; transform: translateY(-3px); }
-        .nav-tab span { font-size: 26px; display: block; margin-bottom: 2px; }
+        /* --- BOTTOM NAV --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+        .nav-tab { color: var(--wa-secondary); font-size: 11px; text-align: center; opacity: 0.5; transition: 0.3s; cursor: pointer; }
+        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 700; }
+        .nav-tab span { font-size: 26px; display: block; margin-bottom: 3px; }
 
-        /* --- INPUT --- */
-        .input-area { background: var(--wa-panel); padding: 12px 15px; display: flex; align-items: center; gap: 12px; position: fixed; bottom: 70px; width: 100%; box-sizing: border-box; }
-        .input-area input { flex: 1; background: #2a3942; border: none; padding: 14px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
-        .send-btn { background: var(--wa-green); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; }
+        /* --- INPUT AREA --- */
+        .input-area { background: var(--wa-panel); padding: 12px 15px; display: flex; align-items: center; gap: 12px; position: fixed; bottom: 75px; width: 100%; box-sizing: border-box; }
+        .input-area input { flex: 1; background: #2a3942; border: none; padding: 14px 22px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
+        .send-btn { background: var(--wa-green); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .send-btn:active { transform: scale(0.9); }
 
-        .lock-screen { position: absolute; inset: 0; background: var(--wa-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .lock-screen { position: absolute; inset: 0; background: var(--wa-bg); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
     </style>
 </head>
@@ -96,8 +89,8 @@
             <div id="tabSignup" class="auth-tab" onclick="setAuthMode('signup')">S'inscrire</div>
         </div>
         <input type="text" id="aName" placeholder="Ton Surnom">
-        <input type="password" id="aPass" placeholder="Ton mot de passe">
-        <button onclick="handleAuth()" class="send-btn" style="width:100%; border-radius:15px; font-weight:700; font-size:16px;">SE CONNECTER</button>
+        <input type="password" id="aPass" placeholder="Mot de passe">
+        <button onclick="handleAuth()" class="send-btn" style="width:100%; border-radius:18px; font-weight:700; font-size:16px;">ENTRER</button>
     </div>
 </div>
 
@@ -105,13 +98,13 @@
     
     <div id="vWorld" class="view view-active">
         <div class="header"><h1>Communauté</h1></div>
-        <div id="listFriends"></div>
+        <div id="listFriends" style="padding-top:10px;"></div>
     </div>
 
     <div id="vCouple" class="view">
         <div id="lockCocon" class="lock-screen">
             <span style="font-size:80px; margin-bottom:20px;">🔐</span>
-            <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Espace Secret</h2>
+            <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Cocon Secret</h2>
             <input type="password" id="unlockCode" placeholder="Code secret..." style="width:240px; padding:18px; border-radius:15px; border:none; background:var(--wa-panel); color:white; text-align:center; margin: 20px 0; outline:none; font-size:18px;">
             <button class="send-btn" style="background:var(--love-pink); width:200px; border-radius:15px; font-weight:700;" onclick="verifyCocon()">OUVRIR</button>
         </div>
@@ -125,10 +118,10 @@
                         <div id="dayCounter" style="font-size:11px; color:var(--love-pink); font-weight:700;"></div>
                     </div>
                 </div>
-                <button class="exit-btn" onclick="exitCocon()">Sortir ↩</button>
+                <button class="exit-btn" onclick="exitCocon()">Quitter ↩</button>
             </div>
             <div id="cBox" class="msg-container"></div>
-            <div id="coupleTyping" style="padding: 5px 15px; font-size:11px; color:var(--love-pink); height:15px;"></div>
+            <div id="coupleTyping" style="padding: 5px 15px; font-size:11px; color:var(--love-pink); height:18px;"></div>
             <div class="input-area">
                 <input type="text" id="cInput" placeholder="Message secret..." oninput="handleTyping('couple')">
                 <button class="send-btn" style="background:var(--love-pink);" onclick="sendCoupleMsg()">❤️</button>
@@ -141,26 +134,22 @@
         <div class="param-group">
             <div class="card">
                 <label>Lien Photo de Profil</label>
-                <input type="text" id="setAvatar" placeholder="Colle le lien d'une image">
+                <input type="text" id="setAvatar" placeholder="Lien .jpg ou .png">
             </div>
             <div class="card">
-                <label>Ton Surnom (Fixe)</label>
-                <input type="text" id="setNick" readonly style="opacity:0.6;">
+                <label>Code de Déverrouillage Cocon</label>
+                <input type="text" id="setCode" placeholder="Ex: AMOUR2024">
             </div>
             <div class="card">
-                <label>Code de Déverrouillage</label>
-                <input type="text" id="setCode" placeholder="Ex: COEUR123">
-            </div>
-            <div class="card">
-                <label>Date de Rencontre (Compteur)</label>
+                <label>Date de Rencontre</label>
                 <input type="date" id="setMeet" style="color-scheme:dark;">
             </div>
             <div class="card switch-row">
-                <span style="font-weight:700; font-size:14px;">Mode Ne Pas Déranger</span>
+                <span style="font-weight:700; font-size:14px;">Mode "Ne Pas Déranger"</span>
                 <div id="dndToggle" class="switch" onclick="toggleDND()"></div>
             </div>
-            <button class="send-btn" style="width:100%; border-radius:15px; font-weight:700;" onclick="saveSettings()">METTRE À JOUR</button>
-            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:40px; cursor:pointer; font-weight:700; font-size:14px;">DÉCONNEXION</p>
+            <button class="send-btn" style="width:100%; border-radius:15px; font-weight:700; font-size:16px;" onclick="saveSettings()">ENREGISTRER</button>
+            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:40px; cursor:pointer; font-weight:700;">DÉCONNEXION</p>
         </div>
     </div>
 
@@ -174,8 +163,8 @@
 <div id="friendOverlay">
     <div class="header">
         <div style="display:flex; align-items:center; gap:15px;">
-            <span onclick="closeFriendChat()" style="font-size:30px; cursor:pointer;">←</span>
-            <img id="fChatAvatar" src="" class="avatar" style="width:40px; height:40px; margin:0;">
+            <span onclick="closeFriendChat()" style="font-size:32px; cursor:pointer;">←</span>
+            <img id="fChatAvatar" src="" style="width:42px; height:42px; border-radius:50%; object-fit:cover;">
             <div><b id="fNameTitle">Ami</b><div id="friendTyping" style="font-size:11px; color:var(--wa-green); height:12px;"></div></div>
         </div>
     </div>
@@ -188,7 +177,7 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nu_v13_user'));
+    let user = JSON.parse(localStorage.getItem('nu_v14_user'));
     let authMode = 'login';
     let currentFCId = null;
     let typingTimer;
@@ -198,15 +187,15 @@
     async function handleAuth() {
         const n = document.getElementById('aName').value.trim().toLowerCase();
         const p = document.getElementById('aPass').value;
-        if(!n || !p) return alert("Remplis tout !");
+        if(!n || !p) return alert("Champs vides !");
         const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
         if (authMode === 'login') {
             if (s.exists()) {
                 const u = Object.values(s.val())[0];
-                if (u.pass === p) login(u); else alert("Mot de passe faux.");
-            } else alert("Compte inconnu.");
+                if (u.pass === p) login(u); else alert("Mauvais mot de passe.");
+            } else alert("Utilisateur inconnu.");
         } else {
-            if (s.exists()) alert("Surnom déjà pris.");
+            if (s.exists()) alert("Ce surnom est déjà utilisé.");
             else {
                 const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n+'&background=random', code:'', meet:'', dnd:false };
                 await db.ref('users/'+nu.id).set(nu); login(nu);
@@ -215,16 +204,15 @@
     }
 
     function login(u) {
-        user = u; localStorage.setItem('nu_v13_user', JSON.stringify(u));
+        user = u; localStorage.setItem('nu_v14_user', JSON.stringify(u));
         document.getElementById('authLayer').style.display='none'; document.getElementById('app').style.display='block';
         initApp();
     }
 
-    function logout() { localStorage.removeItem('nu_v13_user'); location.reload(); }
+    function logout() { localStorage.removeItem('nu_v14_user'); location.reload(); }
     if(user) login(user);
 
     function initApp() {
-        document.getElementById('setNick').value = user.name;
         document.getElementById('setCode').value = user.code || "";
         document.getElementById('setMeet').value = user.meet || "";
         document.getElementById('setAvatar').value = user.pfp || "";
@@ -249,8 +237,8 @@
 
     function renderMsg(container, m, mine) {
         const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const seen = m.seen ? '<span class="seen-blue">✔✔</span>' : '<span>✔✔</span>';
-        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t} ${mine?seen:''}</div></div>`;
+        const check = m.seen ? '<span class="seen-blue">✔✔</span>' : '<span>✔✔</span>';
+        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t} ${mine?check:''}</div></div>`;
     }
 
     function loadFriends() {
@@ -258,7 +246,7 @@
             const d = document.getElementById('listFriends'); d.innerHTML = "";
             s.forEach(snap => {
                 const u = snap.val(); if(u.id === user.id) return;
-                d.innerHTML += `<div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')"><img src="${u.pfp}" class="avatar"><div class="chat-info"><b>${u.name}</b><p>Appuyez pour discuter</p></div></div>`;
+                d.innerHTML += `<div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')" style="display:flex; padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); align-items:center;"><img src="${u.pfp}" style="width:50px; height:50px; border-radius:50%; margin-right:15px;"><div style="flex:1;"><b>${u.name}</b><p style="margin:2px 0 0; font-size:12px; color:var(--wa-secondary);">En ligne</p></div></div>`;
             });
         });
     }
@@ -285,10 +273,10 @@
         const path = mode === 'couple' ? 'couples/'+user.code+'/typing' : 'private_chats/'+currentFCId+'/typing';
         db.ref(path).set(user.id);
         clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => db.ref(path).set(null), 2500);
+        typingTimer = setTimeout(() => db.ref(path).set(null), 2000);
     }
 
-    function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; }
+    function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; db.ref('private_chats/'+currentFCId+'/chat').off(); }
 
     function sendFriendMsg() {
         const i = document.getElementById('fInput'); if(!i.value.trim()) return;
@@ -315,7 +303,7 @@
         if(document.getElementById('unlockCode').value === user.code) {
             document.getElementById('lockCocon').style.display = 'none';
             document.getElementById('coconContent').style.display = 'block';
-        } else alert("Code secret incorrect.");
+        } else alert("Code erroné.");
     }
 
     function exitCocon() {
@@ -333,349 +321,14 @@
     function updateCounter() {
         if(!user.meet) return;
         const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
-        document.getElementById('dayCounter').innerText = `${diff} JOURS D'AMOUR ✨`;
+        document.getElementById('dayCounter').innerText = `${diff} jours d'amour ✨`;
     }
 
     function saveSettings() {
         const up = { code: document.getElementById('setCode').value.trim(), meet: document.getElementById('setMeet').value, pfp: document.getElementById('setAvatar').value.trim(), dnd: user.dnd };
-   <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.13</title>
+        db.ref('users/'+user.id).update(up).then(() => { user = {...user, ...up}; localStorage.setItem('nu_v14_user', JSON.stringify(user)); alert("Modifications enregistrées !"); });
+    }
+</script>
+</body>
+    </html>
     
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-    <style>
-        :root { 
-            --wa-green: #00a884; --wa-bg: #111b21; --wa-panel: #202c33; 
-            --wa-bubble-me: #005c4b; --wa-bubble-them: #202c33; 
-            --wa-text: #e9edef; --wa-secondary: #8696a0; --wa-danger: #f15c6d;
-            --love-pink: #ff4b6e; --love-bg: #1a0a0d;
-        }
-        
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; }
-
-        /* --- AUTHENTIFICATION (Style v.10 amélioré) --- */
-        #authLayer { position: fixed; inset:0; background: linear-gradient(135deg, #00a884 0%, #111b21 100%); z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { width: 100%; max-width: 360px; text-align: center; background: white; padding: 40px 25px; border-radius: 35px; box-shadow: 0 30px 60px rgba(0,0,0,0.5); color: #111b21; }
-        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 35px; margin: 0 0 20px; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid #eee; }
-        .auth-tab { flex: 1; padding: 12px; cursor: pointer; font-weight: 700; color: #bbb; transition: 0.3s; }
-        .auth-tab.active { color: var(--wa-green); border-bottom: 4px solid var(--wa-green); }
-        .auth-card input { width: 100%; padding: 18px; margin-bottom: 12px; border-radius: 18px; border: 1px solid #ddd; background: #fdfdfd; box-sizing: border-box; outline: none; font-size: 16px; }
-
-        /* --- HEADER --- */
-        .header { background: var(--wa-panel); padding: 55px 20px 15px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .header h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: -0.5px; }
-
-        /* --- VIEWS --- */
-        .view { height: calc(100vh - 130px); overflow-y: auto; display: none; padding-bottom: 90px; transition: 0.3s opacity; }
-        .view-active { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* --- CHAT LIST --- */
-        .chat-item { display: flex; padding: 18px 20px; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.03); cursor: pointer; }
-        .avatar { width: 58px; height: 58px; border-radius: 50%; margin-right: 18px; object-fit: cover; background: #374045; border: 1px solid rgba(255,255,255,0.1); }
-        .chat-info { flex: 1; }
-        .chat-info b { font-size: 17px; color: #fff; text-transform: capitalize; }
-        .chat-info p { margin: 4px 0 0; font-size: 13px; color: var(--wa-secondary); }
-
-        /* --- MESSAGES --- */
-        .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 10px; background-color: #0b141a; height: calc(100vh - 210px); overflow-y: auto; }
-        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 82%; font-size: 15px; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-        .mine { align-self: flex-end; background: var(--wa-bubble-me); border-bottom-right-radius: 4px; }
-        .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-bottom-left-radius: 4px; }
-        .m-meta { display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 5px; }
-        .seen-blue { color: #53bdeb; font-weight: bold; }
-
-        /* --- COCON MODE --- */
-        .cocon-active .header { background: #3d141b; border-bottom: 2px solid var(--love-pink); }
-        .cocon-active .msg-container { background-color: var(--love-bg); background-image: url('https://www.transparenttextures.com/patterns/heart.png'); }
-        .cocon-active .bubble.mine { background: var(--love-pink); }
-        .cocon-active .nav-tab.active { color: var(--love-pink); }
-        .exit-btn { background: rgba(255,255,255,0.1); border: 1px solid var(--love-pink); color: var(--love-pink); padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
-
-        /* --- PARAMETRES v.9 STYLE --- */
-        .param-group { padding: 20px; }
-        .card { background: var(--wa-panel); padding: 20px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
-        .card label { color: var(--wa-green); font-size: 11px; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; }
-        .card input { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; }
-        
-        .switch-row { display: flex; justify-content: space-between; align-items: center; }
-        .switch { width: 45px; height: 24px; background: #374045; border-radius: 20px; position: relative; cursor: pointer; transition: 0.4s; }
-        .switch::after { content: ''; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.3s; }
-        .switch-on { background: var(--wa-green); }
-        .switch-on::after { left: 23px; }
-
-        /* --- NAVIGATION --- */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: var(--wa-panel); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-bottom: env(safe-area-inset-bottom); }
-        .nav-tab { color: var(--wa-secondary); font-size: 11px; text-align: center; opacity: 0.5; transition: 0.3s; }
-        .nav-tab.active { color: var(--wa-green); opacity: 1; font-weight: 700; transform: translateY(-3px); }
-        .nav-tab span { font-size: 26px; display: block; margin-bottom: 2px; }
-
-        /* --- INPUT --- */
-        .input-area { background: var(--wa-panel); padding: 12px 15px; display: flex; align-items: center; gap: 12px; position: fixed; bottom: 70px; width: 100%; box-sizing: border-box; }
-        .input-area input { flex: 1; background: #2a3942; border: none; padding: 14px 20px; border-radius: 30px; color: white; outline: none; font-size: 16px; }
-        .send-btn { background: var(--wa-green); border: none; width: 50px; height: 50px; border-radius: 50%; color: white; cursor: pointer; font-size: 22px; display: flex; align-items: center; justify-content: center; }
-
-        .lock-screen { position: absolute; inset: 0; background: var(--wa-bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #friendOverlay { position: fixed; inset: 0; background: var(--wa-bg); z-index: 10000; display: none; flex-direction: column; }
-    </style>
-</head>
-<body>
-
-<div id="authLayer">
-    <div class="auth-card">
-        <h1>Notre Univers</h1>
-        <div class="auth-tabs">
-            <div id="tabLogin" class="auth-tab active" onclick="setAuthMode('login')">Connexion</div>
-            <div id="tabSignup" class="auth-tab" onclick="setAuthMode('signup')">S'inscrire</div>
-        </div>
-        <input type="text" id="aName" placeholder="Ton Surnom">
-        <input type="password" id="aPass" placeholder="Ton mot de passe">
-        <button onclick="handleAuth()" class="send-btn" style="width:100%; border-radius:15px; font-weight:700; font-size:16px;">SE CONNECTER</button>
-    </div>
-</div>
-
-<div id="app" style="display:none;">
-    
-    <div id="vWorld" class="view view-active">
-        <div class="header"><h1>Communauté</h1></div>
-        <div id="listFriends"></div>
-    </div>
-
-    <div id="vCouple" class="view">
-        <div id="lockCocon" class="lock-screen">
-            <span style="font-size:80px; margin-bottom:20px;">🔐</span>
-            <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Espace Secret</h2>
-            <input type="password" id="unlockCode" placeholder="Code secret..." style="width:240px; padding:18px; border-radius:15px; border:none; background:var(--wa-panel); color:white; text-align:center; margin: 20px 0; outline:none; font-size:18px;">
-            <button class="send-btn" style="background:var(--love-pink); width:200px; border-radius:15px; font-weight:700;" onclick="verifyCocon()">OUVRIR</button>
-        </div>
-        
-        <div id="coconContent" style="display:none;">
-            <div class="header">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:28px;">💖</span>
-                    <div>
-                        <h1 style="font-size:18px; font-family:'Pacifico';">Cocon Privé</h1>
-                        <div id="dayCounter" style="font-size:11px; color:var(--love-pink); font-weight:700;"></div>
-                    </div>
-                </div>
-                <button class="exit-btn" onclick="exitCocon()">Sortir ↩</button>
-            </div>
-            <div id="cBox" class="msg-container"></div>
-            <div id="coupleTyping" style="padding: 5px 15px; font-size:11px; color:var(--love-pink); height:15px;"></div>
-            <div class="input-area">
-                <input type="text" id="cInput" placeholder="Message secret..." oninput="handleTyping('couple')">
-                <button class="send-btn" style="background:var(--love-pink);" onclick="sendCoupleMsg()">❤️</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="vSets" class="view">
-        <div class="header"><h1>Réglages</h1></div>
-        <div class="param-group">
-            <div class="card">
-                <label>Lien Photo de Profil</label>
-                <input type="text" id="setAvatar" placeholder="Colle le lien d'une image">
-            </div>
-            <div class="card">
-                <label>Ton Surnom (Fixe)</label>
-                <input type="text" id="setNick" readonly style="opacity:0.6;">
-            </div>
-            <div class="card">
-                <label>Code de Déverrouillage</label>
-                <input type="text" id="setCode" placeholder="Ex: COEUR123">
-            </div>
-            <div class="card">
-                <label>Date de Rencontre (Compteur)</label>
-                <input type="date" id="setMeet" style="color-scheme:dark;">
-            </div>
-            <div class="card switch-row">
-                <span style="font-weight:700; font-size:14px;">Mode Ne Pas Déranger</span>
-                <div id="dndToggle" class="switch" onclick="toggleDND()"></div>
-            </div>
-            <button class="send-btn" style="width:100%; border-radius:15px; font-weight:700;" onclick="saveSettings()">METTRE À JOUR</button>
-            <p onclick="logout()" style="text-align:center; color:var(--wa-danger); margin-top:40px; cursor:pointer; font-weight:700; font-size:14px;">DÉCONNEXION</p>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <div id="navWorld" class="nav-tab active" onclick="nv('vWorld', this)"><span>🌎</span>Monde</div>
-        <div id="navCouple" class="nav-tab" onclick="nv('vCouple', this)"><span>❤️</span>Cocon</div>
-        <div id="navSets" class="nav-tab" onclick="nv('vSets', this)"><span>⚙️</span>Réglages</div>
-    </nav>
-</div>
-
-<div id="friendOverlay">
-    <div class="header">
-        <div style="display:flex; align-items:center; gap:15px;">
-            <span onclick="closeFriendChat()" style="font-size:30px; cursor:pointer;">←</span>
-            <img id="fChatAvatar" src="" class="avatar" style="width:40px; height:40px; margin:0;">
-            <div><b id="fNameTitle">Ami</b><div id="friendTyping" style="font-size:11px; color:var(--wa-green); height:12px;"></div></div>
-        </div>
-    </div>
-    <div id="fBox" class="msg-container"></div>
-    <div class="input-area" style="bottom: 0;"><input type="text" id="fInput" placeholder="Message..." oninput="handleTyping('friend')"><button class="send-btn" onclick="sendFriendMsg()">➔</button></div>
-</div>
-
-<script>
-    const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    let user = JSON.parse(localStorage.getItem('nu_v13_user'));
-    let authMode = 'login';
-    let currentFCId = null;
-    let typingTimer;
-
-    function setAuthMode(m) { authMode = m; document.getElementById('tabLogin').classList.toggle('active', m === 'login'); document.getElementById('tabSignup').classList.toggle('active', m === 'signup'); }
-
-    async function handleAuth() {
-        const n = document.getElementById('aName').value.trim().toLowerCase();
-        const p = document.getElementById('aPass').value;
-        if(!n || !p) return alert("Remplis tout !");
-        const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
-        if (authMode === 'login') {
-            if (s.exists()) {
-                const u = Object.values(s.val())[0];
-                if (u.pass === p) login(u); else alert("Mot de passe faux.");
-            } else alert("Compte inconnu.");
-        } else {
-            if (s.exists()) alert("Surnom déjà pris.");
-            else {
-                const nu = { id:'u'+Date.now(), name:n, pass:p, pfp:'https://ui-avatars.com/api/?name='+n+'&background=random', code:'', meet:'', dnd:false };
-                await db.ref('users/'+nu.id).set(nu); login(nu);
-            }
-        }
-    }
-
-    function login(u) {
-        user = u; localStorage.setItem('nu_v13_user', JSON.stringify(u));
-        document.getElementById('authLayer').style.display='none'; document.getElementById('app').style.display='block';
-        initApp();
-    }
-
-    function logout() { localStorage.removeItem('nu_v13_user'); location.reload(); }
-    if(user) login(user);
-
-    function initApp() {
-        document.getElementById('setNick').value = user.name;
-        document.getElementById('setCode').value = user.code || "";
-        document.getElementById('setMeet').value = user.meet || "";
-        document.getElementById('setAvatar').value = user.pfp || "";
-        if(user.dnd) document.getElementById('dndToggle').classList.add('switch-on');
-        
-        loadFriends();
-        if(user.code) {
-            db.ref('couples/'+user.code+'/chat').on('value', s => {
-                const b = document.getElementById('cBox'); b.innerHTML = "";
-                s.forEach(snap => {
-                    const m = snap.val(); renderMsg(b, m, m.sid === user.id);
-                    if(m.sid !== user.id && !m.seen) db.ref('couples/'+user.code+'/chat/'+snap.key).update({seen:true});
-                });
-                b.scrollTop = b.scrollHeight;
-            });
-            db.ref('couples/'+user.code+'/typing').on('value', s => {
-                const t = s.val(); document.getElementById('coupleTyping').innerText = (t && t !== user.id) ? "est en train d'écrire..." : "";
-            });
-            updateCounter();
-        }
-    }
-
-    function renderMsg(container, m, mine) {
-        const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-        const seen = m.seen ? '<span class="seen-blue">✔✔</span>' : '<span>✔✔</span>';
-        container.innerHTML += `<div class="bubble ${mine?'mine':'theirs'}">${m.txt}<div class="m-meta">${t} ${mine?seen:''}</div></div>`;
-    }
-
-    function loadFriends() {
-        db.ref('users').on('value', s => {
-            const d = document.getElementById('listFriends'); d.innerHTML = "";
-            s.forEach(snap => {
-                const u = snap.val(); if(u.id === user.id) return;
-                d.innerHTML += `<div class="chat-item" onclick="openFriendChat('${u.id}','${u.name}','${u.pfp}')"><img src="${u.pfp}" class="avatar"><div class="chat-info"><b>${u.name}</b><p>Appuyez pour discuter</p></div></div>`;
-            });
-        });
-    }
-
-    function openFriendChat(fId, fName, fPfp) {
-        currentFCId = [user.id, fId].sort().join('_');
-        document.getElementById('fNameTitle').innerText = fName;
-        document.getElementById('fChatAvatar').src = fPfp;
-        document.getElementById('friendOverlay').style.display = 'flex';
-        db.ref('private_chats/'+currentFCId+'/chat').on('value', s => {
-            const b = document.getElementById('fBox'); b.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val(); renderMsg(b, m, m.sid === user.id);
-                if(m.sid !== user.id && !m.seen) db.ref('private_chats/'+currentFCId+'/chat/'+snap.key).update({seen:true});
-            });
-            b.scrollTop = b.scrollHeight;
-        });
-        db.ref('private_chats/'+currentFCId+'/typing').on('value', s => {
-            const t = s.val(); document.getElementById('friendTyping').innerText = (t && t !== user.id) ? "écrit..." : "";
-        });
-    }
-
-    function handleTyping(mode) {
-        const path = mode === 'couple' ? 'couples/'+user.code+'/typing' : 'private_chats/'+currentFCId+'/typing';
-        db.ref(path).set(user.id);
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => db.ref(path).set(null), 2500);
-    }
-
-    function closeFriendChat() { document.getElementById('friendOverlay').style.display='none'; }
-
-    function sendFriendMsg() {
-        const i = document.getElementById('fInput'); if(!i.value.trim()) return;
-        db.ref('private_chats/'+currentFCId+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
-        i.value = "";
-    }
-
-    function sendCoupleMsg() {
-        const i = document.getElementById('cInput'); if(!i.value.trim()) return;
-        db.ref('couples/'+user.code+'/chat').push({sid:user.id, txt:i.value.trim(), t:Date.now(), seen:false});
-        i.value = "";
-    }
-
-    function nv(id, el) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
-        document.getElementById(id).classList.add('view-active');
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'vCouple') document.body.classList.add('cocon-active');
-        else { document.body.classList.remove('cocon-active'); document.getElementById('lockCocon').style.display = 'flex'; document.getElementById('coconContent').style.display = 'none'; }
-    }
-
-    function verifyCocon() {
-        if(document.getElementById('unlockCode').value === user.code) {
-            document.getElementById('lockCocon').style.display = 'none';
-            document.getElementById('coconContent').style.display = 'block';
-        } else alert("Code secret incorrect.");
-    }
-
-    function exitCocon() {
-        document.getElementById('lockCocon').style.display = 'flex';
-        document.getElementById('coconContent').style.display = 'none';
-        document.getElementById('unlockCode').value = "";
-        nv('vWorld', document.getElementById('navWorld'));
-    }
-
-    function toggleDND() {
-        const t = document.getElementById('dndToggle'); t.classList.toggle('switch-on');
-        user.dnd = t.classList.contains('switch-on');
-    }
-
-    function updateCounter() {
-        if(!user.meet) return;
-        const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
-        document.getElementById('dayCounter').innerText = `${diff} JOURS D'AMOUR ✨`;
-    }
-
-    function saveSettings() {
-        const up = { code: document.getElementById('setCode').value.trim(), meet: document.getElementById('setMeet').value, pfp: document.getElementById('setAvatar').value.trim(), dnd: user.dnd };
-   
