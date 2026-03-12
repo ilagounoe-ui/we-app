@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.20 - Honey Edition</title>
+    <title>WhatsApp Clone v.23</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,76 +13,59 @@
         :root { 
             --wa-green: #00a884; --wa-bg: #f0f2f5; --wa-text: #111b21; --wa-sub: #667781;
             --wa-bubble-me: #d9fdd3; --wa-bubble-them: #ffffff;
-            --love-pink: #ff4b6e; --love-soft: #ffdae0; --love-bg: #fff5f7;
+            --love-pink: #ff4b6e; --love-bg: #fff5f7;
         }
         
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--wa-bg); color: var(--wa-text); height: 100vh; overflow: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: white; color: var(--wa-text); height: 100vh; overflow: hidden; }
 
-        /* --- AUTHENTIFICATION --- */
-        #authLayer { position: fixed; inset:0; background: white; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 20px; flex-direction: column; }
-        .auth-card { width: 100%; max-width: 320px; text-align: center; }
-        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 38px; margin-bottom: 10px; }
-        .auth-card p { color: var(--wa-sub); font-size: 14px; margin-bottom: 25px; }
-        .auth-card input { width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #ddd; outline: none; background: #fafafa; font-size: 16px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        .btn-main { flex: 1; background: var(--wa-green); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; }
-        .btn-sub { flex: 1; background: #e9edef; color: #54656f; border: none; padding: 15px; border-radius: 12px; font-weight: 700; font-size: 15px; cursor: pointer; }
+        /* --- AUTH --- */
+        #authLayer { position: fixed; inset:0; background: white; z-index: 20000; display: flex; align-items: center; justify-content: center; padding: 25px; flex-direction: column; }
+        .auth-card { width: 100%; max-width: 350px; text-align: center; }
+        .auth-card h1 { font-family: 'Pacifico', cursive; color: var(--wa-green); font-size: 32px; margin-bottom: 25px; }
+        .input-box { width: 100%; padding: 15px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #ddd; outline: none; font-size: 16px; box-sizing: border-box; background: #fafafa; }
+        .btn-main { width: 100%; background: var(--wa-green); color: white; border: none; padding: 16px; border-radius: 30px; font-weight: 700; font-size: 15px; cursor: pointer; }
 
-        /* --- STRUCTURE APP --- */
+        /* --- UI --- */
         .header { background: white; padding: 50px 20px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f2f5; }
-        .header h1 { font-size: 22px; font-weight: 700; margin: 0; }
-        
         .view { height: calc(100vh - 135px); overflow-y: auto; display: none; padding-bottom: 90px; }
         .view-active { display: block; }
-
-        /* --- LISTE CHATS --- */
-        .chat-item { display: flex; padding: 15px 20px; align-items: center; cursor: pointer; border-bottom: 1px solid #f0f2f5; background: white; }
-        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; object-fit: cover; }
-        .chat-name { font-weight: 600; font-size: 16px; }
-        .chat-preview { font-size: 13px; color: var(--wa-sub); margin-top: 2px; }
+        
+        .chat-item { display: flex; padding: 15px 20px; align-items: center; border-bottom: 1px solid #f8f8f8; cursor: pointer; }
+        .chat-avatar { width: 50px; height: 50px; border-radius: 50%; background: #eee; margin-right: 15px; }
 
         /* --- MESSAGES --- */
         .msg-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
         .msg-container { display: flex; flex-direction: column; padding: 15px; gap: 8px; height: calc(100vh - 215px); overflow-y: auto; }
-        .bubble { padding: 8px 12px; border-radius: 8px; max-width: 75%; font-size: 14.5px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+        .bubble { padding: 8px 12px; border-radius: 8px; max-width: 80%; font-size: 14.5px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.1); cursor: pointer; }
         .mine { align-self: flex-end; background: var(--wa-bubble-me); border-top-right-radius: 0; }
         .theirs { align-self: flex-start; background: var(--wa-bubble-them); border-top-left-radius: 0; }
-        .m-meta { font-size: 10px; color: #8696a0; float: right; margin: 6px 0 -4px 10px; }
-
-        /* --- COCON MODE --- */
-        .cocon-mode .header h1 { color: var(--love-pink); font-family: 'Pacifico'; }
-        .cocon-mode .msg-bg { background: var(--love-bg); background-image: none; }
-        .cocon-mode .bubble.mine { background: var(--love-pink); color: white; border-radius: 15px; }
-        .cocon-mode .bubble.theirs { background: white; border-radius: 15px; border: 1px solid var(--love-soft); }
+        .deleted { font-style: italic; color: #8696a0 !important; }
+        .m-meta { font-size: 10px; color: #8696a0; float: right; margin: 6px -4px -4px 10px; display: flex; align-items: center; gap: 2px; }
 
         /* --- NAVBAR --- */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #ddd; }
-        .nav-tab { flex: 1; text-align: center; color: var(--wa-sub); font-size: 11px; font-weight: 600; cursor: pointer; }
-        .nav-tab.active { color: var(--wa-green); }
-        .cocon-mode .nav-tab.active { color: var(--love-pink); }
-        .nav-tab span { font-size: 24px; display: block; margin-bottom: 2px; }
+        .nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #fff; display: flex; border-top: 1px solid #eee; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--wa-sub); cursor: pointer; }
+        .nav-item.active { color: var(--wa-green); }
+        .nav-item span { font-size: 22px; margin-bottom: 3px; }
 
-        /* --- OVERLAY CHAT --- */
-        #chatOverlay { position: fixed; inset: 0; background: white; z-index: 10000; display: none; flex-direction: column; }
-        .top-bar { padding: 45px 15px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ddd; }
-
-        .input-area { background: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; position: fixed; bottom: 75px; width: 100%; box-sizing: border-box; }
-        .input-area input { flex: 1; background: white; border: none; padding: 12px 20px; border-radius: 24px; outline: none; font-size: 15px; }
-        .send-btn { background: var(--wa-green); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* --- OVERLAY --- */
+        #chatBox { position: fixed; inset: 0; background: white; z-index: 10000; display: none; flex-direction: column; }
+        .chat-header { padding: 45px 15px 10px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #ddd; }
+        .input-bar { background: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; }
+        .input-bar input { flex: 1; border: none; padding: 12px 18px; border-radius: 25px; outline: none; }
+        .btn-send { background: var(--wa-green); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body id="mainBody">
+<body>
 
 <div id="authLayer">
     <div class="auth-card">
-        <h1>Notre Univers</h1>
-        <p id="authMsg">Heureux de vous revoir.</p>
-        <input type="text" id="aName" placeholder="Prénom / Surnom">
-        <input type="password" id="aPass" placeholder="Mot de passe">
-        <div class="btn-group">
-            <button onclick="handleAuth('login')" class="btn-main">Connexion</button>
-            <button onclick="handleAuth('signup')" class="btn-sub">S'inscrire</button>
-        </div>
+        <h1>WhatsApp</h1>
+        <input type="tel" class="input-box" placeholder="Numéro (+241...)" id="aPhone">
+        <input type="password" class="input-box" placeholder="Mot de passe" id="aPass">
+        <div id="regOnly" style="display:none;"><input type="text" class="input-box" placeholder="Pseudo" id="aPseudo"></div>
+        <button class="btn-main" onclick="auth()" id="btnA">CONNEXION</button>
+        <p onclick="toggleA()" id="tglA" style="margin-top:15px; font-size:14px; color:var(--wa-sub); text-decoration:underline; cursor:pointer;">Pas de compte ? S'inscrire</p>
     </div>
 </div>
 
@@ -91,160 +74,166 @@
         <div class="header"><h1>Discussions</h1></div>
         <div id="chatList"></div>
     </div>
-
+    
     <div id="vCocon" class="view">
-        <div id="coconLock" style="text-align:center; padding-top:100px;">
-            <span style="font-size:60px;">🔐</span>
-            <h2 style="font-family:'Pacifico'; color:var(--love-pink);">Espace Privé</h2>
-            <input type="password" id="cPass" placeholder="Code Secret" style="width:200px; text-align:center; padding:15px; border-radius:12px; border:1px solid #ddd; margin-bottom:20px;">
-            <br>
-            <button class="btn-main" style="background:var(--love-pink); width:180px;" onclick="unlockC()">Ouvrir</button>
+        <div id="cLock" style="text-align:center; padding-top:100px;">
+            <span style="font-size:50px;">🔐</span><br>
+            <input type="password" id="cPass" placeholder="Code Secret" class="input-box" style="width:200px; margin-top:20px;">
+            <br><button class="btn-main" style="background:var(--love-pink); width:180px;" onclick="openC()">OUVRIR</button>
         </div>
-        <div id="coconContent" style="display:none; height:100%;">
-            <div class="header"><h1>Mon Cocon ❤️</h1> <button onclick="lockC()" style="border:none; background:none; color:var(--love-pink); font-weight:700;">Fermer</button></div>
-            <div id="cBox" class="msg-container msg-bg"></div>
-            <div class="input-area" style="background:white;"><input type="text" id="cInput" placeholder="Secret..."><button class="send-btn" style="background:var(--love-pink);" onclick="sendC()">➔</button></div>
+        <div id="cContent" style="display:none; height:100%;">
+            <div class="header"><h1 style="color:var(--love-pink); font-family:Pacifico;">Cocon ❤️</h1><button onclick="lockC()" style="border:none; background:none; color:var(--love-pink);">Fermer</button></div>
+            <div id="cBox" class="msg-container" style="background:var(--love-bg);"></div>
+            <div class="input-bar" style="background:white;"><input type="text" id="cIn" placeholder="Secret..."><button class="btn-send" style="background:var(--love-pink);" onclick="sendC()">➔</button></div>
         </div>
     </div>
 
     <div id="vSettings" class="view">
-        <div class="header"><h1>Profil</h1></div>
-        <div style="text-align:center; padding:30px; background:white;">
-            <img id="myAvatar" src="" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid var(--wa-green);">
-            <h2 id="myNameDisplay">Honey</h2>
-            <button onclick="logout()" style="color:red; background:none; border:none; margin-top:20px; font-weight:700;">Se déconnecter</button>
+        <div class="header"><h1>Réglages</h1></div>
+        <div style="padding:40px; text-align:center;">
+            <div style="width:80px; height:80px; background:#eee; border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:30px;">👤</div>
+            <h2 id="uName">Pseudo</h2>
+            <p id="uTel" style="color:var(--wa-sub);">+241...</p>
+            <button onclick="logout()" style="color:red; background:none; border:none; margin-top:40px; font-weight:700;">DÉCONNEXION</button>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-tab active" id="tChats" onclick="tab('vChats', this)"><span>💬</span>Chats</div>
-        <div class="nav-tab" id="tCocon" onclick="tab('vCocon', this)"><span>🌸</span>Cocon</div>
-        <div class="nav-tab" id="tSettings" onclick="tab('vSettings', this)"><span>⚙️</span>Profil</div>
-    </nav>
+    <div class="nav">
+        <div class="nav-item active" onclick="tab('vChats', this)"><span>💬</span>Chats</div>
+        <div class="nav-item" onclick="tab('vCocon', this)"><span>🌸</span>Cocon</div>
+        <div class="nav-item" onclick="tab('vSettings', this)"><span>⚙️</span>Profil</div>
+    </div>
 </div>
 
-<div id="chatOverlay">
-    <div class="top-bar">
-        <span onclick="closeChat()" style="font-size:24px; cursor:pointer;">←</span>
-        <img id="fAvatar" src="" style="width:40px; height:40px; border-radius:50%;">
+<div id="chatBox">
+    <div class="chat-header">
+        <span onclick="closeChat()" style="font-size:24px;">←</span>
+        <div style="width:35px; height:35px; background:#eee; border-radius:50%;"></div>
         <b id="fName">Nom</b>
     </div>
     <div id="fBox" class="msg-container msg-bg"></div>
-    <div class="input-area" style="bottom:0;"><input type="text" id="fInput" placeholder="Message..."><button class="send-btn" onclick="sendF()">➔</button></div>
+    <div class="input-bar"><input type="text" id="fIn" placeholder="Message..."><button class="btn-send" onclick="sendF()">➔</button></div>
 </div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nu_v20_user'));
-    let activeFId = null;
+    let user = JSON.parse(localStorage.getItem('wa_user'));
+    let isReg = false;
+    let activeCId = null;
 
-    async function handleAuth(mode) {
-        const name = document.getElementById('aName').value.trim();
+    function toggleA() {
+        isReg = !isReg;
+        document.getElementById('regOnly').style.display = isReg ? 'block' : 'none';
+        document.getElementById('btnA').innerText = isReg ? 'S\'INSCRIRE' : 'CONNEXION';
+    }
+
+    async function auth() {
+        const phone = document.getElementById('aPhone').value.trim();
         const pass = document.getElementById('aPass').value;
-        if(!name || !pass) return alert("Champs vides !");
-        
-        const id = "usr_" + name.toLowerCase().replace(/\s/g, '');
+        const pseudo = document.getElementById('aPseudo').value.trim();
+        if(!phone || !pass) return alert("Champs vides");
+
+        const id = "u" + phone.replace(/[^0-9]/g, '');
         const snap = await db.ref('users/' + id).once('value');
 
-        if(mode === 'login') {
-            if(snap.exists() && snap.val().pass === pass) run(snap.val());
-            else alert("Identifiants incorrects.");
+        if(isReg) {
+            if(snap.exists()) return alert("Numéro déjà pris");
+            const nu = { id, phone, pass, pseudo, code: (pseudo.toLowerCase()==='honey'?'Choco2931':'0000') };
+            await db.ref('users/'+id).set(nu);
+            run(nu);
         } else {
-            if(snap.exists()) alert("Ce nom existe déjà.");
-            else {
-                // Si c'est Honey, on lui met son code direct
-                const code = (name.toLowerCase() === 'honey') ? 'Choco2931' : '0000';
-                const nu = { id, name, pass, pfp: 'https://ui-avatars.com/api/?name='+name+'&background=00a884&color=fff', code };
-                await db.ref('users/'+id).set(nu);
-                run(nu);
-            }
+            if(snap.exists() && snap.val().pass === pass) run(snap.val());
+            else alert("Erreur identifiants");
         }
     }
 
     function run(u) {
-        user = u; localStorage.setItem('nu_v20_user', JSON.stringify(u));
+        user = u; localStorage.setItem('wa_user', JSON.stringify(u));
         document.getElementById('authLayer').style.display='none';
         document.getElementById('app').style.display='block';
-        document.getElementById('myNameDisplay').innerText = user.name;
-        document.getElementById('myAvatar').src = user.pfp;
-        loadChats();
+        document.getElementById('uName').innerText = user.pseudo;
+        document.getElementById('uTel').innerText = user.phone;
+        loadList();
     }
 
-    function loadChats() {
+    function loadList() {
         db.ref('users').on('value', s => {
             const list = document.getElementById('chatList'); list.innerHTML = "";
             s.forEach(snap => {
                 const u = snap.val();
-                if(u.id === user.id) return; // Sécurité absolue : tu ne te vois pas
-                list.innerHTML += `
-                    <div class="chat-item" onclick="openChat('${u.id}', '${u.name}', '${u.pfp}')">
-                        <img src="${u.pfp}" class="chat-avatar">
-                        <div><div class="chat-name">${u.name}</div><div class="chat-preview">Appuie pour discuter</div></div>
-                    </div>`;
+                if(u.id === user.id) return;
+                list.innerHTML += `<div class="chat-item" onclick="openChat('${u.id}', '${u.pseudo}')"><div class="chat-avatar"></div><div><b>${u.pseudo}</b><br><small>${u.phone}</small></div></div>`;
             });
         });
     }
 
-    function tab(id, el) {
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
-        document.getElementById(id).classList.add('view-active');
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        if(id === 'vCocon') document.getElementById('mainBody').classList.add('cocon-mode');
-        else { document.getElementById('mainBody').classList.remove('cocon-mode'); lockC(); }
-    }
-
-    function openChat(id, name, pfp) {
-        activeFId = [user.id, id].sort().join('_');
+    function openChat(id, name) {
+        activeCId = [user.id, id].sort().join('_');
         document.getElementById('fName').innerText = name;
-        document.getElementById('fAvatar').src = pfp;
-        document.getElementById('chatOverlay').style.display = 'flex';
-        db.ref('chats/'+activeFId).on('value', s => {
+        document.getElementById('chatBox').style.display='flex';
+        db.ref('messages/'+activeCId).on('value', s => {
             const b = document.getElementById('fBox'); b.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val();
-                const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                b.innerHTML += `<div class="bubble ${m.sid===user.id?'mine':'theirs'}">${m.txt}<span class="m-meta">${t}</span></div>`;
+                const isMe = m.sid === user.id;
+                const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const content = m.del ? '<span class="deleted">🚫 Ce message a été supprimé</span>' : m.txt;
+                
+                let html = `<div class="bubble ${isMe?'mine':'theirs'}" ${isMe && !m.del ? `onclick="deleteMsg('${snap.key}')"` : ''}>
+                                ${content}
+                                <span class="m-meta">${time} ${isMe ? '✓' : ''}</span>
+                            </div>`;
+                b.innerHTML += html;
             });
             b.scrollTop = b.scrollHeight;
         });
     }
 
     function sendF() {
-        const i = document.getElementById('fInput'); if(!i.value.trim()) return;
-        db.ref('chats/'+activeFId).push({sid:user.id, txt:i.value.trim(), t:Date.now()});
+        const i = document.getElementById('fIn'); if(!i.value.trim()) return;
+        db.ref('messages/'+activeCId).push({ sid:user.id, txt:i.value.trim(), t:Date.now(), del: false });
         i.value = "";
     }
 
-    function unlockC() {
+    function deleteMsg(msgId) {
+        if(confirm("Supprimer ce message pour tout le monde ?")) {
+            db.ref('messages/'+activeCId+'/'+msgId).update({ del: true, txt: "" });
+        }
+    }
+
+    // --- COCON LOGIC ---
+    function openC() {
         if(document.getElementById('cPass').value === user.code) {
-            document.getElementById('coconLock').style.display='none';
-            document.getElementById('coconContent').style.display='block';
+            document.getElementById('cLock').style.display='none';
+            document.getElementById('cContent').style.display='block';
             db.ref('cocon/'+user.code).on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
                 s.forEach(snap => {
                     const m = snap.val();
-                    const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    b.innerHTML += `<div class="bubble ${m.sid===user.id?'mine':'theirs'}">${m.txt}<span class="m-meta">${t}</span></div>`;
+                    b.innerHTML += `<div class="bubble ${m.sid===user.id?'mine':'theirs'}">${m.txt}</div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
-        } else alert("Code erroné.");
+        } else alert("Code erroné");
     }
-
     function sendC() {
-        const i = document.getElementById('cInput'); if(!i.value.trim()) return;
+        const i = document.getElementById('cIn'); if(!i.value.trim()) return;
         db.ref('cocon/'+user.code).push({sid:user.id, txt:i.value.trim(), t:Date.now()});
         i.value = "";
     }
-
-    function lockC() { document.getElementById('coconLock').style.display='block'; document.getElementById('coconContent').style.display='none'; document.getElementById('cPass').value=""; }
-    function closeChat() { document.getElementById('chatOverlay').style.display='none'; }
+    function lockC() { document.getElementById('cLock').style.display='block'; document.getElementById('cContent').style.display='none'; }
+    function tab(id, el) { 
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
+        document.getElementById(id).classList.add('view-active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+        if(id !== 'vCocon') lockC();
+    }
+    function closeChat() { document.getElementById('chatBox').style.display='none'; }
     function logout() { localStorage.clear(); location.reload(); }
-
     if(user) run(user);
 </script>
 </body>
