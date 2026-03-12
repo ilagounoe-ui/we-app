@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Nexus v4.1 - Gabon Edition</title>
+    <title>Nexus v4.2 - Fix Edition</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,63 +13,60 @@
         :root { --accent: #ff2d55; --primary: #5856d6; --bg: #050505; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1); }
         body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
         
-        /* ECRAN ACCUEIL / AUTH */
+        /* AUTH */
         #authLayer { position:fixed; inset:0; background:#000; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
         .auth-card { background: var(--card); border: 1px solid var(--border); padding: 30px; border-radius: 35px; width: 100%; max-width: 320px; text-align: center; }
-        .tab-auth { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 15px; }
-        .btn-tab { flex: 1; padding: 10px; border-radius: 12px; border: none; background: none; color: white; font-size: 12px; cursor: pointer; }
-        .tab-active { background: var(--accent); font-weight: 800; }
 
-        /* APP LOGIC */
+        /* APP */
         .app-shell { height: 100vh; display: flex; flex-direction: column; display: none; }
         .view { flex: 1; overflow-y: auto; padding: 20px; display: none; padding-bottom: 200px; }
-        .view-active { display: block; animation: fadeIn 0.4s; }
-        
-        /* CHAT STYLE */
+        .view-active { display: block; }
+
+        /* CHAT */
         .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-        .bubble-container { display: flex; flex-direction: column; max-width: 80%; }
+        .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
         .mine { align-self: flex-end; align-items: flex-end; }
         .theirs { align-self: flex-start; align-items: flex-start; }
         .bubble { padding: 12px 16px; border-radius: 20px; font-size: 14px; line-height: 1.4; position: relative; }
-        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; color: white; }
+        .mine .bubble { background: var(--primary); border-bottom-right-radius: 4px; }
         .theirs .bubble { background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .time { font-size: 9px; opacity: 0.4; margin-top: 4px; }
+        .time { font-size: 9px; opacity: 0.3; margin-top: 4px; }
+
+        /* UI ELEMENTS */
+        .user-row { background: var(--card); padding: 15px; border-radius: 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); position: relative; }
+        .dropdown { position: absolute; right: 10px; top: 50px; background: #1a1a1a; border: 1px solid var(--border); border-radius: 12px; display: none; flex-direction: column; z-index: 2000; }
+        .dropdown button { background: none; border: none; color: white; padding: 12px; font-size: 11px; text-align: left; border-bottom: 1px solid var(--border); }
 
         /* NAV */
         .bottom-bar { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: rgba(15,15,15,0.95); backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 5000; }
         .nav-item { font-size: 24px; opacity: 0.3; }
         .nav-active { opacity: 1; color: var(--accent); }
 
-        input { width: 100%; padding: 15px; border-radius: 15px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 10px; box-sizing: border-box; }
-        .btn-main { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 15px; font-weight: 800; width: 100%; cursor: pointer; }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); background: #111; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; width: 100%; }
     </style>
 </head>
 <body>
 
 <div id="authLayer">
     <div class="auth-card">
-        <div style="font-size:28px; font-weight:800; margin-bottom:20px; letter-spacing:-1px;">NEXUS</div>
-        <div class="tab-auth">
-            <button id="btnConn" class="btn-tab tab-active" onclick="toggleAuth('login')">CONNEXION</button>
-            <button id="btnInsc" class="btn-tab" onclick="toggleAuth('signup')">S'INSCRIRE</button>
-        </div>
-        
-        <input type="text" id="authName" placeholder="Ton Surnom">
-        <input type="password" id="authPass" placeholder="Mot de passe">
-        <button class="btn-main" id="mainAuthBtn" onclick="handleAuth()">ENTRER</button>
+        <div style="font-size:28px; font-weight:800; margin-bottom:20px;">NEXUS</div>
+        <input type="text" id="aName" placeholder="Surnom">
+        <input type="password" id="aPass" placeholder="Mot de passe">
+        <button class="btn-main" onclick="handleAuth()">ENTRER</button>
     </div>
 </div>
 
 <div class="app-shell" id="app">
-    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);">
+    <div style="padding: 20px; display: flex; justify-content: space-between; align-items: center;">
         <div style="font-weight: 800; color: var(--accent);">NEXUS</div>
-        <img id="myAvatar" src="" style="width:35px; height:35px; border-radius:10px; object-fit:cover; border:2px solid var(--accent);">
+        <img id="myAvatar" src="" style="width:35px; height:35px; border-radius:10px; border:2px solid var(--accent); object-fit:cover;">
     </div>
 
     <div id="vWorld" class="view view-active">
-        <div style="margin-bottom: 20px; display: flex; gap: 15px;">
-            <span onclick="setTab('chats')" id="tChats" style="color:var(--accent); font-weight:800; border-bottom:2px solid var(--accent);">DISCUSSIONS</span>
-            <span onclick="setTab('disc')" id="tDisc" style="opacity:0.4;">DÉCOUVRIR</span>
+        <div style="margin-bottom: 20px; display: flex; gap: 15px; font-size: 13px;">
+            <span onclick="setTab('chats')" id="tC" style="color:var(--accent); font-weight:800;">DISCUSSIONS</span>
+            <span onclick="setTab('disc')" id="tD" style="opacity:0.4;">DÉCOUVRIR</span>
         </div>
         <div id="listChats"></div>
         <div id="listDisc" style="display:none;"></div>
@@ -77,22 +74,42 @@
 
     <div id="vCouple" class="view">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <button class="btn-tab" style="background:var(--card); border:1px solid var(--border);" onclick="document.getElementById('fileIn').click()">📷 Photo</button>
-            <button class="btn-tab" style="background:var(--card); border:1px solid var(--border);" onclick="sendGame()">🎮 Défi</button>
-            <input type="file" id="fileIn" hidden accept="image/*" onchange="uploadImg(this)">
+            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border);" onclick="document.getElementById('fIn').click()">📷 Photo</button>
+            <button class="btn-main" style="background:var(--card); font-size:11px; border:1px solid var(--border);" onclick="sendDefi()">🎮 Défi</button>
+            <input type="file" id="fIn" hidden onchange="uploadPhoto(this)">
         </div>
-        <div id="coupleTyping" style="font-size:11px; color:var(--accent); margin-bottom:5px; height:15px;"></div>
-        <div id="coupleBox" class="msg-list" style="height:350px; background:var(--card); border-radius:25px; border:1px solid var(--border);"></div>
+        <div id="cTyping" style="font-size:11px; color:var(--accent); height:15px;"></div>
+        <div id="cBox" class="msg-list" style="height:350px; background:var(--card); border-radius:25px; border:1px solid var(--border);"></div>
         <div style="display:flex; gap:10px; margin-top:15px;">
-            <input type="text" id="cIn" placeholder="Message secret..." style="margin:0;" oninput="emitTyping()">
-            <button onclick="pushMsg('couple')" style="background:var(--accent); border:none; width:55px; border-radius:15px; color:white;">➔</button>
+            <input type="text" id="cInput" placeholder="Secret..." style="margin:0;" oninput="emitTyping()">
+            <button onclick="sendMsg('couple')" style="background:var(--accent); border:none; width:50px; border-radius:12px; color:white;">➔</button>
         </div>
+    </div>
+
+    <div id="vSets" class="view">
+        <h3>Paramètres</h3>
+        <div style="background:var(--card); padding:20px; border-radius:25px; border:1px solid var(--border);">
+            <button onclick="document.getElementById('pIn').click()" style="background:var(--primary); border:none; color:white; padding:10px; border-radius:10px; width:100%; margin-bottom:15px;">Changer ma photo</button>
+            <input type="file" id="pIn" hidden onchange="changePfp(this)">
+            
+            <label style="font-size:10px; opacity:0.5;">DATE DE RENCONTRE</label>
+            <input type="date" id="setMeet">
+            
+            <label style="font-size:10px; opacity:0.5; margin-top:10px; display:block;">NOM PARTENAIRE</label>
+            <input type="text" id="setPartner">
+
+            <label style="font-size:10px; opacity:0.5;">CODE SECRET COUPLE</label>
+            <input type="password" id="setCode" placeholder="Code secret">
+            
+            <button class="btn-main" onclick="saveSets()">ENREGISTRER</button>
+        </div>
+        <button onclick="localStorage.clear();location.reload();" style="color:#555; background:none; border:none; width:100%; margin-top:20px;">Déconnexion</button>
     </div>
 
     <nav class="bottom-bar">
         <div class="nav-item nav-active" onclick="nv('vWorld', this)">🌎</div>
         <div class="nav-item" onclick="nv('vCouple', this)">❤</div>
-        <div class="nav-item" onclick="location.reload()">⚙</div>
+        <div class="nav-item" onclick="nv('vSets', this)">⚙</div>
     </nav>
 </div>
 
@@ -101,106 +118,108 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let authMode = 'login';
-    let user = JSON.parse(localStorage.getItem('nexus_user'));
-
-    function toggleAuth(mode) {
-        authMode = mode;
-        document.getElementById('btnConn').className = mode === 'login' ? 'btn-tab tab-active' : 'btn-tab';
-        document.getElementById('btnInsc').className = mode === 'signup' ? 'btn-tab tab-active' : 'btn-tab';
-        document.getElementById('mainAuthBtn').innerText = mode === 'login' ? 'SE CONNECTER' : 'CRÉER MON COMPTE';
-    }
+    let user = JSON.parse(localStorage.getItem('nexus_v4_2'));
 
     function handleAuth() {
-        const n = document.getElementById('authName').value;
-        const p = document.getElementById('authPass').value;
-        if(!n || !p) return alert("Remplis les champs !");
-
-        if(authMode === 'signup') {
-            const id = 'u' + Date.now();
-            const newUser = { id, name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n, code: '', meet: '', blocked: {} };
-            db.ref('users/'+id).set(newUser).then(() => start(newUser));
-        } else {
-            db.ref('users').orderByChild('name').equalTo(n).once('value', s => {
-                if(s.exists()) {
-                    const u = Object.values(s.val())[0];
-                    if(u.pass === p) start(u); else alert("Mot de passe incorrect");
-                } else alert("Utilisateur inconnu");
-            });
-        }
+        const n = document.getElementById('aName').value;
+        const p = document.getElementById('aPass').value;
+        if(!n || !p) return alert("Remplis tout !");
+        
+        db.ref('users').orderByChild('name').equalTo(n).once('value', s => {
+            if(s.exists()) {
+                const u = Object.values(s.val())[0];
+                if(u.pass === p) start(u); else alert("Erreur pass");
+            } else {
+                const nu = { id: 'u'+Date.now(), name: n, pass: p, pfp: 'https://ui-avatars.com/api/?name='+n, code: '', meet: '', ignored: {} };
+                db.ref('users/'+nu.id).set(nu); start(nu);
+            }
+        });
     }
 
     function start(u) {
-        user = u;
-        localStorage.setItem('nexus_user', JSON.stringify(u));
+        user = u; localStorage.setItem('nexus_v4_2', JSON.stringify(u));
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('app').style.display = 'flex';
-        document.getElementById('myAvatar').src = u.pfp;
-        initApp();
+        init();
     }
 
     if(user) start(user);
 
-    function initApp() {
-        // Liste Découverte
+    function init() {
+        document.getElementById('myAvatar').src = user.pfp;
+        document.getElementById('setMeet').value = user.meet || "";
+        document.getElementById('setPartner').value = user.partner || "";
+        document.getElementById('setCode').value = user.code || "";
+
+        // Discover with "Ignorer"
         db.ref('users').on('value', s => {
             const l = document.getElementById('listDisc'); l.innerHTML = "";
             s.forEach(c => {
                 const u = c.val();
-                if(u.id !== user.id) l.innerHTML += `<div style="background:var(--card); padding:15px; border-radius:20px; margin-bottom:10px; display:flex; align-items:center; gap:10px;"><img src="${u.pfp}" style="width:40px; height:40px; border-radius:10px;"><b>${u.name}</b></div>`;
+                if(u.id !== user.id && (!user.ignored || !user.ignored[u.id])) {
+                    l.innerHTML += `<div class="user-row"><img src="${u.pfp}" style="width:40px;height:40px;border-radius:10px;"><b>${u.name}</b><button onclick="tgl('opt_${u.id}')" style="margin-left:auto;background:none;border:none;color:white;">⋮</button><div id="opt_${u.id}" class="dropdown"><button onclick="ign('${u.id}')">Ignorer</button></div></div>`;
+                }
             });
         });
 
-        // Chat Couple
+        // Couple Chat
         if(user.code) {
             db.ref('couples/'+user.code+'/chat').on('value', s => {
-                const b = document.getElementById('coupleBox'); b.innerHTML = "";
+                const b = document.getElementById('cBox'); b.innerHTML = "";
                 s.forEach(c => {
                     const m = c.val();
-                    const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                    const content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;">` : m.txt;
-                    b.innerHTML += `<div class="bubble-container ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${content}</div><div class="time">${time}</div></div>`;
+                    const t = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                    const cnt = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;">` : m.txt;
+                    b.innerHTML += `<div class="bubble-wrap ${m.sid===user.id?'mine':'theirs'}"><div class="bubble">${cnt}</div><div class="time">${t}</div></div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
-            
             db.ref('couples/'+user.code+'/typing').on('value', s => {
-                const t = s.val();
-                document.getElementById('coupleTyping').innerText = (t && t !== user.id) ? "Alicia écrit..." : "";
+                document.getElementById('cTyping').innerText = (s.val() && s.val() !== user.id) ? "Alicia écrit..." : "";
             });
         }
     }
 
-    function pushMsg(mode) {
-        const i = document.getElementById('cIn');
-        if(!i.value || !user.code) return;
+    function sendMsg() {
+        const i = document.getElementById('cInput'); if(!i.value) return;
         db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: i.value, t: Date.now() });
-        db.ref('couples/'+user.code+'/typing').set(false);
-        i.value = "";
+        db.ref('couples/'+user.code+'/typing').set(false); i.value = "";
     }
 
-    function uploadImg(el) {
-        const reader = new FileReader();
-        reader.onload = () => {
-            db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: reader.result, type: 'img', t: Date.now() });
-        };
-        reader.readAsDataURL(el.files[0]);
+    function uploadPhoto(el) {
+        const r = new FileReader(); r.onload = () => { db.ref('couples/'+user.code+'/chat').push({ sid: user.id, txt: r.result, type: 'img', t: Date.now() }); };
+        r.readAsDataURL(el.files[0]);
     }
 
-    function sendGame() {
-        const defis = ["Action : Selfie grimace !", "Vérité : Ta plus grosse bêtise ?", "Action : Envoie un vocal de 5s", "Vérité : Ton premier crush ?"];
-        const d = defis[Math.floor(Math.random()*defis.length)];
-        db.ref('couples/'+user.code+'/chat').push({ sid: 'sys', txt: "🎲 DÉFI : " + d, t: Date.now() });
+    function sendDefi() {
+        const d = ["Action: Selfie rigolo !","Vérité: Ton secret ?","Action: Vocal de 5s"];
+        db.ref('couples/'+user.code+'/chat').push({ sid: 'sys', txt: "🎲 " + d[Math.floor(Math.random()*d.length)], t: Date.now() });
     }
 
-    function emitTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 3000); } }
-    function nv(id, el) { document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active')); document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active'); }
+    function ign(id) { db.ref('users/'+user.id+'/ignored/'+id).set(true); }
+    function changePfp(el) {
+        const r = new FileReader(); r.onload = () => { db.ref('users/'+user.id).update({pfp: r.result}); document.getElementById('myAvatar').src = r.result; };
+        r.readAsDataURL(el.files[0]);
+    }
+
+    function saveSets() {
+        const up = { meet: document.getElementById('setMeet').value, partner: document.getElementById('setPartner').value, code: document.getElementById('setCode').value.toLowerCase() };
+        db.ref('users/'+user.id).update(up).then(() => alert("Nexus mis à jour !"));
+    }
+
+    function nv(id, el) { 
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('view-active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('nav-active'));
+        document.getElementById(id).classList.add('view-active'); el.classList.add('nav-active');
+    }
+    function tgl(id) { const d = document.getElementById(id); d.style.display = d.style.display === 'flex' ? 'none' : 'flex'; }
     function setTab(t) {
         document.getElementById('listChats').style.display = t === 'chats' ? 'block' : 'none';
         document.getElementById('listDisc').style.display = t === 'disc' ? 'block' : 'none';
-        document.getElementById('tChats').style.opacity = t === 'chats' ? '1' : '0.4';
-        document.getElementById('tDisc').style.opacity = t === 'disc' ? '1' : '0.4';
+        document.getElementById('tC').style.opacity = t === 'chats' ? '1' : '0.4';
+        document.getElementById('tD').style.opacity = t === 'disc' ? '1' : '0.4';
     }
+    function emitTyping() { if(user.code) { db.ref('couples/'+user.code+'/typing').set(user.id); setTimeout(() => db.ref('couples/'+user.code+'/typing').set(false), 3000); } }
 </script>
 </body>
 </html>
