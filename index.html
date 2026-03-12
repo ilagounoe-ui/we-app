@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nexus Elite v7.7</title>
+    <title>Nexus Elite v7.8</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -26,7 +26,7 @@
         #friendChatOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; flex-direction: column; }
         .chat-header { padding: 50px 20px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); }
 
-        /* MESSAGES & VUE UNIVERSAL */
+        /* MESSAGES & VUE */
         .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 15px; }
         .bubble-wrap { display: flex; flex-direction: column; max-width: 80%; }
         .mine { align-self: flex-end; align-items: flex-end; }
@@ -54,7 +54,7 @@
         <h2 style="font-weight:800; margin-bottom:25px;">NEXUS</h2>
         <input type="text" id="aName" placeholder="Ton Surnom">
         <input type="password" id="aPass" placeholder="Ton Code" style="margin-top:10px;">
-        <button class="btn-main" onclick="handleAuth()" style="margin-top:20px;">CONNEXION</button>
+        <button class="btn-main" onclick="handleAuth()" style="margin-top:20px;">ACTIVER NEXUS</button>
     </div>
 </div>
 
@@ -85,19 +85,9 @@
         </div>
     </div>
 
-    <div id="vSets" class="view">
-        <h3 style="margin-top:40px;">⚙️ Paramètres</h3>
-        <div class="glass" style="padding:25px; border-radius:30px;">
-            <input type="text" id="setCode" placeholder="Code secret duo">
-            <input type="date" id="setMeet">
-            <button onclick="saveSets()" class="btn-main" style="margin-top:20px;">ENREGISTRER</button>
-        </div>
-    </div>
-
     <nav class="bottom-bar">
         <div class="nav-item nav-active" onclick="nv('vWorld', this)">🌎</div>
         <div class="nav-item" onclick="nv('vCouple', this)">❤️</div>
-        <div class="nav-item" onclick="nv('vSets', this)">⚙️</div>
     </nav>
 </div>
 
@@ -106,22 +96,43 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    let user = JSON.parse(localStorage.getItem('nexus_v7_7'));
+    let user = JSON.parse(localStorage.getItem('nexus_v7_8'));
     let currentFriendChatId = null;
 
-    function triggerNotify() {
+    // --- ENREGISTREMENT SERVICE WORKER ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => console.log("SW OK"));
+    }
+
+    function triggerNotify(senderName) {
         if (!document.hidden) return;
+        
+        // Vibration forte
+        if ("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+
+        // Notification visuelle sans contenu (Badge seulement)
         if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("Nexus", { body: "Nouveau message", icon: "https://ui-avatars.com/api/?name=N&background=ff2d55" });
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification('Nexus', {
+                    body: 'Nouveau message reçu',
+                    icon: 'https://ui-avatars.com/api/?name=N&background=ff2d55',
+                    tag: 'new-msg',
+                    renotify: true
+                });
+            });
         }
-        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
     }
 
     async function handleAuth() {
-        if ("Notification" in window) Notification.requestPermission();
+        if ("Notification" in window) {
+            const permission = await Notification.requestPermission();
+            if (permission !== "granted") alert("Active les notifications pour ne rien rater !");
+        }
+        
         const n = document.getElementById('aName').value.trim().toLowerCase();
         const p = document.getElementById('aPass').value;
         const s = await db.ref('users').orderByChild('name').equalTo(n).once('value');
+        
         if(s.exists()){
             const u = Object.values(s.val())[0];
             if(u.pass === p) login(u);
@@ -134,7 +145,7 @@
 
     function login(u) {
         user = u;
-        localStorage.setItem('nexus_v7_7', JSON.stringify(u));
+        localStorage.setItem('nexus_v7_8', JSON.stringify(u));
         document.getElementById('authLayer').style.display='none';
         document.getElementById('app').style.display='flex';
         initApp();
@@ -144,17 +155,18 @@
 
     function initApp() {
         if(user.code) {
+            db.ref('couples/'+user.code+'/chat').limitToLast(1).on('child_added', snap => {
+                const m = snap.val();
+                if(m.sid !== user.id && (Date.now() - m.t < 5000)) triggerNotify();
+            });
+
             db.ref('couples/'+user.code+'/chat').limitToLast(20).on('value', s => {
                 const b = document.getElementById('cBox'); b.innerHTML = "";
                 s.forEach(snap => {
                     const m = snap.val();
                     const mine = m.sid === user.id;
                     if(!mine && !m.seen) db.ref('couples/'+user.code+'/chat/'+snap.key).update({seen: true});
-                    b.innerHTML += `
-                        <div class="bubble-wrap ${mine?'mine':'theirs'}">
-                            <div class="bubble">${m.txt}</div>
-                            <div class="m-info">${new Date(m.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${mine && m.seen ? '<span class="seen-mark">✔ Vu</span>' : ''}</div>
-                        </div>`;
+                    b.innerHTML += `<div class="bubble-wrap ${mine?'mine':'theirs'}"><div class="bubble">${m.txt}</div><div class="m-info">${mine && m.seen ? '<span class="seen-mark">✔ Vu</span>' : ''}</div></div>`;
                 });
                 b.scrollTop = b.scrollHeight;
             });
@@ -175,11 +187,7 @@
                 const m = snap.val();
                 const mine = m.sid === user.id;
                 if(!mine && !m.seen) db.ref('private_chats/'+chatId+'/'+snap.key).update({seen: true});
-                b.innerHTML += `
-                    <div class="bubble-wrap ${mine?'mine':'theirs'}">
-                        <div class="bubble" style="background:${mine? 'var(--accent)' : 'var(--card)'}">${m.txt}</div>
-                        <div class="m-info">${new Date(m.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${mine && m.seen ? '<span class="seen-mark">✔ Vu</span>' : ''}</div>
-                    </div>`;
+                b.innerHTML += `<div class="bubble-wrap ${mine?'mine':'theirs'}"><div class="bubble" style="background:${mine? 'var(--accent)' : 'var(--card)'}">${m.txt}</div><div class="m-info">${mine && m.seen ? '<span class="seen-mark">✔ Vu</span>' : ''}</div></div>`;
             });
             b.scrollTop = b.scrollHeight;
         });
@@ -187,7 +195,6 @@
 
     function closeFriendChat() {
         document.getElementById('friendChatOverlay').style.display = 'none';
-        if(currentFriendChatId) db.ref('private_chats/' + currentFriendChatId).off();
         currentFriendChatId = null;
     }
 
@@ -211,14 +218,7 @@
             s.forEach(snap => {
                 const u = snap.val();
                 if(u.id === user.id) return;
-                d.innerHTML += `
-                    <div class="friend-card">
-                        <b style="text-transform:capitalize;">${u.name}</b>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <button class="btn-talk" onclick="openFriendChat('${u.id}', '${u.name}')">Message</button>
-                            <span onclick="alert('Options')">⋮</span>
-                        </div>
-                    </div>`;
+                d.innerHTML += `<div class="friend-card"><b>${u.name}</b><button class="btn-talk" onclick="openFriendChat('${u.id}', '${u.name}')">Message</button></div>`;
             });
         });
     }
@@ -234,15 +234,6 @@
         if(!user.meet) return;
         const diff = Math.floor((new Date() - new Date(user.meet)) / (1000*60*60*24));
         document.getElementById('dayCounter').innerText = `✨ ${diff} JOURS DE BONHEUR ✨`;
-    }
-
-    function saveSets() {
-        const up = { code: document.getElementById('setCode').value, meet: document.getElementById('setMeet').value };
-        db.ref('users/'+user.id).update(up).then(() => {
-            user = {...user, ...up};
-            localStorage.setItem('nexus_v7_7', JSON.stringify(user));
-            location.reload();
-        });
     }
 </script>
 </body>
