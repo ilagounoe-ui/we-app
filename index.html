@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.35</title>
+    <title>Notre Univers v.35 Corrigée</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -17,230 +17,176 @@
         
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* --- NOTIFICATIONS SYSTEM --- */
-        #notifBanner { position: fixed; top: -100px; left: 20px; right: 20px; background: var(--accent); color: #000; padding: 15px; border-radius: 20px; z-index: 35000; display: flex; align-items: center; gap: 12px; font-weight: 600; transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        /* --- NOTIFS (v34) --- */
+        #notifBanner { position: fixed; top: -100px; left: 20px; right: 20px; background: var(--accent); color: #000; padding: 15px; border-radius: 20px; z-index: 30000; display: flex; align-items: center; gap: 12px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #notifBanner.show { top: 50px; }
+        .notif-dot { width: 10px; height: 10px; background: var(--love); border-radius: 50%; display: none; position: absolute; top: 5px; right: 5px; }
 
-        /* --- UI PRINCIPALE --- */
-        .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.9); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        /* --- DESIGN STRICT v34 --- */
+        .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.9); }
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); cursor: pointer; position: relative; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; }
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
 
-        /* --- MESSAGERIE AVANCÉE --- */
-        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
-        .head { padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; position: relative; transition: transform 0.2s; }
-        .bubble:active { transform: scale(0.95); }
+        /* --- BULLLES v34 (Respectées) --- */
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; position: relative; }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 5px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 5px; }
+        .msg-meta { font-size: 9px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 4px; opacity: 0.7; }
+
+        /* --- AJOUTS v35 DISCRETS --- */
+        .reply-zone { background: rgba(255,255,255,0.05); border-left: 3px solid var(--accent); padding: 5px 10px; border-radius: 10px; font-size: 11px; margin-bottom: 5px; opacity: 0.8; }
+        #replyBar { display: none; background: var(--card); padding: 10px 20px; border-radius: 20px 20px 0 0; margin: 0 10px; font-size: 12px; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
         
-        /* Réponse style (comme image fournie) */
-        .reply-preview { background: rgba(0,0,0,0.2); border-left: 3px solid var(--accent); padding: 5px 10px; border-radius: 8px; font-size: 11px; margin-bottom: 5px; opacity: 0.8; }
-        #inputReplyArea { display: none; background: var(--card); padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: var(--accent); justify-content: space-between; align-items: center; }
+        /* Menu Contextuel Stylé */
+        #contextMenu { position: fixed; background: #1a1a2e; border: 1px solid var(--accent); border-radius: 20px; padding: 8px; z-index: 40000; display: none; box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+        #contextMenu div { padding: 12px 20px; font-size: 13px; cursor: pointer; }
 
-        /* Menu Contextuel Appui Long */
-        .context-menu { position: fixed; background: #1a1a2e; border: 1px solid var(--accent); border-radius: 15px; padding: 10px; z-index: 40000; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .context-menu div { padding: 10px 20px; cursor: pointer; font-size: 13px; }
-        .context-menu div:hover { background: var(--card); }
-
-        /* Options 3 points */
-        .more-menu { position: absolute; top: 60px; right: 20px; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; display: none; flex-direction: column; z-index: 10001; }
-        .more-menu div { padding: 12px 20px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 100; }
+        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
+        .head { padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .more-dots { font-size: 24px; padding: 0 10px; }
     </style>
 </head>
 <body>
 
-<div id="notifBanner"><span id="notifIcon">💬</span> <span id="notifText">Nouveau message</span></div>
+<div id="notifBanner"><span id="notifIcon">💬</span> <span id="notifText">Message</span></div>
 
-<div id="contextMenu" class="context-menu">
-    <div onclick="prepareReply()">↩️ Répondre</div>
-    <div id="editOpt" onclick="prepareEdit()">✏️ Modifier</div>
-    <div onclick="deleteMessage()">🗑️ Supprimer</div>
-</div>
-
-<div id="authLayer">
-    <div class="auth-card" id="loginUI">
-        <div class="auth-logo">Notre Univers</div>
-        <input type="tel" class="auth-input" placeholder="Numéro" id="lPhone">
-        <input type="password" class="auth-input" placeholder="Mot de passe" id="lPass">
-        <button class="auth-btn" onclick="login()">CONNEXION 🪐</button>
-        <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; color:var(--text-sub)">S'inscrire</p>
-    </div>
+<div id="contextMenu">
+    <div onclick="doReply()">↩️ Répondre</div>
+    <div id="editBtn" onclick="doEdit()">✏️ Modifier</div>
+    <div onclick="doDelete()" style="color:#ff5252">🗑️ Supprimer</div>
 </div>
 
 <div id="mainApp" style="display:none;">
     <header class="main-header">
         <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent);">Pseudo</h2>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)">Chats</div>
-            <div class="tab" onclick="switchV('vCocon', this)">Cocon</div>
+            <div class="tab active" onclick="switchV('vChats', this)">Chats <div class="notif-dot" id="dotChats"></div></div>
+            <div class="tab" onclick="switchV('vCocon', this)">Cocon <div class="notif-dot" id="dotCocon"></div></div>
             <div class="tab" onclick="switchV('vSet', this)">Réglages</div>
         </div>
     </header>
-
-    <div id="vChats" class="view active"><div id="chatList"></div><div class="fab" onclick="addFriend()">+</div></div>
+    <div id="vChats" class="view active"><div id="chatList"></div></div>
     </div>
 
 <div id="chatBox">
     <div class="head">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <span onclick="closeO('chatBox')">←</span><b id="cName">...</b>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <span onclick="closeO('chatBox')" style="font-size:20px;">←</span>
+            <b id="cName">...</b>
         </div>
-        <div onclick="toggleMoreMenu()">⋮</div>
-        <div class="more-menu" id="moreMenu">
-            <div onclick="actionConv('pin')">📌 Épingler</div>
-            <div onclick="actionConv('block')" style="color:red">🚫 Bloquer</div>
-            <div onclick="actionConv('clear')">🗑️ Effacer discussion</div>
-        </div>
+        <div class="more-dots" onclick="openMore()">⋮</div>
     </div>
-    
     <div class="msg-area" id="mArea"></div>
-
-    <div id="inputReplyArea">
-        <span id="replyTxt">Réponse à...</span>
+    
+    <div id="replyBar">
+        <span id="replyPreviewText">...</span>
         <span onclick="cancelReply()">✕</span>
     </div>
-
-    <div style="padding:15px; display:flex; gap:10px; background: var(--bg);">
+    
+    <div style="padding:15px; display:flex; gap:10px; background:var(--bg)">
         <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;">
-        <button id="sendBtn" onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; border-radius:50%">➔</button>
+        <button id="mainSendBtn" onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:#000">➔</button>
     </div>
 </div>
 
 <script>
-    // Config Firebase
+    // Config & Init (Inchangés)
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
+    
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
-    let activeId = null;
-    let longPressTimer;
-    let selectedMsgId = null;
-    let replyData = null;
-    let isEditing = false;
+    let activeId = null, selectedMsg = null, isEdit = false, replyMsg = null;
+    let pressTimer;
 
-    // --- LOGIQUE MESSAGES AVANCÉE ---
-
-    function handleTouchStart(id, sid, txt) {
-        selectedMsgId = id;
-        longPressTimer = setTimeout(() => {
-            const menu = document.getElementById('contextMenu');
-            document.getElementById('editOpt').style.display = (sid === user.id) ? 'block' : 'none';
-            menu.style.display = 'block';
-            menu.style.top = event.clientY + 'px';
-            menu.style.left = event.clientX + 'px';
-            // Stocker temporairement les infos du message sélectionné
-            selectedMsgData = {id, sid, txt};
-        }, 600);
+    // --- GESTION APPUI LONG (SANS CASSER LE DESIGN) ---
+    function bindPress(el, data) {
+        el.ontouchstart = (e) => {
+            pressTimer = setTimeout(() => {
+                selectedMsg = data;
+                const menu = document.getElementById('contextMenu');
+                document.getElementById('editBtn').style.display = (data.sid === user.id) ? 'block' : 'none';
+                menu.style.display = 'block';
+                menu.style.top = (e.touches[0].clientY - 50) + 'px';
+                menu.style.left = "20%";
+            }, 600);
+        };
+        el.ontouchend = () => clearTimeout(pressTimer);
     }
 
-    function handleTouchEnd() { clearTimeout(longPressTimer); }
-
-    function prepareReply() {
-        replyData = selectedMsgData.txt;
-        document.getElementById('inputReplyArea').style.display = 'flex';
-        document.getElementById('replyTxt').innerText = "Réponse : " + replyData.substring(0,20) + "...";
+    function doReply() {
+        replyMsg = selectedMsg.txt;
+        document.getElementById('replyBar').style.display = 'flex';
+        document.getElementById('replyPreviewText').innerText = "Réponse à : " + replyMsg.substring(0,25) + "...";
         document.getElementById('contextMenu').style.display = 'none';
     }
 
-    function prepareEdit() {
-        isEditing = true;
-        document.getElementById('mIn').value = selectedMsgData.txt;
-        document.getElementById('sendBtn').innerText = "OK";
+    function doEdit() {
+        isEdit = true;
+        document.getElementById('mIn').value = selectedMsg.txt;
+        document.getElementById('mainSendBtn').innerText = "OK";
         document.getElementById('contextMenu').style.display = 'none';
     }
 
-    async function deleteMessage() {
-        if(confirm("Supprimer ce message ?")) {
-            await db.ref('msgs/'+activeId+'/'+selectedMsgId).remove();
-            document.getElementById('contextMenu').style.display = 'none';
-        }
+    function doDelete() {
+        if(confirm("Supprimer ?")) db.ref('msgs/'+activeId+'/'+selectedMsg.id).remove();
+        document.getElementById('contextMenu').style.display = 'none';
     }
 
-    function cancelReply() {
-        replyData = null;
-        document.getElementById('inputReplyArea').style.display = 'none';
-    }
+    function cancelReply() { replyMsg = null; document.getElementById('replyBar').style.display = 'none'; }
 
-    // --- NOTIFICATIONS v35 ---
-    function triggerPushNotif(title) {
-        if (Notification.permission === "granted") {
-            new Notification("Notre Univers", { body: title, icon: '🚀' });
-        } else if (Notification.permission !== "denied") {
-            Notification.requestPermission();
-        }
-        // Banner interne
-        const b = document.getElementById('notifBanner');
-        document.getElementById('notifText').innerText = title;
-        b.classList.add('show');
-        setTimeout(()=>b.classList.remove('show'), 3000);
-    }
-
-    // --- FONCTIONS CLASSIQUES ADAPTÉES ---
-
-    async function send(path) {
-        const inp = document.getElementById('mIn');
-        if(!inp.value.trim()) return;
-
-        if(isEditing) {
-            await db.ref(path+'/'+activeId+'/'+selectedMsgId).update({ txt: inp.value, edited: true });
-            isEditing = false;
-            document.getElementById('sendBtn').innerText = "➔";
-        } else {
-            const newMsg = {
-                sid: user.id,
-                txt: inp.value,
-                t: Date.now(),
-                reply: replyData
-            };
-            await db.ref(path+'/'+activeId).push(newMsg);
-        }
-        
-        inp.value = "";
-        cancelReply();
-    }
-
+    // --- SYNC MESSAGES (DESIGN STRICT v34) ---
     function sync(path, target, areaId) {
         db.ref(path+'/'+target).on('value', s => {
             const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val();
                 const isMe = m.sid === user.id;
-                let replyHtml = m.reply ? `<div class="reply-preview">${m.reply}</div>` : '';
-                let editedHtml = m.edited ? `<span style="font-size:8px; opacity:0.5"> (modifié)</span>` : '';
+                const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
                 
-                area.innerHTML += `
-                    <div class="bubble ${isMe?'m-me':'m-they'}" 
-                         ontouchstart="handleTouchStart('${snap.key}', '${m.sid}', '${m.txt}')" 
-                         ontouchend="handleTouchEnd()">
-                        ${replyHtml}
-                        ${m.txt} ${editedHtml}
-                    </div>`;
+                const b = document.createElement('div');
+                b.className = `bubble ${isMe?'m-me':'m-they'}`;
+                
+                let content = "";
+                if(m.reply) content += `<div class="reply-zone">${m.reply}</div>`;
+                content += `<div>${m.txt}</div>`;
+                content += `<div class="msg-meta">${time} ${m.edited?'(modifié)':''} ${isMe?'✓✓':''}</div>`;
+                
+                b.innerHTML = content;
+                bindPress(b, {id: snap.key, txt: m.txt, sid: m.sid});
+                area.appendChild(b);
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    function toggleMoreMenu() {
-        const m = document.getElementById('moreMenu');
-        m.style.display = (m.style.display === 'flex') ? 'none' : 'flex';
+    async function send(path) {
+        const inp = document.getElementById('mIn');
+        if(!inp.value.trim()) return;
+
+        if(isEdit) {
+            await db.ref(path+'/'+activeId+'/'+selectedMsg.id).update({ txt: inp.value, edited: true });
+            isEdit = false; document.getElementById('mainSendBtn').innerText = "➔";
+        } else {
+            await db.ref(path+'/'+activeId).push({ sid:user.id, txt:inp.value, t:Date.now(), reply: replyMsg });
+        }
+        inp.value = ""; cancelReply();
     }
 
-    // Fermer les menus si on clique ailleurs
-    window.onclick = () => {
-        document.getElementById('contextMenu').style.display = 'none';
-        document.getElementById('moreMenu').style.display = 'none';
-    };
+    // --- NOTIFS (v34 Fix) ---
+    function triggerNotif(txt) {
+        const b = document.getElementById('notifBanner');
+        document.getElementById('notifText').innerText = txt;
+        b.classList.add('show');
+        setTimeout(() => b.classList.remove('show'), 3000);
+        if (Notification.permission === "granted") new Notification("Notre Univers", {body: txt});
+    }
 
-    // ... Reste des fonctions Login/Auth/Start identiques à v34 ...
+    // ... Fonctions de base (switchV, closeO, login) identiques v34 ...
 </script>
 </body>
 </html>
