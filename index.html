@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.36.1</title>
+    <title>Notre Univers v.36.4</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,6 +13,7 @@
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
             --love: #ff4b6e; --check: #00d2ff; --text-sub: #b3b3b3;
+            --online: #25D366;
         }
         
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
@@ -45,7 +46,9 @@
         .contact-item { position: relative; display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 20px; margin-bottom: 10px; }
         .contact-pfp { width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; object-fit: cover; background: #2a2a40; display: flex; align-items: center; justify-content: center; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 20px; opacity: 0.6; cursor: pointer; }
-        .wa-badge { background: #25D366; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; margin-left: 5px; }
+        
+        /* BADGE VERT */
+        .wa-badge { background: var(--online); color: white; font-size: 10px; min-width: 18px; height: 18px; border-radius: 10px; display: none; align-items: center; justify-content: center; margin-left: 8px; font-weight: bold; padding: 0 4px; border: 2px solid var(--bg); }
 
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .set-card { background: var(--card); padding: 20px; border-radius: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
@@ -66,7 +69,6 @@
         
         .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 100; }
 
-        /* INFOS DESIGN */
         .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
         .info-label { color: var(--text-sub); }
         .info-val { font-weight: 600; color: var(--accent); }
@@ -156,11 +158,36 @@
 
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null;
+    
+    // SON POP WHATSAPP
+    const popSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+
+    // --- SYSTEME RETOUR ANDROID ---
+    window.addEventListener('popstate', function(e) {
+        if (document.getElementById('chatBox').style.display === 'flex') { closeO('chatBox'); history.pushState(null, null, window.location.pathname); }
+        else if (document.getElementById('coconBox').style.display === 'flex') { closeO('coconBox'); history.pushState(null, null, window.location.pathname); }
+        else if (document.getElementById('customModal').style.display === 'flex') { closeModal(); history.pushState(null, null, window.location.pathname); }
+    });
+
+    // --- NOTIFICATIONS EXTERNES ---
+    function askNotify() {
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    }
+
+    function sendNotify(title, text) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: text, icon: 'https://cdn-icons-png.flaticon.com/512/2589/2589175.png' });
+        }
+        if ("vibrate" in navigator) { navigator.vibrate([100, 50, 100]); }
+    }
 
     window.onload = () => {
+        history.pushState(null, null, window.location.pathname);
         setTimeout(() => {
             document.getElementById('splash').style.display = 'none';
-            if(user) start(); else document.getElementById('authLayer').style.display='flex';
+            if(user) { start(); askNotify(); } else document.getElementById('authLayer').style.display='flex';
         }, 1500);
     };
 
@@ -178,50 +205,39 @@
         else pre.innerText = "👤";
     }
 
-    /* --- AFFICHAGE INFOS CORRIGÉ --- */
-    function askPhoneForInfo() {
-        openModal("Vérification", "Entre ton numéro pour voir tes infos", (tel) => {
-            if(tel === user.phone) {
-                // On attend une micro-seconde pour laisser la modale se fermer puis on la réouvre avec le design des infos
-                setTimeout(() => {
-                    document.getElementById('modalTitle').innerText = "Mes Informations";
-                    document.getElementById('modalBody').innerHTML = `
-                        <div style="text-align:left; margin-top:15px;">
-                            <div class="info-row"><span class="info-label">Pseudo</span><span class="info-val">${user.pseudo}</span></div>
-                            <div class="info-row"><span class="info-label">Numéro</span><span class="info-val">${user.phone}</span></div>
-                            <div class="info-row"><span class="info-label">Code Secret</span><span class="info-val">${user.code}</span></div>
-                            <div class="info-row"><span class="info-label">ID Profil</span><span class="info-val">${user.id}</span></div>
-                        </div>`;
-                    document.getElementById('modalActions').style.display = 'flex';
-                    document.getElementById('modalConfirmBtn').innerText = "Fermer";
-                    document.getElementById('modalConfirmBtn').onclick = closeModal;
-                    document.getElementById('customModal').style.display = 'flex';
-                }, 100);
-            } else { alert("Numéro incorrect !"); }
+    function loadContacts() {
+        db.ref('users/'+user.id+'/contacts').on('value', s => {
+            const list = document.getElementById('chatList'); list.innerHTML = "";
+            s.forEach(snap => {
+                db.ref('users/'+snap.key).once('value', us => {
+                    const u = us.val();
+                    const ck = [user.id, u.id].sort().join('_');
+                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
+                        <div class="contact-pfp">${u.pfp ? `<img src="${u.pfp}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : '👤'}</div>
+                        <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
+                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
+                    </div>`;
+
+                    // Détecteur de nouveaux messages pour notification + Son
+                    db.ref('msgs/'+ck).limitToLast(1).on('child_added', mSnap => {
+                        const m = mSnap.val();
+                        if(m.sid !== user.id && !m.read) {
+                            popSound.play().catch(e => console.log("Audio bloqué"));
+                            if (document.visibilityState !== 'visible' || activeId !== ck) {
+                                sendNotify("Message de " + u.pseudo, m.txt);
+                            }
+                        }
+                    });
+
+                    db.ref('msgs/'+ck).on('value', ms => {
+                        let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
+                        const badge = document.getElementById('badge-'+u.id);
+                        if(badge) { badge.innerText = count; badge.style.display = count>0?'inline-flex':'none'; }
+                    });
+                });
+            });
         });
     }
-
-    function openContactOptions(e, id, name) {
-        e.stopPropagation();
-        document.getElementById('modalTitle').innerText = `Options : ${name}`;
-        document.getElementById('modalBody').innerHTML = `
-            <button class="option-btn" onclick="confirmAction('delConv', '${id}')">🗑️ Supprimer conversation</button>
-            <button class="option-btn" onclick="confirmAction('block', '${id}')">🚫 Bloquer</button>
-            <button class="option-btn" onclick="confirmAction('delContact', '${id}')" style="color:var(--love)">❌ Supprimer contact</button>
-        `;
-        document.getElementById('modalActions').style.display = 'none';
-        document.getElementById('customModal').style.display = 'flex';
-    }
-
-    function confirmAction(type, targetId) {
-        const chatKey = [user.id, targetId].sort().join('_');
-        if(type === 'delConv') { db.ref('msgs/'+chatKey).remove(); alert("Conversation vidée."); }
-        if(type === 'block') alert("Contact bloqué.");
-        if(type === 'delContact') db.ref(`users/${user.id}/contacts/${targetId}`).remove();
-        closeModal();
-    }
-
-    function updateTyping(val) { if(activeId) db.ref('typing/'+activeId+'/'+user.id).set(val); }
 
     function openChat(id, name) {
         activeId = [user.id, id].sort().join('_');
@@ -269,26 +285,47 @@
         document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); };
     }
 
-    function loadContacts() {
-        db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList'); list.innerHTML = "";
-            s.forEach(snap => {
-                db.ref('users/'+snap.key).once('value', us => {
-                    const u = us.val();
-                    const ck = [user.id, u.id].sort().join('_');
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
-                        <div class="contact-pfp">${u.pfp ? `<img src="${u.pfp}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">` : '👤'}</div>
-                        <b>${u.pseudo} <div class="wa-badge" id="badge-${u.id}">0</div></b>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
-                    </div>`;
-                    db.ref('msgs/'+ck).on('value', ms => {
-                        let c = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) c++; });
-                        const b = document.getElementById('badge-'+u.id); if(b) { b.innerText = c; b.style.display = c>0?'inline-flex':'none'; }
-                    });
-                });
-            });
+    function askPhoneForInfo() {
+        openModal("Vérification", "Entre ton numéro", (tel) => {
+            if(tel === user.phone) {
+                setTimeout(() => {
+                    document.getElementById('modalTitle').innerText = "Mes Informations";
+                    document.getElementById('modalBody').innerHTML = `
+                        <div style="text-align:left; margin-top:15px;">
+                            <div class="info-row"><span class="info-label">Pseudo</span><span class="info-val">${user.pseudo}</span></div>
+                            <div class="info-row"><span class="info-label">Numéro</span><span class="info-val">${user.phone}</span></div>
+                            <div class="info-row"><span class="info-label">Code Secret</span><span class="info-val">${user.code}</span></div>
+                            <div class="info-row"><span class="info-label">ID Profil</span><span class="info-val">${user.id}</span></div>
+                        </div>`;
+                    document.getElementById('modalActions').style.display = 'flex';
+                    document.getElementById('modalConfirmBtn').innerText = "Fermer";
+                    document.getElementById('customModal').style.display = 'flex';
+                }, 100);
+            } else { alert("Numéro incorrect !"); }
         });
     }
+
+    function openContactOptions(e, id, name) {
+        e.stopPropagation();
+        document.getElementById('modalTitle').innerText = `Options : ${name}`;
+        document.getElementById('modalBody').innerHTML = `
+            <button class="option-btn" onclick="confirmAction('delConv', '${id}')">🗑️ Supprimer conversation</button>
+            <button class="option-btn" onclick="confirmAction('block', '${id}')">🚫 Bloquer</button>
+            <button class="option-btn" onclick="confirmAction('delContact', '${id}')" style="color:var(--love)">❌ Supprimer contact</button>
+        `;
+        document.getElementById('modalActions').style.display = 'none';
+        document.getElementById('customModal').style.display = 'flex';
+    }
+
+    function confirmAction(type, targetId) {
+        const chatKey = [user.id, targetId].sort().join('_');
+        if(type === 'delConv') { db.ref('msgs/'+chatKey).remove(); alert("Conversation vidée."); }
+        if(type === 'block') alert("Contact bloqué.");
+        if(type === 'delContact') db.ref(`users/${user.id}/contacts/${targetId}`).remove();
+        closeModal();
+    }
+
+    function updateTyping(val) { if(activeId) db.ref('typing/'+activeId+'/'+user.id).set(val); }
 
     function handlePfp(e) {
         const file = e.target.files[0]; if(!file) return;
@@ -298,8 +335,7 @@
             db.ref('users/'+user.id).update({ pfp: b64 });
             user.pfp = b64; localStorage.setItem('nu_v33_user', JSON.stringify(user));
         };
-        reader.readAsDataURL(file);
-         }
+        reader.readAsDataURL(file); }
     function toggleAuth(showL) { document.getElementById('loginUI').style.display=showL?'block':'none'; document.getElementById('regUI').style.display=showL?'none':'block'; }
     async function register() {
         const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value;
