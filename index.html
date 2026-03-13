@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notre Univers v.35</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Notre Univers v36</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
 
@@ -22,22 +22,11 @@
 
 body{
 margin:0;
-font-family:Poppins;
+font-family:'Poppins',sans-serif;
 background:var(--bg);
 color:white;
 height:100vh;
 overflow:hidden;
-}
-
-/* messages */
-
-.msg-area{
-flex:1;
-overflow-y:auto;
-padding:20px;
-display:flex;
-flex-direction:column;
-gap:8px;
 }
 
 .bubble{
@@ -45,23 +34,86 @@ padding:10px 15px;
 border-radius:20px;
 max-width:75%;
 font-size:14px;
+position:relative;
 }
 
 .m-me{
 align-self:flex-end;
 background:var(--accent);
-color:black;
+color:#000;
+border-bottom-right-radius:5px;
 }
 
 .m-they{
 align-self:flex-start;
 background:var(--card);
+border-bottom-left-radius:5px;
 }
 
 .msg-meta{
 font-size:9px;
 margin-top:4px;
+display:flex;
+justify-content:flex-end;
+gap:4px;
 opacity:0.7;
+}
+
+.msg-reply{
+font-size:11px;
+opacity:.7;
+border-left:3px solid var(--accent);
+padding-left:6px;
+margin-bottom:4px;
+}
+
+.reactions{
+margin-top:3px;
+font-size:13px;
+}
+
+.record-btn{
+background:var(--love);
+border:none;
+width:45px;
+height:45px;
+border-radius:50%;
+font-size:18px;
+}
+
+.menu{
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:#1a1a2e;
+padding:20px;
+border-radius:30px 30px 0 0;
+display:none;
+z-index:20000;
+}
+
+.menu button{
+width:100%;
+background:var(--card);
+border:none;
+color:white;
+padding:14px;
+border-radius:18px;
+margin-bottom:10px;
+}
+
+.reply-bar{
+background:rgba(0,0,0,.4);
+padding:6px 10px;
+font-size:12px;
+display:none;
+}
+
+.typing{
+font-size:11px;
+opacity:.7;
+padding-left:10px;
 }
 
 </style>
@@ -69,30 +121,224 @@ opacity:0.7;
 
 <body>
 
-<div id="chatBox">
+<div id="replyBar" class="reply-bar"></div>
 
-<div class="head">
+<div id="messageMenu" class="menu">
+<button onclick="reactMsg('❤️')">❤️ Réagir</button>
+<button onclick="reactMsg('🔥')">🔥 Réagir</button>
+<button onclick="reactMsg('😂')">😂 Réagir</button>
+<button onclick="replyMsg()">↩ Répondre</button>
+<button onclick="editMsg()">✏ Modifier</button>
+<button onclick="deleteMsg()">🗑 Supprimer</button>
+<button onclick="closeMenu()">Fermer</button>
+</div>
+
+<div id="typingIndicator" class="typing"></div>
+
+<div id="audioPreview" style="display:none;padding:10px">
+<b>🎤 Enregistrement...</b>
+</div>
+<header class="main-header">
+<h2 id="uNameDisp" style="margin:0;font-family:'Pacifico';color:var(--accent)">Pseudo</h2>
+
+<div class="tabs">
+<div class="tab active" id="tabChats" onclick="switchV('vChats',this)">Chats</div>
+<div class="tab" onclick="switchV('vCocon',this)">Cocon</div>
+<div class="tab" onclick="switchV('vSet',this)">Réglages</div>
+</div>
+</header>
+
+
+<div id="vChats" class="view active">
+<div id="chatList"></div>
+
+<div class="fab" onclick="addFriend()">+</div>
+</div>
+
+
+<div id="vCocon" class="view">
+
+<div class="love-card">
+
+<div style="font-size:35px">💑</div>
+
+<h3 style="margin:10px 0">Unis depuis</h3>
+
+<div class="counter-row">
+
+<div class="unit">
+<b id="d-day">0</b>
+<small>Jours</small>
+</div>
+
+<div class="unit">
+<b id="d-hour">0</b>
+<small>Heures</small>
+</div>
+
+</div>
+
+<p id="sharedDate"
+style="font-size:11px;margin-top:10px;opacity:.8">
+Calcul...
+</p>
+
+</div>
+
+<button onclick="askCoconCode()"
+style="width:100%;padding:20px;border-radius:25px;border:1px dashed var(--love);background:var(--card);color:var(--love);font-weight:bold;">
+🌹 Ouvrir le Cocon
+</button>
+
+</div>
+
+
+<div id="vSet" class="view">
+
+<div class="settings-grid">
+
+<div class="set-card" onclick="openEdit('pseudo')">
+👤
+<br>Pseudo
+</div>
+
+<div class="set-card" onclick="openEdit('avatar')">
+📸
+<br>Avatar
+</div>
+
+<div class="set-card" onclick="openEdit('code')">
+🔑
+<br>Code secret
+</div>
+
+<div class="set-card" onclick="openEdit('date')">
+📅
+<br>Date
+</div>
+
+<div class="set-card" onclick="openEdit('pass')">
+🔒
+<br>Mot de passe
+</div>
+
+<div class="set-card"
+onclick="logout()"
+style="color:#ff5252">
+
+🚪
+<br>Quitter
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- CHAT NORMAL -->
+
+<div id="chatBox"
+style="display:none;flex-direction:column;height:100vh;position:fixed;inset:0;background:var(--bg);z-index:9999">
+
+<div class="head"
+style="padding:50px 20px 15px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;gap:15px">
+
 <span onclick="closeO('chatBox')">←</span>
-<b id="cName"></b>
-</div>
 
-<div class="msg-area" id="mArea"></div>
-
-<div id="replyPreview" style="display:none;padding:8px 15px;font-size:12px;background:rgba(255,255,255,0.05);">
-<span id="replyText"></span>
-<span onclick="cancelReply()" style="float:right">✖</span>
-</div>
-
-<div style="padding:15px;display:flex;gap:10px;">
-<input type="text" id="mIn" style="flex:1;background:var(--card);border:none;padding:12px;border-radius:20px;color:white;">
-<button onclick="send('msgs')" style="background:var(--accent);border:none;width:45px;border-radius:50%">➔</button>
-</div>
+<b id="cName">...</b>
 
 </div>
 
+
+<div class="msg-area"
+id="mArea"
+style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:8px">
+
+</div>
+
+<div id="typingIndicatorChat"
+class="typing"></div>
+
+
+<div style="padding:15px;display:flex;gap:10px">
+
+<input
+type="text"
+id="mIn"
+placeholder="Message..."
+style="flex:1;background:var(--card);border:none;padding:12px;border-radius:20px;color:white"
+oninput="typing()">
+
+<button onclick="send('msgs')"
+style="background:var(--accent);border:none;width:45px;border-radius:50%">
+➔
+</button>
+
+<button
+class="record-btn"
+onmousedown="startRec()"
+onmouseup="stopRec()">
+
+🎤
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- COCON -->
+
+<div id="coconBox"
+style="display:none;flex-direction:column;height:100vh;position:fixed;inset:0;background:var(--bg);z-index:9999">
+
+<div class="head"
+style="padding:50px 20px 15px;background:var(--love);display:flex;gap:15px">
+
+<span onclick="closeO('coconBox')">←</span>
+
+<b>🌹 Cocon</b>
+
+</div>
+
+
+<div class="msg-area"
+id="coArea"
+style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:8px">
+
+</div>
+
+
+<div style="padding:15px;display:flex;gap:10px">
+
+<input
+type="text"
+id="coIn"
+placeholder="Secret..."
+style="flex:1;background:var(--card);border:none;padding:12px;border-radius:20px;color:white">
+
+<button onclick="send('cocon')"
+style="background:var(--love);border:none;width:45px;border-radius:50%">
+➔
+</button>
+
+<button
+class="record-btn"
+onmousedown="startRecCocon()"
+onmouseup="stopRecCocon()">
+
+🎤
+
+</button>
+
+</div>
+
+</div>
 <script>
 
-const firebaseConfig={
+const firebaseConfig = {
 apiKey:"AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
 databaseURL:"https://notre-univers-d71a3-default-rtdb.firebaseio.com/"
 };
@@ -103,30 +349,43 @@ const db=firebase.database();
 let user=JSON.parse(localStorage.getItem("nu_v33_user"));
 
 let activeId=null;
+let replyTarget=null;
+let selectedMsg=null;
 
-let replyTo=null;
-let editMsgId=null;
+let mediaRecorder;
+let audioChunks=[];
 
-let pinnedChats=JSON.parse(localStorage.getItem("nu_pinned")||"[]");
-let blockedUsers=JSON.parse(localStorage.getItem("nu_blocked")||"[]");
+function start(){
 
-let holdTimer;
+document.getElementById("authLayer").style.display="none";
+document.getElementById("mainApp").style.display="block";
 
-/* ouvrir chat */
+document.getElementById("uNameDisp").innerText=user.pseudo;
+
+loadContacts();
+}
+
+if(user)start();
+
+
+
+/* =========================
+CHAT
+========================= */
 
 function openChat(id,name){
 
 activeId=[user.id,id].sort().join("_");
 
-document.getElementById("cName").innerText=name;
-
 document.getElementById("chatBox").style.display="flex";
+
+document.getElementById("cName").innerText=name;
 
 sync("msgs",activeId,"mArea");
 
 }
 
-/* synchronisation messages */
+
 
 function sync(path,target,areaId){
 
@@ -136,49 +395,55 @@ const area=document.getElementById(areaId);
 
 area.innerHTML="";
 
-s.forEach(snap=>{
+s.forEach(sn=>{
 
-const m=snap.val();
-const id=snap.key;
+const m=sn.val();
+
+const id=sn.key;
 
 const isMe=m.sid===user.id;
-
-const time=new Date(m.t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 
 let replyHTML="";
 
 if(m.reply){
 
-replyHTML=`
-<div style="font-size:11px;opacity:0.6;border-left:2px solid var(--accent);padding-left:5px;margin-bottom:3px;">
-${m.reply}
-</div>`;
+replyHTML=`<div class="msg-reply">${m.reply}</div>`;
 
 }
 
-area.innerHTML+=`
+let reactHTML="";
 
-<div class="bubble ${isMe?"m-me":"m-they"}"
+if(m.react){
 
-oncontextmenu="openMsgMenu('${id}','${m.txt}')"
+reactHTML=`<div class="reactions">${m.react}</div>`;
 
-ontouchstart="holdMsg(event,'${id}','${m.txt}')">
+}
 
-${replyHTML}
+let audioHTML="";
 
-${m.txt}
+if(m.audio){
 
-<div class="msg-meta">
+audioHTML=`<audio controls src="${m.audio}"></audio>`;
 
-${time}
+}
 
-${isMe?"✓✓":""}
+const div=document.createElement("div");
 
-</div>
+div.className="bubble "+(isMe?"m-me":"m-they");
 
-</div>
+div.innerHTML=replyHTML+(m.txt||"")+audioHTML+reactHTML;
 
-`;
+div.oncontextmenu=(e)=>{
+
+e.preventDefault();
+
+selectedMsg={id:id,data:m,path:path,target:target};
+
+openMenu();
+
+};
+
+area.appendChild(div);
 
 });
 
@@ -188,157 +453,294 @@ area.scrollTop=area.scrollHeight;
 
 }
 
-/* envoyer message */
+
+
+/* =========================
+SEND MESSAGE
+========================= */
 
 function send(path){
 
-const inp=document.getElementById("mIn");
+const inp=(path==="msgs")?mIn:coIn;
 
-const target=activeId;
+const target=(path==="msgs")?activeId:user.coconId;
 
 if(!inp.value.trim())return;
 
-if(editMsgId){
-
-db.ref(path+"/"+target+"/"+editMsgId).update({
-
-txt:inp.value.trim()
-
-});
-
-editMsgId=null;
-
-}else{
-
-db.ref(path+"/"+target).push({
+let data={
 
 sid:user.id,
-
-txt:inp.value.trim(),
-
-reply:replyTo,
-
+txt:inp.value,
 t:Date.now()
 
-});
+};
+
+if(replyTarget){
+
+data.reply=replyTarget;
+
+replyTarget=null;
+
+document.getElementById("replyBar").style.display="none";
 
 }
 
-replyTo=null;
-
-document.getElementById("replyPreview").style.display="none";
+db.ref(path+"/"+target).push(data);
 
 inp.value="";
 
 }
 
-/* appui long */
 
-function holdMsg(e,id,text){
 
-holdTimer=setTimeout(()=>{
+/* =========================
+MENU MESSAGE
+========================= */
 
-openMsgMenu(id,text);
+function openMenu(){
 
-},600);
+document.getElementById("messageMenu").style.display="block";
 
 }
 
-document.addEventListener("touchend",()=>{
+function closeMenu(){
 
-clearTimeout(holdTimer);
+document.getElementById("messageMenu").style.display="none";
+
+}
+
+
+
+function reactMsg(e){
+
+db.ref(selectedMsg.path+"/"+selectedMsg.target+"/"+selectedMsg.id)
+.update({react:e});
+
+closeMenu();
+
+}
+
+
+
+function replyMsg(){
+
+replyTarget=selectedMsg.data.txt;
+
+document.getElementById("replyBar").innerText="Répondre : "+replyTarget;
+
+document.getElementById("replyBar").style.display="block";
+
+closeMenu();
+
+}
+
+
+
+function editMsg(){
+
+let txt=prompt("Modifier",selectedMsg.data.txt);
+
+if(!txt)return;
+
+db.ref(selectedMsg.path+"/"+selectedMsg.target+"/"+selectedMsg.id)
+.update({txt:txt});
+
+closeMenu();
+
+}
+
+
+
+function deleteMsg(){
+
+db.ref(selectedMsg.path+"/"+selectedMsg.target+"/"+selectedMsg.id)
+.remove();
+
+closeMenu();
+
+}
+
+
+
+/* =========================
+TYPING
+========================= */
+
+function typing(){
+
+db.ref("typing/"+activeId+"/"+user.id).set(true);
+
+setTimeout(()=>{
+
+db.ref("typing/"+activeId+"/"+user.id).remove();
+
+},2000);
+
+}
+
+
+
+db.ref("typing").on("value",s=>{
+
+let typingUsers=s.val();
+
+if(!typingUsers)return;
+
+if(typingUsers[activeId]){
+
+for(let u in typingUsers[activeId]){
+
+if(u!==user.id){
+
+document.getElementById("typingIndicatorChat").innerText="écrit...";
+
+return;
+
+}
+
+}
+
+}
+
+document.getElementById("typingIndicatorChat").innerText="";
 
 });
 
-/* menu message */
 
-function openMsgMenu(id,text){
 
-const choice=prompt(
+/* =========================
+AUDIO RECORD
+========================= */
 
-"1 Répondre\n2 Modifier\n3 Supprimer"
+async function startRec(){
 
-);
+let stream=await navigator.mediaDevices.getUserMedia({audio:true});
 
-if(choice=="1"){
+mediaRecorder=new MediaRecorder(stream);
 
-replyTo=text;
+mediaRecorder.start();
 
-document.getElementById("replyPreview").style.display="block";
+audioChunks=[];
 
-document.getElementById("replyText").innerText=text;
-
-}
-
-if(choice=="2"){
-
-editMsgId=id;
-
-document.getElementById("mIn").value=text;
+mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
 
 }
 
-if(choice=="3"){
 
-db.ref("msgs/"+activeId+"/"+id).remove();
 
-}
+function stopRec(){
 
-}
+mediaRecorder.stop();
 
-/* annuler réponse */
+mediaRecorder.onstop=()=>{
 
-function cancelReply(){
+const blob=new Blob(audioChunks);
 
-replyTo=null;
+const reader=new FileReader();
 
-document.getElementById("replyPreview").style.display="none";
+reader.readAsDataURL(blob);
 
-}
+reader.onloadend=()=>{
 
-/* menu conversation */
+db.ref("msgs/"+activeId).push({
 
-function chatMenu(id){
+sid:user.id,
+audio:reader.result,
+t:Date.now()
 
-const choice=prompt(
+});
 
-"1 Supprimer\n2 Bloquer\n3 Épingler"
+};
 
-);
-
-if(choice=="1"){
-
-const chatId=[user.id,id].sort().join("_");
-
-db.ref("msgs/"+chatId).remove();
+};
 
 }
 
-if(choice=="2"){
 
-blockedUsers.push(id);
 
-localStorage.setItem("nu_blocked",JSON.stringify(blockedUsers));
+async function startRecCocon(){
 
-}
+let stream=await navigator.mediaDevices.getUserMedia({audio:true});
 
-if(choice=="3"){
+mediaRecorder=new MediaRecorder(stream);
 
-pinnedChats.push(id);
+mediaRecorder.start();
 
-localStorage.setItem("nu_pinned",JSON.stringify(pinnedChats));
+audioChunks=[];
 
-}
+mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
 
 }
 
-/* fermer */
 
-function closeO(id){
 
-document.getElementById(id).style.display="none";
+function stopRecCocon(){
+
+mediaRecorder.stop();
+
+mediaRecorder.onstop=()=>{
+
+const blob=new Blob(audioChunks);
+
+const reader=new FileReader();
+
+reader.readAsDataURL(blob);
+
+reader.onloadend=()=>{
+
+db.ref("cocon/"+user.coconId).push({
+
+sid:user.id,
+audio:reader.result,
+t:Date.now()
+
+});
+
+};
+
+};
 
 }
+
+
+
+/* =========================
+CONTACTS
+========================= */
+
+function loadContacts(){
+
+db.ref("users/"+user.id+"/contacts").on("value",s=>{
+
+let list=document.getElementById("chatList");
+
+list.innerHTML="";
+
+s.forEach(sn=>{
+
+db.ref("users/"+sn.key).once("value",u=>{
+
+let d=u.val();
+
+let div=document.createElement("div");
+
+div.style="display:flex;padding:15px;background:var(--card);border-radius:20px;margin-bottom:10px";
+
+div.innerHTML="<b>"+d.pseudo+"</b>";
+
+div.onclick=()=>openChat(d.id,d.pseudo);
+
+list.appendChild(div);
+
+});
+
+});
+
+});
+
+}
+
+
 
 </script>
 
