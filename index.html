@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.34 - Final Fix</title>
+    <title>Notre Univers v.35</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -17,7 +17,7 @@
         
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* --- 1. PAGE DE CHARGEMENT --- */
+        /* --- CHARGEMENT --- */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s ease-out; }
         .loader { width: 35px; height: 35px; border: 3px solid var(--card); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-top: 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -47,7 +47,6 @@
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
 
-        /* --- BADGES MESSAGES (POINT) --- */
         .wa-badge { position: absolute; right: 15px; background: #25D366; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: none; align-items: center; justify-content: center; font-weight: bold; }
 
         /* --- RÉGLAGES --- */
@@ -63,12 +62,15 @@
         .unit { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 15px; min-width: 60px; }
 
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
-        .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .head { padding: 50px 20px 15px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; position: relative; }
+        
+        /* --- BULLLES AVEC HEURE ET CHECK --- */
+        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; position: relative; min-width: 60px; }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 5px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 5px; }
         .msg-meta { font-size: 9px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 4px; opacity: 0.7; }
+        
         .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 100; }
     </style>
 </head>
@@ -145,14 +147,28 @@
             <div class="set-card" onclick="openEdit('pseudo')"><i>👤</i><span>Pseudo</span></div>
             <div class="set-card" onclick="document.getElementById('pfpInput').click()"><i>📸</i><span>Photo</span></div>
             <div class="set-card" onclick="openEdit('code')"><i>🔑</i><span>Code Secret</span></div>
-            <div class="set-card" onclick="openEdit('date')"><i>📅</i><span>Date</span></div>
+            <div class="set-card" onclick="askPhoneForInfo()"><i>ℹ️</i><span>Mes Infos</span></div>
             <div class="set-card" onclick="openEdit('pass')"><i>🔒</i><span>Mot de passe</span></div>
             <div class="set-card" onclick="logout()" style="color:#ff5252"><i>🚪</i><span>Quitter</span></div>
         </div>
     </div>
 </div>
 
-<div id="chatBox"><div class="head"><span onclick="closeO('chatBox')">←</span><b id="cName">...</b></div><div class="msg-area" id="mArea"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="mIn" style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; border-radius:50%">➔</button></div></div>
+<div id="chatBox">
+    <div class="head">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span onclick="closeO('chatBox')">←</span>
+            <b id="cName">...</b>
+        </div>
+        <button onclick="deleteConv()" style="background:none; border:none; color:var(--love); font-size:12px;">Supprimer conv.</button>
+    </div>
+    <div class="msg-area" id="mArea"></div>
+    <div style="padding:15px; display:flex; gap:10px;">
+        <input type="text" id="mIn" style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;">
+        <button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; border-radius:50%">➔</button>
+    </div>
+</div>
+
 <div id="coconBox"><div class="head" style="background:var(--love)"><span onclick="closeO('coconBox')">←</span><b>🌹 Cocon</b></div><div class="msg-area" id="coArea"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="coIn" style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:45px; border-radius:50%">➔</button></div></div>
 
 <script>
@@ -162,7 +178,7 @@
 
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null;
-    let isChatOpen = false;
+    let otherUserId = null;
 
     // --- CHARGEMENT ---
     window.onload = () => {
@@ -180,22 +196,36 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         if(user.pfp) document.getElementById('pfpPreview').src = user.pfp;
-        loadTimer(); loadContacts(); listenGlobal();
+        loadTimer(); loadContacts();
     }
 
-    // --- PHOTO GALERIE ---
-    function handlePfp(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const base64 = ev.target.result;
-            document.getElementById('pfpPreview').src = base64;
-            db.ref('users/'+user.id).update({ pfp: base64 });
-            user.pfp = base64;
-            localStorage.setItem('nu_v33_user', JSON.stringify(user));
-        };
-        reader.readAsDataURL(file);
+    // --- INFOS PERSO SÉCURISÉES ---
+    function askPhoneForInfo() {
+        openModal("Vérification", "Entre ton numéro", (tel) => {
+            if(tel === user.phone) {
+                alert(`INFOS PERSO :\nPseudo: ${user.pseudo}\nNuméro: ${user.phone}\nCode Cocon: ${user.code}\nID: ${user.id}`);
+            } else { alert("Numéro incorrect !"); }
+        });
+    }
+
+    // --- GESTION MESSAGES (ACTIONS) ---
+    function msgActions(path, target, msgId, oldTxt, sid) {
+        if(sid !== user.id) return; // Seulement ses propres messages
+        const act = confirm("Modifier (OK) ou Supprimer (Annuler) ?");
+        if(act) {
+            const newTxt = prompt("Nouveau message :", oldTxt);
+            if(newTxt) db.ref(`${path}/${target}/${msgId}`).update({ txt: newTxt + " (modifié)" });
+        } else {
+            if(confirm("Supprimer pour tout le monde ?")) {
+                db.ref(`${path}/${target}/${msgId}`).remove();
+            }
+        }
+    }
+
+    function deleteConv() {
+        if(confirm("Supprimer toute la conversation ?")) {
+            db.ref('msgs/'+activeId).remove();
+        }
     }
 
     function loadContacts() {
@@ -212,7 +242,6 @@
                             <div class="wa-badge" id="badge-${u.id}">0</div>
                         </div>`;
                     
-                    // Compteur messages non lus
                     db.ref('msgs/'+chatKey).on('value', ms => {
                         let count = 0;
                         ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
@@ -224,23 +253,9 @@
         });
     }
 
-    // --- MATCHING AUTO ---
-    function addFriend() {
-        openModal("Ajouter un ami", "Numéro", (tel) => {
-            const id = "u_" + tel.replace(/\D/g,'');
-            db.ref('users/'+id).once('value', s => {
-                if(s.exists()) {
-                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
-                    db.ref(`users/${id}/contacts/${user.id}`).set(true); // MATCHING AUTO
-                    alert("Ami ajouté !");
-                }
-            });
-        });
-    }
-
     function openChat(id, name) {
-        isChatOpen = true;
         activeId = [user.id, id].sort().join('_');
+        otherUserId = id;
         document.getElementById('cName').innerText = name;
         document.getElementById('chatBox').style.display='flex';
         
@@ -248,6 +263,24 @@
             s.forEach(snap => { if(snap.val().sid === id) db.ref('msgs/'+activeId+'/'+snap.key).update({read:true}); });
         });
         sync('msgs', activeId, 'mArea');
+    }
+
+    function sync(path, target, areaId) {
+        db.ref(path+'/'+target).on('value', s => {
+            const area = document.getElementById(areaId); area.innerHTML = "";
+            s.forEach(snap => {
+                const m = snap.val(), isMe = m.sid===user.id;
+                const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
+                const status = isMe ? (m.read ? ' <span style="color:var(--check)">✔✔</span>' : ' ✔') : '';
+                
+                area.innerHTML += `
+                    <div class="bubble ${isMe?'m-me':'m-they'}" onclick="msgActions('${path}','${target}','${snap.key}','${m.txt}','${m.sid}')">
+                        ${m.txt}
+                        <div class="msg-meta">${time}${status}</div>
+                    </div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        });
     }
 
     function send(path) {
@@ -258,7 +291,20 @@
         inp.value = "";
     }
 
-    // --- TOUTES TES AUTRES FONCTIONS RESTAURÉES ---
+    // --- FONCTIONS SYSTÈME ---
+    function handlePfp(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const base64 = ev.target.result;
+            document.getElementById('pfpPreview').src = base64;
+            db.ref('users/'+user.id).update({ pfp: base64 });
+            user.pfp = base64;
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        };
+        reader.readAsDataURL(file);
+    }
     function toggleAuth(showL) { document.getElementById('loginUI').style.display=showL?'block':'none'; document.getElementById('regUI').style.display=showL?'none':'block'; }
     async function register() {
         const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value;
@@ -273,6 +319,26 @@
         const s = await db.ref('users/'+id).once('value');
         if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start(); }
     }
+    function addFriend() {
+        openModal("Ajouter un ami", "Numéro", (tel) => {
+            const id = "u_" + tel.replace(/\D/g,'');
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) {
+                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
+                    db.ref(`users/${id}/contacts/${user.id}`).set(true);
+                    alert("Ami ajouté !");
+                }
+            });
+        });
+    }
+    function askCoconCode() {
+        openModal("Code Secret", "Entre le code", (code) => {
+            if(code === user.code) {
+                document.getElementById('coconBox').style.display='flex';
+                sync('cocon', user.coconId, 'coArea');
+            }
+        });
+    }
     function loadTimer() {
         db.ref('cocon_meta/'+user.coconId).on('value', s => {
             const data = s.val() || { startDate: user.startDate };
@@ -285,37 +351,6 @@
             up(); setInterval(up, 60000);
         });
     }
-    function askCoconCode() {
-        openModal("Code Secret", "Entre le code", (code) => {
-            if(code === user.code) {
-                document.getElementById('coconBox').style.display='flex';
-                sync('cocon', user.coconId, 'coArea');
-            }
-        });
-    }
-    function sync(path, target, areaId) {
-        db.ref(path+'/'+target).on('value', s => {
-            const area = document.getElementById(areaId); area.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val(), isMe = m.sid===user.id;
-                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}</div>`;
-            });
-            area.scrollTop = area.scrollHeight;
-        });
-    }
-    function switchV(id, el) {
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); el.classList.add('active');
-    }
-    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-    function openModal(t,p,a) {
-        document.getElementById('modalTitle').innerText = t; document.getElementById('modalInput').placeholder = p;
-        document.getElementById('customModal').style.display = 'flex';
-        document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); };
-    }
-    function closeO(id) { document.getElementById(id).style.display='none'; isChatOpen = false; }
-    function logout() { localStorage.clear(); location.reload(); }
     function openEdit(type) {
         openModal("Modifier", type, (val) => {
             if(type==='date') db.ref('cocon_meta/'+user.coconId).update({startDate: new Date(val).getTime()});
@@ -323,6 +358,19 @@
             localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload();
         });
     }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+    function openModal(t,p,a) {
+        document.getElementById('modalTitle').innerText = t; document.getElementById('modalInput').placeholder = p;
+        document.getElementById('customModal').style.display = 'flex';
+        document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); };
+    }
+    function switchV(id, el) {
+        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.getElementById(id).classList.add('active'); el.classList.add('active');
+    }
+    function closeO(id) { document.getElementById(id).style.display='none'; }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
