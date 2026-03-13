@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.34 - Original Fix</title>
+    <title>Notre Univers v.34</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -12,93 +12,129 @@
     <style>
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
-            --love: #ff4b6e; --text-sub: #b3b3b3;
+            --love: #ff4b6e; --check: #00d2ff; --text-sub: #b3b3b3;
         }
         
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* --- HEADER & TABS v34 --- */
+        /* --- NOTIFICATIONS (Bannière discrète) --- */
+        #notifBanner { position: fixed; top: -100px; left: 20px; right: 20px; background: var(--accent); color: #000; padding: 15px; border-radius: 20px; z-index: 30000; display: flex; align-items: center; gap: 12px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #notifBanner.show { top: 50px; }
+        .notif-dot { width: 10px; height: 10px; background: var(--love); border-radius: 50%; display: none; position: absolute; top: 5px; right: 5px; }
+        .tab { position: relative; }
+
+        /* --- MODALES PERSONNALISÉES --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
+        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 20px 0; outline: none; text-align: center; font-size: 18px; }
+
+        /* --- UI PRINCIPALE (Inchangée) --- */
+        #authLayer { position: fixed; inset: 0; background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
+        .auth-card { background: var(--card); padding: 35px 25px; border-radius: 35px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 340px; text-align: center; }
+        .auth-logo { font-family: 'Pacifico', cursive; font-size: 32px; color: var(--accent); margin-bottom: 25px; }
+        .auth-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 18px; color: white; outline: none; box-sizing: border-box; margin-bottom: 12px; }
+        .auth-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 18px; font-weight: 700; cursor: pointer; }
+
         .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.9); }
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); cursor: pointer; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; }
-        
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
 
-        /* --- DESIGN DES RÉGLAGES EN CARRÉS (v34) --- */
-        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .set-card-sq { background: var(--card); padding: 20px; border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .set-card-sq i { font-size: 24px; }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .set-card { background: var(--card); padding: 20px; border-radius: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .set-card i { font-size: 24px; display: block; margin-bottom: 8px; }
 
-        /* --- PHOTO DE PROFIL & ICÔNE PAR DÉFAUT --- */
-        .pfp-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 20px; }
-        #myPfp { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); background: #1a1a2e; }
-        /* L'icône par défaut si pas de photo */
-        .default-avatar { width: 100%; height: 100%; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 40px; color: var(--accent); border: 3px solid var(--accent); }
-
-        /* --- BULLLES v34 --- */
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; position: relative; }
-        .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 5px; }
-        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 5px; }
+        .love-card { background: linear-gradient(135deg, #6a11cb, var(--love)); padding: 25px; border-radius: 30px; text-align: center; margin-bottom: 20px; }
+        .counter-row { display: flex; justify-content: center; gap: 15px; margin-top: 10px; }
+        .unit { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 15px; min-width: 60px; }
 
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
         .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { padding: 10px 15px; border-radius: 20px; max-width: 75%; font-size: 14px; }
+        .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 5px; }
+        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 5px; }
+        .msg-meta { font-size: 9px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 4px; opacity: 0.7; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 100; }
     </style>
 </head>
 <body>
 
-<div id="mainApp">
+<div id="notifBanner">
+    <span id="notifIcon">💬</span>
+    <span id="notifText">Nouveau message reçu</span>
+</div>
+
+<div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+        <h3 id="modalTitle" style="margin:0; color:var(--accent)">Accès Sécurisé</h3>
+        <input type="text" id="modalInput" class="modal-input" placeholder="...">
+        <div style="display:flex; gap:10px;">
+            <button class="auth-btn" style="background:var(--card); color:white" onclick="closeModal()">Annuler</button>
+            <button class="auth-btn" id="modalConfirmBtn">Confirmer</button>
+        </div>
+    </div>
+</div>
+
+<div id="authLayer">
+    <div class="auth-card" id="loginUI">
+        <div class="auth-logo">Notre Univers</div>
+        <input type="tel" class="auth-input" placeholder="Numéro" id="lPhone">
+        <input type="password" class="auth-input" placeholder="Mot de passe" id="lPass">
+        <button class="auth-btn" onclick="login()">CONNEXION 🪐</button>
+        <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; color:var(--text-sub)">Créer un compte</p>
+    </div>
+    <div class="auth-card" id="regUI" style="display:none;">
+        <div class="auth-logo">Nouveau Profil</div>
+        <input type="text" class="auth-input" placeholder="Pseudo" id="rPseudo">
+        <input type="tel" class="auth-input" placeholder="Numéro" id="rPhone">
+        <input type="password" class="auth-input" placeholder="Mot de passe" id="rPass">
+        <button class="auth-btn" onclick="register()">S'INSCRIRE ✨</button>
+        <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; color:var(--text-sub)">Déjà inscrit ? Connexion</p>
+    </div>
+</div>
+
+<div id="mainApp" style="display:none;">
     <header class="main-header">
-        <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent);">Notre Univers</h2>
+        <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent);">Pseudo</h2>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)">Chats</div>
-            <div class="tab" onclick="switchV('vCocon', this)">Cocon</div>
+            <div class="tab active" id="tabChats" onclick="switchV('vChats', this)">Chats <div class="notif-dot" id="dotChats"></div></div>
+            <div class="tab" id="tabCocon" onclick="switchV('vCocon', this)">Cocon <div class="notif-dot" id="dotCocon"></div></div>
             <div class="tab" onclick="switchV('vSet', this)">Réglages</div>
         </div>
     </header>
 
-    <div id="vChats" class="view active">
-        <div id="chatList"></div>
-    </div>
+    <div id="vChats" class="view active"><div id="chatList"></div><div class="fab" onclick="addFriend()">+</div></div>
 
     <div id="vCocon" class="view">
-        <div class="set-card-sq" style="width:100%; box-sizing:border-box;" onclick="openCocon()">
-            <span>🔒</span>
-            <b>Espace Cocon Privé</b>
-            <small style="opacity:0.6">Clique pour entrer</small>
+        <div class="love-card">
+            <div style="font-size:35px">💑</div>
+            <h3 style="margin:10px 0">Unis depuis</h3>
+            <div class="counter-row">
+                <div class="unit"><b id="d-day">0</b><small>Jours</small></div>
+                <div class="unit"><b id="d-hour">0</b><small>Heures</small></div>
+            </div>
+            <p id="sharedDate" style="font-size:11px; margin-top:10px; opacity:0.8">Calcul...</p>
         </div>
+        <button onclick="askCoconCode()" style="width:100%; padding:20px; border-radius:25px; border:1px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold;">🌹 Ouvrir le Cocon</button>
     </div>
 
     <div id="vSet" class="view">
-        <div class="pfp-wrap" onclick="document.getElementById('pfpIn').click()">
-            <img id="myPfp" src="" style="display:none;">
-            <div id="defaultIcon" class="default-avatar">👤</div>
-            <div style="position:absolute; bottom:5px; right:5px; background:var(--accent); border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; color:#000;">📸</div>
-            <input type="file" id="pfpIn" accept="image/*" style="display:none" onchange="uploadPfp(event)">
-        </div>
-
         <div class="settings-grid">
-            <div class="set-card-sq"><span>👤</span><b id="setPseudo">Pseudo</b></div>
-            <div class="set-card-sq"><span>📞</span><b id="setPhone">Numéro</b></div>
-            <div class="set-card-sq" onclick="alert('Bientôt disponible')"><span>🎨</span><b>Thèmes</b></div>
-            <div class="set-card-sq" onclick="logout()" style="color:var(--love)"><span>🚪</span><b>Quitter</b></div>
+            <div class="set-card" onclick="openEdit('pseudo')"><i>👤</i><span>Pseudo</span></div>
+            <div class="set-card" onclick="openEdit('avatar')"><i>📸</i><span>Avatar</span></div>
+            <div class="set-card" onclick="openEdit('code')"><i>🔑</i><span>Code Secret</span></div>
+            <div class="set-card" onclick="openEdit('date')"><i>📅</i><span>Date</span></div>
+            <div class="set-card" onclick="openEdit('pass')"><i>🔒</i><span>Mot de passe</span></div>
+            <div class="set-card" onclick="logout()" style="color:#ff5252"><i>🚪</i><span>Quitter</span></div>
         </div>
     </div>
 </div>
 
-<div id="chatBox">
-    <div class="head">
-        <span onclick="closeO('chatBox')">←</span>
-        <b id="cHeaderName">...</b>
-    </div>
-    <div id="mArea" class="msg-area"></div>
-    <div style="padding:15px; display:flex; gap:10px;">
-        <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;">
-        <button onclick="sendMsg()" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%">➔</button>
-    </div>
-</div>
+<div id="chatBox"><div class="head"><span onclick="closeO('chatBox')">←</span><b id="cName">...</b></div><div class="msg-area" id="mArea"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="mIn" style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; border-radius:50%">➔</button></div></div>
+<div id="coconBox"><div class="head" style="background:var(--love)"><span onclick="closeO('coconBox')">←</span><b>🌹 Cocon</b></div><div class="msg-area" id="coArea"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="coIn" style="flex:1; background:var(--card); border:none; padding:12px; border-radius:20px; color:white;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:45px; border-radius:50%">➔</button></div></div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
@@ -106,90 +142,188 @@
     const db = firebase.database();
 
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
-    let activeKey = null;
+    let activeId = null;
+    let isChatOpen = false;
+    let isCoconOpen = false;
+
+    // --- LOGIQUE NOTIFICATION ---
+    function triggerNotif(type) {
+        const banner = document.getElementById('notifBanner');
+        const text = document.getElementById('notifText');
+        const icon = document.getElementById('notifIcon');
+
+        if(type === 'msgs') {
+            text.innerText = "Nouveau message reçu";
+            icon.innerText = "💬";
+            document.getElementById('dotChats').style.display = 'block';
+        } else {
+            text.innerText = "Nouveau secret dans le Cocon";
+            icon.innerText = "🌹";
+            document.getElementById('dotCocon').style.display = 'block';
+        }
+
+        banner.classList.add('show');
+        setTimeout(() => banner.classList.remove('show'), 3000);
+    }
+
+    // --- LOGIQUE MODALE ---
+    function openModal(title, placeholder, action) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalInput').placeholder = placeholder;
+        document.getElementById('modalInput').value = "";
+        document.getElementById('customModal').style.display = 'flex';
+        document.getElementById('modalConfirmBtn').onclick = () => {
+            const val = document.getElementById('modalInput').value;
+            if(val) { action(val); closeModal(); }
+        };
+    }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+
+    function toggleAuth(showL) { document.getElementById('loginUI').style.display=showL?'block':'none'; document.getElementById('regUI').style.display=showL?'none':'block'; }
+
+    async function register() {
+        const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value;
+        const id = "u_" + ph.replace(/\D/g,'');
+        const coconId = "cocon_" + Math.random().toString(36).substr(2, 9);
+        await db.ref('users/'+id).set({ id, phone:ph, pseudo:ps, pass:pa, avatar:'👤', code:'0000', coconId: coconId, startDate:Date.now(), contacts:{} });
+        toggleAuth(true);
+    }
+
+    async function login() {
+        const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value;
+        const id = "u_" + ph.replace(/\D/g,'');
+        const s = await db.ref('users/'+id).once('value');
+        if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start(); }
+    }
 
     function start() {
-        if(!user) return;
-        document.getElementById('setPseudo').innerText = user.pseudo;
-        document.getElementById('setPhone').innerText = user.phone;
-        updatePfpDisplay(user.pfp);
-        loadChats();
+        document.getElementById('authLayer').style.display='none';
+        document.getElementById('mainApp').style.display='block';
+        document.getElementById('uNameDisp').innerText = user.pseudo;
+        loadTimer(); loadContacts(); listenGlobal();
     }
 
-    // Gestion propre de l'affichage photo
-    function updatePfpDisplay(imgData) {
-        const img = document.getElementById('myPfp');
-        const def = document.getElementById('defaultIcon');
-        if(imgData) {
-            img.src = imgData;
-            img.style.display = 'block';
-            def.style.display = 'none';
-        } else {
-            img.style.display = 'none';
-            def.style.display = 'flex';
-        }
+    // ÉCOUTE DES NOUVEAUX MESSAGES POUR LES NOTIFS
+    function listenGlobal() {
+        // Notifs Chats normaux
+        db.ref('users/'+user.id+'/contacts').on('value', s => {
+            s.forEach(snap => {
+                const chatRefId = [user.id, snap.key].sort().join('_');
+                db.ref('msgs/'+chatRefId).limitToLast(1).on('child_added', snapMsg => {
+                    if(snapMsg.val().sid !== user.id && !isChatOpen) triggerNotif('msgs');
+                });
+            });
+        });
+        // Notifs Cocon
+        db.ref('cocon/'+user.coconId).limitToLast(1).on('child_added', snapC => {
+            if(snapC.val().sid !== user.id && !isCoconOpen) triggerNotif('cocon');
+        });
     }
 
-    function uploadPfp(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const base64 = ev.target.result;
-            updatePfpDisplay(base64);
-            db.ref('users/'+user.id).update({ pfp: base64 });
-            user.pfp = base64;
-            localStorage.setItem('nu_v33_user', JSON.stringify(user));
-        };
-        reader.readAsDataURL(file);
+    function loadTimer() {
+        db.ref('cocon_meta/'+user.coconId).on('value', s => {
+            const data = s.val() || { startDate: user.startDate };
+            const up = () => {
+                const diff = Date.now() - data.startDate;
+                document.getElementById('d-day').innerText = Math.floor(diff/86400000);
+                document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
+                document.getElementById('sharedDate').innerText = "Depuis le " + new Date(data.startDate).toLocaleDateString();
+            };
+            up(); setInterval(up, 60000);
+        });
     }
 
-    function loadChats() {
+    function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
             const list = document.getElementById('chatList'); list.innerHTML = "";
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val();
-                    list.innerHTML += `
-                        <div class="set-card-sq" style="flex-direction:row; justify-content:flex-start; width:100%; margin-bottom:10px;" onclick="openChat('${u.id}', '${u.pseudo}')">
-                            <div style="width:40px; height:40px; border-radius:50%; background:var(--accent); display:flex; align-items:center; justify-content:center; color:#000; font-weight:bold;">${u.pseudo[0]}</div>
-                            <b style="margin-left:15px;">${u.pseudo}</b>
-                        </div>`;
+                    list.innerHTML += `<div style="display:flex; align-items:center; padding:15px; background:var(--card); border-radius:20px; margin-bottom:10px;" onclick="openChat('${u.id}','${u.pseudo}')">
+                        <div style="width:45px; height:45px; background:var(--accent); border-radius:50%; margin-right:15px; display:flex; align-items:center; justify-content:center;">${u.avatar}</div>
+                        <b>${u.pseudo}</b>
+                    </div>`;
                 });
             });
         });
     }
 
+    function addFriend() {
+        openModal("Ajouter un ami", "Numéro (+241...)", (tel) => {
+            const id = "u_" + tel.replace(/\D/g,'');
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) {
+                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
+                    db.ref('users/'+user.id).update({ coconId: s.val().coconId });
+                    user.coconId = s.val().coconId;
+                    localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                    openChat(s.val().id, s.val().pseudo);
+                }
+            });
+        });
+    }
+
     function openChat(id, name) {
-        activeKey = [user.id, id].sort().join('_');
-        document.getElementById('cHeaderName').innerText = name;
-        document.getElementById('chatBox').style.display = 'flex';
-        db.ref('msgs/'+activeKey).on('value', s => {
-            const area = document.getElementById('mArea'); area.innerHTML = "";
+        isChatOpen = true;
+        document.getElementById('dotChats').style.display = 'none';
+        activeId = [user.id, id].sort().join('_');
+        document.getElementById('cName').innerText = name;
+        document.getElementById('chatBox').style.display='flex';
+        sync('msgs', activeId, 'mArea');
+    }
+
+    function askCoconCode() {
+        openModal("Code Secret", "Entre le code", (code) => {
+            if(code === user.code) {
+                isCoconOpen = true;
+                document.getElementById('dotCocon').style.display = 'none';
+                document.getElementById('coconBox').style.display='flex';
+                sync('cocon', user.coconId, 'coArea');
+            }
+        });
+    }
+
+    function sync(path, target, areaId) {
+        db.ref(path+'/'+target).on('value', s => {
+            const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
-                const m = snap.val();
-                const isMe = m.sid === user.id;
-                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}</div>`;
+                const m = snap.val(), isMe = m.sid===user.id;
+                const time = new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}<div class="msg-meta">${time} ${isMe?'✓✓':''}</div></div>`;
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    function sendMsg() {
-        const i = document.getElementById('mIn'); if(!i.value.trim()) return;
-        db.ref('msgs/'+activeKey).push({ sid:user.id, txt:i.value, t:Date.now() });
-        i.value = "";
+    function send(path) {
+        const inp = (path==='msgs')?document.getElementById('mIn'):document.getElementById('coIn');
+        const target = (path==='msgs')?activeId:user.coconId;
+        if(!inp.value.trim()) return;
+        db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), t:Date.now() });
+        inp.value = "";
+    }
+
+    function openEdit(type) {
+        openModal("Modifier", type, (val) => {
+            if(type==='date') db.ref('cocon_meta/'+user.coconId).update({startDate: new Date(val).getTime()});
+            else { let up = {}; up[type]=val; db.ref('users/'+user.id).update(up); user[type]=val; }
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+            location.reload();
+        });
     }
 
     function switchV(id, el) {
         document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
         document.getElementById(id).classList.add('active'); el.classList.add('active');
+        if(id === 'vChats') document.getElementById('dotChats').style.display = 'none';
+        if(id === 'vCocon') document.getElementById('dotCocon').style.display = 'none';
     }
-
-    function closeO(id) { document.getElementById(id).style.display='none'; }
+    function closeO(id) { 
+        document.getElementById(id).style.display='none'; 
+        isChatOpen = false; isCoconOpen = false;
+    }
     function logout() { localStorage.clear(); location.reload(); }
-
     if(user) start();
 </script>
 </body>
