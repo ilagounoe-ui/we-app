@@ -3,62 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.37.6</title>
+    <title>Notre Univers v.37.7</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { 
-            --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
-            --love: #ff4b6e; --check: #00d2ff;
-        }
-        
+        :root { --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08); --love: #ff4b6e; --check: #00d2ff; }
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 
-        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .loader { width: 40px; height: 40px; border: 3px solid var(--card); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Correction de la grille des réglages */
+        .grid-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 0; }
+        .option-btn { width: 100%; padding: 18px 10px; border-radius: 20px; border: none; background: var(--card); color: white; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .option-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
 
+        /* Style des inputs dans les modales */
+        .modal-input { width: 90%; background: rgba(0,0,0,0.3); border: 1px solid var(--accent); padding: 15px; border-radius: 15px; color: white; margin: 15px auto; text-align: center; font-size: 18px; display: block; outline: none; }
+        
+        /* Structure de base */
+        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); cursor: pointer; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; }
-        
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
 
-        /* Contacts & 3 points */
-        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; cursor: pointer; }
-        .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; overflow: hidden; background: #2a2a40; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-        .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); }
-        .wa-badge { background: var(--love); color: white; border-radius: 50%; padding: 2px 8px; font-size: 12px; font-weight: bold; margin-left: 10px; display: none; }
-
-        /* Grille Réglages */
-        .grid-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .option-btn { width: 100%; padding: 15px; border-radius: 18px; border: none; background: var(--card); color: white; font-weight: 600; cursor: pointer; text-align: center; font-size: 14px; }
-
-        /* Messages */
-        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
-        .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; }
-        .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
-        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
-        .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 4px; opacity: 0.8; }
-
         /* Modales */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
-        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; }
+        .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 25px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; box-shadow: 0 0 30px rgba(187,134,252,0.2); }
 
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* UI des messages */
+        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
+        .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; margin-bottom: 5px; }
+        .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
+        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
     </style>
 </head>
 <body>
 
-<div id="splash"><div class="loader"></div></div>
+<div id="splash"><div style="width:40px; height:40px; border:3px solid var(--card); border-top:3px solid var(--accent); border-radius:50%; animation:rotate 0.8s linear infinite;"></div></div>
+<style>@keyframes rotate { to { transform: rotate(360deg); } }</style>
 
 <div id="authLayer" style="position:fixed; inset:0; background:var(--bg); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
     <div style="background:var(--card); padding:30px; border-radius:40px; width:100%; max-width:320px; text-align:center;">
@@ -67,7 +53,7 @@
             <input type="tel" class="modal-input" placeholder="Numéro" id="lPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="lPass">
             <button class="option-btn" style="background:var(--accent); color:black; margin-top:10px;" onclick="login()">ENTRER</button>
-            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">S'inscrire</p>
+            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">Créer un compte</p>
         </div>
         <div id="regUI" style="display:none;">
             <h2 style="font-family:'Pacifico'; color:var(--accent)">Inscription</h2>
@@ -75,14 +61,14 @@
             <input type="tel" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
             <button class="option-btn" style="background:var(--accent); color:black; margin-top:10px;" onclick="register()">CRÉER</button>
-            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">Déjà inscrit ? Connexion</p>
+            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">Retour connexion</p>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="customModal">
     <div class="modal-content">
-        <h3 id="modalTitle" style="color:var(--accent); margin:0 0 15px 0;"></h3>
+        <h3 id="modalTitle" style="color:var(--accent); margin:0 0 10px 0;"></h3>
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
             <button class="option-btn" style="background:var(--card)" onclick="closeModal()">Annuler</button>
@@ -101,13 +87,10 @@
         </div>
     </header>
 
-    <div id="vChats" class="view active">
-        <div id="chatList"></div>
-        <div class="fab" onclick="addFriend()">+</div>
-    </div>
+    <div id="vChats" class="view active"><div id="chatList"></div></div>
 
     <div id="vCocon" class="view">
-        <div style="background:linear-gradient(135deg, #6a11cb, var(--love)); padding:30px; border-radius:35px; text-align:center; margin-bottom:25px;">
+        <div style="background:linear-gradient(135deg, #6a11cb, var(--love)); padding:30px; border-radius:35px; text-align:center; margin-bottom:25px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">
             <div style="font-size:45px">💑</div>
             <h3 style="margin:10px 0">Unis depuis</h3>
             <div style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
@@ -115,11 +98,11 @@
                 <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:20px; min-width:80px;"><b id="d-hour" style="font-size:24px">0</b><br><small>Heures</small></div>
             </div>
         </div>
-        <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:28px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold; font-size:16px;">💖 OUVRIR LE COCON</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:30px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold; font-size:16px;">💖 OUVRIR LE COCON</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 10px; border:3px solid var(--accent); font-size:40px;">👤</div>
+        <div id="pfpPreview" style="width:110px; height:110px; margin:0 auto 20px; border-radius:50%; border:3px solid var(--accent); overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:40px; background:var(--card);">👤</div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="handlePfp(event)">
         
         <div class="grid-settings">
@@ -127,20 +110,20 @@
             <div class="option-btn" onclick="document.getElementById('pfpInput').click()">Changer Photo</div>
             <div class="option-btn" onclick="openEdit('code')">Code Secret</div>
             <div class="option-btn" onclick="openEdit('startDate', true)">Date de rencontre</div>
-            <div class="option-btn" style="grid-column:span 2; background:rgba(255,75,110,0.2); border:1px solid var(--love); color:var(--love);" onclick="secureInfoCheck()">🔒 Infos du compte</div>
+            <div class="option-btn" style="grid-column:span 2; background:rgba(187,134,252,0.15); color:var(--accent); border:1px solid var(--accent);" onclick="secureInfoCheck()">🔒 Infos du compte</div>
         </div>
-        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:30px; font-weight:bold; cursor:pointer;">Déconnexion</p>
+        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:30px; font-weight:bold; cursor:pointer; opacity:0.8;">Déconnexion</p>
     </div>
 </div>
 
 <div id="chatBox">
-    <div class="head"><span onclick="closeO('chatBox')" style="font-size:24px; cursor:pointer;">←</span><b id="cName">...</b></div>
+    <div class="head"><span onclick="closeO('chatBox')" style="font-size:24px; cursor:pointer; padding:10px;">←</span><b id="cName">...</b></div>
     <div class="msg-area" id="mArea"></div>
-    <div style="padding:15px; display:flex; gap:10px;"><input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; font-size:20px">➔</button></div>
+    <div style="padding:15px; display:flex; gap:10px;"><input type="text" id="mIn" placeholder="Ecrire un message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; font-size:20px">➔</button></div>
 </div>
 
 <div id="coconBox">
-    <div class="head" style="background:var(--love)"><span onclick="closeO('coconBox')" style="font-size:24px; cursor:pointer;">←</span><b>🌹 Cocon Privé</b></div>
+    <div class="head" style="background:var(--love); border:none;"><span onclick="closeO('coconBox')" style="font-size:24px; cursor:pointer; padding:10px;">←</span><b>🌹 Cocon Privé</b></div>
     <div class="msg-area" id="coArea"></div>
     <div style="padding:15px; display:flex; gap:10px;"><input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; font-size:20px">➔</button></div>
 </div>
@@ -151,33 +134,16 @@
     const db = firebase.database();
 
     let user = JSON.parse(localStorage.getItem('nu_user_v37'));
-    let activeId = null;
 
-    // Gestion propre du bouton retour physique
-    window.addEventListener('popstate', (e) => {
-        closeModal();
-        closeO('chatBox');
-        closeO('coconBox');
-    });
-
-    function getPfp(u) {
-        if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`;
-        return `<div style="width:100%; height:100%; background:#bb86fc; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`;
-    }
-
-    function formatTime(ts) {
-        const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date();
-        return d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
+    window.addEventListener('popstate', () => { closeModal(); closeO('chatBox'); closeO('coconBox'); });
 
     function start() {
         document.getElementById('authLayer').style.display='none';
         document.getElementById('splash').style.display='none';
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
-        document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        loadTimer(); 
-        loadContacts();
+        if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}" style="width:100%; height:100%; object-fit:cover;">`;
+        loadTimer(); loadContacts();
     }
 
     function loadContacts() {
@@ -186,18 +152,10 @@
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val(); if(!u) return;
-                    const ck = [user.id, u.id].sort().join('_');
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
-                        <div class="contact-pfp">${getPfp(u)}</div>
-                        <div style="flex:1"><b>${u.pseudo}</b> <span class="wa-badge" id="badge-${u.id}">0</span></div>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
+                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')" style="display:flex; align-items:center; padding:15px; background:var(--card); border-radius:25px; margin-bottom:12px; cursor:pointer;">
+                        <div style="width:50px; height:50px; border-radius:50%; background:#2a2a40; margin-right:15px; overflow:hidden;">${u.pfp ? `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">` : ''}</div>
+                        <b>${u.pseudo}</b>
                     </div>`;
-
-                    db.ref('msgs/'+ck).on('value', ms => {
-                        let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
-                        const b = document.getElementById('badge-'+u.id);
-                        if(b) { b.innerText = count; b.style.display = count>0?'inline-block':'none'; }
-                    });
                 });
             });
         });
@@ -207,7 +165,7 @@
         activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('chatBox').style.display='flex';
-        history.pushState({view:'chat'}, "");
+        history.pushState({v:'c'}, "");
         sync('msgs', activeId, 'mArea');
     }
 
@@ -221,61 +179,41 @@
     }
 
     function sync(path, target, areaId) {
-        db.ref(path+'/'+target).off();
         db.ref(path+'/'+target).on('value', s => {
             const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val(), isMe = m.sid===user.id;
-                if(!isMe && !m.read) db.ref(path+'/'+target+'/'+snap.key).update({read:true});
-                const status = isMe ? (m.read ? '<span style="color:var(--check)">✔✔</span>' : '✔') : '';
-                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}<div class="msg-meta">${formatTime(m.ts)} ${status}</div></div>`;
+                const time = m.ts ? new Date(m.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}<div style="font-size:9px; opacity:0.6; text-align:right;">${time}</div></div>`;
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    function openContactOptions(e, id, name) {
-        e.stopPropagation();
-        openModal(name, `
-            <button class="option-btn" style="margin-bottom:10px;" onclick="deleteConv('${id}')">🗑️ Supprimer discussion</button>
-            <button class="option-btn" onclick="closeModal()">🚫 Bloquer l'utilisateur</button>
-        `, null);
-        document.getElementById('modalActions').style.display='none';
-    }
-
-    function deleteConv(id) { const ck = [user.id, id].sort().join('_'); db.ref('msgs/'+ck).remove(); closeModal(); }
-
     function askCoconCode() {
         openModal("Zone Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (c) => {
             if(c === user.code) {
                 document.getElementById('coconBox').style.display='flex';
-                history.pushState({view:'cocon'}, "");
+                history.pushState({v:'co'}, "");
                 sync('cocon', "shared_cocon_" + user.code, 'coArea');
-            } else { alert("Code incorrect !"); }
+            } else {
+                showSimpleAlert("Code Incorrect ❌");
+            }
         });
     }
 
-    // --- SÉCURITÉ INFOS COMPTE ---
     function secureInfoCheck() {
-        openModal("Sécurité requise", `<p style="font-size:13px; opacity:0.8;">Veuillez entrer votre numéro de téléphone pour afficher vos informations.</p><input type="tel" id="modalInput" class="modal-input" placeholder="Votre numéro...">`, (num) => {
+        openModal("Vérification", `<p style="font-size:12px; opacity:0.7;">Entre ton numéro pour voir tes infos</p><input type="tel" id="modalInput" class="modal-input" placeholder="01234567...">`, (num) => {
             const checkId = "u_" + num.replace(/\D/g,'');
             if(checkId === user.id) {
-                const phoneStr = user.id.replace('u_','');
-                const dateStr = new Date(user.startDate || Date.now()).toLocaleDateString('fr-FR');
                 setTimeout(() => {
-                    openModal("Vos Informations", `
-                        <div style="text-align:left; background:var(--bg); border:1px solid rgba(255,255,255,0.1); padding:20px; border-radius:20px; font-size:14px; line-height:2;">
-                            <b>📱 Numéro :</b> ${phoneStr}<br>
-                            <b>👤 Nom :</b> ${user.pseudo}<br>
-                            <b>🔒 Code secret :</b> ${user.code}<br>
-                            <b>🔑 Code Compte (ID) :</b> ${user.id}<br>
-                            <b>🗓️ Rencontre :</b> ${dateStr}
-                        </div>
-                    `, null);
+                    openModal("Tes Infos", `<div style="text-align:left; font-size:14px; line-height:2;">
+                        📱 Num : ${user.id.replace('u_','')}<br>👤 Nom : ${user.pseudo}<br>🔒 Code Sec : ${user.code}<br>🔑 ID : ${user.id}<br>🗓️ Depuis : ${new Date(user.startDate).toLocaleDateString()}
+                    </div>`, null);
                     document.getElementById('modalActions').style.display='none';
                 }, 300);
             } else {
-                alert("Numéro incorrect ! Accès refusé.");
+                showSimpleAlert("Numéro Inconnu ❌");
             }
         });
     }
@@ -284,53 +222,53 @@
         const type = isDate?'date':'text';
         openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input">`, (v) => {
             let val = isDate ? new Date(v).getTime() : v;
-            db.ref('users/'+user.id).update({[field]:val});
-            user[field]=val; localStorage.setItem('nu_user_v37', JSON.stringify(user));
-            location.reload();
+            db.ref('users/'+user.id).update({[field]:val}).then(() => {
+                user[field]=val; localStorage.setItem('nu_user_v37', JSON.stringify(user));
+                location.reload();
+            });
         });
     }
 
-    function handlePfp(e) {
-        const f = e.target.files[0]; if(!f) return;
-        const r = new FileReader();
-        r.onload = (ev) => {
-            db.ref('users/'+user.id).update({pfp:ev.target.result});
-            user.pfp=ev.target.result;
-            localStorage.setItem('nu_user_v37', JSON.stringify(user));
-            location.reload();
-        }; r.readAsDataURL(f);
+    function showSimpleAlert(txt) {
+        setTimeout(() => {
+            openModal("Attention", `<p style="color:var(--love);">${txt}</p>`, null);
+            document.getElementById('modalActions').style.display='none';
+            setTimeout(closeModal, 2000);
+        }, 300);
     }
 
     function openModal(t, b, a) { 
         document.getElementById('modalTitle').innerText = t; 
         document.getElementById('modalBody').innerHTML = b; 
-        document.getElementById('modalActions').style.display = a ? 'flex' : 'none'; 
         document.getElementById('customModal').style.display = 'flex'; 
         if(a) document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); };
-        history.pushState({modal:true}, "");
+        else document.getElementById('modalActions').style.display = 'none';
     }
     
-    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; document.getElementById('modalActions').style.display = 'flex'; }
     function closeO(id) { document.getElementById(id).style.display='none'; }
-    
-    function switchV(i, e) { 
-        document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); 
-        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); 
-        document.getElementById(i).classList.add('active'); 
-        e.classList.add('active'); 
+    function switchV(i, e) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.getElementById(i).classList.add('active'); e.classList.add('active'); }
+
+    function login() { 
+        const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value; 
+        const id = "u_" + ph.replace(/\D/g,''); 
+        db.ref('users/'+id).once('value', s => { 
+            if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); start(); } 
+            else { alert("Erreur de connexion"); } 
+        }); 
     }
 
-    // --- AUTHENTIFICATION ---
-    function login() { const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value; const id = "u_" + ph.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); start(); } else { alert("Numéro ou mot de passe incorrect"); } }); }
-    function register() { const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value; const id = "u_" + ph.replace(/\D/g,''); db.ref('users/'+id).set({ id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{} }); toggleAuth(true); }
+    function register() { 
+        const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value; 
+        const id = "u_" + ph.replace(/\D/g,''); 
+        db.ref('users/'+id).set({ id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{} }).then(() => toggleAuth(true)); 
+    }
+
     function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; }
-    
-    function addFriend() { openModal("Ajouter par Numéro", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro de l'ami">`, (tel) => { const id = "u_" + tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); alert("Ami ajouté !"); } else { alert("Cet utilisateur n'existe pas."); } }); }); }
-    
     function loadTimer() { db.ref('users/'+user.id).on('value', s => { const u = s.val(); if(!u) return; const up = () => { const diff = Date.now() - u.startDate; document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }; up(); setInterval(up, 60000); }); }
-    
-    function logout() { localStorage.removeItem('nu_user_v37'); location.reload(); }
-    
+    function logout() { localStorage.clear(); location.reload(); }
+    function handlePfp(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { db.ref('users/'+user.id).update({pfp:ev.target.result}); user.pfp=ev.target.result; localStorage.setItem('nu_user_v37', JSON.stringify(user)); location.reload(); }; r.readAsDataURL(f); }
+
     window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display='none'; document.getElementById('authLayer').style.display='flex'; } };
 </script>
 </body>
