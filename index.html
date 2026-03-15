@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.38.0</title>
+    <title>Notre Univers v.38.1</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -13,34 +13,29 @@
         :root { --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08); --love: #ff4b6e; }
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* HEADER FIXE */
         .main-header { padding: 45px 20px 10px; background: var(--bg); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card); }
         .tabs { display: flex; gap: 8px; margin-top: 15px; }
         .tab { flex: 1; padding: 10px; text-align: center; border-radius: 15px; font-size: 12px; background: var(--card); cursor: pointer; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        /* VUES */
         .view { display: none; padding: 20px; height: calc(100vh - 160px); overflow-y: auto; box-sizing: border-box; }
         .view.active { display: block; }
 
-        /* BOUTON RETOUR UNIVERSEL */
-        .back-btn { font-size: 24px; cursor: pointer; padding-right: 15px; color: var(--accent); }
+        /* AJOUT : Style Bouton Retour */
+        .back-btn { font-size: 26px; cursor: pointer; color: var(--accent); display: inline-flex; align-items: center; margin-bottom: 10px; }
 
-        /* MESSAGES AVEC HEURES ET VU */
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; position: relative; margin-bottom: 5px; }
+        /* AJOUT : Heure et Vu */
+        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; position: relative; margin-bottom: 12px; display: flex; flex-direction: column; }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; }
         .m-they { align-self: flex-start; background: var(--card); }
-        .msg-time { font-size: 9px; opacity: 0.6; display: block; margin-top: 4px; text-align: right; }
-        .msg-status { font-size: 9px; font-weight: bold; color: #00d2ff; margin-left: 5px; }
+        .msg-meta { font-size: 9px; opacity: 0.7; margin-top: 4px; display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
 
-        /* GRILLE RÉGLAGES */
         .grid-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .option-btn { background: var(--card); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 18px; font-size: 13px; font-weight: 600; }
 
-        /* MODALES */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 300px; padding: 25px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; }
-        .modal-input { width: 90%; background: rgba(0,0,0,0.5); border: 1px solid var(--accent); padding: 15px; border-radius: 15px; color: white; margin: 15px auto; display: block; text-align: center; }
+        .modal-input { width: 90%; background: rgba(0,0,0,0.5); border: 1px solid var(--accent); padding: 15px; border-radius: 15px; color: white; margin: 15px auto; display: block; text-align: center; outline: none; }
 
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: none; flex-direction: column; }
         .chat-header { padding: 50px 20px 15px; display: flex; align-items: center; background: rgba(255,255,255,0.03); }
@@ -64,25 +59,25 @@
     <div id="vCocon" class="view">
         <div id="timerDisplay" style="text-align:center; padding:20px; background:var(--card); border-radius:25px; margin-bottom:20px;">
             <h3>Unis depuis</h3>
-            <div id="timerVal" style="font-size:20px; color:var(--accent); font-weight:bold;">0 Jours 0 Heures</div>
+            <div id="timerVal" style="font-size:20px; color:var(--accent); font-weight:bold;">...</div>
         </div>
-        <button onclick="askCoconCode()" style="width:100%; padding:20px; border-radius:25px; border:2px dashed var(--love); background:transparent; color:var(--love);">💖 OUVRIR LE COCON</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:20px; border-radius:25px; border:2px dashed var(--love); background:transparent; color:var(--love); font-weight:bold;">💖 OUVRIR LE COCON</button>
     </div>
 
     <div id="vSet" class="view">
         <div class="grid-settings">
             <button class="option-btn" onclick="openEdit('pseudo')">Pseudo</button>
             <button class="option-btn" onclick="openEdit('code')">Code Secret</button>
-            <button class="option-btn" style="grid-column: span 2; border-color:var(--accent);" onclick="secureInfoCheck()">🔒 Infos & Retour</button>
+            <button class="option-btn" style="grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="secureInfoCheck()">🔒 Infos & Retour</button>
         </div>
-        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:30px;">Déconnexion</p>
+        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:30px; font-weight:bold;">Déconnexion</p>
     </div>
 </div>
 
 <div class="modal-overlay" id="customModal">
     <div class="modal-content">
-        <div style="text-align:left; margin-bottom:15px;"><span class="back-btn" onclick="closeModal()">←</span></div>
-        <h3 id="modalTitle" style="color:var(--accent);"></h3>
+        <div style="text-align:left;"><span class="back-btn" onclick="closeModal()">←</span></div>
+        <h3 id="modalTitle" style="color:var(--accent); margin-top:0;"></h3>
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
             <button class="option-btn" style="flex:1; background:var(--accent); color:black" id="modalConfirmBtn">Valider</button>
@@ -91,15 +86,15 @@
 </div>
 
 <div id="chatBox">
-    <div class="chat-header"><span class="back-btn" onclick="closeO('chatBox')">←</span><b id="cName">...</b></div>
+    <div class="chat-header"><span class="back-btn" onclick="closeO('chatBox')" style="margin-bottom:0; margin-right:15px;">←</span><b id="cName">...</b></div>
     <div class="msg-area" id="mArea"></div>
-    <div style="padding:15px; display:flex; gap:8px;"><input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
+    <div style="padding:15px; display:flex; gap:8px;"><input type="text" id="mIn" placeholder="Ecrire..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white; outline:none;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
 </div>
 
 <div id="coconBox">
-    <div class="chat-header" style="background:var(--love);"><span class="back-btn" onclick="closeO('coconBox')">←</span><b>🌹 Cocon Privé</b></div>
+    <div class="chat-header" style="background:var(--love);"><span class="back-btn" onclick="closeO('coconBox')" style="margin-bottom:0; margin-right:15px; color:white;">←</span><b>🌹 Cocon Privé</b></div>
     <div class="msg-area" id="coArea"></div>
-    <div style="padding:15px; display:flex; gap:8px;"><input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
+    <div style="padding:15px; display:flex; gap:8px;"><input type="text" id="coIn" placeholder="Message secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white; outline:none;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
 </div>
 
 <script>
@@ -107,12 +102,13 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let user = JSON.parse(localStorage.getItem('nu_user_v37'));
+    let activeChatId = null;
 
     function start() {
         document.getElementById('uNameDisp').innerText = user.pseudo;
         loadContacts(); loadTimer();
-        // Recalage du code secret en temps réel
-        db.ref('users/'+user.id+'/code').on('value', s => { user.code = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); });
+        // AJOUT : Écouteur temps réel pour le code secret (évite le bug du code incorrect)
+        db.ref('users/'+user.id+'/code').on('value', s => { if(s.exists()) { user.code = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); } });
     }
 
     function sync(path, target, areaId) {
@@ -122,8 +118,8 @@
                 const m = snap.val(), isMe = m.sid===user.id;
                 const time = new Date(m.ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">
-                    ${m.txt}
-                    <span class="msg-time">${time} ${isMe ? '<span class="msg-status">vu</span>' : ''}</span>
+                    <span>${m.txt}</span>
+                    <div class="msg-meta">${time}${isMe ? ' • <b>vu</b>' : ''}</div>
                 </div>`;
             });
             area.scrollTop = area.scrollHeight;
@@ -131,34 +127,57 @@
     }
 
     function askCoconCode() {
-        openModal("Code du Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Entrez le code">`, (c) => {
-            if(c === user.code) { document.getElementById('coconBox').style.display='flex'; sync('cocon', "shared_cocon_" + user.code, 'coArea'); }
-            else { alert("Code Incorrect !"); }
+        openModal("Zone Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (c) => {
+            // AJOUT : Vérification directe Firebase pour garantir la validité
+            db.ref('users/'+user.id+'/code').once('value', s => {
+                if(c === s.val()) {
+                    document.getElementById('coconBox').style.display='flex';
+                    sync('cocon', "shared_cocon_" + c, 'coArea');
+                } else { alert("Code Incorrect ❌"); }
+            });
         });
     }
 
     function openEdit(field) {
-        openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" placeholder="Nouveau ${field}">`, (v) => {
+        openModal("Mise à jour", `<input type="text" id="modalInput" class="modal-input" placeholder="Nouveau ${field}">`, (v) => {
             db.ref('users/'+user.id).update({[field]:v}).then(() => location.reload());
         });
     }
 
     function secureInfoCheck() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
+        openModal("Sécurité", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
             if("u_"+num.replace(/\D/g,'') === user.id) {
-                openModal("Tes Infos", `<div style="text-align:left; font-size:14px;">Pseudo: ${user.pseudo}<br>Code Cocon: <b>${user.code}</b><br>ID: ${user.id}</div>`, null);
-            }
+                openModal("Tes Paramètres", `<div style="text-align:left; font-size:14px; line-height:2;">Nom : ${user.pseudo}<br>Code Cocon : <b style="color:var(--accent)">${user.code}</b><br>ID Unique : ${user.id}</div>`, null);
+            } else { alert("Numéro incorrect"); }
         });
     }
 
-    // Fonctions de base
+    // Fonctions utilitaires
     function switchV(id, el) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); }
-    function openModal(t, b, a) { document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('customModal').style.display = 'flex'; if(a) document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); }; else document.getElementById('modalActions').style.display='none'; }
-    function closeModal() { document.getElementById('customModal').style.display = 'none'; document.getElementById('modalActions').style.display='flex'; }
+    function openModal(t, b, a) { document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('customModal').style.display = 'flex'; if(a) { document.getElementById('modalActions').style.display='flex'; document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); }; } else document.getElementById('modalActions').style.display='none'; }
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
     function closeO(id) { document.getElementById(id).style.display='none'; }
     function loadTimer() { const diff = Date.now() - user.startDate; document.getElementById('timerVal').innerText = Math.floor(diff/86400000)+" Jours "+Math.floor((diff/3600000)%24)+" Heures"; }
-    function send(path) { const isCo = (path==='cocon'); const inp = isCo?document.getElementById('coIn'):document.getElementById('mIn'); const target = isCo?"shared_cocon_"+user.code:[user.id, activeId].sort().join('_'); if(!inp.value.trim()) return; db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), ts:Date.now() }); inp.value = ""; }
+    function send(path) { const isCo = (path==='cocon'); const inp = isCo?document.getElementById('coIn'):document.getElementById('mIn'); const target = isCo? "shared_cocon_"+user.code : activeChatId; if(!inp.value.trim()) return; db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), ts:Date.now() }); inp.value = ""; }
     
+    function loadContacts() {
+        db.ref('users/'+user.id+'/contacts').on('value', s => {
+            const list = document.getElementById('chatList'); list.innerHTML = "";
+            s.forEach(snap => {
+                db.ref('users/'+snap.key).once('value', us => {
+                    const u = us.val();
+                    list.innerHTML += `<div class="contact-item" style="display:flex; align-items:center; padding:15px; background:var(--card); border-radius:20px; margin-bottom:10px;" onclick="openChat('${u.id}','${u.pseudo}')">
+                        <div style="width:45px; height:45px; border-radius:50%; background:var(--accent); color:black; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:15px;">${u.pseudo[0]}</div>
+                        <b>${u.pseudo}</b>
+                    </div>`;
+                });
+            });
+        });
+    }
+
+    function openChat(id, name) { activeChatId = [user.id, id].sort().join('_'); document.getElementById('cName').innerText = name; document.getElementById('chatBox').style.display='flex'; sync('msgs', activeChatId, 'mArea'); }
+    function logout() { localStorage.clear(); location.reload(); }
+
     if(user) start();
 </script>
 </body>
