@@ -3,87 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.37.8</title>
+    <title>Notre Univers v.37.9</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        :root { --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08); --love: #ff4b6e; --check: #00d2ff; }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; -webkit-tap-highlight-color: transparent; }
+        :root { --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08); --love: #ff4b6e; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* Grille réglages avec espacement garanti */
-        .grid-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 15px 0; }
-        .option-btn { width: 100%; padding: 18px 5px; border-radius: 20px; border: none; background: var(--card); color: white; font-weight: 600; cursor: pointer; text-align: center; font-size: 13px; }
-
-        /* Inputs améliorés pour ne pas se coller */
-        .modal-input { width: 85%; background: rgba(0,0,0,0.4); border: 2px solid var(--accent); padding: 16px; border-radius: 18px; color: white; margin: 20px auto; text-align: center; font-size: 18px; display: block; outline: none; }
-        
-        /* En-tête et Tabs */
-        .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
-        .tabs { display: flex; gap: 10px; margin-top: 15px; }
-        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); cursor: pointer; }
+        /* HEADER FIXE */
+        .main-header { padding: 45px 20px 10px; background: var(--bg); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid var(--card); }
+        .tabs { display: flex; gap: 8px; margin-top: 15px; }
+        .tab { flex: 1; padding: 10px; text-align: center; border-radius: 15px; font-size: 12px; background: var(--card); cursor: pointer; transition: 0.3s; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        /* Contacts avec les 3 points rétablis */
-        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; cursor: pointer; }
-        .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; overflow: hidden; background: #2a2a40; display: flex; align-items: center; justify-content: center; }
-        .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); }
+        /* CONTENEUR DE PAGES - Évite les superpositions */
+        .view { display: none; padding: 20px; height: calc(100vh - 160px); overflow-y: auto; box-sizing: border-box; }
+        .view.active { display: block; }
 
-        /* Modales et Overlays */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 25px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
+        /* GRILLE RÉGLAGES PROPRE */
+        .grid-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .option-btn { background: var(--card); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 18px; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .option-btn:active { background: var(--accent); color: #000; }
 
-        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; }
-        .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
-        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
+        /* CONTACTS */
+        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 20px; margin-bottom: 10px; position: relative; }
+        .contact-pfp { width: 45px; height: 45px; border-radius: 50%; background: #2a2a40; margin-right: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .opt-dots { position: absolute; right: 15px; font-size: 20px; color: var(--accent); padding: 5px; }
+
+        /* COCON & TIMER */
+        .timer-card { background: linear-gradient(135deg, #6a11cb, var(--love)); padding: 25px; border-radius: 30px; text-align: center; margin-bottom: 20px; }
+        .timer-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 20px; min-width: 70px; }
+
+        /* INPUTS MODALES */
+        .modal-input { width: 90%; background: rgba(0,0,0,0.5); border: 1px solid var(--accent); padding: 15px; border-radius: 15px; color: white; margin: 15px auto; display: block; text-align: center; font-size: 16px; outline: none; }
         
-        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; align-items: center; justify-content: center; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: #1a1a2e; width: 100%; max-width: 300px; padding: 25px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; }
+
+        /* FAB */
+        .fab { position: fixed; bottom: 25px; right: 20px; width: 60px; height: 60px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 500; }
+
+        /* CHAT FULLSCREEN */
+        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: none; flex-direction: column; }
+        .chat-header { padding: 50px 20px 15px; display: flex; align-items: center; background: rgba(255,255,255,0.03); }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 75%; font-size: 14px; }
+        .m-me { align-self: flex-end; background: var(--accent); color: #000; }
+        .m-they { align-self: flex-start; background: var(--card); }
     </style>
 </head>
 <body>
 
-<div id="splash"><div style="width:40px; height:40px; border:3px solid var(--card); border-top:3px solid var(--accent); border-radius:50%; animation:spin 0.8s linear infinite;"></div></div>
-<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+<div id="splash" style="position:fixed; inset:0; background:var(--bg); z-index:20000; display:flex; align-items:center; justify-content:center;">✨</div>
 
-<div id="authLayer" style="position:fixed; inset:0; background:var(--bg); z-index:10000; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:var(--card); padding:30px; border-radius:40px; width:100%; max-width:320px; text-align:center;">
+<div id="authLayer" style="position:fixed; inset:0; background:var(--bg); z-index:15000; display:none; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:var(--card); padding:30px; border-radius:35px; width:100%; max-width:320px; text-align:center;">
+        <h2 style="font-family:'Pacifico'; color:var(--accent)">Bienvenue</h2>
         <div id="loginUI">
-            <h2 style="font-family:'Pacifico'; color:var(--accent)">Connexion</h2>
             <input type="tel" class="modal-input" placeholder="Numéro" id="lPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="lPass">
-            <button class="option-btn" style="background:var(--accent); color:black;" onclick="login()">ENTRER</button>
-            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; opacity:0.6;">S'inscrire</p>
+            <button class="option-btn" style="width:100%; background:var(--accent); color:black;" onclick="login()">SE CONNECTER</button>
+            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:11px; opacity:0.6;">Créer un compte</p>
         </div>
         <div id="regUI" style="display:none;">
-            <h2 style="font-family:'Pacifico'; color:var(--accent)">Inscription</h2>
             <input type="text" class="modal-input" placeholder="Pseudo" id="rPseudo">
             <input type="tel" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
-            <button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">CRÉER</button>
-            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; opacity:0.6;">Déjà un compte ?</p>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="customModal">
-    <div class="modal-content">
-        <h3 id="modalTitle" style="color:var(--accent); margin-bottom:15px;"></h3>
-        <div id="modalBody"></div>
-        <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
-            <button class="option-btn" style="background:var(--card)" onclick="closeModal()">Annuler</button>
-            <button class="option-btn" style="background:var(--accent); color:black" id="modalConfirmBtn">Valider</button>
+            <button class="option-btn" style="width:100%; background:var(--accent); color:black;" onclick="register()">S'INSCRIRE</button>
+            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:11px; opacity:0.6;">Retour connexion</p>
         </div>
     </div>
 </div>
 
 <div id="mainApp" style="display:none;">
     <header class="main-header">
-        <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent);">...</h2>
+        <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px;">...</h2>
         <div class="tabs">
             <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
             <div class="tab" onclick="switchV('vCocon', this)">Cocon 🌹</div>
@@ -91,48 +88,56 @@
         </div>
     </header>
 
-    <div id="vChats" class="view active">
-        <div id="chatList"></div>
-        <div class="fab" onclick="addFriend()">+</div>
-    </div>
+    <div id="vChats" class="view active"><div id="chatList"></div><div class="fab" onclick="addFriend()">+</div></div>
 
     <div id="vCocon" class="view">
-        <div style="background:linear-gradient(135deg, #6a11cb, var(--love)); padding:30px; border-radius:35px; text-align:center; margin-bottom:25px;">
-            <div style="font-size:45px">💑</div>
-            <h3 style="margin:10px 0">Unis depuis</h3>
-            <div id="timerContainer" style="display:flex; justify-content:center; gap:15px; margin-top:15px;">
-                <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:20px; min-width:80px;"><b id="d-day" style="font-size:24px">0</b><br><small>Jours</small></div>
-                <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:20px; min-width:80px;"><b id="d-hour" style="font-size:24px">0</b><br><small>Heures</small></div>
+        <div class="timer-card">
+            <div style="font-size:40px; margin-bottom:10px;">👩‍❤️‍👨</div>
+            <h3 style="margin:0">Unis depuis</h3>
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:15px;">
+                <div class="timer-box"><b id="d-day" style="font-size:20px">0</b><br><small>Jours</small></div>
+                <div class="timer-box"><b id="d-hour" style="font-size:20px">0</b><br><small>Heures</small></div>
             </div>
         </div>
-        <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:30px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold; font-size:16px;">💖 OUVRIR LE COCON</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:20px; border-radius:25px; border:2px dashed var(--love); background:transparent; color:var(--love); font-weight:bold;">💖 OUVRIR LE COCON</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 20px; border:3px solid var(--accent); font-size:40px;">👤</div>
+        <div id="pfpPreview" style="width:100px; height:100px; margin:0 auto 10px; border-radius:50%; border:3px solid var(--accent); overflow:hidden; background:var(--card); display:flex; align-items:center; justify-content:center; font-size:35px;">👤</div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="handlePfp(event)">
         
         <div class="grid-settings">
-            <div class="option-btn" onclick="openEdit('pseudo')">Pseudo</div>
-            <div class="option-btn" onclick="document.getElementById('pfpInput').click()">Photo</div>
-            <div class="option-btn" onclick="openEdit('code')">Code Secret</div>
-            <div class="option-btn" onclick="openEdit('startDate', true)">Date</div>
-            <div class="option-btn" style="grid-column:span 2; background:rgba(187,134,252,0.15); border:1px solid var(--accent); color:var(--accent);" onclick="secureInfoCheck()">🔒 Infos du compte</div>
+            <button class="option-btn" onclick="openEdit('pseudo')">Pseudo</button>
+            <button class="option-btn" onclick="document.getElementById('pfpInput').click()">Photo</button>
+            <button class="option-btn" onclick="openEdit('code')">Code Secret</button>
+            <button class="option-btn" onclick="openEdit('startDate', true)">Date</button>
+            <button class="option-btn" style="grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="secureInfoCheck()">🔒 Infos du compte</button>
         </div>
-        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:30px; font-weight:bold; cursor:pointer;">Déconnexion</p>
+        <p onclick="logout()" style="text-align:center; color:var(--love); margin-top:25px; font-weight:600; font-size:13px;">Déconnexion</p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+        <h3 id="modalTitle" style="color:var(--accent); margin:0 0 10px 0;"></h3>
+        <div id="modalBody"></div>
+        <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="option-btn" style="flex:1" onclick="closeModal()">Annuler</button>
+            <button class="option-btn" style="flex:1; background:var(--accent); color:black" id="modalConfirmBtn">Valider</button>
+        </div>
     </div>
 </div>
 
 <div id="chatBox">
-    <div class="head" style="padding:50px 20px 15px; display:flex; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1);"><span onclick="closeO('chatBox')" style="font-size:24px; padding-right:15px;">←</span><b id="cName">...</b></div>
+    <div class="chat-header"><span onclick="closeO('chatBox')" style="font-size:24px; margin-right:15px;">←</span><b id="cName">...</b></div>
     <div class="msg-area" id="mArea"></div>
-    <div style="padding:15px; display:flex; gap:10px;"><input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%;">➔</button></div>
+    <div style="padding:15px; display:flex; gap:8px; background:var(--bg);"><input type="text" id="mIn" placeholder="Ecrire..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white; outline:none;"><button onclick="send('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
 </div>
 
 <div id="coconBox">
-    <div class="head" style="padding:50px 20px 15px; background:var(--love); display:flex; align-items:center;"><span onclick="closeO('coconBox')" style="font-size:24px; padding-right:15px;">←</span><b>🌹 Cocon Privé</b></div>
+    <div class="chat-header" style="background:var(--love);"><span onclick="closeO('coconBox')" style="font-size:24px; margin-right:15px;">←</span><b>🌹 Cocon Privé</b></div>
     <div class="msg-area" id="coArea"></div>
-    <div style="padding:15px; display:flex; gap:10px;"><input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%;">➔</button></div>
+    <div style="padding:15px; display:flex; gap:8px; background:var(--bg);"><input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:20px; color:white; outline:none;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%;">➔</button></div>
 </div>
 
 <script>
@@ -152,6 +157,13 @@
         loadTimer(); loadContacts();
     }
 
+    function switchV(id, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        el.classList.add('active');
+    }
+
     function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
             const list = document.getElementById('chatList'); list.innerHTML = "";
@@ -160,8 +172,8 @@
                     const u = us.val(); if(!u) return;
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
                         <div class="contact-pfp">${u.pfp ? `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">` : (u.pseudo[0])}</div>
-                        <div style="flex:1"><b>${u.pseudo}</b></div>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
+                        <b>${u.pseudo}</b>
+                        <div class="opt-dots" onclick="openContactOptions(event,'${u.id}','${u.pseudo}')">⋮</div>
                     </div>`;
                 });
             });
@@ -187,9 +199,9 @@
     }
 
     function send(path) {
-        const isCocon = (path==='cocon');
-        const inp = isCocon?document.getElementById('coIn'):document.getElementById('mIn');
-        const target = isCocon? "shared_cocon_" + user.code : activeId;
+        const isCo = (path==='cocon');
+        const inp = isCo ? document.getElementById('coIn') : document.getElementById('mIn');
+        const target = isCo ? "shared_cocon_" + user.code : activeId;
         if(!inp.value.trim()) return;
         db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), ts:Date.now() });
         inp.value = "";
@@ -200,18 +212,7 @@
             if(c === user.code) {
                 document.getElementById('coconBox').style.display='flex';
                 sync('cocon', "shared_cocon_" + user.code, 'coArea');
-            } else { alert("Code Incorrect ❌"); }
-        });
-    }
-
-    function secureInfoCheck() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
-            if("u_"+num.replace(/\D/g,'') === user.id) {
-                setTimeout(() => {
-                    openModal("Tes Infos", `<div style="text-align:left; line-height:2;">📱 Num : ${user.id.replace('u_','')}<br>👤 Nom : ${user.pseudo}<br>🔒 Code : ${user.code}<br>🔑 ID : ${user.id}</div>`, null);
-                    document.getElementById('modalActions').style.display='none';
-                }, 300);
-            } else { alert("Numéro incorrect ❌"); }
+            } else { showToast("Code Incorrect ❌"); }
         });
     }
 
@@ -226,6 +227,17 @@
         });
     }
 
+    function secureInfoCheck() {
+        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
+            if("u_"+num.replace(/\D/g,'') === user.id) {
+                setTimeout(() => {
+                    openModal("Tes Infos", `<div style="text-align:left; font-size:14px; line-height:2;">📱 Num : ${user.id.replace('u_','')}<br>👤 Nom : ${user.pseudo}<br>🔒 Code : ${user.code}<br>🔑 ID : ${user.id}</div>`, null);
+                    document.getElementById('modalActions').style.display='none';
+                }, 300);
+            } else { showToast("Numéro incorrect ❌"); }
+        });
+    }
+
     function openModal(t, b, a) { 
         document.getElementById('modalTitle').innerText = t; 
         document.getElementById('modalBody').innerHTML = b; 
@@ -234,18 +246,24 @@
         else document.getElementById('modalActions').style.display = 'none';
     }
 
+    function showToast(txt) {
+        setTimeout(() => {
+            openModal("Alerte", `<p style="color:var(--love)">${txt}</p>`, null);
+            document.getElementById('modalActions').style.display='none';
+            setTimeout(closeModal, 2000);
+        }, 300);
+    }
+
     function closeModal() { document.getElementById('customModal').style.display = 'none'; document.getElementById('modalActions').style.display = 'flex'; }
     function closeO(id) { document.getElementById(id).style.display='none'; }
-    function switchV(i, e) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.getElementById(i).classList.add('active'); e.classList.add('active'); }
-
-    function login() { const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value; const id = "u_" + ph.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); start(); } else { alert("Erreur connexion"); } }); }
+    function login() { const ph = document.getElementById('lPhone').value, pa = document.getElementById('lPass').value; const id = "u_" + ph.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_user_v37', JSON.stringify(user)); start(); } else { alert("Erreur"); } }); }
     function register() { const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value, pa = document.getElementById('rPass').value; const id = "u_" + ph.replace(/\D/g,''); db.ref('users/'+id).set({ id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{} }).then(() => toggleAuth(true)); }
     function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; }
     function loadTimer() { db.ref('users/'+user.id).on('value', s => { const u = s.val(); const up = () => { const diff = Date.now() - u.startDate; document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }; up(); setInterval(up, 60000); }); }
     function logout() { localStorage.clear(); location.reload(); }
     function handlePfp(e) { const f = e.target.files[0]; const r = new FileReader(); r.onload = (ev) => { db.ref('users/'+user.id).update({pfp:ev.target.result}); user.pfp=ev.target.result; localStorage.setItem('nu_user_v37', JSON.stringify(user)); location.reload(); }; r.readAsDataURL(f); }
-    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_" + tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); } else { alert("Inconnu"); } }); }); }
-    function openContactOptions(e, id, name) { e.stopPropagation(); openModal("Options : "+name, `<button class="option-btn" onclick="deleteConv('${id}')">🗑️ Supprimer discussion</button>`, null); document.getElementById('modalActions').style.display='none'; }
+    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_" + tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); } else { showToast("Inconnu"); } }); }); }
+    function openContactOptions(e, id, name) { e.stopPropagation(); openModal("Options : "+name, `<button class="option-btn" style="width:100%" onclick="deleteConv('${id}')">🗑️ Supprimer discussion</button>`, null); document.getElementById('modalActions').style.display='none'; }
     function deleteConv(id) { const ck = [user.id, id].sort().join('_'); db.ref('msgs/'+ck).remove(); closeModal(); }
 
     window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display='none'; document.getElementById('authLayer').style.display='flex'; } };
