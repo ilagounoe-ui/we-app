@@ -243,14 +243,12 @@
     // --- NOUVEAUX : GÉNÉRATEUR & HUMEUR ---
     function sendLoveNote() {
         const idees = [
-            "Mon endroit au monde, c'est juste à côté de toi. ✨",
+            "Mon endroit préféré au monde, c'est juste à côté de toi. ✨",
             "Je t'aime plus que le fromage (et tu sais à quel point j'aime le fromage). 🧀",
             "Félicitations ! Tu as gagné un bisou gratuit. À réclamer dès qu'on se voit. 🏆",
-            "Ton sourire est ma notificationon préférée. 😍",
-            "Je suis à 99% sûr que tu es un ange, le 1% restant c'est quand tu fais ta gamine. 👼",
+            "Ton sourire est ma notification préférée. 😍",
+            "Je suis à 99% sûr que tu es un ange, le 1% restant c'est quand tu voles la couette. 👼",
             "Merci d'être toi, tout simplement. ❤️"
-            "j'ai envie de te faire des trucs 😖"
-            "t'embrasser est un moyen de rêver 🫠"
         ];
         const hasard = idees[Math.floor(Math.random() * idees.length)];
         openModal("Mot Doux", `<textarea id="modalInput" class="modal-input" style="height:100px; text-align:left;">${hasard}</textarea>`, (txt) => {
