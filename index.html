@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.37.2</title>
+    <title>Notre Univers v.37.3</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -11,8 +11,9 @@
 
     <style>
         * {
-            /* AJOUT: Supprime l'effet de clic bleu sur mobile */
+            /* SUPPRESSION DU FLASH BLEU AU CLIC */
             -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         :root { 
@@ -132,9 +133,7 @@
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
-            
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
-            
             <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:10px; font-weight:bold; cursor:pointer;">Déconnexion</button>
         </div>
     </div>
@@ -247,20 +246,24 @@
     function send(path) {
         const isCocon = (path==='cocon');
         const inp = isCocon?document.getElementById('coIn'):document.getElementById('mIn');
-        const target = isCocon? "shared_cocon_" + user.code : activeId;
+        const target = isCocon? "shared_cocon_" + String(user.code) : activeId;
         if(!inp.value.trim()) return;
         db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), ts:Date.now(), read:false });
         inp.value = "";
     }
 
+    // PATCH FINAL POUR L'ACCÈS AU COCON
     function askCoconCode() {
-        openModal("Zone Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (c) => {
-            // AJOUT: Force la conversion en String pour éviter les bugs si le code a été enregistré comme chiffre
-            if(String(c) === String(user.code)) { 
+        openModal("Zone Secrète", `<input type="tel" id="modalInput" class="modal-input" placeholder="Code secret" style="-webkit-text-security: disc;">`, (c) => {
+            const codeSaisi = String(c).trim();
+            const codeAttendu = String(user.code).trim();
+
+            if(codeSaisi === codeAttendu) { 
                 document.getElementById('coconBox').style.display='flex';
                 pushState('coconBox'); 
-                sync('cocon', "shared_cocon_" + user.code, 'coArea');
-                triggerBack(); 
+                sync('cocon', "shared_cocon_" + codeAttendu, 'coArea');
+                document.getElementById('customModal').style.display = 'none';
+                stateStack = stateStack.filter(s => s !== 'modal'); 
             } else {
                 showError("Code incorrect ❌"); 
             }
@@ -283,12 +286,10 @@
         openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input">`, (v) => {
             if(!v) return;
             let val = isDate ? new Date(v).getTime() : v;
-            
             if(field === 'code' && user.contacts) {
                 const partnerId = Object.keys(user.contacts)[0];
                 if(partnerId) db.ref('users/'+partnerId).update({code: val});
             }
-
             db.ref('users/'+user.id).update({[field]:val}).then(() => location.reload());
         });
     }
@@ -306,18 +307,15 @@
         });
     }
 
-    // AJOUT: Gestionnaire des personnes bloquées
     function manageBlocked() {
         db.ref('users/'+user.id+'/blocked').once('value', s => {
             let html = '<div id="blockedList" style="max-height:200px; overflow-y:auto; margin-top:10px;">Chargement...</div>';
             openModal("Bloqués", html, null);
             document.getElementById('modalActions').style.display = 'none';
-
             if(!s.exists() || Object.keys(s.val()).length === 0) {
                 document.getElementById('blockedList').innerHTML = '<p style="font-size:14px; opacity:0.7">Personne n\'est bloqué.</p>';
                 return;
             }
-            
             let listHtml = '';
             let promises = [];
             s.forEach(snap => {
@@ -332,13 +330,10 @@
                     }
                 }));
             });
-            Promise.all(promises).then(() => {
-                document.getElementById('blockedList').innerHTML = listHtml;
-            });
+            Promise.all(promises).then(() => { document.getElementById('blockedList').innerHTML = listHtml; });
         });
     }
 
-    // AJOUT: Fonction pour débloquer
     function unblock(id) {
         db.ref(`users/${user.id}/blocked/${id}`).remove();
         db.ref(`users/${user.id}/contacts/${id}`).set(true);
@@ -416,7 +411,6 @@
         });
     }
 
-    // AJOUT: Modification de la fenêtre d'options avec "Supprimer" et "Bloquer"
     function openContactOptions(e, id, name) {
         e.stopPropagation();
         openModal("Options : "+name, `
@@ -432,7 +426,6 @@
         db.ref('msgs/'+ck).remove().then(() => { triggerBack(); });
     }
 
-    // AJOUT: Fonctions pour supprimer ou bloquer un contact
     function deleteContact(id) {
         db.ref(`users/${user.id}/contacts/${id}`).remove();
         triggerBack();
