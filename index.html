@@ -3,42 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.38</title>
+    <title>Notre Univers v.39</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }
-
+        * { -webkit-tap-highlight-color: transparent; outline: none; }
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
             --love: #ff4b6e; --check: #00d2ff; --text-sub: #b3b3b3; --online: #25D366;
         }
-        
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
-
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 0.2s ease-in-out forwards; animation-delay: 1.2s; }
         @keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
         .loader { width: 40px; height: 40px; border: 3px solid var(--card); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
         .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.95); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); transition: 0.3s; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; transform: scale(1.05); }
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
-
         .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #2a2a40; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
         .wa-badge { background: var(--online); color: white; font-size: 10px; min-width: 20px; height: 20px; border-radius: 10px; display: none; align-items: center; justify-content: center; margin-left: 8px; font-weight: bold; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; cursor: pointer; color: var(--accent); }
-
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
         .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
@@ -46,17 +37,14 @@
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 5px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.7; }
-
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
         .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 10px 0; text-align: center; box-sizing: border-box; outline: none; }
         .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        
         .error-msg { color: var(--love); font-size: 12px; margin-bottom: 5px; min-height: 15px; display: block; font-weight: bold; }
-
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; cursor: pointer;}
-
-        /* STYLE POUR LE WIDGET */
+        
+        /* STYLE WIDGET PLEIN ÉCRAN */
         #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
     </style>
 </head>
@@ -66,9 +54,7 @@
 
 <div id="vWidgetFull">
     <div style="font-family:'Pacifico'; color:var(--love); font-size:30px; margin-bottom:30px;">Pour toi... 💖</div>
-    <div id="widgetText" style="font-size:22px; color:white; background:var(--card); padding:30px; border-radius:35px; border:2px solid var(--love); min-height:150px; display:flex; align-items:center; justify-content:center; width:80%;">
-        ...
-    </div>
+    <div id="widgetText" style="font-size:22px; color:white; background:var(--card); padding:30px; border-radius:35px; border:2px solid var(--love); min-height:150px; display:flex; align-items:center; justify-content:center; width:80%;">...</div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:var(--card); border:none; color:white; padding:15px 30px; border-radius:20px; font-weight:bold;">Retour</button>
 </div>
 
@@ -127,6 +113,7 @@
             </div>
         </div>
         <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:28px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold; cursor:pointer;">💖 OUVRIR LE COCON</button>
+        <button onclick="checkMood()" style="width:100%; padding:15px; border-radius:28px; border:none; background:var(--card); color:white; font-weight:bold; cursor:pointer; margin-top:15px;">🌟 Besoin d'un mot doux ?</button>
     </div>
 
     <div id="vSet" class="view">
@@ -157,51 +144,24 @@
     let activeId = null;
     let audioUnlocked = false;
     let stateStack = []; 
-    
     const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
 
     function unlockAudio() { if (!audioUnlocked) { popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); } }
-
-    function formatTime(ts) {
-        const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date();
-        return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
-    }
-
-    function getPfp(u) {
-        if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`;
-        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD'];
-        const color = colors[(u.pseudo || "U").length % colors.length];
-        return `<div style="width:100%; height:100%; background:${color}; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`;
-    }
-
-    function pushState(id) {
-        stateStack.push(id);
-        history.pushState({id: id}, "");
-    }
-
-    function triggerBack() {
-        history.back();
-    }
-
-    window.onpopstate = (e) => {
-        const lastState = stateStack.pop();
-        if(lastState === 'modal') { document.getElementById('customModal').style.display = 'none'; }
-        else if(lastState === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; }
-        else if(lastState === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; }
-    };
+    function formatTime(ts) { const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date(); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+    function getPfp(u) { if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`; const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD']; const color = colors[(u.pseudo || "U").length % colors.length]; return `<div style="width:100%; height:100%; background:${color}; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`; }
+    function pushState(id) { stateStack.push(id); history.pushState({id: id}, ""); }
+    function triggerBack() { history.back(); }
+    window.onpopstate = (e) => { const lastState = stateStack.pop(); if(lastState === 'modal') { document.getElementById('customModal').style.display = 'none'; } else if(lastState === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; } else if(lastState === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; } };
 
     function start() {
         document.getElementById('authLayer').style.display='none';
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        loadTimer(); loadContacts(); listenForLove(); // Écoute les mots doux
+        loadTimer(); loadContacts(); listenForLove();
     }
 
-    function viewPhoto(b64) {
-        openModal("Photo de profil", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null);
-        document.getElementById('modalActions').style.display = 'none';
-    }
+    function viewPhoto(b64) { openModal("Photo de profil", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null); document.getElementById('modalActions').style.display = 'none'; }
 
     function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
@@ -210,17 +170,14 @@
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val(); if(!u) return;
                     const ck = [user.id, u.id].sort().join('_');
-                    
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
                         <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
                         <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
                     </div>`;
-
                     db.ref('msgs/'+ck).on('value', ms => {
                         let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
-                        const b = document.getElementById('badge-'+u.id);
-                        if(b) { b.innerText = count; b.style.display = count>0?'inline-flex':'none'; }
+                        const b = document.getElementById('badge-'+u.id); if(b) { b.innerText = count; b.style.display = count>0?'inline-flex':'none'; }
                     });
                 });
             });
@@ -260,20 +217,15 @@
 
     function askCoconCode() {
         openModal("Zone Secrète", `<input type="tel" id="modalInput" class="modal-input" placeholder="Code secret" style="-webkit-text-security: disc;">`, (c) => {
-            const codeSaisi = String(c).trim();
-            const codeAttendu = String(user.code).trim();
-            if(codeSaisi === codeAttendu) { 
-                document.getElementById('coconBox').style.display='flex';
-                pushState('coconBox'); 
-                sync('cocon', "shared_cocon_" + codeAttendu, 'coArea');
-                document.getElementById('customModal').style.display = 'none';
-                stateStack = stateStack.filter(s => s !== 'modal'); 
+            if(String(c).trim() === String(user.code).trim()) { 
+                document.getElementById('coconBox').style.display='flex'; pushState('coconBox'); 
+                sync('cocon', "shared_cocon_" + String(user.code).trim(), 'coArea');
+                document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); 
             } else { showError("Code incorrect ❌"); }
         });
     }
 
     function switchV(id, el) {
-        // Logique spéciale pour le Widget dans le Cocon
         if(id === 'vCocon') {
             db.ref('love_notes/' + user.id).once('value', s => {
                 if(s.exists() && !s.val().read) {
@@ -285,12 +237,21 @@
         }
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+        document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
 
+    // --- NOUVEAUX : GÉNÉRATEUR & HUMEUR ---
     function sendLoveNote() {
-        openModal("Mot Doux", `<textarea id="modalInput" class="modal-input" placeholder="Ton message..." style="height:100px; text-align:left;"></textarea>`, (txt) => {
+        const idees = [
+            "Mon endroit au monde, c'est juste à côté de toi. ✨",
+            "Je t'aime plus que le fromage (et tu sais à quel point j'aime le fromage). 🧀",
+            "Félicitations ! Tu as gagné un bisou gratuit. À réclamer dès qu'on se voit. 🏆",
+            "Ton sourire est couetteaa notification préférée. 😍",
+            "Je suis à 99% sûr que tu es un ange, le 1% restant c'est quand tu fais ta gamine. 👼",
+            "Merci d'être toi, tout simplement. ❤️"
+        ];
+        const hasard = idees[Math.floor(Math.random() * idees.length)];
+        openModal("Mot Doux", `<textarea id="modalInput" class="modal-input" style="height:100px; text-align:left;">${hasard}</textarea>`, (txt) => {
             if(!txt.trim()) return;
             db.ref('users/'+user.id+'/contacts').once('value', s => {
                 const partnerId = s.exists() ? Object.keys(s.val())[0] : null;
@@ -302,171 +263,61 @@
         });
     }
 
+    function checkMood() {
+        const moods = [
+            { emoji: "😊", label: "Super !", msg: "Je suis tellement heureux/se pour toi ! Garde ce sourire. ✨" },
+            { emoji: "😔", label: "Triste", msg: "J'aimerais être là pour te serrer fort. Je t'aime. ❤️" },
+            { emoji: "😴", label: "Fatigué(e)", msg: "Repose-toi bien mon cœur, tu le mérites. 🌙" },
+            { emoji: "🥰", label: "Amoureux(se)", msg: "Moi aussi je t'aime plus que tout ! 💖" }
+        ];
+        let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        moods.forEach(m => { h += `<div onclick="showMoodRes('${m.msg.replace(/'/g, "\\'")}')" style="background:var(--card); padding:15px; border-radius:20px; cursor:pointer;"><div style="font-size:30px">${m.emoji}</div><div style="font-size:12px">${m.label}</div></div>`; });
+        openModal("Ton humeur ?", h + `</div>`, null); document.getElementById('modalActions').style.display = 'none';
+    }
+    function showMoodRes(t) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); document.getElementById('widgetText').innerText = t; document.getElementById('vWidgetFull').style.display = 'flex'; }
+
     function listenForLove() {
         db.ref('love_notes/' + user.id).on('value', s => {
-            const note = s.val();
             const tab = document.querySelector('.tab[onclick*="vCocon"]');
-            if(note && !note.read) {
-                tab.innerHTML = "Cocon (1) ❤️";
-                tab.style.boxShadow = "0 0 10px var(--love)";
-            } else {
-                tab.innerHTML = "Cocon 🌹";
-                tab.style.boxShadow = "none";
-            }
+            if(s.exists() && !s.val().read) { tab.innerHTML = "Cocon (1) ❤️"; tab.style.boxShadow = "0 0 10px var(--love)"; }
+            else { tab.innerHTML = "Cocon 🌹"; tab.style.boxShadow = "none"; }
         });
-    }
-
-    function showError(msg) { document.getElementById('modalError').innerText = msg; }
-
-    function openEdit(field, isDate = false) {
-        const type = isDate ? 'date' : 'text';
-        openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input">`, (v) => {
-            if(!v) return;
-            let val = isDate ? new Date(v).getTime() : v;
-            if(field === 'code' && user.contacts) {
-                const partnerId = Object.keys(user.contacts)[0];
-                if(partnerId) db.ref('users/'+partnerId).update({code: val});
-            }
-            db.ref('users/'+user.id).update({[field]:val}).then(() => location.reload());
-        });
-    }
-
-    function askPhoneForInfo() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
-            if("u_"+num.replace(/\D/g,'') === user.id) {
-                document.getElementById('modalTitle').innerText = "Tes Infos";
-                document.getElementById('modalError').innerText = "";
-                document.getElementById('modalBody').innerHTML = `<div style="text-align:left; font-size:14px; line-height:2; margin-top:10px;">Pseudo: ${user.pseudo}<br>Code: <b style="color:var(--accent)">${user.code}</b><br>ID: ${user.id}</div>`;
-                document.getElementById('modalActions').style.display = 'none';
-            } else { showError("Numéro incorrect !"); }
-        });
-    }
-
-    function manageBlocked() {
-        db.ref('users/'+user.id+'/blocked').once('value', s => {
-            let html = '<div id="blockedList" style="max-height:200px; overflow-y:auto; margin-top:10px;">Chargement...</div>';
-            openModal("Bloqués", html, null);
-            document.getElementById('modalActions').style.display = 'none';
-            if(!s.exists() || Object.keys(s.val()).length === 0) {
-                document.getElementById('blockedList').innerHTML = '<p style="font-size:14px; opacity:0.7">Personne n\'est bloqué.</p>';
-                return;
-            }
-            let listHtml = '';
-            let promises = [];
-            s.forEach(snap => {
-                let id = snap.key;
-                promises.push(db.ref('users/'+id).once('value').then(us => {
-                    let u = us.val();
-                    if(u) {
-                        listHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; margin-bottom:10px;">
-                            <span style="font-weight:bold">${u.pseudo}</span>
-                            <button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:12px;">Débloquer</button>
-                        </div>`;
-                    }
-                }));
-            });
-            Promise.all(promises).then(() => { document.getElementById('blockedList').innerHTML = listHtml; });
-        });
-    }
-
-    function unblock(id) {
-        db.ref(`users/${user.id}/blocked/${id}`).remove();
-        db.ref(`users/${user.id}/contacts/${id}`).set(true);
-        triggerBack(); 
     }
 
     function handlePfp(event) {
-        const file = event.target.files[0];
-        if(!file) return;
+        const file = event.target.files[0]; if(!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => { db.ref('users/'+user.id).update({pfp: e.target.result}).then(() => location.reload()); };
+        reader.onload = (e) => {
+            const b64 = e.target.result;
+            db.ref('users/'+user.id).update({pfp: b64}).then(() => {
+                user.pfp = b64; localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                document.getElementById('pfpPreview').innerHTML = getPfp(user); alert("Photo mise à jour ! ✨");
+            });
+        };
         reader.readAsDataURL(file);
     }
 
-    function loadTimer() {
-        const up = () => {
-            if(!user.startDate) return;
-            const diff = Date.now() - user.startDate;
-            document.getElementById('d-day').innerText = Math.floor(diff/86400000);
-            document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
-        };
-        up(); setInterval(up, 60000);
-    }
-
-    function login() {
-        document.getElementById('loginError').innerText = "";
-        const ph = document.getElementById('lPhone').value.replace(/\D/g,'');
-        const pa = document.getElementById('lPass').value;
-        db.ref('users/u_'+ph).once('value', s => {
-            if(s.exists() && s.val().pass === pa) {
-                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start();
-            } else { document.getElementById('loginError').innerText = "Identifiants incorrects ❌"; }
-        });
-    }
-
-    function register() {
-        const ps = document.getElementById('rPseudo').value;
-        const ph = document.getElementById('rPhone').value.replace(/\D/g,'');
-        const pa = document.getElementById('rPass').value;
-        const id = "u_"+ph;
-        db.ref('users/'+id).set({id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{}}).then(() => toggleAuth(true));
-    }
-
+    function showError(msg) { document.getElementById('modalError').innerText = msg; }
+    function openEdit(field, isDate = false) { const type = isDate ? 'date' : 'text'; openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input">`, (v) => { if(!v) return; let val = isDate ? new Date(v).getTime() : v; if(field === 'code' && user.contacts) { const partnerId = Object.keys(user.contacts)[0]; if(partnerId) db.ref('users/'+partnerId).update({code: val}); } db.ref('users/'+user.id).update({[field]:val}).then(() => location.reload()); }); }
+    function askPhoneForInfo() { openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => { if("u_"+num.replace(/\D/g,'') === user.id) { document.getElementById('modalTitle').innerText = "Tes Infos"; document.getElementById('modalError').innerText = ""; document.getElementById('modalBody').innerHTML = `<div style="text-align:left; font-size:14px; line-height:2; margin-top:10px;">Pseudo: ${user.pseudo}<br>Code: <b style="color:var(--accent)">${user.code}</b><br>ID: ${user.id}</div>`; document.getElementById('modalActions').style.display = 'none'; } else { showError("Numéro incorrect !"); } }); }
+    function manageBlocked() { db.ref('users/'+user.id+'/blocked').once('value', s => { let html = '<div id="blockedList" style="max-height:200px; overflow-y:auto; margin-top:10px;">Chargement...</div>'; openModal("Bloqués", html, null); document.getElementById('modalActions').style.display = 'none'; if(!s.exists() || Object.keys(s.val()).length === 0) { document.getElementById('blockedList').innerHTML = '<p style="font-size:14px; opacity:0.7">Personne n\'est bloqué.</p>'; return; } let listHtml = ''; let promises = []; s.forEach(snap => { let id = snap.key; promises.push(db.ref('users/'+id).once('value').then(us => { let u = us.val(); if(u) { listHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; margin-bottom:10px;"><span style="font-weight:bold">${u.pseudo}</span><button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:12px;">Débloquer</button></div>`; } })); }); Promise.all(promises).then(() => { document.getElementById('blockedList').innerHTML = listHtml; }); }); }
+    function unblock(id) { db.ref(`users/${user.id}/blocked/${id}`).remove(); db.ref(`users/${user.id}/contacts/${id}`).set(true); triggerBack(); }
+    function loadTimer() { const up = () => { if(!user.startDate) return; const diff = Date.now() - user.startDate; document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }; up(); setInterval(up, 60000); }
+    function login() { document.getElementById('loginError').innerText = ""; const ph = document.getElementById('lPhone').value.replace(/\D/g,''); const pa = document.getElementById('lPass').value; db.ref('users/u_'+ph).once('value', s => { if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start(); } else { document.getElementById('loginError').innerText = "Identifiants incorrects ❌"; } }); }
+    function register() { const ps = document.getElementById('rPseudo').value; const ph = document.getElementById('rPhone').value.replace(/\D/g,''); const pa = document.getElementById('rPass').value; const id = "u_"+ph; db.ref('users/'+id).set({id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{}}).then(() => toggleAuth(true)); }
     function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; document.getElementById('loginError').innerText = "";}
     function logout() { localStorage.clear(); location.reload(); }
-    
-    function openModal(t, b, a) { 
-        document.getElementById('modalError').innerText = ""; 
-        document.getElementById('modalTitle').innerText = t; 
-        document.getElementById('modalBody').innerHTML = b; 
-        document.getElementById('customModal').style.display = 'flex'; 
-        pushState('modal'); 
-        if(a) {
-            document.getElementById('modalActions').style.display = 'flex';
-            document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); }; 
-        } else document.getElementById('modalActions').style.display = 'none';
-    }
-
-    function addFriend() {
-        openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => {
-            const id = "u_"+tel.replace(/\D/g,'');
-            db.ref('users/'+id).once('value', s => {
-                if(s.exists()) {
-                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
-                    db.ref(`users/${id}/contacts/${user.id}`).set(true);
-                    triggerBack(); 
-                } else { showError("Numéro introuvable 🤷‍♂️"); }
-            });
-        });
-    }
-
-    function openContactOptions(e, id, name) {
-        e.stopPropagation();
-        openModal("Options : "+name, `
-            <button class="option-btn" onclick="deleteConv('${id}')" style="color:var(--accent)">🧹 Vider la discussion</button>
-            <button class="option-btn" onclick="deleteContact('${id}')" style="color:#ff9800">❌ Supprimer le contact</button>
-            <button class="option-btn" onclick="blockContact('${id}')" style="color:var(--love)">🚫 Bloquer le contact</button>
-        `, null);
-        document.getElementById('modalActions').style.display = 'none';
-    }
-
-    function deleteConv(id) {
-        const ck = [user.id, id].sort().join('_');
-        db.ref('msgs/'+ck).remove().then(() => { triggerBack(); });
-    }
-
+    function openModal(t, b, a) { document.getElementById('modalError').innerText = ""; document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('customModal').style.display = 'flex'; pushState('modal'); if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); }; } else document.getElementById('modalActions').style.display = 'none'; }
+    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_"+tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); } else { showError("Numéro introuvable 🤷‍♂️"); } }); }); }
+    function openContactOptions(e, id, name) { e.stopPropagation(); openModal("Options : "+name, `<button class="option-btn" onclick="deleteConv('${id}')" style="color:var(--accent)">🧹 Vider la discussion</button><button class="option-btn" onclick="deleteContact('${id}')" style="color:#ff9800">❌ Supprimer le contact</button><button class="option-btn" onclick="blockContact('${id}')" style="color:var(--love)">🚫 Bloquer le contact</button>`, null); document.getElementById('modalActions').style.display = 'none'; }
+    function deleteConv(id) { const ck = [user.id, id].sort().join('_'); db.ref('msgs/'+ck).remove().then(() => { triggerBack(); }); }
     function deleteContact(id) { db.ref(`users/${user.id}/contacts/${id}`).remove(); triggerBack(); }
     function blockContact(id) { db.ref(`users/${user.id}/blocked/${id}`).set(true); db.ref(`users/${user.id}/contacts/${id}`).remove(); triggerBack(); }
 
     window.onload = () => {
-        if(user) {
-            db.ref('users/'+user.id+'/code').on('value', s => { if(s.exists()) { user.code = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); }});
-            start();
-        } else {
-            document.getElementById('splash').style.display = 'none';
-            document.getElementById('authLayer').style.display = 'flex';
-        }
+        if(user) { db.ref('users/'+user.id+'/code').on('value', s => { if(s.exists()) { user.code = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); }}); start(); }
+        else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
     };
 </script>
 </body>
-</html>''
+</html>
