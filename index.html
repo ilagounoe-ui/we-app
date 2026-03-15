@@ -10,6 +10,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
+        * {
+            /* AJOUT: Supprime l'effet de clic bleu sur mobile */
+            -webkit-tap-highlight-color: transparent;
+        }
+
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
             --love: #ff4b6e; --check: #00d2ff; --text-sub: #b3b3b3; --online: #25D366;
@@ -52,7 +57,6 @@
         .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 10px 0; text-align: center; box-sizing: border-box; outline: none; }
         .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         
-        /* AJOUT: Message d'erreur discret */
         .error-msg { color: var(--love); font-size: 12px; margin-bottom: 5px; min-height: 15px; display: block; font-weight: bold; }
 
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; cursor: pointer;}
@@ -65,7 +69,8 @@
 <div class="modal-overlay" id="customModal">
     <div class="modal-content">
         <h3 id="modalTitle" style="color:var(--accent); margin:0 0 10px 0;">...</h3>
-        <div id="modalError" class="error-msg"></div> <div id="modalBody"></div>
+        <div id="modalError" class="error-msg"></div>
+        <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
             <button class="option-btn" style="justify-content:center; background:var(--card)" onclick="triggerBack()">Annuler</button>
             <button class="option-btn" style="justify-content:center; background:var(--accent); color:black" id="modalConfirmBtn">OK</button>
@@ -127,7 +132,10 @@
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
-            <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:20px; font-weight:bold; cursor:pointer;">Déconnexion</button>
+            
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
+            
+            <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:10px; font-weight:bold; cursor:pointer;">Déconnexion</button>
         </div>
     </div>
 </div>
@@ -143,7 +151,7 @@
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null;
     let audioUnlocked = false;
-    let stateStack = []; // AJOUT: Gestion propre du bouton retour
+    let stateStack = []; 
     
     const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
 
@@ -161,14 +169,13 @@
         return `<div style="width:100%; height:100%; background:${color}; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`;
     }
 
-    // --- AJOUT: GESTION BOUTON RETOUR ANDROID ---
     function pushState(id) {
         stateStack.push(id);
         history.pushState({id: id}, "");
     }
 
     function triggerBack() {
-        history.back(); // Simule l'appui sur le bouton retour physique
+        history.back();
     }
 
     window.onpopstate = (e) => {
@@ -177,7 +184,6 @@
         else if(lastState === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; }
         else if(lastState === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; }
     };
-    // ---------------------------------------------
 
     function start() {
         document.getElementById('authLayer').style.display='none';
@@ -187,7 +193,6 @@
         loadTimer(); loadContacts();
     }
 
-    // AJOUT: Ouverture de photo en plein écran
     function viewPhoto(b64) {
         openModal("Photo de profil", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null);
         document.getElementById('modalActions').style.display = 'none';
@@ -201,7 +206,6 @@
                     const u = us.val(); if(!u) return;
                     const ck = [user.id, u.id].sort().join('_');
                     
-                    // AJOUT: Empêcher le clic de la photo d'ouvrir le chat
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
                         <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
@@ -222,7 +226,7 @@
         activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('chatBox').style.display='flex';
-        pushState('chatBox'); // AJOUT RETOUR
+        pushState('chatBox');
         db.ref('msgs/'+activeId).once('value', s => { s.forEach(snap => { if(snap.val().sid === id) db.ref('msgs/'+activeId+'/'+snap.key).update({read:true}); }); });
         sync('msgs', activeId, 'mArea');
     }
@@ -251,13 +255,14 @@
 
     function askCoconCode() {
         openModal("Zone Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (c) => {
-            if(c === user.code) {
+            // AJOUT: Force la conversion en String pour éviter les bugs si le code a été enregistré comme chiffre
+            if(String(c) === String(user.code)) { 
                 document.getElementById('coconBox').style.display='flex';
-                pushState('coconBox'); // AJOUT RETOUR
+                pushState('coconBox'); 
                 sync('cocon', "shared_cocon_" + user.code, 'coArea');
-                triggerBack(); // Ferme la modale proprement
+                triggerBack(); 
             } else {
-                showError("Code incorrect ❌"); // AJOUT: Discret
+                showError("Code incorrect ❌"); 
             }
         });
     }
@@ -279,7 +284,6 @@
             if(!v) return;
             let val = isDate ? new Date(v).getTime() : v;
             
-            // AJOUT: SYNCHRO DU CODE AVEC NÉNÉ (Premier contact)
             if(field === 'code' && user.contacts) {
                 const partnerId = Object.keys(user.contacts)[0];
                 if(partnerId) db.ref('users/'+partnerId).update({code: val});
@@ -292,7 +296,6 @@
     function askPhoneForInfo() {
         openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
             if("u_"+num.replace(/\D/g,'') === user.id) {
-                // AJOUT: Remplacement direct du contenu pour éviter de superposer 2 modales
                 document.getElementById('modalTitle').innerText = "Tes Infos";
                 document.getElementById('modalError').innerText = "";
                 document.getElementById('modalBody').innerHTML = `<div style="text-align:left; font-size:14px; line-height:2; margin-top:10px;">Pseudo: ${user.pseudo}<br>Code: <b style="color:var(--accent)">${user.code}</b><br>ID: ${user.id}</div>`;
@@ -301,6 +304,45 @@
                 showError("Numéro incorrect !");
             }
         });
+    }
+
+    // AJOUT: Gestionnaire des personnes bloquées
+    function manageBlocked() {
+        db.ref('users/'+user.id+'/blocked').once('value', s => {
+            let html = '<div id="blockedList" style="max-height:200px; overflow-y:auto; margin-top:10px;">Chargement...</div>';
+            openModal("Bloqués", html, null);
+            document.getElementById('modalActions').style.display = 'none';
+
+            if(!s.exists() || Object.keys(s.val()).length === 0) {
+                document.getElementById('blockedList').innerHTML = '<p style="font-size:14px; opacity:0.7">Personne n\'est bloqué.</p>';
+                return;
+            }
+            
+            let listHtml = '';
+            let promises = [];
+            s.forEach(snap => {
+                let id = snap.key;
+                promises.push(db.ref('users/'+id).once('value').then(us => {
+                    let u = us.val();
+                    if(u) {
+                        listHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; margin-bottom:10px;">
+                            <span style="font-weight:bold">${u.pseudo}</span>
+                            <button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:12px;">Débloquer</button>
+                        </div>`;
+                    }
+                }));
+            });
+            Promise.all(promises).then(() => {
+                document.getElementById('blockedList').innerHTML = listHtml;
+            });
+        });
+    }
+
+    // AJOUT: Fonction pour débloquer
+    function unblock(id) {
+        db.ref(`users/${user.id}/blocked/${id}`).remove();
+        db.ref(`users/${user.id}/contacts/${id}`).set(true);
+        triggerBack(); 
     }
 
     function handlePfp(event) {
@@ -348,14 +390,14 @@
     function logout() { localStorage.clear(); location.reload(); }
     
     function openModal(t, b, a) { 
-        document.getElementById('modalError').innerText = ""; // Reset erreur
+        document.getElementById('modalError').innerText = ""; 
         document.getElementById('modalTitle').innerText = t; 
         document.getElementById('modalBody').innerHTML = b; 
         document.getElementById('customModal').style.display = 'flex'; 
-        pushState('modal'); // AJOUT RETOUR
+        pushState('modal'); 
         if(a) {
             document.getElementById('modalActions').style.display = 'flex';
-            document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); }; // Ne ferme plus direct, attend validation
+            document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); }; 
         } else document.getElementById('modalActions').style.display = 'none';
     }
 
@@ -366,24 +408,40 @@
                 if(s.exists()) {
                     db.ref(`users/${user.id}/contacts/${id}`).set(true);
                     db.ref(`users/${id}/contacts/${user.id}`).set(true);
-                    triggerBack(); // Ferme si succès
+                    triggerBack(); 
                 } else {
-                    showError("Numéro introuvable 🤷‍♂️"); // AJOUT: Discret
+                    showError("Numéro introuvable 🤷‍♂️"); 
                 }
             });
         });
     }
 
-    // AJOUT: Correction des options qui se fermaient mal
+    // AJOUT: Modification de la fenêtre d'options avec "Supprimer" et "Bloquer"
     function openContactOptions(e, id, name) {
         e.stopPropagation();
-        openModal("Options : "+name, `<button class="option-btn" onclick="deleteConv('${id}')" style="color:var(--love)">🗑️ Effacer la discussion</button>`, null);
+        openModal("Options : "+name, `
+            <button class="option-btn" onclick="deleteConv('${id}')" style="color:var(--accent)">🧹 Vider la discussion</button>
+            <button class="option-btn" onclick="deleteContact('${id}')" style="color:#ff9800">❌ Supprimer le contact</button>
+            <button class="option-btn" onclick="blockContact('${id}')" style="color:var(--love)">🚫 Bloquer le contact</button>
+        `, null);
         document.getElementById('modalActions').style.display = 'none';
     }
 
     function deleteConv(id) {
         const ck = [user.id, id].sort().join('_');
         db.ref('msgs/'+ck).remove().then(() => { triggerBack(); });
+    }
+
+    // AJOUT: Fonctions pour supprimer ou bloquer un contact
+    function deleteContact(id) {
+        db.ref(`users/${user.id}/contacts/${id}`).remove();
+        triggerBack();
+    }
+
+    function blockContact(id) {
+        db.ref(`users/${user.id}/blocked/${id}`).set(true);
+        db.ref(`users/${user.id}/contacts/${id}`).remove();
+        triggerBack();
     }
 
     window.onload = () => {
