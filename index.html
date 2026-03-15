@@ -49,10 +49,10 @@
         /* --- MODALES --- */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
-        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; box-sizing: border-box; }
+        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; box-sizing: border-box; outline: none; }
         .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
 
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -132,10 +132,6 @@
 <div id="coconBox"><div class="head" style="background:var(--love)"><span onclick="history.back()" style="font-size:24px">←</span><b>🌹 Cocon Privé</b></div><div class="msg-area" id="coArea"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;"><button onclick="send('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; font-size:20px">➔</button></div></div>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Error:", err));
-    }
-
     const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -159,6 +155,7 @@
         return `<div style="width:100%; height:100%; background:${color}; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`;
     }
 
+    // Gestion des retours physiques
     window.onpopstate = () => {
         if (document.getElementById('customModal').style.display === 'flex') { closeModal(); history.pushState(null, ""); }
         else { closeO('chatBox'); closeO('coconBox'); }
@@ -170,7 +167,6 @@
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
         loadTimer(); loadContacts();
-        if ("Notification" in window) Notification.requestPermission();
     }
 
     function loadContacts() {
@@ -185,14 +181,6 @@
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
                         <div class="opt-dots" onclick="openContactOptions(event, '${u.id}', '${u.pseudo}')">⋮</div>
                     </div>`;
-
-                    db.ref('msgs/'+ck).limitToLast(1).on('child_added', mSnap => {
-                        const m = mSnap.val();
-                        if (m.sid !== user.id && !m.read && document.visibilityState !== 'visible') {
-                            if (audioUnlocked) popSound.play();
-                            new Notification(u.pseudo, { body: m.txt });
-                        }
-                    });
 
                     db.ref('msgs/'+ck).on('value', ms => {
                         let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
@@ -213,6 +201,19 @@
         sync('msgs', activeId, 'mArea');
     }
 
+    function sync(path, target, areaId) {
+        db.ref(path+'/'+target).off();
+        db.ref(path+'/'+target).on('value', s => {
+            const area = document.getElementById(areaId); area.innerHTML = "";
+            s.forEach(snap => {
+                const m = snap.val(), isMe = m.sid===user.id;
+                const status = isMe ? (m.read ? '<span style="color:var(--check)">vu</span>' : '✔') : '';
+                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}<div class="msg-meta"><span>${formatTime(m.ts)}</span> ${status}</div></div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        });
+    }
+
     function send(path) {
         const isCocon = (path==='cocon');
         const inp = isCocon?document.getElementById('coIn'):document.getElementById('mIn');
@@ -222,92 +223,36 @@
         inp.value = "";
     }
 
-    function sync(path, target, areaId) {
-        db.ref(path+'/'+target).off();
-        db.ref(path+'/'+target).on('value', s => {
-            const area = document.getElementById(areaId); area.innerHTML = "";
-            s.forEach(snap => {
-                const m = snap.val(), isMe = m.sid===user.id;
-                const status = isMe ? (m.read ? '<span style="color:var(--check)">✔✔</span>' : '✔') : '';
-                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${m.txt}<div class="msg-meta"><span>${formatTime(m.ts)}</span> ${status}</div></div>`;
-            });
-            area.scrollTop = area.scrollHeight;
-        });
-    }
-
     function askCoconCode() {
         openModal("Zone Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (c) => {
             if(c === user.code) {
                 document.getElementById('coconBox').style.display='flex';
                 history.pushState({view:'cocon'}, "");
                 sync('cocon', "shared_cocon_" + user.code, 'coArea');
-                
-                // NOTIFS COCON
-                db.ref('cocon/shared_cocon_'+user.code).limitToLast(1).on('child_added', snap => {
-                    if (snap.val().sid !== user.id && document.visibilityState !== 'visible') {
-                        if (audioUnlocked) popSound.play();
-                        new Notification("🌹 Cocon : Nouveau secret");
-                    }
-                });
-            } else alert("Mauvais code");
+            } else alert("Code incorrect ❌");
         });
     }
 
-    // --- CENTRE DE TEST GEMINI ---
-    function askPhoneForInfo() {
-        openModal("Centre de Test Gemini", `
-            <div style="padding:15px; background:var(--card); border-radius:20px; font-size:14px; text-align:left; margin-bottom:15px;">
-                <b>Profil :</b> ${user.pseudo}<br>
-                <b>Code :</b> ${user.code}
-            </div>
-            <button class="option-btn" onclick="testGemini()" style="background:var(--love); color:white; justify-content:center; border-radius:20px;">
-                🚀 TESTER LES NOTIFS (5s)
-            </button>
-        `, () => {});
-        document.getElementById('modalActions').style.display='none';
-    }
-
-    function testGemini() {
-        closeModal();
-        let count = 5;
-        const toast = document.createElement('div');
-        toast.style = "position:fixed; top:30%; left:50%; transform:translateX(-50%); background:var(--love); padding:20px; border-radius:30px; z-index:1000000; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);";
-        document.body.appendChild(toast);
-
-        const timer = setInterval(() => {
-            toast.innerHTML = `<b style="font-size:18px">VITE !</b><br>Quitte l'appli maintenant...<br><span style="font-size:30px">${count}s</span>`;
-            count--;
-            if(count < 0) {
-                clearInterval(timer);
-                document.body.removeChild(toast);
-                db.ref('cocon/shared_cocon_' + user.code).push({
-                    sid: "system_gemini",
-                    txt: "🌹 Coucou ! C'est Gemini. Si tu vois ça, tes notifications fonctionnent parfaitement ! 😌",
-                    ts: Date.now(),
-                    read: false
-                });
-            }
-        }, 1000);
-    }
-
-    function openModal(t, b, a) { document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('modalActions').style.display = 'flex'; document.getElementById('customModal').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); }; }
-    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-    function closeO(id) { document.getElementById(id).style.display='none'; }
-    function switchV(i, e) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); document.getElementById(i).classList.add('active'));
+    function switchV(id, el) {
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
     }
 
-    // --- GESTION DES RÉGLAGES ---
     function openEdit(field, isDate = false) {
         const type = isDate ? 'date' : 'text';
-        openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input" placeholder="Nouvelle valeur">`, (v) => {
-            let value = isDate ? new Date(v).getTime() : v;
-            db.ref('users/' + user.id).update({ [field]: value }).then(() => {
-                user[field] = value;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            });
+        openModal("Modifier", `<input type="${type}" id="modalInput" class="modal-input">`, (v) => {
+            let val = isDate ? new Date(v).getTime() : v;
+            db.ref('users/'+user.id).update({[field]:val}).then(() => location.reload());
+        });
+    }
+
+    function askPhoneForInfo() {
+        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
+            if("u_"+num.replace(/\D/g,'') === user.id) {
+                openModal("Tes Infos", `<div style="text-align:left; font-size:14px; line-height:2;">Pseudo: ${user.pseudo}<br>Code: <b style="color:var(--accent)">${user.code}</b><br>ID: ${user.id}</div>`, null);
+            }
         });
     }
 
@@ -315,99 +260,77 @@
         const file = event.target.files[0];
         const reader = new FileReader();
         reader.onload = (e) => {
-            const base64 = e.target.result;
-            db.ref('users/' + user.id).update({ pfp: base64 }).then(() => {
-                user.pfp = base64;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                document.getElementById('pfpPreview').innerHTML = getPfp(user);
-            });
+            db.ref('users/'+user.id).update({pfp: e.target.result}).then(() => location.reload());
         };
         reader.readAsDataURL(file);
     }
 
     function loadTimer() {
         const up = () => {
-            if (!user.startDate) return;
             const diff = Date.now() - user.startDate;
-            document.getElementById('d-day').innerText = Math.floor(diff / 86400000);
-            document.getElementById('d-hour').innerText = Math.floor((diff / 3600000) % 24);
+            document.getElementById('d-day').innerText = Math.floor(diff/86400000);
+            document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
         };
         up(); setInterval(up, 60000);
     }
 
-    // --- AUTHENTIFICATION ---
     function login() {
-        const ph = document.getElementById('lPhone').value.replace(/\D/g, '');
+        const ph = document.getElementById('lPhone').value.replace(/\D/g,'');
         const pa = document.getElementById('lPass').value;
-        const id = "u_" + ph;
-        db.ref('users/' + id).once('value', s => {
-            if (s.exists() && s.val().pass === pa) {
-                user = s.val();
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                start();
-            } else alert("Identifiants incorrects ❌");
+        db.ref('users/u_'+ph).once('value', s => {
+            if(s.exists() && s.val().pass === pa) {
+                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start();
+            } else alert("Erreur connexion");
         });
     }
 
     function register() {
         const ps = document.getElementById('rPseudo').value;
-        const ph = document.getElementById('rPhone').value.replace(/\D/g, '');
+        const ph = document.getElementById('rPhone').value.replace(/\D/g,'');
         const pa = document.getElementById('rPass').value;
-        if (!ps || !ph || !pa) return alert("Remplis tout !");
-        const id = "u_" + ph;
-        const newUser = { id, pseudo: ps, pass: pa, code: '0000', startDate: Date.now(), contacts: {} };
-        db.ref('users/' + id).set(newUser).then(() => toggleAuth(true));
+        const id = "u_"+ph;
+        db.ref('users/'+id).set({id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{}}).then(() => toggleAuth(true));
     }
 
-    function toggleAuth(isLogin) {
-        document.getElementById('loginUI').style.display = isLogin ? 'block' : 'none';
-        document.getElementById('regUI').style.display = isLogin ? 'none' : 'block';
+    function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; }
+    function logout() { localStorage.clear(); location.reload(); }
+    function openModal(t, b, a) { 
+        document.getElementById('modalTitle').innerText = t; 
+        document.getElementById('modalBody').innerHTML = b; 
+        document.getElementById('customModal').style.display = 'flex'; 
+        if(a) {
+            document.getElementById('modalActions').style.display = 'flex';
+            document.getElementById('modalConfirmBtn').onclick = () => { a(document.getElementById('modalInput').value); closeModal(); };
+        } else document.getElementById('modalActions').style.display = 'none';
     }
-
-    function logout() {
-        localStorage.clear();
-        location.reload();
-    }
-
-    // --- CONTACTS & OPTIONS ---
+    function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+    function closeO(id) { document.getElementById(id).style.display='none'; }
     function addFriend() {
-        openModal("Ajouter un ami", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro de téléphone">`, (tel) => {
-            const id = "u_" + tel.replace(/\D/g, '');
-            db.ref('users/' + id).once('value', s => {
-                if (s.exists()) {
+        openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => {
+            const id = "u_"+tel.replace(/\D/g,'');
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) {
                     db.ref(`users/${user.id}/contacts/${id}`).set(true);
                     db.ref(`users/${id}/contacts/${user.id}`).set(true);
-                } else alert("Utilisateur inconnu 🤷‍♂️");
+                }
             });
         });
     }
 
     function openContactOptions(e, id, name) {
         e.stopPropagation();
-        openModal("Options : " + name, `
-            <button class="option-btn" onclick="deleteConv('${id}')">🗑️ Supprimer la discussion</button>
-            <button class="option-btn" style="color:var(--love)" onclick="closeModal()">Fermer</button>
-        `, null);
+        openModal("Options : "+name, `<button class="option-btn" onclick="deleteConv('${id}')">🗑️ Effacer la discussion</button>`, null);
         document.getElementById('modalActions').style.display = 'none';
     }
 
     function deleteConv(id) {
         const ck = [user.id, id].sort().join('_');
-        if (confirm("Supprimer tous les messages ?")) {
-            db.ref('msgs/' + ck).remove().then(() => { closeModal(); alert("Discussion effacée"); });
-        }
+        db.ref('msgs/'+ck).remove().then(() => { closeModal(); });
     }
 
-    // --- INITIALISATION ---
     window.onload = () => {
-        if (user) {
-            // Synchro du code secret en temps réel pour éviter les erreurs de saisie
-            db.ref('users/' + user.id + '/code').on('value', s => {
-                if (s.exists()) {
-                    user.code = s.val();
-                    localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                }
-            });
+        if(user) {
+            db.ref('users/'+user.id+'/code').on('value', s => { if(s.exists()) { user.code = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); }});
             start();
         } else {
             document.getElementById('splash').style.display = 'none';
@@ -416,4 +339,4 @@
     };
 </script>
 </body>
-</html>
+</html
