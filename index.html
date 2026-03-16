@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.39</title>
+    <title>Notre Univers v.39.2</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -43,8 +43,6 @@
         .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .error-msg { color: var(--love); font-size: 12px; margin-bottom: 5px; min-height: 15px; display: block; font-weight: bold; }
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; cursor: pointer;}
-        
-        /* STYLE WIDGET PLEIN ÉCRAN */
         #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
     </style>
 </head>
@@ -240,7 +238,6 @@
         document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
 
-    // --- NOUVEAUX : GÉNÉRATEUR & HUMEUR ---
     function sendLoveNote() {
         const idees = [
             "Mon endroit préféré au monde, c'est juste à côté de toi. ✨",
@@ -302,7 +299,30 @@
     function askPhoneForInfo() { openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => { if("u_"+num.replace(/\D/g,'') === user.id) { document.getElementById('modalTitle').innerText = "Tes Infos"; document.getElementById('modalError').innerText = ""; document.getElementById('modalBody').innerHTML = `<div style="text-align:left; font-size:14px; line-height:2; margin-top:10px;">Pseudo: ${user.pseudo}<br>Code: <b style="color:var(--accent)">${user.code}</b><br>ID: ${user.id}</div>`; document.getElementById('modalActions').style.display = 'none'; } else { showError("Numéro incorrect !"); } }); }
     function manageBlocked() { db.ref('users/'+user.id+'/blocked').once('value', s => { let html = '<div id="blockedList" style="max-height:200px; overflow-y:auto; margin-top:10px;">Chargement...</div>'; openModal("Bloqués", html, null); document.getElementById('modalActions').style.display = 'none'; if(!s.exists() || Object.keys(s.val()).length === 0) { document.getElementById('blockedList').innerHTML = '<p style="font-size:14px; opacity:0.7">Personne n\'est bloqué.</p>'; return; } let listHtml = ''; let promises = []; s.forEach(snap => { let id = snap.key; promises.push(db.ref('users/'+id).once('value').then(us => { let u = us.val(); if(u) { listHtml += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; margin-bottom:10px;"><span style="font-weight:bold">${u.pseudo}</span><button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px 15px; border-radius:10px; cursor:pointer; font-weight:bold; font-size:12px;">Débloquer</button></div>`; } })); }); Promise.all(promises).then(() => { document.getElementById('blockedList').innerHTML = listHtml; }); }); }
     function unblock(id) { db.ref(`users/${user.id}/blocked/${id}`).remove(); db.ref(`users/${user.id}/contacts/${id}`).set(true); triggerBack(); }
-    function loadTimer() { const up = () => { if(!user.startDate) return; const diff = Date.now() - user.startDate; document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }; up(); setInterval(up, 60000); }
+    
+    // --- CORRECTIF COMPTEUR TEMPS RÉEL ---
+    function loadTimer() {
+        db.ref('users/' + user.id + '/startDate').on('value', s => {
+            const dateStockee = s.val();
+            if (!dateStockee) {
+                document.getElementById('d-day').innerText = "0";
+                document.getElementById('d-hour').innerText = "0";
+                return;
+            }
+            if (window.nuInterval) clearInterval(window.nuInterval);
+            window.nuInterval = setInterval(() => {
+                const diff = Date.now() - parseInt(dateStockee);
+                if (diff > 0) {
+                    document.getElementById('d-day').innerText = Math.floor(diff / 86400000);
+                    document.getElementById('d-hour').innerText = Math.floor((diff % 86400000) / 3600000);
+                } else {
+                    document.getElementById('d-day').innerText = "0";
+                    document.getElementById('d-hour').innerText = "0";
+                }
+            }, 1000);
+        });
+    }
+
     function login() { document.getElementById('loginError').innerText = ""; const ph = document.getElementById('lPhone').value.replace(/\D/g,''); const pa = document.getElementById('lPass').value; db.ref('users/u_'+ph).once('value', s => { if(s.exists() && s.val().pass === pa) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); start(); } else { document.getElementById('loginError').innerText = "Identifiants incorrects ❌"; } }); }
     function register() { const ps = document.getElementById('rPseudo').value; const ph = document.getElementById('rPhone').value.replace(/\D/g,''); const pa = document.getElementById('rPass').value; const id = "u_"+ph; db.ref('users/'+id).set({id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{}}).then(() => toggleAuth(true)); }
     function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; document.getElementById('loginError').innerText = "";}
