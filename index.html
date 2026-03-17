@@ -45,7 +45,6 @@
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; cursor: pointer;}
         #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         
-        /* Styles Multimédia */
         .media-btn { background: var(--card); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
         .recording { background: var(--love) !important; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -170,7 +169,16 @@
     let stateStack = []; 
     let mediaRecorder;
     let audioChunks = [];
+    let isRecording = false; // MÉDICAMENT 3 : Stabilisation Micro
+    let lastSendTime = 0; // MÉDICAMENT 2 : Anti-spam
     const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
+
+    // MÉDICAMENT 4 : Nettoyage des textes contre les injections
+    function cleanInput(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 
     function unlockAudio() { if (!audioUnlocked) { popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); } }
     function formatTime(ts) { const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date(); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
@@ -247,12 +255,22 @@
     }
 
     function send(path) {
+        const now = Date.now();
+        if (now - lastSendTime < 800) return; // MÉDICAMENT 2 : Anti-spam
+
         const isCocon = (path==='cocon');
         const inp = isCocon?document.getElementById('coIn'):document.getElementById('mIn');
         const target = isCocon? "shared_cocon_" + String(user.code) : activeId;
-        if(!inp.value.trim()) return;
-        db.ref(path+'/'+target).push({ sid:user.id, txt:inp.value.trim(), ts:Date.now(), read:false, type:'text' });
+        
+        let text = inp.value.trim();
+        if(!text) return;
+        
+        // MÉDICAMENT 4 : Nettoyage avant envoi
+        const safeText = cleanInput(text);
+
+        db.ref(path+'/'+target).push({ sid:user.id, txt:safeText, ts:now, read:false, type:'text' });
         inp.value = "";
+        lastSendTime = now;
     }
 
     function sendMedia(type, input, path = 'msgs') {
@@ -277,19 +295,22 @@
     }
 
     async function startRecord() {
+        if (isRecording) return; // MÉDICAMENT 3 : Anti double-lancement
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             audioChunks = [];
+            isRecording = true;
             document.getElementById('micBtn').classList.add('recording');
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
             mediaRecorder.start();
-        } catch(e) { alert("Micro non autorisé !"); }
+        } catch(e) { alert("Micro non autorisé !"); isRecording = false; }
     }
 
     function stopRecord() {
         if(!mediaRecorder || mediaRecorder.state === 'inactive') return;
         mediaRecorder.stop();
+        isRecording = false;
         document.getElementById('micBtn').classList.remove('recording');
         mediaRecorder.onstop = () => {
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
@@ -331,61 +352,71 @@
         const hasard = idees[Math.floor(Math.random() * idees.length)];
         openModal("Mot Doux", `<textarea id="modalInput" class="modal-input" style="height:100px; text-align:left;">${hasard}</textarea>`, (txt) => {
             if(!txt.trim()) return;
+            const safeTxt = cleanInput(txt); // Protection
             db.ref('users/'+user.id+'/contacts').once('value', s => {
                 const partnerId = s.exists() ? Object.keys(s.val())[0] : null;
-                if(partnerId) db.ref('love_notes/' + partnerId).set({ txt, from: user.pseudo, ts: Date.now(), read: false }).then(() => triggerBack());
+                if(partnerId) db.ref('love_notes/' + partnerId).set({ txt: safeTxt, from: user.pseudo, ts: Date.now(), read: false }).then(() => triggerBack());
             });
         });
     }
 
-    // FONCTION MISE À JOUR AVEC IA ET 4 HUMEURS
     async function checkMood() {
         const moods = [
             {e:"🥰", m:"très amoureuse"}, 
             {e:"😊", m:"heureuse"},
             {e:"😢", m:"un peu triste ou fatiguée"}, 
-            {e:"😘", m:"d'humeur câline"}
+            {e:"😘", m:"d'humeur très câline"}
         ];
         
-        let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
         moods.forEach(m => { 
-            h += `<div onclick="generateAIMessage('${m.m}')" style="background:var(--card); padding:15px; border-radius:20px; cursor:pointer;"><div style="font-size:30px">${m.e}</div></div>`; 
+            h += `<div onclick="generateAIMessage('${m.m}')" style="background:var(--card); padding:20px; border-radius:25px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size:35px">${m.e}</div>
+                  </div>`; 
         });
-        openModal("Humeur ?", h + `</div>`, null); 
+        
+        openModal("Comment te sens-tu ?", h + `</div>`, null); 
         document.getElementById('modalActions').style.display = 'none';
     }
 
     async function generateAIMessage(mood) {
+        // NOTE: MÉDICAMENT 1 - Ta clé API est ici, elle reste vulnérable au vol.
         const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk";
         
         document.getElementById('modalBody').innerHTML = `
             <div style="padding:20px;">
                 <div class="loader" style="margin:0 auto 15px;"></div>
-                <p style="font-size:14px; opacity:0.8;">L'Univers te prépare un mot doux...</p>
+                <p style="font-size:14px; opacity:0.8;">L'Univers te prépare un mot doux unique...</p>
             </div>`;
 
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
-        const prompt = {
+        
+        const body = {
             contents: [{
                 parts: [{
-                    text: `Tu es un amoureux attentionné. Ta copine vient de dire qu'elle se sent ${mood}. Écris-lui un message très court (max 15 mots), doux et poétique pour la réconforter ou partager sa joie. Utilise le "tu".`
+                    text: `Écris un message unique, très court (10 mots max) et touchant pour ma copine qui se sent ${mood}. 
+                    Sois parfois poétique, parfois mignon, change de style à chaque fois. Utilise le "tu".`
                 }]
-            }]
+            }],
+            generationConfig: {
+                temperature: 0.95,
+                topP: 0.95,
+                maxOutputTokens: 50
+            }
         };
 
         try {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(prompt)
+                body: JSON.stringify(body)
             });
             const data = await response.json();
             const aiText = data.candidates[0].content.parts[0].text;
-            
             showMoodRes(aiText);
         } catch (error) {
             console.error("Erreur IA:", error);
-            showMoodRes("Peu importe ton humeur, mon cœur ne bat que pour toi. ❤️");
+            showMoodRes("Mon amour pour toi dépasse toutes les erreurs de réseau. ❤️");
         }
     }
 
@@ -450,4 +481,3 @@
 </script>
 </body>
 </html>
-        
