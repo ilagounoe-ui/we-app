@@ -339,7 +339,7 @@
     }
 
     function checkMood() {
-        const moods = [{e:"🥰", m:"Je t'aime trop ! 💖"}, {e:"😊", m:"Garde ce sourire ! ✨"}];
+        const moods = [{e:"🥰", m:"Je t'aime trop ! 💖"}, {e:"😊", m:"Garde ce sourire ! ✨"}, {"😔 je suis là t'inquiète pas"},{"😴 repose toi amour"}];
         let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
         moods.forEach(m => { h += `<div onclick="showMoodRes('${m.m.replace(/'/g, "\\'")}')" style="background:var(--card); padding:15px; border-radius:20px; cursor:pointer;"><div style="font-size:30px">${m.e}</div></div>`; });
         openModal("Humeur ?", h + `</div>`, null); document.getElementById('modalActions').style.display = 'none';
