@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v.41 - IA & Cosmos</title>
+    <title>Notre Univers</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -121,6 +121,7 @@
     <div id="vSet" class="view">
         <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 20px; border:3px solid var(--accent); font-size:40px; cursor:pointer;" onclick="if(user.pfp) viewPhoto(user.pfp)">👤</div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="handlePfp(event)">
+        
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('pseudo')">Pseudo</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="document.getElementById('pfpInput').click()">Photo</div>
@@ -186,7 +187,7 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall) { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; }
+        if(user.wall) { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
         loadTimer(); loadContacts(); listenForLove();
     }
 
@@ -253,52 +254,89 @@
         reader.readAsDataURL(file);
     }
 
-    // --- IA AUTONOME & EMOJIS ---
+    // --- IA AUTONOME & EMOJIS (MODIFIÉE) ---
     async function checkMood() {
         const moods = [{e:"🥰", m:"passionnée"}, {e:"😊", m:"joyeuse"}, {e:"😢", m:"triste"}, {e:"😘", m:"câline"}];
         let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
         moods.forEach(m => { h += `<div onclick="generateAIMessage('${m.m}', '${m.e}')" style="background:var(--card); padding:20px; border-radius:25px; cursor:pointer;"><div style="font-size:35px">${m.e}</div></div>`; });
-        openModal("Humeur", h + `</div>`, null); document.getElementById('modalActions').style.display = 'none';
+        openModal("Humeur", h + `</div>`, null); 
+        document.getElementById('modalActions').style.display = 'none';
     }
 
     async function generateAIMessage(mood, emoji) {
         const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk";
-        const seed = Math.floor(Math.random() * 9999);
-        document.getElementById('modalBody').innerHTML = `<div class="loader" style="margin:20px auto;"></div>`;
+        const hasard = Date.now(); // Graine aléatoire obligatoire
+        document.getElementById('modalBody').innerHTML = `<div class="loader" style="margin:20px auto;"></div><p>L'Univers réfléchit...</p>`;
+
+        const body = {
+            contents: [{
+                parts: [{
+                    text: `Tu es une IA très amoureuse. Ton interlocutrice a choisi l'humeur : "${mood}" ${emoji}. 
+                    Écris-lui un petit mot doux (max 12 mots) qui correspond EXACTEMENT à cette humeur.
+                    Jeton d'unicité : ${hasard}.
+                    CONSIGNE STRICTE : Tu dois formuler une phrase totalement différente à chaque fois. Ne répète jamais tes anciens messages.`
+                }]
+            }],
+            generationConfig: { temperature: 1.4, topP: 0.9 } // Température très haute
+        };
+
         try {
             const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: [{ parts: [{ text: `[ID:${seed}] Tu es une IA amoureuse. Elle se sent ${mood} ${emoji}. Dis un mot doux court (10 mots max) et différent du précédent.` }] }], generationConfig: { temperature: 1.0 } })
+                body: JSON.stringify(body)
             });
             const data = await resp.json();
             showMoodRes(data.candidates[0].content.parts[0].text);
-        } catch (e) { showMoodRes("Je t'aime à l'infini. ✨"); }
+        } catch (e) { showMoodRes("Mon cœur bat pour toi... ✨"); }
     }
 
     function showMoodRes(t) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); document.getElementById('widgetText').innerText = t; document.getElementById('vWidgetFull').style.display = 'flex'; }
 
-    // --- REGLAGES : THEMES & BLOQUÉS ---
+    // --- REGLAGES : THEMES & BLOQUÉS (MODIFIÉ) ---
     function changeWall() {
-        const th = [{n:"Nébuleuse", v:"url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800')"}, {n:"Galaxie", v:"url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800')"}, {n:"Étoiles", v:"url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?w=800')"}];
+        const th = [{n:"🌌 Nébuleuse", v:"url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800')"}, {n:"🔭 Galaxie", v:"url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800')"}, {n:"✨ Étoiles", v:"url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?w=800')"}];
         let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-        th.forEach(t => { h += `<button class="option-btn" onclick="applyWall('${t.v}')" style="background:${t.v} center/cover; height:70px;">${t.n}</button>`; });
-        h += `<button class="option-btn" onclick="document.getElementById('wallIn').click()" style="grid-column:span 2; background:var(--love);">📷 Ma Galerie</button><input type="file" id="wallIn" hidden onchange="uploadWall(event)"></div>`;
-        openModal("Fond d'écran", h, null); document.getElementById('modalActions').style.display = 'none';
+        th.forEach(t => { h += `<button class="option-btn" onclick="applyWall(\`${t.v}\`)" style="background:${t.v} center/cover; height:70px; font-size:12px; border:1px solid var(--accent);">${t.n}</button>`; });
+        h += `<button class="option-btn" onclick="document.getElementById('wallIn').click()" style="grid-column:span 2; background:var(--love); color:white;">🖼️ Choisir dans ma Galerie</button>
+              <input type="file" id="wallIn" hidden accept="image/*" onchange="uploadWall(event)"></div>`;
+        
+        openModal("Fond d'écran", h, null); 
+        document.getElementById('modalActions').style.display = 'none';
     }
 
-    function applyWall(val) { db.ref('users/'+user.id).update({wall: val}).then(() => { user.wall = val; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.body.style.background = val; document.body.style.backgroundSize = "cover"; triggerBack(); }); }
-    function uploadWall(e) { const r = new FileReader(); r.onload = (ev) => applyWall(`url(${ev.target.result})`); r.readAsDataURL(e.target.files[0]); }
+    function applyWall(val) { 
+        db.ref('users/'+user.id).update({wall: val}).then(() => { 
+            user.wall = val; localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+            document.body.style.background = val; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; 
+            triggerBack(); 
+        }); 
+    }
+    
+    function uploadWall(e) { 
+        const file = e.target.files[0];
+        if(!file) return;
+        const r = new FileReader(); 
+        r.onload = (ev) => applyWall(`url(${ev.target.result})`); 
+        r.readAsDataURL(file); 
+    }
 
     function manageBlocked() {
         db.ref('users/'+user.id+'/blocked').once('value', async s => {
             let h = '<div style="max-height:250px; overflow-y:auto;">';
-            if(!s.exists()) h += "<p>Personne de bloqué.</p>";
-            for (const id of Object.keys(s.val() || {})) {
-                const uData = await db.ref('users/'+id).once('value');
-                const name = uData.val() ? uData.val().pseudo : "Utilisateur";
-                h += `<div class="contact-item"><b>${name}</b><button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px; border-radius:10px; margin-left:auto;">Récupérer</button></div>`;
+            if(!s.exists()) {
+                h += "<p>Personne n'est bloqué.</p>";
+            } else {
+                for (const id of Object.keys(s.val() || {})) {
+                    const uData = await db.ref('users/'+id).once('value');
+                    const name = uData.val() ? uData.val().pseudo : "Utilisateur";
+                    h += `<div class="contact-item" style="background:rgba(255,255,255,0.05);">
+                            <b style="flex:1">${name}</b>
+                            <button onclick="unblock('${id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:15px; font-weight:bold;">Récupérer</button>
+                          </div>`;
+                }
             }
-            openModal("Bloqués", h + '</div>', null); document.getElementById('modalActions').style.display = 'none';
+            openModal("Bloqués", h + '</div>', null); 
+            document.getElementById('modalActions').style.display = 'none';
         });
     }
 
@@ -307,7 +345,17 @@
     // --- FONCTIONS DE BASE ---
     async function startRecord() {
         if (isRecording) return;
-        try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRecorder = new MediaRecorder(stream); audioChunks = []; isRecording = true; document.getElementById('micBtn').classList.add('recording'); mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.start(); } catch(e) { alert("Micro non autorisé !"); isRecording = false; }
+        try { 
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); 
+            mediaRecorder = new MediaRecorder(stream); 
+            audioChunks = []; isRecording = true; 
+            document.getElementById('micBtn').classList.add('recording'); 
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data); 
+            mediaRecorder.start(); 
+        } catch(e) { 
+            alert("Autorisation micro refusée ou indisponible. Vérifie tes paramètres."); 
+            isRecording = false; 
+        }
     }
     function stopRecord() { if(!mediaRecorder || mediaRecorder.state === 'inactive') return; mediaRecorder.stop(); isRecording = false; document.getElementById('micBtn').classList.remove('recording'); mediaRecorder.onstop = () => { const blob = new Blob(audioChunks, { type: 'audio/webm' }); const r = new FileReader(); r.readAsDataURL(blob); r.onloadend = () => { db.ref('msgs/'+activeId).push({ sid:user.id, type:'audio', txt:r.result, ts:Date.now(), read:false }); }; }; }
     function askCoconCode() { openModal("Code", `<input type="tel" id="modalInput" class="modal-input" style="-webkit-text-security:disc;">`, (c) => { if(String(c).trim() === String(user.code)) { document.getElementById('coconBox').style.display='flex'; pushState('coconBox'); sync('cocon', "shared_cocon_"+user.code, 'coArea'); document.getElementById('customModal').style.display = 'none'; } else alert("Faux !"); }); }
@@ -319,14 +367,42 @@
     function register() { const ps = document.getElementById('rPseudo').value, ph = document.getElementById('rPhone').value.replace(/\D/g,''), pa = document.getElementById('rPass').value, id = "u_"+ph; db.ref('users/'+id).set({id, pseudo:ps, pass:pa, code:'0000', startDate:Date.now(), contacts:{}}).then(() => toggleAuth(true)); }
     function toggleAuth(l) { document.getElementById('loginUI').style.display=l?'block':'none'; document.getElementById('regUI').style.display=l?'none':'block'; }
     function logout() { localStorage.clear(); location.reload(); }
-    function openModal(t, b, a) { document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b; document.getElementById('customModal').style.display = 'flex'; pushState('modal'); if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput').value); } else document.getElementById('modalActions').style.display = 'none'; }
+    
+    function openModal(t, b, a) { 
+        document.getElementById('modalTitle').innerText = t; 
+        document.getElementById('modalBody').innerHTML = b; 
+        document.getElementById('customModal').style.display = 'flex'; 
+        pushState('modal'); 
+        if(a) { 
+            document.getElementById('modalActions').style.display = 'flex'; 
+            document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput').value); 
+        } else {
+            document.getElementById('modalActions').style.display = 'none'; 
+        }
+    }
+    
     function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input">`, (tel) => { const id = "u_"+tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); } else alert("Inconnu"); }); }); }
     function openContactOptions(e, id) { e.stopPropagation(); openModal("Options", `<button class="option-btn" onclick="deleteConv('${id}')">🧹 Vider</button><button class="option-btn" onclick="blockContact('${id}')">🚫 Bloquer</button>`, null); document.getElementById('modalActions').style.display = 'none'; }
     function deleteConv(id) { db.ref('msgs/'+[user.id, id].sort().join('_')).remove().then(() => triggerBack()); }
     function blockContact(id) { db.ref(`users/${user.id}/blocked/${id}`).set(true); db.ref(`users/${user.id}/contacts/${id}`).remove(); triggerBack(); }
     function openEdit(field, isDate = false) { openModal("Modifier", `<input type="${isDate?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { let val = isDate ? new Date(v).getTime() : v; db.ref('users/'+user.id).update({[field]:val}).then(() => location.reload()); }); }
     function askPhoneForInfo() { openModal("Vérif", `<input type="tel" id="modalInput" class="modal-input">`, (num) => { if("u_"+num.replace(/\D/g,'') === user.id) { document.getElementById('modalBody').innerHTML = `Code: ${user.code}`; document.getElementById('modalActions').style.display = 'none'; } }); }
-    function handlePfp(e) { const r = new FileReader(); r.onload = (ev) => db.ref('users/'+user.id).update({pfp:ev.target.result}).then(() => location.reload()); r.readAsDataURL(e.target.files[0]); }
+    
+    function handlePfp(e) { 
+        const file = e.target.files[0];
+        if(!file) return;
+        const r = new FileReader(); 
+        r.onload = (ev) => {
+            db.ref('users/'+user.id).update({pfp:ev.target.result})
+            .then(() => {
+                user.pfp = ev.target.result;
+                localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                location.reload();
+            })
+            .catch(err => alert("Erreur : L'image est peut-être trop lourde."));
+        }; 
+        r.readAsDataURL(file); 
+    }
 
     window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; } };
 </script>
