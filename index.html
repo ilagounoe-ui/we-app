@@ -127,6 +127,9 @@
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="document.getElementById('pfpInput').click()">Photo</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
+            
+            <div style="background:rgba(37, 211, 102, 0.2); border:1px solid var(--online); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; font-weight:bold;" onclick="requestMic()">🎤 Autoriser le Micro</div>
+            
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; border: 1px solid var(--accent);" onclick="changeWall()">🎨 Fond d'écran</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
@@ -172,6 +175,10 @@
     let audioChunks = [];
     let isRecording = false; 
     let lastSendTime = 0; 
+    
+    // NOUVEAU : Variable pour stopper les anciens messages de se mélanger
+    let activeChatPath = null; 
+
     const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
 
     function cleanInput(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
@@ -187,7 +194,14 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall) { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
+        
+        // Appliquer le fond d'écran au démarrage
+        if(user.wall && user.wall !== '') { 
+            document.body.style.background = user.wall; 
+            document.body.style.backgroundSize = "cover"; 
+            document.body.style.backgroundPosition = "center"; 
+        }
+        
         loadTimer(); loadContacts(); listenForLove();
     }
 
@@ -223,17 +237,24 @@
         sync('msgs', activeId, 'mArea');
     }
 
+    // NOUVEAU : Fonction Sync corrigée pour éviter le mélange de messages et les lags
     function sync(path, target, areaId) {
-        db.ref(path+'/'+target).off();
-        db.ref(path+'/'+target).on('value', s => {
-            const area = document.getElementById(areaId); area.innerHTML = "";
+        // On coupe l'écoute de la conversation précédente AVANT d'en ouvrir une nouvelle !
+        if (activeChatPath) {
+            db.ref(activeChatPath).off();
+        }
+        
+        activeChatPath = path + '/' + target;
+        
+        db.ref(activeChatPath).on('value', s => {
+  const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val(), isMe = m.sid===user.id;
                 const status = isMe ? (m.read ? 'vu' : '✔') : '';
                 let content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; max-width:200px; border-radius:15px;" onclick="viewPhoto('${m.txt}')">` : (m.type === 'audio' ? `<audio controls style="width:180px;"><source src="${m.txt}"></audio>` : m.txt);
                 area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${content}<div class="msg-meta">${formatTime(m.ts)} ${status}</div></div>`;
             });
-            area.scrollTop = area.scrollHeight;
+            setTimeout(() => area.scrollTop = area.scrollHeight, 100);
         });
     }
 
@@ -254,7 +275,7 @@
         reader.readAsDataURL(file);
     }
 
-    // --- IA AUTONOME & EMOJIS (MODIFIÉE) ---
+    // --- IA AUTONOME ---
     async function checkMood() {
         const moods = [{e:"🥰", m:"passionnée"}, {e:"😊", m:"joyeuse"}, {e:"😢", m:"triste"}, {e:"😘", m:"câline"}];
         let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">`;
@@ -265,7 +286,7 @@
 
     async function generateAIMessage(mood, emoji) {
         const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk";
-        const hasard = Date.now(); // Graine aléatoire obligatoire
+        const hasard = Date.now();
         document.getElementById('modalBody').innerHTML = `<div class="loader" style="margin:20px auto;"></div><p>L'Univers réfléchit...</p>`;
 
         const body = {
@@ -277,7 +298,7 @@
                     CONSIGNE STRICTE : Tu dois formuler une phrase totalement différente à chaque fois. Ne répète jamais tes anciens messages.`
                 }]
             }],
-            generationConfig: { temperature: 1.4, topP: 0.9 } // Température très haute
+            generationConfig: { temperature: 1.4, topP: 0.9 }
         };
 
         try {
@@ -292,11 +313,20 @@
 
     function showMoodRes(t) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); document.getElementById('widgetText').innerText = t; document.getElementById('vWidgetFull').style.display = 'flex'; }
 
-    // --- REGLAGES : THEMES & BLOQUÉS (MODIFIÉ) ---
+    // --- REGLAGES : THEMES & BLOQUÉS CORRIGÉS ---
     function changeWall() {
-        const th = [{n:"🌌 Nébuleuse", v:"url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800')"}, {n:"🔭 Galaxie", v:"url('https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800')"}, {n:"✨ Étoiles", v:"url('https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?w=800')"}];
+        const th = [
+            {n:"🌌 Nébuleuse", v:"https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800"}, 
+            {n:"🔭 Galaxie", v:"https://images.unsplash.com/photo-1464802686167-b939a6910659?w=800"}, 
+            {n:"✨ Étoiles", v:"https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800"} // Nouveau lien étoile fonctionnel
+        ];
         let h = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
-        th.forEach(t => { h += `<button class="option-btn" onclick="applyWall(\`${t.v}\`)" style="background:${t.v} center/cover; height:70px; font-size:12px; border:1px solid var(--accent);">${t.n}</button>`; });
+        th.forEach(t => { h += `<button class="option-btn" onclick="applyWall('url(${t.v})')" style="background:url(${t.v}) center/cover; height:70px; font-size:12px; border:1px solid var(--accent);">${t.n}</button>`; });
+        
+        // Bouton Par défaut
+        h += `<button class="option-btn" onclick="applyWall('')" style="grid-column:span 2; background:var(--card); color:white;">🔄 Remettre par défaut</button>`;
+
+        // Bouton Galerie
         h += `<button class="option-btn" onclick="document.getElementById('wallIn').click()" style="grid-column:span 2; background:var(--love); color:white;">🖼️ Choisir dans ma Galerie</button>
               <input type="file" id="wallIn" hidden accept="image/*" onchange="uploadWall(event)"></div>`;
         
@@ -307,7 +337,13 @@
     function applyWall(val) { 
         db.ref('users/'+user.id).update({wall: val}).then(() => { 
             user.wall = val; localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-            document.body.style.background = val; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; 
+            if(val && val !== '') {
+                document.body.style.background = val; 
+                document.body.style.backgroundSize = "cover"; 
+                document.body.style.backgroundPosition = "center"; 
+            } else {
+                document.body.style.background = "var(--bg)"; // Reset par défaut
+            }
             triggerBack(); 
         }); 
     }
@@ -316,7 +352,7 @@
         const file = e.target.files[0];
         if(!file) return;
         const r = new FileReader(); 
-        r.onload = (ev) => applyWall(`url(${ev.target.result})`); 
+        r.onload = (ev) => { applyWall(`url(${ev.target.result})`); }; 
         r.readAsDataURL(file); 
     }
 
@@ -342,7 +378,17 @@
 
     function unblock(id) { db.ref(`users/${user.id}/blocked/${id}`).remove().then(() => { db.ref(`users/${user.id}/contacts/${id}`).set(true); triggerBack(); }); }
 
-    // --- FONCTIONS DE BASE ---
+    // --- FONCTIONS MICRO CORRIGÉES ---
+    async function requestMic() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            alert("✅ Micro autorisé avec succès ! Tu peux maintenant envoyer des audios.");
+            stream.getTracks().forEach(track => track.stop()); // On libère le micro juste après le test
+        } catch(e) {
+            alert("❌ Erreur : Impossible d'accéder au micro. Vérifie les paramètres ou permissions de ton navigateur.");
+        }
+    }
+
     async function startRecord() {
         if (isRecording) return;
         try { 
@@ -353,11 +399,13 @@
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data); 
             mediaRecorder.start(); 
         } catch(e) { 
-            alert("Autorisation micro refusée ou indisponible. Vérifie tes paramètres."); 
+            alert("Autorisation micro refusée. Va dans les réglages de l'appli et clique sur 'Autoriser le Micro'."); 
             isRecording = false; 
         }
     }
     function stopRecord() { if(!mediaRecorder || mediaRecorder.state === 'inactive') return; mediaRecorder.stop(); isRecording = false; document.getElementById('micBtn').classList.remove('recording'); mediaRecorder.onstop = () => { const blob = new Blob(audioChunks, { type: 'audio/webm' }); const r = new FileReader(); r.readAsDataURL(blob); r.onloadend = () => { db.ref('msgs/'+activeId).push({ sid:user.id, type:'audio', txt:r.result, ts:Date.now(), read:false }); }; }; }
+    
+    // --- FONCTIONS DE BASE ---
     function askCoconCode() { openModal("Code", `<input type="tel" id="modalInput" class="modal-input" style="-webkit-text-security:disc;">`, (c) => { if(String(c).trim() === String(user.code)) { document.getElementById('coconBox').style.display='flex'; pushState('coconBox'); sync('cocon', "shared_cocon_"+user.code, 'coArea'); document.getElementById('customModal').style.display = 'none'; } else alert("Faux !"); }); }
     function switchV(id, el) { document.querySelectorAll('.view, .tab').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); el.classList.add('active'); }
     function sendLoveNote() { openModal("Mot Doux", `<textarea id="modalInput" class="modal-input"></textarea>`, (txt) => { db.ref('users/'+user.id+'/contacts').once('value', s => { const pId = s.exists() ? Object.keys(s.val())[0] : null; if(pId) db.ref('love_notes/'+pId).set({txt:cleanInput(txt), read:false}).then(() => triggerBack()); }); }); }
