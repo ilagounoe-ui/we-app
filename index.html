@@ -121,6 +121,7 @@
     <div id="vSet" class="view">
         <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 20px; border:3px solid var(--accent); font-size:40px; cursor:pointer;" onclick="if(user.pfp) viewPhoto(user.pfp)">👤</div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="handlePfp(event)">
+        <input type="file" id="wallInput" hidden accept="image/*" onchange="handleWall(event)">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('pseudo')">Pseudo</div>
@@ -175,7 +176,7 @@
     let audioChunks = [];
     let isRecording = false; 
     let lastSendTime = 0; 
-    let activeChatPath = null; // Ajouté pour fixer le bug des messages
+    let activeChatPath = null; 
 
     const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
 
@@ -227,7 +228,7 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall && user.wall !== '') { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
+        if(user.wall && user.wall !== '') { document.body.style.background = `url('${user.wall}')`; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
         loadTimer(); loadContacts();
     }
 
@@ -241,8 +242,8 @@
                     const u = us.val(); if(!u) return;
                     const ck = [user.id, u.id].sort().join('_');
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
-                        <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
-                        <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
+                        <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div> 
+                 <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
                         <div class="opt-dots" onclick="openContactOptions(event, '${u.id}')">⋮</div>
                     </div>`;
                     db.ref('msgs/'+ck).on('value', ms => {
@@ -263,9 +264,11 @@
         sync('msgs', activeId, 'mArea');
     }
 
+    // MODIF 1 : Cocon bloqué (il fallait cacher la modal après le bon code)
     function askCoconCode() {
         openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code">`, (val) => {
             if(val === user.code) {
+                document.getElementById('customModal').style.display = 'none'; // Cette ligne ferme la fenêtre !
                 document.getElementById('coconBox').style.display='flex';
                 pushState('coconBox');
                 sync('cocon', user.code, 'coArea');
@@ -284,10 +287,9 @@
         inp.value = "";
     }
 
-    // --- LE CORRECTIF 1 : ANTI-MÉLANGE (SYNC FIX) ---
     function sync(path, target, areaId) {
         if (activeChatPath) {
-            db.ref(activeChatPath).off(); // COUPE l'ancienne connexion
+            db.ref(activeChatPath).off();
         }
         activeChatPath = path + '/' + target;
         
@@ -313,7 +315,6 @@
         });
     }
 
-    // --- LE CORRECTIF 2 : LA FICHE INFOS ---
     function askPhoneForInfo() {
         openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro pour vérifier">`, (num) => {
             if("u_"+num.replace(/\D/g,'') === user.id) {
@@ -334,7 +335,6 @@
         });
     }
 
-    // --- LE CORRECTIF 3 : LES VRAIS MOTS DOUX ---
     function checkMood() {
         openModal("Comment te sens-tu ?", `
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -373,10 +373,9 @@
         const choice = words[mood][Math.floor(Math.random() * words[mood].length)];
         document.getElementById('widgetText').innerText = choice;
         document.getElementById('vWidgetFull').style.display = 'flex';
-        document.getElementById('customModal').style.display = 'none'; // Ferme la modal
+        document.getElementById('customModal').style.display = 'none';
     }
 
-    // --- AUTRES FONCTIONS DU MENU RÉGLAGES ---
     function sendLoveNote() {
         openModal("Mot doux", `<input type="text" id="modalInput" class="modal-input" placeholder="Écris ton mot doux ici...">`, (txt) => {
             if(txt && user.code) {
@@ -389,15 +388,34 @@
         });
     }
 
+    // MODIF 2 : Le fond d'écran s'ouvre depuis la galerie
     function changeWall() {
-        openModal("Fond d'écran", `<input type="text" id="modalInput" class="modal-input" placeholder="Lien URL de l'image">`, (url) => {
-            db.ref('users/'+user.id).update({wall: url}).then(() => { 
-                user.wall = url; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
-            });
-        });
+        document.getElementById('wallInput').click(); // Ouvre la galerie direct !
+    }
+    
+    // Fonction qui gère l'image de fond quand elle est sélectionnée
+    function handleWall(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const r = new FileReader();
+        r.onload = (ev) => {
+            db.ref('users/'+user.id).update({wall: ev.target.result})
+            .then(() => {
+                user.wall = ev.target.result;
+                localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                location.reload(); 
+            })
+            .catch(err => alert("Erreur : L'image est peut-être trop lourde."));
+        };
+        r.readAsDataURL(file);
     }
 
-    function manageBlocked() { alert("Aucune personne bloquée pour le moment."); }
+    // MODIF 3 : Remplacement de l'alerte blanche dégueulasse par la belle fenêtre
+    function manageBlocked() { 
+        openModal("Personnes bloquées", "<p style='color:white;'>Aucune personne bloquée pour le moment.</p>", null);
+        document.getElementById('modalActions').style.display = 'none';
+    }
+    
     function requestMic() { alert("Micro en cours de configuration..."); }
 
     function openModal(t, b, a) { 
@@ -451,3 +469,5 @@
 </script>
 </body>
 </html>
+            
+        
