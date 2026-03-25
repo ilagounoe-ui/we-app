@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notre Univers - Cocon Privé</title>
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: sans-serif; }
+
+        /* --- STYLE DE L'UNIVERS PRIVÉ --- */
+        .univers-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+
+        .profile-glow {
+            width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid rgba(255, 0, 119, 0.4);
+            box-shadow: 0 0 20px rgba(255, 0, 119, 0.2);
+            cursor: pointer;
+            touch-action: none; /* Important pour le Redmi (évite le scroll pendant l'appui) */
+        }
+
+        .bubble-grid { display: flex; gap: 15px; }
+        .bubble {
+            width: 85px; height: 85px;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            font-size: 11px; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- STYLE DE L'ANIMATION (CACHÉ AU DÉBUT) --- */
+        #canvas-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 20;
+            display: none; /* Caché par défaut */
+        }
+        canvas { display: block; }
+        
+        #close-magic {
+            position: absolute; top: 20px; right: 20px;
+            padding: 10px; background: rgba(255,255,255,0.2);
+            color: white; border: none; border-radius: 50%; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<audio id="backgroundMusic" loop>
+    <source src="assets/notre_chanson.mp3" type="audio/mpeg">
+</audio>
+
+<div id="univers-root" class="univers-bg">
+    <div class="central-hub">
+        <div id="secret-trigger" class="profile-glow">
+            <span style="font-size: 40px;">✨</span>
+        </div>
+        <p style="text-align: center; letter-spacing: 2px; opacity: 0.7;">NOTRE UNIVERS</p>
+    </div>
+
+    <div class="bubble-grid">
+        <div class="bubble" onclick="alert('Lancement Chat...')"><span>💬</span><br>Murmures</div>
+        <div class="bubble" onclick="alert('Lancement Album...')"><span>🖼️</span><br>Galerie</div>
+    </div>
+</div>
+
+<div id="canvas-container">
+    <canvas id="canvas1"></canvas>
+    <button id="close-magic">✕</button>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas1');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+const container = document.getElementById('canvas-container');
+const trigger = document.getElementById('secret-trigger');
+const audio = document.getElementById('backgroundMusic');
+const closeBtn = document.getElementById('close-magic');
+
+let particles = [];
+let animationId;
+const texts = ["3", "2", "1", "Toi", "Et", "Moi", "A Jamais", "Je t'aime ❤️"];
+let currentTextIndex = 0;
+
+// --- LOGIQUE DU DÉCLENCHEUR (Appui Long) ---
+let timer;
+trigger.addEventListener('touchstart', () => {
+    timer = setTimeout(startMagic, 1500); // 1.5 seconde pour déclencher
+});
+trigger.addEventListener('touchend', () => clearTimeout(timer));
+
+function startMagic() {
+    container.style.display = 'block';
+    audio.play().catch(e => console.log("L'audio nécessite une interaction"));
+    initText(texts[0]);
+    animate();
+    
+    // Cycle des textes toutes le 2 secondes
+    const interval = setInterval(() => {
+        currentTextIndex++;
+        if (currentTextIndex < texts.length) {
+            initText(texts[currentTextIndex]);
+        } else {
+            currentTextIndex = 3; // Reboucle sur le message d'amour
+            initText(texts[currentTextIndex]);
+        }
+    }, 2000);
+    
+    // On garde l'intervalle pour pouvoir le stopper
+    container.dataset.interval = interval;
+}
+
+closeBtn.onclick = () => {
+    container.style.display = 'none';
+    audio.pause();
+    audio.currentTime = 0;
+    cancelAnimationFrame(animationId);
+    clearInterval(container.dataset.interval);
+    currentTextIndex = 0;
+};
+
+// --- LOGIQUE DE L'ANIMATION (Ton code original adapté) ---
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+class Particle {
+    constructor(x, y) {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.destX = x; this.destY = y;
+        this.vx = 0; this.vy = 0;
+        this.ease = 0.08; this.friction = 0.88;
+    }
+    update() {
+        this.vx += (this.destX - this.x) * this.ease;
+        this.vy += (this.destY - this.y) * this.ease;
+        this.vx *= this.friction; this.vy *= this.friction;
+        this.x += this.vx; this.y += this.vy;
+    }
+    draw() {
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function initText(text) {
+    particles = [];
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
+    tempCtx.fillStyle = "white";
+    tempCtx.font = "bold 60px Arial";
+    tempCtx.textAlign = "center";
+    tempCtx.fillText(text, canvas.width/2, canvas.height/2);
+    
+    const data = tempCtx.getImageData(0,0, canvas.width, canvas.height).data;
+    for(let y=0; y<canvas.height; y+=6) {
+        for(let x=0; x<canvas.width; x+=6) {
+            if(data[(y*canvas.width+x)*4+3] > 128) particles.push(new Particle(x,y));
+        }
+    }
+}
+
+function animate() {
+    ctx.fillStyle = "rgba(0,0,0,0.1)"; // Effet de traînée
+    ctx.fillRect(0,0,canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    animationId = requestAnimationFrame(animate);
+}
+</script>
+</body>
+</html>
