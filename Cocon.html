@@ -5,69 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Notre Univers - Cocon Privé</title>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Arial', sans-serif; color: white; }
-
-        /* --- INTERFACE DE NAVIGATION --- */
-        #univers-ui {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: space-around;
-            z-index: 10; background: radial-gradient(circle at center, #1B2735 0%, #000 100%);
-            transition: opacity 0.8s ease;
-        }
-
-        .profile-glow {
-            width: 140px; height: 140px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid rgba(255, 0, 119, 0.5);
-            box-shadow: 0 0 30px rgba(255, 0, 119, 0.3);
-            touch-action: none; transition: 0.3s;
-        }
+        body, html { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Poppins', sans-serif; color: white; -webkit-tap-highlight-color: transparent; }
+        #univers-ui { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: space-around; z-index: 10; background: radial-gradient(circle at center, #1B2735 0%, #000 100%); transition: opacity 0.8s ease; padding: 50px 0; box-sizing: border-box; }
+        .profile-glow { width: 140px; height: 140px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255, 0, 119, 0.5); box-shadow: 0 0 30px rgba(255, 0, 119, 0.3); transition: 0.3s; }
         .profile-glow:active { transform: scale(0.9); box-shadow: 0 0 50px #ff0077; }
-
         .bubble-grid { display: flex; gap: 20px; }
-        .bubble {
-            width: 100px; height: 100px; background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); border-radius: 20px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 13px;
-        }
-        .bubble svg { width: 30px; height: 30px; fill: white; margin-bottom: 8px; }
-
-        /* --- CANVAS D'ANIMATION --- */
-        #canvas-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 5; display: none; /* Apparaît quand activé */
-        }
+        .bubble { width: 110px; height: 110px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border-radius: 25px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; transition: 0.3s; cursor: pointer; }
+        .bubble svg { width: 34px; height: 34px; fill: white; margin-bottom: 12px; opacity: 0.8; }
+        #canvas-container { position: fixed; inset: 0; z-index: 5; display: none; }
         canvas { display: block; }
-        
-        #close-magic {
-            position: absolute; top: 30px; right: 30px; z-index: 100;
-            background: rgba(255,255,255,0.2); color: white; border: none;
-            width: 40px; height: 40px; border-radius: 50%; font-size: 20px;
-        }
+        #close-magic { position: absolute; top: 30px; right: 30px; z-index: 100; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); width: 44px; height: 44px; border-radius: 50%; font-size: 22px; cursor: pointer; }
+        #back-home { position: absolute; top: 30px; left: 30px; z-index: 100; background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.5; }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<audio id="backgroundMusic" loop>
-    <source src="until_i_found_you.mp3" type="audio/mpeg">
+<audio id="backgroundMusic" preload="auto">
+    <source src="Komi-san Can t Communicate OP full - 『Cinderella by Cidergirl』 【Kan Rom Eng Lyrics】.mp3" type="audio/mpeg">
 </audio>
 
 <div id="univers-ui">
+    <button id="back-home" onclick="window.location.href='index.html'">←</button>
     <div class="central-hub">
         <div id="secret-trigger" class="profile-glow">
             <svg width="60" height="60" viewBox="0 0 24 24"><path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" fill="#FBBF24"/></svg>
         </div>
-        <p style="text-align: center; letter-spacing: 3px; margin-top: 15px; opacity: 0.7;">NOTRE UNIVERS</p>
+        <p style="text-align: center; letter-spacing: 4px; margin-top: 20px; opacity: 0.7; text-transform: uppercase; font-size: 11px;">Appui long pour la magie</p>
     </div>
 
     <div class="bubble-grid">
-        <div class="bubble" onclick="alert('Chat Firebase...')">
-            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        <div class="bubble" onclick="window.location.href='chat.html'">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.03 2 11C2 13.06 2.8 14.94 4.14 16.41L3 20L6.71 18.78C8.25 19.56 10.05 20 12 20C17.52 20 22 15.97 22 11C22 6.03 17.52 2 12 2Z"/></svg>
             <span>Murmures</span>
         </div>
-        <div class="bubble" onclick="alert('Album Photo...')">
-            <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        <div class="bubble" onclick="window.location.href='galerie.html'">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM13.9 11.1L11 14.7L9 12.2L6 16H18L13.9 11.1Z"/></svg>
             <span>Galerie</span>
         </div>
     </div>
@@ -89,36 +62,27 @@ const trigger = document.getElementById('secret-trigger');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// --- CONFIG MATRIX ---
+// --- GESTION AUDIO (Limite 54s) ---
+audio.addEventListener('timeupdate', function() {
+    if (this.currentTime >= 54) {
+        this.currentTime = 0; // Recommence au début
+        this.play();
+    }
+});
+
 const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ❤❤❤";
 const fontSize = 16;
 let columns = Math.ceil(canvas.width / fontSize);
 let drops = Array(columns).fill(1);
-
-// --- CONFIG PARTICULES ---
 let particles = [];
 const texts = ["3", "2", "1", "You", "Are", "My", "Love", "I ❤️ You"];
 let currentTextIndex = 0;
 let animationActive = false;
 
 class Particle {
-    constructor(x, y) {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.destX = x; this.destY = y;
-        this.vx = 0; this.vy = 0;
-        this.ease = 0.1; this.friction = 0.9;
-    }
-    update() {
-        this.vx += (this.destX - this.x) * this.ease;
-        this.vy += (this.destY - this.y) * this.ease;
-        this.vx *= this.friction; this.vy *= this.friction;
-        this.x += this.vx; this.y += this.vy;
-    }
-    draw() {
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath(); ctx.arc(this.x, this.y, 2, 0, Math.PI * 2); ctx.fill();
-    }
+    constructor(x, y) { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.destX = x; this.destY = y; this.vx = 0; this.vy = 0; this.ease = 0.1; this.friction = 0.9; }
+    update() { this.vx += (this.destX - this.x) * this.ease; this.vy += (this.destY - this.y) * this.ease; this.vx *= this.friction; this.vy *= this.friction; this.x += this.vx; this.y += this.vy; }
+    draw() { ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(this.x, this.y, 1.8, 0, Math.PI * 2); ctx.fill(); }
 }
 
 function drawMatrix() {
@@ -141,7 +105,7 @@ function initText(text) {
     tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
     const textFontSize = Math.min(canvas.width / 6, 100);
     tempCtx.fillStyle = "white";
-    tempCtx.font = `bold ${textFontSize}px Arial`;
+    tempCtx.font = `bold ${textFontSize}px Poppins`;
     tempCtx.textAlign = "center";
     tempCtx.fillText(text, canvas.width / 2, canvas.height / 2);
     const data = tempCtx.getImageData(0, 0, canvas.width, canvas.height).data;
@@ -159,24 +123,28 @@ function animate() {
     requestAnimationFrame(animate);
 }
 
-// --- LOGIQUE SECRET (APPUI LONG) ---
 let timer;
 trigger.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    timer = setTimeout(() => {
-        ui.style.opacity = "0";
-        setTimeout(() => {
-            ui.style.display = "none";
-            container.style.display = "block";
-            animationActive = true;
-            audio.play();
-            initText(texts[0]);
-            animate();
-            startTextCycle();
-        }, 800);
-    }, 1500);
+    audio.play().then(() => { audio.pause(); }).catch(e => {});
+    timer = setTimeout(startMagic, 1500);
 });
+
 trigger.addEventListener('touchend', () => clearTimeout(timer));
+
+function startMagic() {
+    ui.style.opacity = "0";
+    setTimeout(() => {
+        ui.style.display = "none";
+        container.style.display = "block";
+        animationActive = true;
+        audio.currentTime = 0;
+        audio.play();
+        initText(texts[0]);
+        animate();
+        startTextCycle();
+    }, 800);
+}
 
 function startTextCycle() {
     const interval = setInterval(() => {
@@ -190,11 +158,17 @@ function startTextCycle() {
 document.getElementById('close-magic').onclick = () => {
     animationActive = false;
     audio.pause();
-    audio.currentTime = 0;
     container.style.display = "none";
     ui.style.display = "flex";
     setTimeout(() => ui.style.opacity = "1", 50);
 };
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    columns = Math.ceil(canvas.width / fontSize);
+    drops = Array(columns).fill(1);
+});
 </script>
 </body>
 </html>
