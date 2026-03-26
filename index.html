@@ -54,9 +54,6 @@
         .cocon-nav { display: flex; justify-content: space-around; padding: 10px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .nav-icon { font-size: 20px; cursor: pointer; opacity: 0.5; transition: 0.3s; }
         .nav-icon.active { opacity: 1; transform: scale(1.2); }
-        #coconTimer { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        #coconGallery { display: none; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px; overflow-y: auto; }
-        #coconGallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; }
 
         /* Effet Brillance Mot Doux */
         @keyframes glow-love {
@@ -66,12 +63,16 @@
         }
         .glow-active { animation: glow-love 1.5s infinite !important; border-style: solid !important; background: rgba(255, 75, 110, 0.15) !important; }
 
-        /* Modals */
+        /* Modals & Humeurs */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
         .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 10px 0; text-align: center; outline: none; }
         .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
         
+        .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .mood-item { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
+        .mood-item:active { transform: scale(0.95); background: var(--accent); color: black; }
+
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; }
         .media-btn { background: var(--card); border: none; width: 42px; height: 42px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
     </style>
@@ -93,7 +94,7 @@
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
             <button class="option-btn" style="background:var(--card)" id="modalCancelBtn">Annuler</button>
-            <button class="option-btn" style="background:var(--accent); color:black" id="modalConfirmBtn">OK</button>
+            <button class="option-btn" style="background:var(--accent); color:black" id="modalConfirmBtn">Confirmer</button>
         </div>
     </div>
 </div>
@@ -133,16 +134,10 @@
             <div class="contact-item" style="flex-direction:column; justify-content:center; padding:20px; margin:0;" onclick="document.getElementById('pfpInput').click()"><b>Photo</b></div>
             <div class="contact-item" style="flex-direction:column; justify-content:center; padding:20px; margin:0;" onclick="openEdit('code')"><b>Code Cocon</b></div>
             <div class="contact-item" style="flex-direction:column; justify-content:center; padding:20px; margin:0;" onclick="openEdit('startDate', true)"><b>Date</b></div>
-            
-            <div class="contact-item" style="grid-column:span 2; justify-content:center; margin:0; background:rgba(37, 211, 102, 0.1); border:1px solid var(--online);" onclick="alert('Micro configuré !')">🎤 Autoriser le Micro</div>
-            <div class="contact-item" style="grid-column:span 2; justify-content:center; margin:0;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
-            <div class="contact-item" style="grid-column:span 2; justify-content:center; margin:0; border: 1px solid var(--accent);" onclick="document.getElementById('wallInput').click()">🎨 Fond d'écran</div>
-            <div class="contact-item" style="grid-column:span 2; justify-content:center; margin:0;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
             <div class="contact-item" style="grid-column:span 2; justify-content:center; margin:0; background:var(--love); color:black;" onclick="sendLoveNote()">💌 Envoyer un mot doux</div>
             <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:15px; font-weight:bold;">Déconnexion</button>
         </div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="handleFile(event, 'pfp')">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="handleFile(event, 'wall')">
     </div>
 </div>
 
@@ -155,8 +150,6 @@
     </div>
     <div class="msg-area" id="mArea"></div>
     <div style="padding:15px; display:flex; gap:10px; align-items:center; background:rgba(0,0,0,0.3);">
-        <button class="media-btn" onclick="document.getElementById('imgIn').click()">🖼️</button>
-        <input type="file" id="imgIn" hidden accept="image/*" onchange="sendMedia('msgs', this)">
         <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white;">
         <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; font-size:20px;">➔</button>
     </div>
@@ -169,15 +162,10 @@
     </div>
     <div class="cocon-nav">
         <span class="nav-icon active" id="ni-chat" onclick="switchCoconTab('chat')">💬</span>
-        <span class="nav-icon" id="ni-time" onclick="switchCoconTab('time')">⏳</span>
         <span class="nav-icon" id="ni-gal" onclick="switchCoconTab('gal')">🖼️</span>
     </div>
     <div class="msg-area" id="coArea"></div>
-    <div id="coconTimer">
-        <h3 style="font-family:'Pacifico'">Unis pour l'éternité</h3>
-        <div id="preciseCounter" style="font-size:28px; font-weight:bold; color:var(--love); margin:20px 0;">00j 00h 00m 00s</div>
-    </div>
-    <div id="coconGallery"></div>
+    <div id="coconGallery" style="display:none; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px;"></div>
     <div id="coInputZone" style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.3);">
         <button class="media-btn" onclick="document.getElementById('imgInCo').click()">🖼️</button>
         <input type="file" id="imgInCo" hidden accept="image/*" onchange="sendMedia('cocon', this)">
@@ -195,7 +183,6 @@
     let activeId = null;
     let stateStack = [];
     let activeChatPath = null;
-    let precisionInterval;
     let pressTimer;
 
     function formatTime(ts) { const d = new Date(ts); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
@@ -213,7 +200,7 @@
         const s = stateStack.pop();
         if(s === 'modal') document.getElementById('customModal').style.display = 'none';
         else if(s === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
-        else if(s === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; clearInterval(precisionInterval); if(activeChatPath) db.ref(activeChatPath).off(); }
+        else if(s === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
     };
     function triggerBack() { history.back(); }
 
@@ -229,12 +216,10 @@
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall) document.body.style.backgroundImage = `url('${user.wall}')`;
         loadContacts(); loadTimer();
         monitorLoveNotes();
     }
 
-    // Surveiller les mots doux pour l'effet brillant
     function monitorLoveNotes() {
         db.ref('cocon/' + user.code).on('value', s => {
             let hasNewNote = false;
@@ -254,16 +239,10 @@
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val(); if(!u) return;
-                    const ck = [user.id, u.id].sort().join('_');
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp||''}')">
                         <div class="contact-pfp">${getPfp(u)}</div>
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}')">⋮</div>
                     </div>`;
-                    db.ref('msgs/'+ck).on('value', ms => {
-                        let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
-                        const b = document.getElementById('badge-'+u.id); if(b) { b.innerText = count; b.style.display = count>0?'inline-flex':'none'; }
-                    });
                 });
             });
         });
@@ -274,24 +253,20 @@
         document.getElementById('cName').innerText = name;
         document.getElementById('chatPfp').innerHTML = getPfp({pseudo: name, pfp: pfp});
         document.getElementById('chatBox').style.display='flex';
-        document.getElementById('chatOptsBtn').onclick = (e) => openContactOptions(e, id);
         pushState('chatBox');
         sync('msgs', activeId, 'mArea');
-        db.ref('msgs/'+activeId).once('value', s => { s.forEach(snap => { if(snap.val().sid === id) db.ref('msgs/'+activeId+'/'+snap.key).update({read:true}); }); });
     }
 
     function askCoconCode() {
         openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton code">`, (val) => {
             if(val === user.code) {
                 document.getElementById('customModal').style.display = 'none';
-                // Vérifier les mots doux prioritaires
                 db.ref('cocon/' + user.code).once('value', s => {
                     let lastNote = null; let noteKey = null;
                     s.forEach(snap => {
                         const m = snap.val();
                         if (m.type === 'love_note' && m.sid !== user.id && !m.read) { lastNote = m.txt; noteKey = snap.key; }
                     });
-
                     if (lastNote) {
                         document.getElementById('widgetText').innerText = lastNote;
                         document.getElementById('vWidgetFull').style.display = 'flex';
@@ -313,26 +288,6 @@
         sync('cocon', user.code, 'coArea');
     }
 
-    function switchCoconTab(mode) {
-        document.getElementById('coArea').style.display = (mode === 'chat') ? 'flex' : 'none';
-        document.getElementById('coconTimer').style.display = (mode === 'time') ? 'flex' : 'none';
-        document.getElementById('coconGallery').style.display = (mode === 'gal') ? 'grid' : 'none';
-        document.getElementById('coInputZone').style.display = (mode === 'chat') ? 'flex' : 'none';
-        document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
-        document.getElementById('ni-'+mode).classList.add('active');
-        if(mode === 'time') {
-            precisionInterval = setInterval(() => {
-                const diff = Date.now() - new Date(user.startDate).getTime();
-                const d = Math.floor(diff / 86400000);
-                const h = Math.floor((diff % 86400000) / 3600000);
-                const m = Math.floor((diff % 3600000) / 60000);
-                const s = Math.floor((diff % 60000) / 1000);
-                document.getElementById('preciseCounter').innerText = `${d}j ${h}h ${m}m ${s}s`;
-            }, 1000);
-        } else clearInterval(precisionInterval);
-        if(mode === 'gal') loadGallery();
-    }
-
     function sync(path, target, areaId) {
         if(activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
@@ -340,12 +295,12 @@
             const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val(); 
-                if(m.type === 'love_note' && path === 'cocon') return; // Ne pas afficher les notes dans le chat normal
+                if(m.type === 'love_note' && path === 'cocon') return;
                 const isMe = m.sid === user.id;
                 let content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;" onclick="viewPhoto('${m.txt}')">` : m.txt;
                 const msgEl = document.createElement('div');
                 msgEl.className = `bubble ${isMe?'m-me':'m-they'}`;
-                msgEl.innerHTML = `${content}<div class="msg-meta">${formatTime(m.t)} ${isMe?(m.read?'<span style="color:var(--check)">✔✔</span>':'✔'):''}</div>`;
+                msgEl.innerHTML = `${content}<div class="msg-meta">${formatTime(m.t)}</div>`;
                 
                 msgEl.onmousedown = () => { pressTimer = setTimeout(() => openMsgOptions(path, target, snap.key, m.txt), 800); };
                 msgEl.onmouseup = () => clearTimeout(pressTimer);
@@ -393,29 +348,37 @@
         document.getElementById('customModal').style.display = 'flex';
         document.getElementById('modalActions').style.display='flex';
         pushState('modal');
-        document.getElementById('modalConfirmBtn').onclick = () => a ? a(document.getElementById('modalInput') ? document.getElementById('modalInput').value : null) : null;
+        document.getElementById('modalConfirmBtn').onclick = () => {
+            const val = document.getElementById('modalInput') ? document.getElementById('modalInput').value : null;
+            if (a) a(val);
+        };
         document.getElementById('modalCancelBtn').onclick = () => triggerBack();
     }
 
-    function openContactOptions(e, id) {
-        e.stopPropagation();
-        openModal("Options Contact", `
-            <button class="option-btn" onclick="db.ref('msgs/'+['${user.id}','${id}'].sort().join('_')).remove(); triggerBack();">🧹 Vider</button>
-            <button class="option-btn" style="color:var(--love)" onclick="blockUser('${id}')">🚫 Bloquer</button>
+    function checkMood() {
+        openModal("Comment te sens-tu ?", `
+            <div class="mood-grid">
+                <div class="mood-item" onclick="showMoodNote('triste')">🥺<br>Triste</div>
+                <div class="mood-item" onclick="showMoodNote('fatigue')">😴<br>Fatigué</div>
+                <div class="mood-item" onclick="showMoodNote('joyeux')">😊<br>Heureux</div>
+                <div class="mood-item" onclick="showMoodNote('colere')">😠<br>Énervé</div>
+            </div>
         `, null);
+        document.getElementById('modalActions').style.display = 'none'; // Pas de boutons pour ce choix
     }
 
-    function blockUser(id) {
-        db.ref(`users/${user.id}/blocked/${id}`).set(true).then(() => { alert("Bloqué"); triggerBack(); });
-    }
-
-    function manageBlocked() {
-        db.ref(`users/${user.id}/blocked`).once('value', s => {
-            let html = s.exists() ? "" : "<p>Aucun bloqué</p>";
-            s.forEach(snap => { html += `<div class="contact-item"><b>${snap.key}</b> <button onclick="db.ref('users/${user.id}/blocked/${snap.key}').remove(); triggerBack();" style="margin-left:auto; background:var(--accent); border:none; border-radius:10px; padding:5px 10px;">Débloquer</button></div>`; });
-            openModal("Bloqués", html, null);
-            document.getElementById('modalConfirmBtn').style.display = 'none';
-        });
+    function showMoodNote(mood) {
+        const notes = {
+            triste: ["Je suis là pour toi, souris. 💖", "Rien n'est plus fort que nous. ✨", "Tu es mon petit soleil."],
+            fatigue: ["Repose-toi mon amour, je veille. 🌹", "Demain sera plus beau. 🥰", "Prends soin de toi pour moi."],
+            joyeux: ["Ton bonheur est le mien ! 💑", "Je t'aime à l'infini. 🚀", "Tu es incroyable."],
+            colere: ["Respire, je suis avec toi. ❤️", "On gère ça ensemble, calme-toi.", "Viens dans mes bras (virtuels)."]
+        };
+        const list = notes[mood];
+        document.getElementById('widgetText').innerText = list[Math.floor(Math.random()*list.length)];
+        document.getElementById('customModal').style.display = 'none';
+        document.getElementById('vWidgetFull').style.display = 'flex';
+        document.getElementById('widgetCloseBtn').onclick = () => document.getElementById('vWidgetFull').style.display = 'none';
     }
 
     function sendLoveNote() {
@@ -425,28 +388,6 @@
                 alert("Envoyé ! ✨"); triggerBack();
             }
         });
-    }
-
-    function checkMood() {
-        openModal("Comment te sens-tu ?", `
-            <button class="option-btn" onclick="showMoodNote('triste')">Triste 🥺</button>
-            <button class="option-btn" onclick="showMoodNote('fatigue')">Fatigué(e) 😴</button>
-            <button class="option-btn" onclick="showMoodNote('joyeux')">Heureux(se) 😊</button>
-        `, null);
-        document.getElementById('modalConfirmBtn').style.display = 'none';
-    }
-
-    function showMoodNote(mood) {
-        const notes = {
-            triste: ["Je suis là pour toi, souris. 💖", "Rien n'est plus fort que nous. ✨", "Tu es mon petit soleil."],
-            fatigue: ["Repose-toi mon amour, je veille. 🌹", "Demain sera plus beau. 🥰", "Prends soin de toi pour moi."],
-            joyeux: ["Ton bonheur est le mien ! 💑", "Je t'aime à l'infini. 🚀", "Tu es incroyable."]
-        };
-        const list = notes[mood];
-        document.getElementById('widgetText').innerText = list[Math.floor(Math.random()*list.length)];
-        document.getElementById('customModal').style.display = 'none';
-        document.getElementById('vWidgetFull').style.display = 'flex';
-        document.getElementById('widgetCloseBtn').onclick = () => document.getElementById('vWidgetFull').style.display = 'none';
     }
 
     function openEdit(f, isD=false) {
@@ -466,17 +407,6 @@
         r.readAsDataURL(file);
     }
 
-    function loadGallery() {
-        const gal = document.getElementById('coconGallery'); gal.innerHTML = "";
-        db.ref('cocon/'+user.code).once('value', s => {
-            s.forEach(snap => { if(snap.val().type === 'img') {
-                const img = document.createElement('img'); img.src = snap.val().txt;
-                img.onclick = () => viewPhoto(snap.val().txt);
-                gal.appendChild(img);
-            }});
-        });
-    }
-
     function loadTimer() {
         if(!user.startDate) return;
         const up = () => {
@@ -485,19 +415,6 @@
             document.getElementById('d-hour').innerText = Math.floor((diff%86400000)/3600000);
         };
         up(); setInterval(up, 60000);
-    }
-
-    function askPhoneForInfo() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (n) => {
-            if("u_"+n.replace(/\D/g,'') === user.id) {
-                document.getElementById('modalBody').innerHTML = `<div style="text-align:left; font-size:14px; line-height:2;">
-                    <b>👤 Pseudo:</b> ${user.pseudo}<br>
-                    <b>🔑 Code Cocon:</b> ${user.code}<br>
-                    <b>📅 Date:</b> ${new Date(user.startDate).toLocaleDateString()}
-                </div>`;
-                document.getElementById('modalActions').style.display='none';
-            } else alert("Erreur");
-        });
     }
 
     function addFriend() {
@@ -512,6 +429,7 @@
             });
         });
     }
+
     function viewPhoto(src) { 
         if(!src) { alert("Aucune photo."); return; }
         openModal("Photo", `<img src="${src}" style="width:100%; border-radius:20px;">`, null); 
