@@ -10,44 +10,60 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        * { -webkit-tap-highlight-color: transparent; outline: none; }
+        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
             --love: #ff4b6e; --check: #00d2ff; --text-sub: #b3b3b3; --online: #25D366;
         }
         body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; background-size: cover; background-position: center; transition: background 0.5s ease; }
+        
+        /* Splash & Loader */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeOut 0.2s ease-in-out forwards; animation-delay: 1.2s; }
         @keyframes fadeOut { to { opacity: 0; pointer-events: none; } }
         .loader { width: 40px; height: 40px; border: 3px solid var(--card); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Layout */
         .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; }
         .tabs { display: flex; gap: 10px; margin-top: 15px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 18px; font-size: 13px; background: var(--card); transition: 0.3s; }
         .tab.active { background: var(--accent); color: #000; font-weight: bold; transform: scale(1.05); }
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
-        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
-        .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #2a2a40; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
+
+        /* Cocon Navigation & Sections */
+        .cocon-nav { display: flex; justify-content: space-around; padding: 12px; background: rgba(255, 75, 110, 0.1); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .nav-icon { font-size: 22px; cursor: pointer; opacity: 0.4; transition: 0.3s; filter: grayscale(1); }
+        .nav-icon.active { opacity: 1; transform: scale(1.2); filter: grayscale(0); }
+        #coconGallery { display: none; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 15px; overflow-y: auto; flex: 1; }
+        #coconGallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; }
+        #coconTimer { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .timer-val { font-size: 32px; font-weight: bold; color: var(--love); margin: 15px 0; font-family: monospace; }
+
+        /* UI Elements */
+        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #2a2a40; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .wa-badge { background: var(--online); color: white; font-size: 10px; min-width: 20px; height: 20px; border-radius: 10px; display: none; align-items: center; justify-content: center; margin-left: 8px; font-weight: bold; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; cursor: pointer; color: var(--accent); }
-        #chatBox, #coconBox { position: fixed; inset: 0; background: inherit; background-color: var(--bg); z-index: 9999; display: none; flex-direction: column; }
+        
+        #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
         .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 5px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.7; }
+
+        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 20px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 320px; padding: 30px; border-radius: 35px; border: 1px solid var(--accent); text-align: center; }
-        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 10px 0; text-align: center; box-sizing: border-box; outline: none; }
-        .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .error-msg { color: var(--love); font-size: 12px; margin-bottom: 5px; min-height: 15px; display: block; font-weight: bold; }
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; cursor: pointer;}
-        #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
+        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 20px; color: white; margin: 10px 0; text-align: center; outline: none; }
+        .option-btn { width: 100%; padding: 15px; margin-top: 10px; border-radius: 18px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .error-msg { color: var(--love); font-size: 12px; margin-bottom: 5px; min-height: 15px; font-weight: bold; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 50; }
         
-        .media-btn { background: var(--card); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-        .recording { background: var(--love) !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
+        .media-btn { background: var(--card); border: none; width: 45px; height: 45px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -66,8 +82,8 @@
         <div id="modalError" class="error-msg"></div>
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:10px; margin-top:20px;">
-            <button class="option-btn" style="justify-content:center; background:var(--card)" onclick="triggerBack()">Annuler</button>
-            <button class="option-btn" style="justify-content:center; background:var(--accent); color:black" id="modalConfirmBtn">OK</button>
+            <button class="option-btn" style="background:var(--card)" onclick="triggerBack()">Annuler</button>
+            <button class="option-btn" style="background:var(--accent); color:black" id="modalConfirmBtn">OK</button>
         </div>
     </div>
 </div>
@@ -79,16 +95,16 @@
             <div id="loginError" class="error-msg"></div>
             <input type="tel" class="modal-input" placeholder="Numéro" id="lPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="lPass">
-            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center;" onclick="login()">ENTRER</button>
-            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">Pas de compte ? S'inscrire</p>
+            <button class="option-btn" style="background:var(--accent); color:black;" onclick="login()">ENTRER</button>
+            <p onclick="toggleAuth(false)" style="margin-top:20px; font-size:12px; opacity:0.6;">Pas de compte ? S'inscrire</p>
         </div>
         <div id="regUI" style="display:none;">
             <h2 style="font-family:'Pacifico'; color:var(--accent)">Nouveau Profil</h2>
             <input type="text" class="modal-input" placeholder="Pseudo" id="rPseudo">
             <input type="tel" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
-            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center;" onclick="register()">CRÉER</button>
-            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; opacity:0.6; cursor:pointer;">Déjà inscrit ? Connexion</p>
+            <button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">CRÉER</button>
+            <p onclick="toggleAuth(true)" style="margin-top:20px; font-size:12px; opacity:0.6;">Déjà inscrit ? Connexion</p>
         </div>
     </div>
 </div>
@@ -114,52 +130,65 @@
                 <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:20px; min-width:80px;"><b id="d-hour" style="font-size:24px">0</b><br><small>Heures</small></div>
             </div>
         </div>
-        <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:28px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold; cursor:pointer;">💖 OUVRIR LE COCON</button>
-        <button onclick="checkMood()" style="width:100%; padding:15px; border-radius:28px; border:none; background:var(--card); color:white; font-weight:bold; cursor:pointer; margin-top:15px;">🌟 Besoin d'un mot doux ?</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:22px; border-radius:28px; border:2px dashed var(--love); background:var(--card); color:var(--love); font-weight:bold;">💖 OUVRIR LE COCON</button>
+        <button onclick="checkMood()" style="width:100%; padding:15px; border-radius:28px; border:none; background:var(--card); color:white; font-weight:bold; margin-top:15px;">🌟 Besoin d'un mot doux ?</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 20px; border:3px solid var(--accent); font-size:40px; cursor:pointer;" onclick="if(user.pfp) viewPhoto(user.pfp)">👤</div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="handlePfp(event)">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="handleWall(event)">
+        <div id="pfpPreview" class="contact-pfp" style="width:110px; height:110px; margin:0 auto 20px; border:3px solid var(--accent); font-size:40px;" onclick="if(user.pfp) viewPhoto(user.pfp)">👤</div>
+        <input type="file" id="pfpInput" hidden onchange="handlePfp(event)">
+        <input type="file" id="wallInput" hidden onchange="handleWall(event)">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('pseudo')">Pseudo</div>
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="document.getElementById('pfpInput').click()">Photo</div>
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
-            
-            <div style="background:rgba(37, 211, 102, 0.2); border:1px solid var(--online); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; font-weight:bold;" onclick="requestMic()">🎤 Autoriser le Micro</div>
-            
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; border: 1px solid var(--accent);" onclick="changeWall()">🎨 Fond d'écran</div>
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
-            <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; color:black; font-weight:bold; margin-top:10px;" onclick="sendLoveNote()">💌 Envoyer un petit mot doux</div>
-            <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:10px; font-weight:bold; cursor:pointer;">Déconnexion</button>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center;" onclick="openEdit('pseudo')">Pseudo</div>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center;" onclick="document.getElementById('pfpInput').click()">Photo</div>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center;" onclick="openEdit('code')">Code Secret</div>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center;" onclick="openEdit('startDate', true)">Date</div>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; border: 1px solid var(--accent);" onclick="changeWall()">🎨 Fond d'écran</div>
+            <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:10px; font-weight:bold;">Déconnexion</button>
         </div>
     </div>
 </div>
 
 <div id="chatBox">
-    <div class="head"><span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span><b id="cName">...</b></div>
+    <div class="head"><span onclick="triggerBack()" style="font-size:24px;">←</span><b id="cName">...</b></div>
     <div class="msg-area" id="mArea"></div>
     <div style="padding:15px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,0.2);">
         <button class="media-btn" onclick="document.getElementById('imgIn').click()">🖼️</button>
-        <button class="media-btn" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()" onmousedown="startRecord()" onmouseup="stopRecord()">🎤</button>
         <input type="file" id="imgIn" hidden accept="image/*" onchange="sendMedia('img', this)">
         <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:12px 18px; border-radius:25px; color:white;">
-        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; font-size:18px;">➔</button>
+        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%;">➔</button>
     </div>
 </div>
 
 <div id="coconBox">
-    <div class="head" style="background:var(--love)"><span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span><b>🌹 Cocon Privé</b></div>
+    <div class="head" style="background:var(--love)">
+        <span onclick="triggerBack()" style="font-size:24px;">←</span>
+        <b>🌹 Notre Univers</b>
+    </div>
+    
+    <div class="cocon-nav">
+        <span class="nav-icon active" id="ni-chat" onclick="switchCoconTab('chat')">💬</span>
+        <span class="nav-icon" id="ni-time" onclick="switchCoconTab('time')">⏳</span>
+        <span class="nav-icon" id="ni-gal" onclick="switchCoconTab('gal')">🖼️</span>
+    </div>
+
     <div class="msg-area" id="coArea"></div>
-    <div style="padding:15px; display:flex; gap:10px;">
+
+    <div id="coconTimer">
+        <div style="font-size: 50px;">⏳</div>
+        <h3 style="font-family:'Pacifico'">Temps de Bonheur</h3>
+        <div class="timer-val" id="preciseCounter">00j 00h 00m 00s</div>
+        <p style="opacity: 0.6">Chaque seconde compte avec toi.</p>
+    </div>
+
+    <div id="coconGallery"></div>
+
+    <div id="coInputZone" style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.2);">
         <button class="media-btn" onclick="document.getElementById('imgInCo').click()">🖼️</button>
         <input type="file" id="imgInCo" hidden accept="image/*" onchange="sendMedia('img', this, 'cocon')">
         <input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;">
-        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer;">➔</button>
+        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; font-size:20px;">➔</button>
     </div>
 </div>
 
@@ -170,29 +199,25 @@
 
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null;
-    let audioUnlocked = false;
     let stateStack = []; 
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false; 
-    let lastSendTime = 0; 
-    let activeChatPath = null; 
+    let activeChatPath = null;
+    let precisionInterval;
 
-    const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
-
-    function cleanInput(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function unlockAudio() { if (!audioUnlocked) { popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); } }
-    function formatTime(ts) { const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date(); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+    function unlockAudio() { /* Placeholder */ }
+    function formatTime(ts) { const d = new Date(ts); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
     function getPfp(u) { if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`; return `<div style="width:100%; height:100%; background:#2a2a40; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`; }
-    function pushState(id) { stateStack.push(id); history.pushState({id: id}, ""); }
-    function triggerBack() { history.back(); }
     
-    window.onpopstate = (e) => { 
-        const lastState = stateStack.pop(); 
-        if(lastState === 'modal') document.getElementById('customModal').style.display = 'none'; 
-        else if(lastState === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
-        else if(lastState === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
+    function pushState(id) { stateStack.push(id); history.pushState({id: id}, ""); }
+    window.onpopstate = () => { 
+        const s = stateStack.pop(); 
+        if(s === 'modal') document.getElementById('customModal').style.display = 'none'; 
+        else if(s === 'chatBox') document.getElementById('chatBox').style.display = 'none';
+        else if(s === 'coconBox') {
+            document.getElementById('coconBox').style.display = 'none';
+            clearInterval(precisionInterval);
+        }
     };
+    function triggerBack() { history.back(); }
 
     function switchV(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -201,26 +226,20 @@
         el.classList.add('active');
     }
 
-    function toggleAuth(isLogin) {
-        document.getElementById('loginUI').style.display = isLogin ? 'block' : 'none';
-        document.getElementById('regUI').style.display = isLogin ? 'none' : 'block';
-    }
-
+    // AUTH
+    function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
     function login() {
         const phone = "u_" + document.getElementById('lPhone').value.replace(/\D/g,'');
         const pass = document.getElementById('lPass').value;
-        db.ref('users/' + phone).once('value', s => {
-            if(s.exists() && s.val().pass === pass) {
-                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            } else alert("Identifiants incorrects");
+        db.ref('users/'+phone).once('value', s => {
+            if(s.exists() && s.val().pass === pass) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
+            else alert("Identifiants incorrects");
         });
     }
-
     function register() {
         const phone = "u_" + document.getElementById('rPhone').value.replace(/\D/g,'');
         const nu = { id: phone, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, joined: new Date().toLocaleDateString(), pfp:'', code:'', startDate:'' };
-        db.ref('users/' + phone).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
+        db.ref('users/'+phone).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
     function start() {
@@ -228,11 +247,9 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall && user.wall !== '') { document.body.style.background = `url('${user.wall}')`; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
-        loadTimer(); loadContacts();
+        if(user.wall) document.body.style.backgroundImage = `url('${user.wall}')`;
+        loadContacts(); loadTimer();
     }
-
-    function viewPhoto(b64) { openModal("Photo", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null); document.getElementById('modalActions').style.display = 'none'; }
 
     function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
@@ -240,16 +257,10 @@
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val(); if(!u) return;
-                    const ck = [user.id, u.id].sort().join('_');
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
-                        <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
-        <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}')">⋮</div>
+                        <div class="contact-pfp">${getPfp(u)}</div>
+                        <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
                     </div>`;
-                    db.ref('msgs/'+ck).on('value', ms => {
-                        let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
-                        const b = document.getElementById('badge-'+u.id); if(b) { b.innerText = count; b.style.display = count>0?'inline-flex':'none'; }
-                    });
                 });
             });
         });
@@ -260,212 +271,124 @@
         document.getElementById('cName').innerText = name;
         document.getElementById('chatBox').style.display='flex';
         pushState('chatBox');
-        db.ref('msgs/'+activeId).once('value', s => { s.forEach(snap => { if(snap.val().sid === id) db.ref('msgs/'+activeId+'/'+snap.key).update({read:true}); }); });
         sync('msgs', activeId, 'mArea');
     }
 
-    // MODIF 1 : Cocon bloqué (il fallait cacher la modal après le bon code)
+    // COCON LOGIC
     function askCoconCode() {
         openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code">`, (val) => {
             if(val === user.code) {
-                document.getElementById('customModal').style.display = 'none'; // Cette ligne ferme la fenêtre !
+                document.getElementById('customModal').style.display = 'none';
                 document.getElementById('coconBox').style.display='flex';
                 pushState('coconBox');
+                switchCoconTab('chat');
                 sync('cocon', user.code, 'coArea');
-            } else {
-                document.getElementById('modalError').innerText = "Code incorrect";
-            }
+            } else alert("Code incorrect");
         });
     }
 
-    function sendMsg(mode) {
-        const inpId = mode === 'msgs' ? 'mIn' : 'coIn';
-        const inp = document.getElementById(inpId);
-        if(!inp.value.trim()) return;
-        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text', read: false });
-        inp.value = "";
+    function switchCoconTab(mode) {
+      document.getElementById('coArea').style.display = (mode === 'chat') ? 'flex' : 'none';
+        document.getElementById('coconTimer').style.display = (mode === 'time') ? 'flex' : 'none';
+        document.getElementById('coconGallery').style.display = (mode === 'gal') ? 'grid' : 'none';
+        document.getElementById('coInputZone').style.display = (mode === 'chat') ? 'flex' : 'none';
+        
+        document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+        document.getElementById('ni-' + (mode === 'gal' ? 'gal' : mode)).classList.add('active');
+
+        if(mode === 'time') startPreciseTimer();
+        else clearInterval(precisionInterval);
+        if(mode === 'gal') loadCoconGallery();
+    }
+
+    function startPreciseTimer() {
+        if(!user.startDate) return;
+        precisionInterval = setInterval(() => {
+            const diff = Date.now() - new Date(user.startDate).getTime();
+            if(isNaN(diff)) return;
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('preciseCounter').innerText = `${d}j ${h}h ${m}m ${s}s`;
+        }, 1000);
+    }
+
+    function loadCoconGallery() {
+        const gal = document.getElementById('coconGallery');
+        gal.innerHTML = "";
+        db.ref('cocon/' + user.code).once('value', s => {
+            s.forEach(snap => {
+                const m = snap.val();
+                if(m.type === 'img') {
+                    const img = document.createElement('img');
+                    img.src = m.txt;
+                    img.onclick = () => viewPhoto(m.txt);
+                    gal.appendChild(img);
+                }
+            });
+        });
     }
 
     function sync(path, target, areaId) {
-        if (activeChatPath) {
-            db.ref(activeChatPath).off();
-        }
+        if (activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
-        
         db.ref(activeChatPath).on('value', s => {
             const area = document.getElementById(areaId);
             area.innerHTML = "";
             s.forEach(snap => {
                 const m = snap.val();
-                if(!m) return;
                 const isMe = m.sid === user.id;
-                const time = formatTime(m.t);
-                let content = cleanInput(m.txt);
-                
-                if (m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:10px;" onclick="viewPhoto('${m.txt}')">`;
-                if (m.type === 'audio') content = `<audio controls src="${m.txt}" style="max-width:200px; height:40px;"></audio>`;
-
-                area.innerHTML += `<div class="bubble ${isMe ? 'm-me' : 'm-they'}">
-                    ${content}
-                    <div class="msg-meta"><span>${time}</span> ${isMe ? (m.read ? '<span style="color:var(--check)">✔✔</span>' : '<span>✔</span>') : ''}</div>
-                </div>`;
+                let content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:10px;">` : m.txt;
+                area.innerHTML += `<div class="bubble ${isMe ? 'm-me' : 'm-they'}">${content}<div class="msg-meta">${formatTime(m.t)}</div></div>`;
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    function askPhoneForInfo() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro pour vérifier">`, (num) => {
-            if("u_"+num.replace(/\D/g,'') === user.id) {
-                const dateR = user.startDate ? new Date(user.startDate).toLocaleDateString('fr-FR') : "Non définie";
-                document.getElementById('modalBody').innerHTML = `
-                    <div style="text-align:left; font-size:14px; line-height:1.8;">
-                        <b>👤 Pseudo :</b> ${user.pseudo || "Non défini"}<br>
-                        <b>📞 Numéro :</b> ${user.id.replace('u_','')}<br>
-                        <b>🔑 Code Compte :</b> ${user.pass || "Non défini"}<br>
-                        <b>🌹 Code Cocon :</b> ${user.code || "Non défini"}<br>
-                        <b>🗓️ Date de rencontre :</b> ${dateR}
-                    </div>
-                `;
-                document.getElementById('modalActions').style.display = 'none';
-            } else {
-                document.getElementById('modalError').innerText = "Numéro incorrect";
-            }
-        });
+    function sendMsg(mode) {
+        const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        if(!inp.value.trim()) return;
+        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text' });
+        inp.value = "";
     }
 
-    function checkMood() {
-        openModal("Comment te sens-tu ?", `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="option-btn" onclick="showSweet('triste')">😢 Triste</button>
-                <button class="option-btn" onclick="showSweet('amour')">🥰 Amoureux</button>
-                <button class="option-btn" onclick="showSweet('besoin')">🫂 Besoin de toi</button>
-                <button class="option-btn" onclick="showSweet('joie')">✨ Joyeux</button>
-            </div>
-        `, null);
-        document.getElementById('modalActions').style.display = 'none';
-    }
-
-    function showSweet(mood) {
-        const words = {
-            triste: [
-                "Ferme les yeux, respire doucement. Je te serre très fort contre moi, tout ira bien parce qu'on est deux. 🫂",
-                "Je déteste te savoir mal. N'oublie jamais que je suis ton refuge, dépose tes fardeaux ici. ❤️",
-                "Même dans les pires tempêtes, je tiendrai ta main fermement. Je t'aime profondément."
-            ],
-            amour: [
-                "Tu es la plus belle chose qui me soit arrivée. Mon univers tout entier. ✨",
-                "Mon cœur bat plus fort chaque fois que mon esprit s'égare vers toi.",
-                "Je t'aime d'un amour bien plus grand que ce que les mots peuvent exprimer."
-            ],
-            besoin: [
-                "Si je le pouvais, je me téléporterais tout de suite dans tes bras. 🏃‍♂️💨",
-                "Je suis là. Même à distance, mon cœur est collé au tien à cet instant précis.",
-                "Tu n'es jamais seule. Je veille sur toi et je pense à toi."
-            ],
-            joie: [
-                "Ton bonheur est ma plus grande source d'énergie ! 🌟",
-                "Te savoir heureuse illumine ma journée. Garde ce magnifique sourire !",
-                "J'adore quand tu rayonnes comme ça. C'est pour ça que je t'aime !"
-            ]
-        };
-        const choice = words[mood][Math.floor(Math.random() * words[mood].length)];
-        document.getElementById('widgetText').innerText = choice;
-        document.getElementById('vWidgetFull').style.display = 'flex';
-        document.getElementById('customModal').style.display = 'none';
-    }
-
-    function sendLoveNote() {
-        openModal("Mot doux", `<input type="text" id="modalInput" class="modal-input" placeholder="Écris ton mot doux ici...">`, (txt) => {
-            if(txt && user.code) {
-                db.ref('cocon/'+user.code).push({ sid: user.id, txt: "💌 " + txt, t: Date.now(), type: 'text', read: false });
-                alert("Ton mot doux a été déposé dans le Cocon !");
-                triggerBack();
-            } else if (!user.code) {
-                alert("Configure d'abord ton code Cocon !");
-            }
-        });
-    }
-
-    // MODIF 2 : Le fond d'écran s'ouvre depuis la galerie
-    function changeWall() {
-        document.getElementById('wallInput').click(); // Ouvre la galerie direct !
-    }
-    
-    // Fonction qui gère l'image de fond quand elle est sélectionnée
-    function handleWall(e) {
-        const file = e.target.files[0];
-        if(!file) return;
+    function sendMedia(type, input, mode='msgs') {
+        const file = input.files[0];
         const r = new FileReader();
-        r.onload = (ev) => {
-            db.ref('users/'+user.id).update({wall: ev.target.result})
-            .then(() => {
-                user.wall = ev.target.result;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload(); 
-            })
-            .catch(err => alert("Erreur : L'image est peut-être trop lourde."));
+        r.onload = (e) => {
+            const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+            db.ref(path).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: 'img' });
         };
         r.readAsDataURL(file);
     }
 
-    // MODIF 3 : Remplacement de l'alerte blanche dégueulasse par la belle fenêtre
-    function manageBlocked() { 
-        openModal("Personnes bloquées", "<p style='color:white;'>Aucune personne bloquée pour le moment.</p>", null);
-        document.getElementById('modalActions').style.display = 'none';
-    }
-    
-    function requestMic() { alert("Micro en cours de configuration..."); }
-
-    function openModal(t, b, a) { 
-        document.getElementById('modalTitle').innerText = t; 
-        document.getElementById('modalError').innerText = "";
-        document.getElementById('modalBody').innerHTML = b; 
-        document.getElementById('customModal').style.display = 'flex'; 
-        pushState('modal'); 
-        if(a) { 
-            document.getElementById('modalActions').style.display = 'flex'; 
-            document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput') ? document.getElementById('modalInput').value : null); 
-        } else {
-            document.getElementById('modalActions').style.display = 'none'; 
-        }
-    }
-    
-    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_"+tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); } else { document.getElementById('modalError').innerText="Inconnu"; } }); }); }
-    function openContactOptions(e, id) { e.stopPropagation(); openModal("Options", `<button class="option-btn" onclick="deleteConv('${id}')">🧹 Vider</button><button class="option-btn" onclick="blockContact('${id}')">🚫 Bloquer</button>`, null); document.getElementById('modalActions').style.display = 'none'; }
-    function deleteConv(id) { db.ref('msgs/'+[user.id, id].sort().join('_')).remove().then(() => triggerBack()); }
-    function blockContact(id) { db.ref(`users/${user.id}/blocked/${id}`).set(true); db.ref(`users/${user.id}/contacts/${id}`).remove(); triggerBack(); }
-    function openEdit(field, isDate = false) { openModal("Modifier", `<input type="${isDate?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { let val = isDate ? new Date(v).getTime() : v; db.ref('users/'+user.id).update({[field]:val}).then(() => { user[field]=val; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
-    
-    function handlePfp(e) { 
-        const file = e.target.files[0];
-        if(!file) return;
-        const r = new FileReader(); 
-        r.onload = (ev) => {
-            db.ref('users/'+user.id).update({pfp:ev.target.result})
-            .then(() => {
-                user.pfp = ev.target.result;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            })
-            .catch(err => alert("Erreur : L'image est peut-être trop lourde."));
-        }; 
-        r.readAsDataURL(file); 
+    function openModal(t, b, a) {
+        document.getElementById('modalTitle').innerText = t;
+        document.getElementById('modalBody').innerHTML = b;
+        document.getElementById('customModal').style.display = 'flex';
+        pushState('modal');
+        document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput').value);
     }
 
     function loadTimer() {
         if(!user.startDate) return;
-        setInterval(() => {
-            const diff = new Date() - new Date(user.startDate);
+        const update = () => {
+            const diff = Date.now() - new Date(user.startDate).getTime();
             document.getElementById('d-day').innerText = Math.floor(diff / 86400000);
-            document.getElementById('d-hour').innerText = Math.floor((diff / 3600000) % 24);
-        }, 1000);
+            document.getElementById('d-hour').innerText = Math.floor((diff % 86400000) / 3600000);
+        };
+        update(); setInterval(update, 60000);
     }
 
+    function viewPhoto(b64) { openModal("Photo", `<img src="${b64}" style="width:100%; border-radius:15px;">`, () => triggerBack()); }
+    function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { db.ref('users/'+user.id).update({[f]:v}).then(()=>{ user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
+    function handleWall(e) { const r=new FileReader(); r.onload=(ev)=>{ db.ref('users/'+user.id).update({wall:ev.target.result}).then(()=>{ location.reload(); }); }; r.readAsDataURL(e.target.files[0]); }
+    function changeWall() { document.getElementById('wallInput').click(); }
     function logout() { localStorage.clear(); location.reload(); }
 
-    window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; } };
+    window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display='none'; document.getElementById('authLayer').style.display='flex'; } };
 </script>
 </body>
-</html>
+</html
