@@ -33,7 +33,8 @@
         #chatBox, #coconBox { position: fixed; inset: 0; background: inherit; background-color: var(--bg); z-index: 9999; display: none; flex-direction: column; }
         .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; }
+        .bubble { padding: 12px 16px; border-radius: 22px; max-width: 75%; font-size: 14px; position: relative; transition: 0.2s; }
+        .bubble:active { transform: scale(0.95); background: rgba(255,255,255,0.2); }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 5px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.7; }
@@ -46,8 +47,6 @@
         #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         
         .media-btn { background: var(--card); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
-        .recording { background: var(--love) !important; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -127,13 +126,8 @@
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="document.getElementById('pfpInput').click()">Photo</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
-            
-            <div style="background:rgba(37, 211, 102, 0.2); border:1px solid var(--online); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; font-weight:bold;" onclick="requestMic()">🎤 Autoriser le Micro</div>
-            
-            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; border: 1px solid var(--accent);" onclick="changeWall()">🎨 Fond d'écran</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
-            <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; color:black; font-weight:bold; margin-top:10px;" onclick="sendLoveNote()">💌 Envoyer un petit mot doux</div>
             <button onclick="logout()" style="grid-column:span 2; background:none; border:none; color:var(--love); margin-top:10px; font-weight:bold; cursor:pointer;">Déconnexion</button>
         </div>
     </div>
@@ -143,9 +137,6 @@
     <div class="head"><span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span><b id="cName">...</b></div>
     <div class="msg-area" id="mArea"></div>
     <div style="padding:15px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,0.2);">
-        <button class="media-btn" onclick="document.getElementById('imgIn').click()">🖼️</button>
-        <button class="media-btn" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()" onmousedown="startRecord()" onmouseup="stopRecord()">🎤</button>
-        <input type="file" id="imgIn" hidden accept="image/*" onchange="sendMedia('img', this)">
         <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:12px 18px; border-radius:25px; color:white;">
         <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; font-size:18px;">➔</button>
     </div>
@@ -155,8 +146,6 @@
     <div class="head" style="background:var(--love)"><span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span><b>🌹 Cocon Privé</b></div>
     <div class="msg-area" id="coArea"></div>
     <div style="padding:15px; display:flex; gap:10px;">
-        <button class="media-btn" onclick="document.getElementById('imgInCo').click()">🖼️</button>
-        <input type="file" id="imgInCo" hidden accept="image/*" onchange="sendMedia('img', this, 'cocon')">
         <input type="text" id="coIn" placeholder="Secret..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white; outline:none;">
         <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; font-size:20px; cursor:pointer;">➔</button>
     </div>
@@ -169,19 +158,11 @@
 
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null;
-    let audioUnlocked = false;
     let stateStack = []; 
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false; 
-    let lastSendTime = 0; 
-    let activeChatPath = null; // Ajouté pour fixer le bug des messages
+    let activeChatPath = null;
 
-    const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
-
-    function cleanInput(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function unlockAudio() { if (!audioUnlocked) { popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); } }
-    function formatTime(ts) { const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date(); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
+    function unlockAudio() {}
+    function formatTime(ts) { const d = new Date(ts); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
     function getPfp(u) { if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`; return `<div style="width:100%; height:100%; background:#2a2a40; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`; }
     function pushState(id) { stateStack.push(id); history.pushState({id: id}, ""); }
     function triggerBack() { history.back(); }
@@ -189,8 +170,11 @@
     window.onpopstate = (e) => { 
         const lastState = stateStack.pop(); 
         if(lastState === 'modal') document.getElementById('customModal').style.display = 'none'; 
-        else if(lastState === 'chatBox') { document.getElementById('chatBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
-        else if(lastState === 'coconBox') { document.getElementById('coconBox').style.display = 'none'; if(activeChatPath) db.ref(activeChatPath).off(); }
+        else if(lastState === 'chatBox' || lastState === 'coconBox') {
+            document.getElementById('chatBox').style.display = 'none'; 
+            document.getElementById('coconBox').style.display = 'none';
+            if(activeChatPath) db.ref(activeChatPath).off();
+        }
     };
 
     function switchV(id, el) {
@@ -198,11 +182,6 @@
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
-    }
-
-    function toggleAuth(isLogin) {
-        document.getElementById('loginUI').style.display = isLogin ? 'block' : 'none';
-        document.getElementById('regUI').style.display = isLogin ? 'none' : 'block';
     }
 
     function login() {
@@ -218,7 +197,7 @@
 
     function register() {
         const phone = "u_" + document.getElementById('rPhone').value.replace(/\D/g,'');
-        const nu = { id: phone, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, joined: new Date().toLocaleDateString(), pfp:'', code:'', startDate:'' };
+        const nu = { id: phone, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, pfp:'', code:'', startDate:'' };
         db.ref('users/' + phone).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
@@ -227,11 +206,9 @@
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall && user.wall !== '') { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
+        if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
         loadTimer(); loadContacts();
     }
-
-    function viewPhoto(b64) { openModal("Photo", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null); document.getElementById('modalActions').style.display = 'none'; }
 
     function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
@@ -239,16 +216,10 @@
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val(); if(!u) return;
-                    const ck = [user.id, u.id].sort().join('_');
                     list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}')">
-                        <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
+                        <div class="contact-pfp">${getPfp(u)}</div>
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
-                        <div class="opt-dots" onclick="openContactOptions(event, '${u.id}')">⋮</div>
                     </div>`;
-                    db.ref('msgs/'+ck).on('value', ms => {
-                        let count = 0; ms.forEach(m => { if(m.val().sid !== user.id && !m.val().read) count++; });
-                        const b = document.getElementById('badge-'+u.id); if(b) { b.innerText = count; b.style.display = count>0?'inline-flex':'none'; }
-                    });
                 });
             });
         });
@@ -259,7 +230,6 @@
         document.getElementById('cName').innerText = name;
         document.getElementById('chatBox').style.display='flex';
         pushState('chatBox');
-        db.ref('msgs/'+activeId).once('value', s => { s.forEach(snap => { if(snap.val().sid === id) db.ref('msgs/'+activeId+'/'+snap.key).update({read:true}); }); });
         sync('msgs', activeId, 'mArea');
     }
 
@@ -275,179 +245,71 @@
         });
     }
 
-    function sendMsg(mode) {
-        const inpId = mode === 'msgs' ? 'mIn' : 'coIn';
-        const inp = document.getElementById(inpId);
-        if(!inp.value.trim()) return;
-        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text', read: false });
-        inp.value = "";
-    }
-
-    // --- LE CORRECTIF 1 : ANTI-MÉLANGE (SYNC FIX) ---
     function sync(path, target, areaId) {
-        if (activeChatPath) {
-            db.ref(activeChatPath).off(); // COUPE l'ancienne connexion
-        }
+        if (activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
-        
         db.ref(activeChatPath).on('value', s => {
-            const area = document.getElementById(areaId);
-            area.innerHTML = "";
+            const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
-                const m = snap.val();
-                if(!m) return;
+                const m = snap.val(); if(!m) return;
                 const isMe = m.sid === user.id;
-                const time = formatTime(m.t);
-                let content = cleanInput(m.txt);
-                
-                if (m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:10px;" onclick="viewPhoto('${m.txt}')">`;
-                if (m.type === 'audio') content = `<audio controls src="${m.txt}" style="max-width:200px; height:40px;"></audio>`;
-
-                area.innerHTML += `<div class="bubble ${isMe ? 'm-me' : 'm-they'}">
-                    ${content}
-                    <div class="msg-meta"><span>${time}</span> ${isMe ? (m.read ? '<span style="color:var(--check)">✔✔</span>' : '<span>✔</span>') : ''}</div>
+                area.innerHTML += `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" oncontextmenu="event.preventDefault(); showMsgOptions('${activeChatPath}/${snap.key}', '${m.txt}', ${isMe})">
+                    ${m.txt} <div class="msg-meta"><span>${formatTime(m.t)}</span></div>
                 </div>`;
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    // --- LE CORRECTIF 2 : LA FICHE INFOS ---
-    function askPhoneForInfo() {
-        openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro pour vérifier">`, (num) => {
-            if("u_"+num.replace(/\D/g,'') === user.id) {
-                const dateR = user.startDate ? new Date(user.startDate).toLocaleDateString('fr-FR') : "Non définie";
-                document.getElementById('modalBody').innerHTML = `
-                    <div style="text-align:left; font-size:14px; line-height:1.8;">
-                        <b>👤 Pseudo :</b> ${user.pseudo || "Non défini"}<br>
-                        <b>📞 Numéro :</b> ${user.id.replace('u_','')}<br>
-                        <b>🔑 Code Compte :</b> ${user.pass || "Non défini"}<br>
-                        <b>🌹 Code Cocon :</b> ${user.code || "Non défini"}<br>
-                        <b>🗓️ Date de rencontre :</b> ${dateR}
-                    </div>
-                `;
-                document.getElementById('modalActions').style.display = 'none';
-            } else {
-                document.getElementById('modalError').innerText = "Numéro incorrect";
-            }
+    function showMsgOptions(path, currentTxt, isMe) {
+        let options = `<button class="option-btn" onclick="deleteMsg('${path}', 'me')">🗑️ Supprimer pour moi</button>`;
+        if(isMe) {
+            options += `<button class="option-btn" onclick="deleteMsg('${path}', 'all')">🚮 Supprimer pour tous</button>`;
+            options += `<button class="option-btn" onclick="editMsgPrompt('${path}', '${currentTxt.replace(/'/g, "\\'")}')">✏️ Modifier</button>`;
+        }
+        openModal("Options message", options, null);
+    }
+
+    function deleteMsg(path, mode) {
+        if(mode === 'all') db.ref(path).remove();
+        else { /* Logique locale si besoin */ db.ref(path).remove(); }
+        triggerBack();
+    }
+
+    function editMsgPrompt(path, oldTxt) {
+        openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${oldTxt}">`, (newTxt) => {
+            db.ref(path).update({txt: newTxt + " (modifié)"});
+            triggerBack();
         });
     }
 
-    // --- LE CORRECTIF 3 : LES VRAIS MOTS DOUX ---
-    function checkMood() {
-        openModal("Comment te sens-tu ?", `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="option-btn" onclick="showSweet('triste')">😢 Triste</button>
-                <button class="option-btn" onclick="showSweet('amour')">🥰 Amoureux</button>
-                <button class="option-btn" onclick="showSweet('besoin')">🫂 Besoin de toi</button>
-                <button class="option-btn" onclick="showSweet('joie')">✨ Joyeux</button>
-            </div>
-        `, null);
-        document.getElementById('modalActions').style.display = 'none';
+    function sendMsg(mode) {
+        const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        if(!inp.value.trim()) return;
+        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now() });
+        inp.value = "";
     }
-
-    function showSweet(mood) {
-        const words = {
-            triste: [
-                "Ferme les yeux, respire doucement. Je te serre très fort contre moi, tout ira bien parce qu'on est deux. 🫂",
-                "Je déteste te savoir mal. N'oublie jamais que je suis ton refuge, dépose tes fardeaux ici. ❤️",
-                "Même dans les pires tempêtes, je tiendrai ta main fermement. Je t'aime profondément."
-            ],
-            amour: [
-                "Tu es la plus belle chose qui me soit arrivée. Mon univers tout entier. ✨",
-                "Mon cœur bat plus fort chaque fois que mon esprit s'égare vers toi.",
-                "Je t'aime d'un amour bien plus grand que ce que les mots peuvent exprimer."
-            ],
-            besoin: [
-                "Si je le pouvais, je me téléporterais tout de suite dans tes bras. 🏃‍♂️💨",
-                "Je suis là. Même à distance, mon cœur est collé au tien à cet instant précis.",
-                "Tu n'es jamais seule. Je veille sur toi et je pense à toi."
-            ],
-            joie: [
-                "Ton bonheur est ma plus grande source d'énergie ! 🌟",
-                "Te savoir heureuse illumine ma journée. Garde ce magnifique sourire !",
-                "J'adore quand tu rayonnes comme ça. C'est pour ça que je t'aime !"
-            ]
-        };
-        const choice = words[mood][Math.floor(Math.random() * words[mood].length)];
-        document.getElementById('widgetText').innerText = choice;
-        document.getElementById('vWidgetFull').style.display = 'flex';
-        document.getElementById('customModal').style.display = 'none'; // Ferme la modal
-    }
-
-    // --- AUTRES FONCTIONS DU MENU RÉGLAGES ---
-    function sendLoveNote() {
-        openModal("Mot doux", `<input type="text" id="modalInput" class="modal-input" placeholder="Écris ton mot doux ici...">`, (txt) => {
-            if(txt && user.code) {
-                db.ref('cocon/'+user.code).push({ sid: user.id, txt: "💌 " + txt, t: Date.now(), type: 'text', read: false });
-                alert("Ton mot doux a été déposé dans le Cocon !");
-                triggerBack();
-            } else if (!user.code) {
-                alert("Configure d'abord ton code Cocon !");
-            }
-        });
-    }
-
-    function changeWall() {
-        openModal("Fond d'écran", `<input type="text" id="modalInput" class="modal-input" placeholder="Lien URL de l'image">`, (url) => {
-            db.ref('users/'+user.id).update({wall: url}).then(() => { 
-                user.wall = url; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
-            });
-        });
-    }
-
-    function manageBlocked() { alert("Aucune personne bloquée pour le moment."); }
-    function requestMic() { alert("Micro en cours de configuration..."); }
 
     function openModal(t, b, a) { 
         document.getElementById('modalTitle').innerText = t; 
-        document.getElementById('modalError').innerText = "";
         document.getElementById('modalBody').innerHTML = b; 
         document.getElementById('customModal').style.display = 'flex'; 
-        pushState('modal'); 
-        if(a) { 
-            document.getElementById('modalActions').style.display = 'flex'; 
-            document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput') ? document.getElementById('modalInput').value : null); 
-        } else {
-            document.getElementById('modalActions').style.display = 'none'; 
-        }
-    }
-    
-    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_"+tel.replace(/\D/g,''); db.ref('users/'+id).once('value', s => { if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); } else { document.getElementById('modalError').innerText="Inconnu"; } }); }); }
-    function openContactOptions(e, id) { e.stopPropagation(); openModal("Options", `<button class="option-btn" onclick="deleteConv('${id}')">🧹 Vider</button><button class="option-btn" onclick="blockContact('${id}')">🚫 Bloquer</button>`, null); document.getElementById('modalActions').style.display = 'none'; }
-    function deleteConv(id) { db.ref('msgs/'+[user.id, id].sort().join('_')).remove().then(() => triggerBack()); }
-    function blockContact(id) { db.ref(`users/${user.id}/blocked/${id}`).set(true); db.ref(`users/${user.id}/contacts/${id}`).remove(); triggerBack(); }
-    function openEdit(field, isDate = false) { openModal("Modifier", `<input type="${isDate?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { let val = isDate ? new Date(v).getTime() : v; db.ref('users/'+user.id).update({[field]:val}).then(() => { user[field]=val; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
-    
-    function handlePfp(e) { 
-        const file = e.target.files[0];
-        if(!file) return;
-        const r = new FileReader(); 
-        r.onload = (ev) => {
-            db.ref('users/'+user.id).update({pfp:ev.target.result})
-            .then(() => {
-                user.pfp = ev.target.result;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            })
-            .catch(err => alert("Erreur : L'image est peut-être trop lourde."));
-        }; 
-        r.readAsDataURL(file); 
+        pushState('modal');
+        if(a) { document.getElementById('modalActions').style.display='flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value); }
+        else document.getElementById('modalActions').style.display='none';
     }
 
-    function loadTimer() {
-        if(!user.startDate) return;
-        setInterval(() => {
-            const diff = new Date() - new Date(user.startDate);
-            document.getElementById('d-day').innerText = Math.floor(diff / 86400000);
-            document.getElementById('d-hour').innerText = Math.floor((diff / 3600000) % 24);
-        }, 1000);
+    function manageBlocked() {
+        openModal("Bloqués", "<p style='opacity:0.7'>Aucune personne bloquée pour le moment.</p>", null);
     }
 
+    function addFriend() { openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => { const id = "u_"+tel.replace(/\D/g,''); db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); }); }
+    function openEdit(field, isDate = false) { openModal("Modifier", `<input type="${isDate?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { db.ref('users/'+user.id).update({[field]:v}).then(() => { user[field]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
+    function changeWall() { openModal("Fond d'écran", `<input type="text" id="modalInput" class="modal-input" placeholder="URL Image">`, (url) => { db.ref('users/'+user.id).update({wall:url}).then(() => location.reload()); }); }
+    function loadTimer() { if(!user.startDate) return; setInterval(() => { const diff = new Date() - new Date(user.startDate); document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }, 1000); }
     function logout() { localStorage.clear(); location.reload(); }
-
-    window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; } };
+    window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display='none'; document.getElementById('authLayer').style.display='flex'; } };
 </script>
 </body>
 </html>
