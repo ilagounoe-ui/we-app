@@ -125,7 +125,7 @@
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px;">Pseudo</h2>
-            <div id="globalStatus" style="fo'value'alue'-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
+            <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
@@ -297,7 +297,240 @@
         if(activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
         
-        db.ref(activeChatPath).on('user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        db.ref(activeChatPath).on('value', s  => {
+            const area = document.getElementById(areaId);
+            area.innerHTML = "";
+            s.forEach(snap => {
+                const m = snap.val();
+                const isMe = m.sid === user.id;
+                
+                // Marquer comme vu
+                if(!isMe && !m.seen) {
+                    db.ref(activeChatPath + '/' + snap.key).update({ seen: true });
+                    if(document.hidden) triggerNotification(m);
+                }
+
+                let content = m.txt;
+                if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;" onclick="viewPhoto('${m.txt}')">`;
+                if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
+
+                const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
+                area.innerHTML += `
+                    <div class="bubble ${isMe ? 'm-me' : 'm-they'}">
+                        ${content}
+                        <div class="msg-meta">
+                            <span>${time}</span>
+                            ${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}
+                        </div>
+                    </div>`;
+            });
+            area.scrollTop = area.scrollHeight;
+        });
+    }
+
+    function sendMsg(mode) {
+        const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        const text = inp.value.trim();
+        if(!text) return;
+        
+        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+        db.ref(path).push({
+            sid: user.id,
+            txt: text,
+            t: Date.now(),
+            type: 'text',
+            seen: false
+        });
+        
+        inp.value = "";
+        if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
+    }
+
+    // --- FONCTIONNALITÉS AVANCÉES ---
+    function handleTyping() {
+        if(!activeId) return;
+        db.ref('typing/'+activeId+'/'+user.id).set(true);
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000);
+    }
+
+    function watchStatus(id) {
+        db.ref('presence/' + id).on('value', s => {
+            const p = s.val(), el = document.getElementById('cStatus');
+            if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
+            else if(p) {
+                const min = Math.floor((Date.now()-p.last)/60000);
+                el.innerText = min < 1 ? "vu à l'instant" : "vu il y a " + (min < 60 ? min+"m" : Math.floor(min/60)+"h");
+            } else el.innerText = "hors-ligne";
+        });
+        
+        db.ref('typing/'+activeId+'/'+id).on('value', s => {
+            document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none';
+        });
+    }
+
+    function openMoodSelector() {
+        const box = document.getElementById('moodOptions');
+        box.innerHTML = "";
+        Object.keys(moodLibrary).forEach(m => {
+            box.innerHTML += `<button class="mood-btn option-btn" onclick="showMoodMessage('${m}')">${m}</button>`;
+        });
+        document.getElementById('widgetText').innerText = "Comment te sens-tu aujourd'hui ?";
+        document.getElementById('vWidgetFull').style.display = "flex";
+    }
+
+    function showMoodMessage(mood) {
+        const choices = moodLibrary[mood];
+        const msg = choices[Math.floor(Math.random() * choices.length)];
+        document.getElementById('widgetText').innerText = msg;
+    }
+
+    function openContactOptions() {
+        const html = `
+            <button class="option-btn" onclick="viewPeerPhoto()">🖼️ Voir la photo</button>
+            <button class="option-btn" onclick="deleteContact()" style="color:var(--love)">🗑️ Supprimer le contact</button>
+            <button class="option-btn" onclick="triggerBack()">🚫 Bloquer</button>
+        `;
+        openModal("Options", html, null);
+    }
+
+    function deleteContact() {
+        if(confirm("Supprimer ce contact ?")) {
+            db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
+            triggerBack(); 
+            triggerBack();
+        }
+    }
+
+    // --- TOOLS & AUTH ---
+    function uploadFile(input, mode) {
+        const file = input.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = e.target.result;
+            if(mode === 'pfp') {
+                db.ref('users/'+user.id).update({ pfp: data });
+                user.pfp = data;
+                localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`;
+                alert("Photo mise à jour !");
+            } else {
+                db.ref('msgs/'+activeId).push({ sid: user.id, txt: data, t: Date.now(), type: 'img', seen: false });
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function openModal(t, b, a) {
+        document.getElementById('modalTitle').innerText = t;
+        document.getElementById('modalBody').innerHTML = b;
+        document.getElementById('customModal').style.display = 'flex';
+        pushState('modal');
+        if(a) {
+            document.getElementById('modalActions').style.display = 'flex';
+            document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value);
+        } else document.getElementById('modalActions').style.display = 'none';
+    }
+
+    function updateTimeCounter() {
+        if(!user.startDate) return;
+        setInterval(() => {
+            const diff = new Date() - new Date(user.startDate);
+            document.getElementById('d-day').innerText = Math.floor(diff/86400000);
+            document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
+        }, 1000);
+    }
+
+    function updatePresence() {
+        const ref = db.ref('presence/' + user.id);
+        ref.set({ status: 'online', last: Date.now() });
+        ref.onDisconnect().set({ status: 'offline', last: Date.now() });
+    }
+
+    function loadContacts() {
+        db.ref('users/'+user.id+'/contacts').on('value', s => {
+            const list = document.getElementById('chatList');
+            list.innerHTML = "";
+            if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact pour le moment.</p>";
+            s.forEach(snap => {
+                db.ref('users/'+snap.key).once('value', us => {
+                    const u = us.val();
+                    if(!u) return;
+                    list.innerHTML += `
+                        <div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')">
+                            <div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div>
+                            <div style="flex:1">
+                                <b>${u.pseudo}</b><br>
+                                <small style="opacity:0.6">Appuyer pour discuter</small>
+                            </div>
+                            <div class="opt-dots">›</div>
+                        </div>`;
+                });
+            });
+        });
+    }
+
+    function addFriend() {
+        openModal("Ajouter un contact", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro sans le u_">`, (tel) => {
+            const id = "u_" + tel.replace(/\D/g,'');
+            if(id === user.id) return alert("C'est vous !");
+            db.ref('users/'+id).once('value', s => {
+                if(s.exists()) {
+                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
+                    db.ref(`users/${id}/contacts/${user.id}`).set(true);
+                    triggerBack();
+                } else alert("Utilisateur introuvable");
+            });
+        });
+    }
+
+    function askCoconCode() {
+        openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
+            if(val === user.code) {
+                document.getElementById('modalFrame').classList.add('unlocking');
+                setTimeout(() => {
+                    document.getElementById('customModal').style.display = 'none';
+                    stateStack.pop();
+                    document.getElementById('coconBox').style.display = 'flex';
+                    pushState('coconBox');
+                    syncMessages('cocon', user.code, 'coArea');
+                    document.getElementById('modalFrame').classList.remove('unlocking');
+                }, 800);
+            } else alert("Code incorrect...");
+        });
+    }
+
+    // --- AUDIO RECORDING ---
+    function startRecord() {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            document.getElementById('micBtn').classList.add('recording');
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        }).catch(() => alert("Micro non autorisé"));
+    }
+    
+    function stopRecord() {
+        if(!mediaRecorder || mediaRecorder.state === "inactive") return;
+        mediaRecorder.stop();
+        document.getElementById('micBtn').classList.remove('recording');
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const reader = new FileReader();
+            reader.onload = (e) => db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: 'audio', seen: false });
+            reader.readAsDataURL(blob);
+        };
+    }
+
+    // --- AUTH & MISC ---
+    function login() {
+        const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,'');
+        const ps = document.getElementById('lPass').value;
+        db.ref('users/'+ph).once('value', s => {
+            if(s.exists() && s.val().pass === ps) {
+                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user));
                 location.reload();
             } else alert("Identifiants incorrects");
         });
@@ -352,3 +585,4 @@
 </script>
 </body>
 </html>
+                                  
