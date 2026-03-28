@@ -33,14 +33,6 @@
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
         .recording { animation: pulse 0.8s infinite; background: var(--love) !important; }
 
-        /* Animation Scintillement Onglet */
-        @keyframes scintiller {
-            0% { background: var(--card); }
-            50% { background: var(--love); box-shadow: 0 0 15px var(--love); }
-            100% { background: var(--card); }
-        }
-        .tab-notif { animation: scintiller 1s infinite !important; border: 1px solid white !important; }
-
         /* --- Layout --- */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -84,13 +76,6 @@
         
         /* --- Auth --- */
         #authLayer { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
-
-        /* Carte Alerte Cocon */
-        #coconAlertCard {
-            display: none; background: rgba(255, 75, 110, 0.15); border: 1px solid var(--love);
-            padding: 20px; border-radius: 30px; margin-bottom: 20px; text-align: center;
-            backdrop-filter: blur(10px); animation: pulse 2s infinite;
-        }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -140,11 +125,11 @@
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px;">Pseudo</h2>
-            <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
+            <div id="globalStatus" style="fo'value'alue'-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
-            <div class="tab" id="tabCocon" onclick="switchV('vCocon', this)">Le Cocon 🌹</div>
+            <div class="tab" onclick="switchV('vCocon', this)">Le Cocon 🌹</div>
             <div class="tab" onclick="switchV('vSet', this)">Réglages</div>
         </div>
     </header>
@@ -155,12 +140,6 @@
     </div>
 
     <div id="vCocon" class="view">
-        <div id="coconAlertCard">
-            <small style="color:var(--love); font-weight:bold;">✨ Message Secret Reçu ✨</small>
-            <p id="coconPreview" style="margin:10px 0; font-size:16px; font-style:italic;">...</p>
-            <button onclick="this.parentElement.style.display='none'" style="background:var(--love); border:none; color:white; padding:5px 15px; border-radius:15px; font-size:12px;">Fermer</button>
-        </div>
-
         <div style="background:var(--gradient); padding:35px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 10px 30px rgba(106,17,203,0.3);">
             <div style="font-size:50px; margin-bottom:10px;">♾️</div>
             <h3 style="margin:0; font-family:'Pacifico';">Notre Éternité</h3>
@@ -243,7 +222,15 @@
         "Fatigué(e) 😴": ["Repose-toi mon amour, tu as bien travaillé.", "Dors bien, je veille sur tes rêves. 🌙"]
     };
 
-    window.onload = () => { if(user) setupApp(); else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; } };
+    // --- INITIALISATION ---
+    window.onload = () => {
+        if(user) {
+            setupApp();
+        } else {
+            document.getElementById('splash').style.display = 'none';
+            document.getElementById('authLayer').style.display = 'flex';
+        }
+    };
 
     function setupApp() {
         document.getElementById('splash').style.display = 'none';
@@ -251,142 +238,117 @@
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         
-        // --- PRÉSENCE RÉELLE (Instant) ---
-        const myPresence = db.ref('presence/' + user.id);
-        db.ref('.info/connected').on('value', snap => {
-            if(snap.val() === false) return;
-            myPresence.onDisconnect().set({ s: 'offline', t: firebase.database.ServerValue.TIMESTAMP });
-            myPresence.set({ s: 'online', t: firebase.database.ServerValue.TIMESTAMP });
-        });
-
-        // --- ALERTE COCON INSTANTANÉE ---
-        db.ref('cocon/' + user.code).limitToLast(1).on('child_added', snap => {
-            const m = snap.val();
-            if(m && m.sid !== user.id) {
-                document.getElementById('tabCocon').classList.add('tab-notif');
-                document.getElementById('coconAlertCard').style.display = 'block';
-                document.getElementById('coconPreview').innerText = m.txt;
-                if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
-            }
-        });
-
+        updatePresence();
         loadContacts();
         updateTimeCounter();
         initNotifications();
         
         if(user.pfp) {
+            document.getElementById('myPfpDisp')?.classList.add('has-img');
+            document.getElementById('myPfpDisp').innerHTML = `<img src="${user.pfp}">`;
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
         }
     }
 
-    function watchStatus(id) {
-        db.ref('presence/' + id).on('value', snap => {
-            const data = snap.val();
-            const el = document.getElementById('cStatus');
-            if(!data) return el.innerText = "chargement...";
-            if(data.s === 'online') { el.innerText = "en ligne"; el.style.color = "var(--online)"; }
-            else { 
-                const date = new Date(data.t);
-                const hrs = date.getHours().toString().padStart(2,'0');
-                const mins = date.getMinutes().toString().padStart(2,'0');
-                el.innerText = `en ligne il y a ${hrs}:${mins}`; 
-                el.style.color = "white"; 
-            }
-        });
-    }
-
-    function syncMessages(path, target, areaId) {
-        if(activeChatPath) db.ref(activeChatPath).off();
-        activeChatPath = path + '/' + target;
-        const area = document.getElementById(areaId); area.innerHTML = "";
-        
-        db.ref(activeChatPath).on('child_added', snap => {
-            const m = snap.val(); const isMe = m.sid === user.id;
-            const bubble = document.createElement('div');
-            bubble.className = `bubble ${isMe ? 'm-me' : 'm-they'}`;
-            let content = m.type === 'img' ? `<img src="${m.txt}" style="width:100%; border-radius:15px;" onclick="viewPhoto('${m.txt}')">` : 
-                          m.type === 'audio' ? `<audio controls src="${m.txt}" style="width:100%"></audio>` : m.txt;
-            bubble.innerHTML = `${content}<div class="msg-meta">${new Date(m.t).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} ${isMe?(m.seen?'✓✓':'✓'):''}</div>`;
-            area.appendChild(bubble);
-            area.scrollTop = area.scrollHeight;
-            if(!isMe && !m.seen) db.ref(activeChatPath+'/'+snap.key).update({seen:true});
-        });
-    }
-
-    function sendMsg(mode) {
-        const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
-        if(!inp.value.trim()) return;
-        db.ref(mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code).push({ 
-            sid: user.id, txt: inp.value, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false 
-        });
-        inp.value = "";
-    }
-
     // --- NAVIGATION ---
+    function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
+    window.onpopstate = () => {
+        const last = stateStack.pop();
+        if(last === 'modal') document.getElementById('customModal').style.display = 'none';
+        else if(last === 'chatBox' || last === 'coconBox') {
+            closeChat();
+        }
+    };
+
+    function triggerBack() { history.back(); }
+
     function switchV(id, el) {
-        if(id === 'vCocon') document.getElementById('tabCocon').classList.remove('tab-notif');
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         el.classList.add('active');
     }
 
+    // --- MESSAGERIE CORE ---
     function openChat(id, name, pfp) {
-        currentPeerId = id; activeId = [user.id, id].sort().join('_');
+        currentPeerId = id;
+        activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
         document.getElementById('chatBox').style.display = 'flex';
-        pushState('chatBox'); watchStatus(id); syncMessages('msgs', activeId, 'mArea');
+        if(user.wall) document.getElementById('chatBox').style.backgroundImage = `url(${user.wall})`;
+        
+        pushState('chatBox');
+        watchStatus(id);
+        syncMessages('msgs', activeId, 'mArea');
     }
 
-    function triggerBack() { history.back(); }
-    function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
-    window.onpopstate = () => {
-        const last = stateStack.pop();
-        if(last === 'modal') document.getElementById('customModal').style.display = 'none';
-        else { document.getElementById('chatBox').style.display = 'none'; document.getElementById('coconBox').style.display = 'none'; }
-    };
+    function closeChat() {
+        if(activeChatPath) db.ref(activeChatPath).off();
+        if(currentPeerId) {
+            db.ref('presence/'+currentPeerId).off();
+            db.ref('typing/'+activeId+'/'+currentPeerId).off();
+        }
+        document.getElementById('chatBox').style.display = 'none';
+        document.getElementById('coconBox').style.display = 'none';
+    }
 
-    // --- AUTRES FONCTIONS (Login, Register, PFP etc. inchangées) ---
-    function login() {
-        const id = "u_" + document.getElementById('lPhone').value;
-        db.ref('users/'+id).once('value', s => {
-            if(s.exists() && s.val().pass === document.getElementById('lPass').value) {
-                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload();
-            } else alert("Erreur");
+    function syncMessages(path, target, areaId) {
+        if(activeChatPath) db.ref(activeChatPath).off();
+        activeChatPath = path + '/' + target;
+        
+        db.ref(activeChatPath).on('user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user));
+                location.reload();
+            } else alert("Identifiants incorrects");
         });
     }
+
     function register() {
-        const id = "u_" + document.getElementById('rPhone').value;
-        const nu = { id, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, code:'0000', startDate: new Date().toISOString() };
-        db.ref('users/'+id).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
-    }
-    function loadContacts() {
-        db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList'); list.innerHTML = "";
-            s.forEach(snap => {
-                db.ref('users/'+snap.key).once('value', us => {
-                    const u = us.val();
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp?`<img src="${u.pfp}">`:u.pseudo[0]}</div><div><b>${u.pseudo}</b></div></div>`;
-                });
-            });
+        const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,'');
+        const pseudo = document.getElementById('rPseudo').value;
+        if(!pseudo || ph.length < 5) return alert("Infos incomplètes");
+        const nu = { id: ph, pseudo, pass: document.getElementById('rPass').value, pfp:'', code:'0000', startDate: new Date().toISOString(), wall:'' };
+        db.ref('users/'+ph).set(nu).then(() => {
+            user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu));
+            location.reload();
         });
     }
-    function askCoconCode() {
-        openModal("Code", `<input type="password" id="modalInput" class="modal-input">`, (v) => {
-            if(v === user.code) { triggerBack(); document.getElementById('coconBox').style.display='flex'; pushState('coconBox'); syncMessages('cocon', user.code, 'coArea'); }
+
+    function logout() { if(confirm("Quitter l'Univers ?")) { localStorage.clear(); location.reload(); } }
+    function toggleAuth(isL) { 
+        document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; 
+        document.getElementById('regUI').style.display = isL ? 'none' : 'block'; 
+    }
+    function openEdit(f, d=false) { 
+        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
+            db.ref('users/'+user.id).update({[f]:v}).then(() => { 
+                user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
+            }); 
+        }); 
+    }
+    function sendGlobalNote() {
+        openModal("Note d'amour", `<input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
+            db.ref('globalNote').set({txt: v, sid: user.id});
+            triggerBack();
         });
     }
-    function openModal(t, b, a) {
-        document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b;
-        document.getElementById('customModal').style.display = 'flex'; pushState('modal');
-        document.getElementById('modalConfirmBtn').onclick = () => { if(a) a(document.getElementById('modalInput')?.value); else triggerBack(); };
+    function changeWall() {
+        openModal("Fond d'écran", `<input type="text" id="modalInput" class="modal-input" placeholder="URL de l'image">`, (v) => {
+            db.ref('users/'+user.id).update({wall: v});
+            user.wall = v;
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+            triggerBack();
+        });
     }
-    function updateTimeCounter() { if(!user.startDate) return; const diff = new Date() - new Date(user.startDate); document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }
-    function unlockAudio() { audioUnlocked = true; }
-    function logout() { localStorage.clear(); location.reload(); }
-    function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-    function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { db.ref('users/'+user.id).update({[f]:v}).then(() => { location.reload(); }); }); }
+    function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px;">`, null); }
+    function unlockAudio() { if(!audioUnlocked) { new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); } }
+    function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
+    function triggerNotification(m) { 
+        if(Notification.permission === "granted") {
+            new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu", icon: user.pfp });
+            new Audio(sounds.pop).play();
+        }
+    }
 </script>
 </body>
 </html>
