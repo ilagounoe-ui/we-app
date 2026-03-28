@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v47 - Édition Intégrale</title>
+    <title>Notre Univers v48 - L'Intégrale</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
     <style>
-        /* --- DESIGN GLOBAL SANS SIMPLIFICATION --- */
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
         :root { 
             --accent: #bb86fc; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08);
@@ -18,125 +17,81 @@
             --gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
         }
         
-        body { 
-            margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
-            height: 100vh; overflow: hidden; background-attachment: fixed;
-        }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; height: 100vh; overflow: hidden; }
 
-        /* --- ANIMATIONS COMPLEXES --- */
-        @keyframes scan { 0%, 100% { border-color: var(--accent); } 50% { border-color: var(--love); box-shadow: 0 0 25px var(--love); } }
-        .unlocking { animation: scan 0.5s infinite !important; }
-        
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
-        .recording { animation: pulse 0.7s infinite !important; background: var(--love) !important; box-shadow: 0 0 15px var(--love); }
-
+        /* Animations */
+        @keyframes scan { 0%, 100% { border-color: var(--accent); } 50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); } }
+        .unlocking { animation: scan 0.6s infinite !important; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); background: var(--love); } 100% { transform: scale(1); } }
+        .recording { animation: pulse 0.8s infinite !important; background: var(--love) !important; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader { width: 45px; height: 45px; border: 4px solid var(--card); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        /* --- LAYOUT & NAVIGATION --- */
+        /* Splash */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        .main-header { 
-            padding: 55px 20px 20px; background: rgba(15,12,41,0.95); backdrop-filter: blur(20px); 
-            position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); 
-        }
+        .loader { width: 50px; height: 50px; border: 4px solid var(--accent); border-top: transparent; border-radius: 50%; animation: spin 1s linear infinite; }
 
-        .tabs { display: flex; gap: 12px; margin-top: 25px; }
-        .tab { 
-            flex: 1; padding: 14px; text-align: center; border-radius: 22px; font-size: 13px; 
-            background: var(--card); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            border: 1px solid transparent; color: rgba(255,255,255,0.6);
-        }
-        .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); box-shadow: 0 5px 15px rgba(187,134,252,0.3); }
+        /* Header & Tabs */
+        .main-header { padding: 50px 20px 15px; background: rgba(15,12,41,0.95); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tabs { display: flex; gap: 10px; margin-top: 20px; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: 0.3s; color: rgba(255,255,255,0.6); }
+        .tab.active { background: var(--accent); color: #000; font-weight: 600; }
 
-        .view { display: none; padding: 25px; height: calc(100vh - 190px); overflow-y: auto; scroll-behavior: smooth; }
+        .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; }
         .view.active { display: block; }
 
-        /* --- ELEMENTS UI --- */
-        .contact-item { 
-            display: flex; align-items: center; padding: 18px; background: var(--card); 
-            border-radius: 28px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.03);
-            transition: 0.3s;
-        }
-        .contact-item:active { transform: scale(0.96); background: rgba(255,255,255,0.12); }
-
-        .pfp { 
-            width: 58px; height: 58px; border-radius: 50%; margin-right: 15px; 
-            background: #1e1e30; display: flex; align-items: center; justify-content: center; 
-            overflow: hidden; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0;
-        }
+        /* Contacts & PFP */
+        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 15px; transition: 0.2s; }
+        .contact-item:active { transform: scale(0.98); }
+        .pfp { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #2a2a40; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .pfp img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- MESSAGERIE --- */
+        /* Chat Windows */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; }
-        .chat-head { 
-            padding: 55px 20px 15px; display: flex; align-items: center; gap: 15px; 
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-        
-        .bubble { 
-            padding: 13px 18px; border-radius: 24px; max-width: 78%; font-size: 14.8px; 
-            position: relative; line-height: 1.5; box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-        }
+        .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+        .bubble { padding: 12px 18px; border-radius: 22px; max-width: 80%; font-size: 14.5px; position: relative; line-height: 1.4; }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
-        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
+        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         
-        /* --- MODALS & OPTIONS --- */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); backdrop-filter: blur(12px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
-        .modal-content { 
-            background: #16162a; width: 100%; max-width: 350px; padding: 35px; border-radius: 45px; 
-            border: 1px solid var(--accent); text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-        }
-        .option-btn { 
-            width: 100%; padding: 18px; margin-top: 12px; border-radius: 22px; border: none; 
-            background: rgba(255,255,255,0.06); color: white; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s;
-        }
-        .option-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.1); }
-        .modal-input { 
-            width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); 
-            padding: 18px; border-radius: 22px; color: white; margin: 15px 0; text-align: center; font-size: 16px;
-        }
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
+        .modal-content { background: #1a1a2e; width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid var(--accent); text-align: center; }
+        .option-btn { width: 100%; padding: 16px; margin-top: 10px; border-radius: 20px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; }
         
-        #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; padding:35px; text-align:center; }
+        #vWidgetFull { display:none; position:fixed; inset:0; background:var(--bg); z-index:30000; flex-direction:column; align-items:center; justify-content:center; padding:30px; }
     </style>
 </head>
 <body onmousedown="refreshPresence()" ontouchstart="refreshPresence()">
 
-<div id="splash">
-    <div class="loader"></div>
-    <p style="margin-top:20px; color:var(--accent); font-family:'Pacifico'; font-size:18px;">Chargement de l'Univers...</p>
-</div>
+<div id="splash"><div class="loader"></div></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:25px;">🌹 Note d'Amour</div>
-    <div id="widgetText" style="font-size:19px; color:white; background:var(--card); padding:30px; border-radius:35px; border:2px solid var(--love); width:100%; min-height:150px; display:flex; align-items:center; justify-content:center;">...</div>
-    <div id="moodGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:25px; width:100%;"></div>
-    <button onclick="document.getElementById('vWidgetFull').style.display='none'" class="option-btn" style="margin-top:30px; background:var(--card);">Retour</button>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:28px; margin-bottom:20px;">🌹 Note de l'Univers</div>
+    <div id="widgetText" style="font-size:18px; color:white; background:var(--card); padding:25px; border-radius:30px; border:1px solid var(--love); width:100%; min-height:100px; display:flex; align-items:center; justify-content:center;">...</div>
+    <div id="moodGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; width:100%;"></div>
+    <button onclick="document.getElementById('vWidgetFull').style.display='none'" class="option-btn">Fermer</button>
 </div>
 
 <div class="modal-overlay" id="customModal">
     <div class="modal-content" id="modalFrame">
-        <h3 id="modalTitle" style="font-family:'Pacifico'; color:var(--accent); font-size:24px; margin-bottom:15px;"></h3>
-        <div id="modalBody" style="font-size:14px; opacity:0.9;"></div>
-        <div style="display:flex; gap:12px; margin-top:25px;">
-            <button class="option-btn" style="flex:1" onclick="triggerBack()">Annuler</button>
-            <button class="option-btn" style="flex:1; background:var(--accent); color:black;" id="modalConfirmBtn">Valider</button>
+        <h3 id="modalTitle" style="font-family:'Pacifico'; color:var(--accent);"></h3>
+        <div id="modalBody"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="option-btn" onclick="triggerBack()">Retour</button>
+            <button class="option-btn" style="background:var(--accent); color:black;" id="modalConfirmBtn">OK</button>
         </div>
     </div>
 </div>
 
 <div id="authLayer" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:10000; align-items:center; justify-content:center; padding:30px;">
-    <div style="background:var(--card); padding:40px 30px; border-radius:45px; width:100%; max-width:380px; text-align:center; border:1px solid rgba(255,255,255,0.05);">
-        <div id="authBox">
-            <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:30px; margin-bottom:10px;">Notre Univers</h2>
-            <div id="loginForm">
-                <input type="tel" id="lPhone" class="modal-input" placeholder="Numéro de téléphone">
-                <input type="password" id="lPass" class="modal-input" placeholder="Mot de passe">
-                <button class="option-btn" style="background:var(--accent); color:black; margin-top:20px;" onclick="login()">SE CONNECTER</button>
-                <p onclick="toggleAuth(false)" style="margin-top:25px; font-size:13px; opacity:0.6;">Pas encore de compte ? Créer un Univers</p>
-            </div>
+    <div style="background:var(--card); padding:30px; border-radius:40px; width:100%; text-align:center;">
+        <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px;">Bienvenue</h2>
+        <div id="authContent">
+            <input type="tel" id="lPhone" class="modal-input" placeholder="Numéro">
+            <input type="password" id="lPass" class="modal-input" placeholder="Mot de passe">
+            <button class="option-btn" style="background:var(--accent); color:black;" onclick="login()">Se connecter</button>
+            <p onclick="showRegister()" style="margin-top:20px; font-size:12px; opacity:0.7;">Nouveau ? Créer un compte</p>
         </div>
     </div>
 </div>
@@ -144,227 +99,169 @@
 <div id="mainApp" style="display:none;">
     <header class="main-header">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-                <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:26px;">...</h2>
-                <div id="connectionStatus" style="font-size:10px; color:var(--online); margin-top:4px;">● Système Connecté</div>
-            </div>
-            <div id="myPfpDisp" class="pfp" style="width:45px; height:45px; margin:0; border:2px solid var(--accent);" onclick="switchV('vSet', document.querySelectorAll('.tab')[2])"></div>
+            <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent);">...</h2>
+            <div id="myPfpDisp" class="pfp" style="width:40px; height:40px; margin:0;" onclick="switchV('vSet', document.querySelectorAll('.tab')[2])"></div>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
-            <div class="tab" onclick="switchV('vCocon', this)">Le Cocon 🌹</div>
+            <div class="tab" onclick="switchV('vCocon', this)">Cocon 🌹</div>
             <div class="tab" onclick="switchV('vSet', this)">Réglages</div>
         </div>
     </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
-        <div style="position:fixed; bottom:35px; right:25px; width:65px; height:65px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-size:32px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);" onclick="addFriend()">+</div>
+        <div style="position:fixed; bottom:30px; right:25px; width:60px; height:60px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; color:black; font-size:30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);" onclick="addFriend()">+</div>
     </div>
 
     <div id="vCocon" class="view">
-        <div style="background:var(--gradient); padding:35px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 10px 30px rgba(106,17,203,0.3);">
-            <div style="font-size:45px; margin-bottom:10px;">♾️</div>
-            <h3 style="font-family:'Pacifico'; margin:0; font-size:22px;">Depuis le début...</h3>
-            <p id="timeCounter" style="font-size:22px; font-weight:600; margin:15px 0 0; letter-spacing:1px;"></p>
+        <div style="background:var(--gradient); padding:30px; border-radius:35px; text-align:center; margin-bottom:20px;">
+            <h3 style="font-family:'Pacifico'; margin:0;">Notre Éternité</h3>
+            <p id="timeCounter" style="font-size:20px; font-weight:bold; margin:10px 0 0;"></p>
         </div>
-        <button onclick="askCoconCode()" class="option-btn" style="border:2px dashed var(--love); color:var(--love); padding:30px; background:rgba(255,75,110,0.05);">
-            🌹 DÉVERROUILLER LE COCON
-        </button>
-        <button onclick="openMoodSelector()" class="option-btn" style="margin-top:20px; padding:20px;">
-            🌟 Comment te sens-tu ?
-        </button>
+        <button onclick="askCoconCode()" class="option-btn" style="border:2px dashed var(--love); color:var(--love); padding:25px; background:transparent;">🌹 DÉVERROUILLER LE COCON</button>
+        <button onclick="openMoodSelector()" class="option-btn" style="margin-top:15px;">🌟 J'ai besoin d'un mot doux</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpBig" class="pfp" style="width:130px; height:130px; margin:0 auto 30px; font-size:45px; border:4px solid var(--accent); box-shadow: 0 0 20px rgba(187,134,252,0.2);" onclick="document.getElementById('pfpIn').click()">👤</div>
+        <div id="pfpBig" class="pfp" style="width:120px; height:120px; margin:0 auto 20px; font-size:40px; border:3px solid var(--accent);" onclick="document.getElementById('pfpIn').click()">👤</div>
         <input type="file" id="pfpIn" hidden accept="image/*" onchange="uploadFile(this, 'pfp')">
         
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <button class="option-btn" onclick="openEdit('pseudo')">Pseudo</button>
             <button class="option-btn" onclick="openEdit('code')">Code Cocon</button>
-            <button class="option-btn" style="grid-column:span 2" onclick="openEdit('startDate', true)">📅 Date de notre rencontre</button>
-            <button class="option-btn" style="grid-column:span 2" onclick="openBlockedList()">🚫 Gérer les blocages</button>
-            <button class="option-btn" style="grid-column:span 2; margin-top:40px; color:var(--love); background:rgba(255,75,110,0.1);" onclick="logout()">Quitter l'Univers</button>
+            <button class="option-btn" style="grid-column:span 2" onclick="openEdit('startDate', true)">📅 Date de début</button>
+            <button class="option-btn" style="grid-column:span 2" onclick="openBlockedList()">🚫 Personnes bloquées</button>
+            <button class="option-btn" style="grid-column:span 2; color:var(--love); margin-top:20px;" onclick="logout()">Déconnexion</button>
         </div>
     </div>
 </div>
 
 <div id="chatBox">
     <div class="chat-head">
-        <span onclick="triggerBack()" style="font-size:28px; padding:5px 10px;">←</span>
-        <div class="pfp" id="cHeadPfp" style="width:48px; height:48px; margin:0"></div>
-        <div style="flex:1">
-            <b id="cName" style="font-size:17px;">...</b><br>
-            <small id="cStatus" style="font-size:11px; opacity:0.8;">chargement...</small>
-        </div>
-        <div style="font-size:24px; padding:10px;" onclick="openChatOptions()">⋮</div>
+        <span onclick="triggerBack()" style="font-size:25px; padding-right:10px;">←</span>
+        <div class="pfp" id="cHeadPfp" style="width:45px; height:45px; margin:0"></div>
+        <div style="flex:1"><b id="cName">...</b><br><small id="cStatus">...</small></div>
+        <div style="font-size:22px; padding:5px;" onclick="openChatOptions()">⋮</div>
     </div>
     <div class="msg-area" id="mArea"></div>
-    <div id="typingDisp" style="padding:0 25px 8px; font-size:11px; color:var(--accent); font-style:italic; display:none;">en train d'écrire...</div>
-    
-    <div style="padding:15px 20px 30px; display:flex; gap:12px; background:rgba(0,0,0,0.4); align-items:center; backdrop-filter:blur(10px);">
-        <button class="option-btn" style="width:50px; height:50px; border-radius:50%; margin:0; flex-shrink:0;" onclick="document.getElementById('imgIn').click()">🖼️</button>
-        <button class="option-btn" id="micBtn" style="width:50px; height:50px; border-radius:50%; margin:0; flex-shrink:0;">🎤</button>
+    <div id="typingDisp" style="padding:0 20px 5px; font-size:11px; color:var(--accent); display:none;">écrit...</div>
+    <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.2); align-items:center;">
+        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0;" onclick="document.getElementById('imgIn').click()">🖼️</button>
+        <button class="option-btn" id="micBtn" style="width:45px; height:45px; border-radius:50%; margin:0;">🎤</button>
         <input type="file" id="imgIn" hidden accept="image/*" onchange="uploadFile(this, 'msg')">
-        <input type="text" id="mIn" placeholder="Dire quelque chose..." style="flex:1; background:var(--card); border:none; padding:16px 22px; border-radius:30px; color:white; font-size:15px;" oninput="handleTyping()">
-        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; color:black; font-size:22px; flex-shrink:0;">➔</button>
+        <input type="text" id="mIn" placeholder="Message..." style="flex:1; background:var(--card); border:none; padding:15px; border-radius:25px; color:white;" oninput="handleTyping()">
+        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black;">➔</button>
     </div>
 </div>
 
 <div id="coconBox">
     <div class="chat-head" style="background:var(--love); border:none;">
-        <span onclick="triggerBack()" style="font-size:28px; padding:5px 10px;">←</span>
-        <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:22px;">🌹 Notre Cocon Privé</b></div>
+        <span onclick="triggerBack()" style="font-size:25px;">←</span>
+        <b style="flex:1; text-align:center; font-family:'Pacifico'; font-size:20px;">🌹 Cocon Secret</b>
     </div>
-    <div class="msg-area" id="coArea" style="background:rgba(255,75,110,0.03);"></div>
-    <div style="padding:15px 20px 30px; display:flex; gap:12px; background:rgba(0,0,0,0.4);">
-        <input type="text" id="coIn" class="modal-input" style="margin:0; flex:1; text-align:left; padding:18px 25px;" placeholder="Écris un secret ici...">
-        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:55px; height:55px; border-radius:50%; color:white; font-size:24px;">➔</button>
+    <div class="msg-area" id="coArea"></div>
+    <div style="padding:15px; display:flex; gap:10px;">
+        <input type="text" id="coIn" class="modal-input" style="margin:0; flex:1; text-align:left;" placeholder="Secret...">
+        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:50px; height:50px; border-radius:50%; color:white;">➔</button>
     </div>
 </div>
 
 <script>
-    // --- INITIALISATION FIREBASE ---
-    const firebaseConfig = { 
-        apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", 
-        databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" 
-    };
+    const firebaseConfig = { apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs", databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com/" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // --- VARIABLES GLOBALES ---
     let user = JSON.parse(localStorage.getItem('nu_v33_user'));
     let activeId = null, currentPeerId = null, activePath = null;
     let mediaRecorder, audioChunks = [], stateStack = [];
-    let isRecording = false;
 
     const moodLibrary = {
-        "Fâché(e) 😤": ["Je t'aime même quand tu boudes. ❤️", "Respire, je suis là pour toi.", "On va arranger ça ensemble."],
-        "Triste 🥺": ["Sèche tes larmes, mon ange.", "Je te fais un énorme câlin virtuel.", "Je t'aime plus que tout."],
-        "Amoureux 🥰": ["Tu es mon univers entier.", "Je t'aime à l'infini et au-delà.", "Tu es ma plus belle histoire."],
-        "Fatigué(e) 😴": ["Repose-toi bien mon cœur.", "Fais de beaux rêves, je veille sur toi.", "À demain mon trésor 🌙"]
+        "Fâché(e) 😤": ["Je t'aime même quand tu boudes. ❤️", "Respire, je suis là pour toi."],
+        "Triste 🥺": ["Sèche tes larmes, mon ange.", "Câlin virtuel géant."],
+        "Amoureux 🥰": ["Tu es mon univers.", "Je t'aime à l'infini."],
+        "Fatigué(e) 😴": ["Repose-toi bien mon cœur.", "Dors bien 🌙"]
     };
 
-    // --- DEMARRAGE ---
     window.onload = () => {
-        if(user) {
-            startApp();
-        } else {
-            document.getElementById('splash').style.display = 'none';
-            document.getElementById('authLayer').style.display = 'flex';
-        }
+        if(user) startApp();
+        else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
     };
 
     function startApp() {
         document.getElementById('splash').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
-        
         if(user.pfp) {
-            const p = `<img src="${user.pfp}">`;
-            document.getElementById('myPfpDisp').innerHTML = p;
-            document.getElementById('pfpBig').innerHTML = p;
+            const img = `<img src="${user.pfp}">`;
+            document.getElementById('myPfpDisp').innerHTML = img;
+            document.getElementById('pfpBig').innerHTML = img;
         }
-        
         refreshPresence();
         loadContacts();
-        initBackgroundListener();
-        
         setInterval(updateTimer, 1000);
-        setInterval(refreshPresence, 15000); // Heartbeat rapide (15s)
-        
-        // Setup Audio
-        const mBtn = document.getElementById('micBtn');
-        mBtn.onmousedown = mBtn.ontouchstart = (e) => { e.preventDefault(); startRecord(); };
-        mBtn.onmouseup = mBtn.ontouchend = (e) => { e.preventDefault(); stopRecord(); };
-    }
+        setInterval(refreshPresence, 20000);
 
-    // --- NOTIFICATIONS & BACKGROUND (CORRECTION) ---
-    function initBackgroundListener() {
-        if(!user) return;
-        
-        // Écouter les nouveaux messages globalement même si le chat n'est pas ouvert
-        db.ref('msgs').on('child_added', (chatSnap) => {
-            if(chatSnap.key.includes(user.id)) {
-                chatSnap.ref.limitToLast(1).on('child_added', (msgSnap) => {
-                    const m = msgSnap.val();
-                    if(m.sid !== user.id && !m.seen) {
-                        showNotification(m);
-                    }
-                });
-            }
-        });
-        
-        if("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
-    }
-
-    function showNotification(m) {
-        const text = m.type === 'text' ? m.txt : "📷 Photo reçue";
-        if(Notification.permission === "granted") {
-            new Notification("Notre Univers", { body: text, icon: user.pfp || '' });
-        }
-        // Son de notification même en arrière-plan (si le navigateur le permet)
-        const audio = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
-        audio.play().catch(() => {});
+        // Setup Audio Precision
+        const mb = document.getElementById('micBtn');
+        mb.ontouchstart = mb.onmousedown = (e) => { e.preventDefault(); startRecord(); };
+        mb.ontouchend = mb.onmouseup = (e) => { e.preventDefault(); stopRecord(); };
     }
 
     // --- NAVIGATION ---
     function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
     window.onpopstate = () => {
         const last = stateStack.pop();
-        if(last === 'chat' || last === 'cocon') { 
-            document.getElementById('chatBox').style.display='none'; 
-            document.getElementById('coconBox').style.display='none'; 
-        }
+        if(last === 'chat' || last === 'cocon') { document.getElementById('chatBox').style.display='none'; document.getElementById('coconBox').style.display='none'; }
         if(last === 'modal') document.getElementById('customModal').style.display='none';
     };
     function triggerBack() { history.back(); }
-
     function switchV(id, el) {
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
+        document.getElementById(id).classList.add('active'); el.classList.add('active');
     }
 
-    // --- FONCTIONS CHAT ---
+    // --- PRESENCE ---
+    function refreshPresence() {
+        if(!user) return;
+        db.ref('presence/'+user.id).set({ status: 'online', last: Date.now() });
+        db.ref('presence/'+user.id).onDisconnect().set({ status: 'offline', last: Date.now() });
+    }
+
+    function watchPeer(id) {
+        db.ref('presence/'+id).on('value', s => {
+            const d = s.val(); const el = document.getElementById('cStatus');
+            if(!d) { el.innerText = "hors-ligne"; return; }
+            if(d.status === 'online' && (Date.now() - d.last < 45000)) el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
+            else {
+                const diff = Math.floor((Date.now() - d.last)/60000);
+                el.innerText = diff < 1 ? "vu à l'instant" : "vu il y a " + (diff < 60 ? diff+"m" : Math.floor(diff/60)+"h");
+            }
+        });
+        db.ref('typing/'+activeId+'/'+id).on('value', s => { document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none'; });
+    }
+
+    // --- MESSAGERIE ---
     function openChat(id, name, pfp) {
-        currentPeerId = id;
-        activeId = [user.id, id].sort().join('_');
+        currentPeerId = id; activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
         document.getElementById('chatBox').style.display = 'flex';
-        pushState('chat');
-        syncMsgs('msgs', activeId, 'mArea');
-        watchPeer(id);
+        pushState('chat'); syncMsgs('msgs', activeId, 'mArea'); watchPeer(id);
     }
 
     function syncMsgs(root, target, areaId) {
-        if(activePath) db.ref(activePath).off();
-        activePath = root + '/' + target;
+        if(activePath) db.ref(activePath).off(); activePath = root + '/' + target;
         db.ref(activePath).on('value', s => {
-            const area = document.getElementById(areaId);
-            area.innerHTML = "";
+            const area = document.getElementById(areaId); area.innerHTML = "";
             s.forEach(snap => {
-                const m = snap.val();
-                const isMe = m.sid === user.id;
+                const m = snap.val(); const isMe = m.sid === user.id;
                 if(!isMe && !m.seen) db.ref(activePath+'/'+snap.key).update({seen:true});
-                
                 let content = m.txt;
-                if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:18px; margin:5px 0;" onclick="window.open('${m.txt}')">`;
+                if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px;" onclick="window.open('${m.txt}')">`;
                 if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; height:40px;"></audio>`;
-                
-                area.innerHTML += `
-                    <div class="bubble ${isMe?'m-me':'m-they'}">
-                        ${content}
-                        <div style="font-size:9px; text-align:right; margin-top:5px; opacity:0.7;">
-                            ${new Date(m.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} 
-                            ${isMe ? (m.seen?'<span style="color:var(--check)">✓✓</span>':'✓') : ''}
-                        </div>
-                    </div>`;
+                area.innerHTML += `<div class="bubble ${isMe?'m-me':'m-they'}">${content}<div style="font-size:9px; text-align:right; margin-top:4px; opacity:0.7;">${new Date(m.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})} ${isMe?(m.seen?'✓✓':'✓'):''}</div></div>`;
             });
             area.scrollTop = area.scrollHeight;
         });
@@ -372,27 +269,17 @@
 
     function sendMsg(mode) {
         const inp = document.getElementById(mode==='msgs'?'mIn':'coIn');
-        const txt = inp.value.trim();
-        if(!txt) return;
-        
-        refreshPresence();
+        if(!inp.value.trim()) return;
         const path = mode==='msgs'?'msgs/'+activeId : 'cocon/'+user.code;
-        db.ref(path).push({
-            sid: user.id,
-            txt: txt,
-            t: Date.now(),
-            type: 'text',
-            seen: false
-        });
+        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text', seen: false });
         inp.value = "";
     }
 
-    // --- AUDIO (STABLE) ---
+    // --- AUDIO RECORD ---
     async function startRecord() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream); audioChunks = [];
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
             mediaRecorder.onstop = () => {
                 const blob = new Blob(audioChunks, { type: 'audio/mp3' });
@@ -403,49 +290,11 @@
             };
             mediaRecorder.start();
             document.getElementById('micBtn').classList.add('recording');
-            isRecording = true;
-        } catch(e) { alert("Micro bloqué"); }
+        } catch(e) { alert("Micro non autorisé."); }
     }
+    function stopRecord() { if(mediaRecorder && mediaRecorder.state !== "inactive") { mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording'); } }
 
-    function stopRecord() {
-        if(mediaRecorder && isRecording) {
-            mediaRecorder.stop();
-            document.getElementById('micBtn').classList.remove('recording');
-            isRecording = false;
-        }
-    }
-
-    // --- GESTION PRESENCE ---
-    function refreshPresence() {
-        if(!user) return;
-        db.ref('presence/'+user.id).set({ status: 'online', last: Date.now() });
-        db.ref('presence/'+user.id).onDisconnect().set({ status: 'offline', last: Date.now() });
-    }
-
-    function watchPeer(id) {
-        db.ref('presence/'+id).on('value', s => {
-            const d = s.val();
-            const el = document.getElementById('cStatus');
-            if(!d) { el.innerText = "hors-ligne"; return; }
-            if(d.status === 'online' && (Date.now() - d.last < 40000)) {
-                el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
-            } else {
-                const diff = Math.floor((Date.now() - d.last)/60000);
-                el.innerText = diff < 1 ? "vu à l'instant" : "vu il y a " + (diff < 60 ? diff+"m" : Math.floor(diff/60)+"h");
-            }
-        });
-        db.ref('typing/'+activeId+'/'+id).on('value', s => {
-            document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none';
-        });
-    }
-
-    function handleTyping() {
-        if(!activeId) return;
-        db.ref('typing/'+activeId+'/'+user.id).set(true);
-        setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000);
-    }
-
-    // --- OPTIONS AVANCEES ---
+    // --- REGLAGES & OPTIONS ---
     function openChatOptions() {
         const html = `
             <button class="option-btn" onclick="viewPeerInfo()">👤 Infos du contact</button>
@@ -454,63 +303,48 @@
         `;
         openModal("Options", html);
     }
-
-    function clearChat() {
-        if(confirm("Vider les messages ?")) {
-            db.ref('msgs/'+activeId).remove();
-            triggerBack();
-        }
+    function viewPeerInfo() {
+        db.ref('users/'+currentPeerId).once('value', s => {
+            const u = s.val();
+            openModal("Profil", `<div class="pfp" style="width:100px; height:100px; margin:0 auto;">${u.pfp?`<img src="${u.pfp}">`:u.pseudo[0]}</div><p><b>${u.pseudo}</b></p>`);
+        });
     }
-
-    function blockUser() {
-        if(confirm("Bloquer ?")) {
-            db.ref(`users/${user.id}/blocked/${currentPeerId}`).set(true);
-            triggerBack(); triggerBack();
-        }
-    }
-
+    function clearChat() { if(confirm("Vider les messages ?")) { db.ref('msgs/'+activeId).remove(); triggerBack(); } }
+    function blockUser() { if(confirm("Bloquer ?")) { db.ref(`users/${user.id}/blocked/${currentPeerId}`).set(true); triggerBack(); triggerBack(); } }
+    
     function openBlockedList() {
         db.ref(`users/${user.id}/blocked`).once('value', s => {
             let html = "";
             if(!s.exists()) html = "<p>Aucun blocage</p>";
-            s.forEach(snap => {
-                html += `<div style="display:flex; justify-content:space-between; align-items:center; padding:15px; background:rgba(255,255,255,0.05); border-radius:15px; margin-bottom:10px;">
-                    <span>${snap.key}</span>
-                    <button onclick="unblock('${snap.key}')" style="color:var(--accent); background:none; border:none; font-weight:bold;">Débloquer</button>
-                </div>`;
-            });
+            s.forEach(snap => { html += `<div style="display:flex; justify-content:space-between; padding:10px;"><span>${snap.key}</span><button onclick="unblock('${snap.key}')" style="color:var(--accent); background:none; border:none;">Débloquer</button></div>`; });
             openModal("Bloqués", html);
         });
     }
+    function unblock(id) { db.ref(`users/${user.id}/blocked/${id}`).remove(); triggerBack(); }
 
-    function unblock(id) {
-        db.ref(`users/${user.id}/blocked/${id}`).remove();
-        triggerBack();
+    function openEdit(f, d) {
+        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => {
+            db.ref('users/'+user.id).update({[f]:v});
+            user[f]=v; localStorage.setItem('nu_v33_user',JSON.stringify(user)); location.reload();
+        });
     }
 
-    // --- TOOLS & AUTH ---
+    // --- TOOLS ---
     function openModal(t, b, a) {
         document.getElementById('modalTitle').innerText = t;
         document.getElementById('modalBody').innerHTML = b;
         document.getElementById('customModal').style.display = 'flex';
         pushState('modal');
-        if(a) document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value);
-        else document.getElementById('modalConfirmBtn').onclick = () => triggerBack();
+        document.getElementById('modalConfirmBtn').onclick = () => { if(a) a(document.getElementById('modalInput')?.value); else triggerBack(); };
     }
 
     function uploadFile(input, mode) {
-        if(!input.files[0]) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            const data = e.target.result;
             if(mode === 'pfp') {
-                db.ref('users/'+user.id).update({pfp: data});
-                user.pfp = data;
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            } else {
-                db.ref('msgs/'+activeId).push({ sid: user.id, txt: data, t: Date.now(), type: 'img', seen: false });
-            }
+                db.ref('users/'+user.id).update({pfp: e.target.result});
+                user.pfp = e.target.result; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload();
+            } else db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: 'img', seen: false });
         };
         reader.readAsDataURL(input.files[0]);
     }
@@ -520,112 +354,64 @@
         const diff = new Date() - new Date(user.startDate);
         const d = Math.floor(diff/86400000);
         const h = Math.floor((diff/3600000)%24);
-        const m = Math.floor((diff/60000)%60);
-        document.getElementById('timeCounter').innerText = `${d}j ${h}h ${m}m`;
+        document.getElementById('timeCounter').innerText = `${d}j ${h}h de bonheur`;
     }
 
     function askCoconCode() {
-        openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
-            if(val === user.code) {
-                triggerBack();
-                document.getElementById('coconBox').style.display = 'flex';
-                pushState('cocon');
-                syncMsgs('cocon', user.code, 'coArea');
-            } else alert("Code erroné");
+        openModal("Sécurisé", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
+            if(val === user.code) { triggerBack(); document.getElementById('coconBox').style.display = 'flex'; pushState('cocon'); syncMsgs('cocon', user.code, 'coArea'); }
+            else alert("Faux");
         });
     }
 
     function openMoodSelector() {
         const grid = document.getElementById('moodGrid'); grid.innerHTML = "";
-        Object.keys(moodLibrary).forEach(m => {
-            grid.innerHTML += `<button class="option-btn" onclick="showMood('${m}')">${m}</button>`;
-        });
-        document.getElementById('widgetText').innerText = "Comment te sens-tu en ce moment ?";
+        Object.keys(moodLibrary).forEach(m => { grid.innerHTML += `<button class="option-btn" onclick="showMood('${m}')">${m}</button>`; });
+        document.getElementById('widgetText').innerText = "Humeur ?";
         document.getElementById('vWidgetFull').style.display = 'flex';
     }
-
-    function showMood(m) {
-        const list = moodLibrary[m];
-        document.getElementById('widgetText').innerText = list[Math.floor(Math.random()*list.length)];
-    }
+    function showMood(m) { document.getElementById('widgetText').innerText = moodLibrary[m][Math.floor(Math.random()*moodLibrary[m].length)]; }
 
     function login() {
-        const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,'');
-        const ps = document.getElementById('lPass').value;
-        db.ref('users/'+ph).once('value', s => {
-            if(s.exists() && s.val().pass === ps) {
-                user = s.val();
-                localStorage.setItem('nu_v33_user', JSON.stringify(user));
-                location.reload();
-            } else alert("Identifiants incorrects");
+        const id = "u_"+document.getElementById('lPhone').value;
+        db.ref('users/'+id).once('value', s => {
+            if(s.exists() && s.val().pass === document.getElementById('lPass').value) {
+                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload();
+            }
         });
     }
-
-    function toggleAuth(isL) {
-        const box = document.getElementById('authBox');
-        if(!isL) {
-            box.innerHTML = `
-                <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:30px;">Rejoindre</h2>
-                <input type="text" id="rPseudo" class="modal-input" placeholder="Ton pseudo">
-                <input type="tel" id="rPhone" class="modal-input" placeholder="Ton numéro">
-                <input type="password" id="rPass" class="modal-input" placeholder="Ton mot de passe">
-                <button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">CRÉER</button>
-                <p onclick="location.reload()" style="margin-top:20px; font-size:12px; opacity:0.6;">Déjà inscrit ? Connexion</p>
-            `;
-        }
+    function showRegister() {
+        document.getElementById('authContent').innerHTML = `<input type="text" id="rPseudo" class="modal-input" placeholder="Pseudo"><input type="tel" id="rPhone" class="modal-input" placeholder="Numéro"><input type="password" id="rPass" class="modal-input" placeholder="Pass"><button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">Créer</button>`;
     }
-
     function register() {
-        const id = "u_" + document.getElementById('rPhone').value.replace(/\D/g,'');
-        const nu = {
-            id, pseudo: document.getElementById('rPseudo').value, 
-            pass: document.getElementById('rPass').value,
-            code: '0000', startDate: new Date().toISOString()
-        };
-        db.ref('users/'+id).set(nu).then(() => {
-            user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu));
-            location.reload();
-        });
+        const id = "u_"+document.getElementById('rPhone').value;
+        const nu = { id, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, code: '0000', startDate: new Date().toISOString() };
+        db.ref('users/'+id).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
     function loadContacts() {
         db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList');
-            list.innerHTML = "";
+            const list = document.getElementById('chatList'); list.innerHTML = "";
             s.forEach(snap => {
                 db.ref('users/'+snap.key).once('value', us => {
                     const u = us.val();
-                    list.innerHTML += `
-                        <div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')">
-                            <div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div>
-                            <div style="flex:1"><b>${u.pseudo}</b><br><small style="opacity:0.6">Dernier message...</small></div>
-                        </div>`;
+                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp?`<img src="${u.pfp}">`:u.pseudo[0]}</div><div><b>${u.pseudo}</b></div></div>`;
                 });
             });
         });
     }
 
     function addFriend() {
-        openModal("Ajouter un contact", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => {
-            const id = "u_" + tel.replace(/\D/g,'');
+        openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="Numéro">`, (tel) => {
+            const id = "u_"+tel;
             db.ref('users/'+id).once('value', s => {
-                if(s.exists()) {
-                    db.ref(`users/${user.id}/contacts/${id}`).set(true);
-                    db.ref(`users/${id}/contacts/${user.id}`).set(true);
-                    triggerBack();
-                } else alert("Utilisateur inconnu");
+                if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); }
             });
         });
     }
 
-    function logout() { if(confirm("Partir ?")) { localStorage.clear(); location.reload(); } }
-    function openEdit(f, d) {
-        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => {
-            db.ref('users/'+user.id).update({[f]:v});
-            user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user));
-            location.reload();
-        });
-    }
+    function handleTyping() { db.ref('typing/'+activeId+'/'+user.id).set(true); setTimeout(()=>db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); }
+    function logout() { localStorage.clear(); location.reload(); }
 </script>
 </body>
 </html>
