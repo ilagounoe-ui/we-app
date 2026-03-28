@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers</title>
+    <title>Notre Univers v42</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -28,7 +28,8 @@
         .view.active { display: block; }
         .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .contact-pfp { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; background: #2a2a40; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; }
-        .wa-badge { background: var(--online); color: white; font-size: 10px; min-width: 20px; height: 20px; border-radius: 10px; display: none; align-items: center; justify-content: center; margin-left: 8px; font-weight: bold; }
+        .wa-badge { background: var(--accent); color: black; font-size: 10px; min-width: 20px; height: 20px; border-radius: 10px; display: none; align-items: center; justify-content: center; margin-left: auto; font-weight: bold; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; cursor: pointer; color: var(--accent); }
         #chatBox, #coconBox { position: fixed; inset: 0; background: inherit; background-color: var(--bg); z-index: 9999; display: none; flex-direction: column; }
         .head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
@@ -128,8 +129,9 @@
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('code')">Code Secret</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; cursor:pointer;" onclick="openEdit('startDate', true)">Date</div>
             
-            <div style="background:rgba(37, 211, 102, 0.2); border:1px solid var(--online); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; font-weight:bold;" onclick="requestMic()">🎤 Autoriser le Micro</div>
+            <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; border: 1px solid var(--accent);" onclick="openNotificationSettings()">🔔 Sons & Notifications</div>
             
+            <div style="background:rgba(37, 211, 102, 0.2); border:1px solid var(--online); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; font-weight:bold;" onclick="requestMic()">🎤 Autoriser le Micro</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="askPhoneForInfo()">ℹ️ Infos Compte</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer; border: 1px solid var(--accent);" onclick="changeWall()">🎨 Fond d'écran</div>
             <div style="background:var(--card); padding:20px; border-radius:25px; text-align:center; grid-column:span 2; cursor:pointer;" onclick="manageBlocked()">🚫 Personnes bloquées</div>
@@ -140,7 +142,13 @@
 </div>
 
 <div id="chatBox">
-    <div class="head"><span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span><b id="cName">...</b></div>
+    <div class="head">
+        <span onclick="triggerBack()" style="font-size:24px; cursor:pointer;">←</span>
+        <div style="flex:1">
+            <b id="cName">...</b><br>
+            <small id="cStatus" style="font-size:10px; opacity:0.8;"></small>
+        </div>
+    </div>
     <div class="msg-area" id="mArea"></div>
     <div style="padding:15px; display:flex; gap:8px; align-items:center; background:rgba(0,0,0,0.2);">
         <button class="media-btn" onclick="document.getElementById('imgIn').click()">🖼️</button>
@@ -176,13 +184,33 @@
     let isRecording = false; 
     let activeChatPath = null; 
 
-    const popSound = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3');
+    // LISTE DES SONS
+    const sounds = {
+        'pop': 'https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3',
+        'doux': 'https://notificationsounds.com/storage/sounds/file-sounds-1105-strong-climb.mp3',
+        'discret': 'https://notificationsounds.com/storage/sounds/file-sounds-1148-gloomy-and-light.mp3',
+        'cocon': 'https://notificationsounds.com/storage/sounds/file-sounds-1121-love-is-in-the-air.mp3' 
+    };
+
+    const popSound = new Audio(sounds['pop']);
 
     function cleanInput(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
-    function unlockAudio() { if (!audioUnlocked) { popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); } }
+    
+    function unlockAudio() { 
+        if (!audioUnlocked) { 
+            popSound.play().then(() => { popSound.pause(); popSound.currentTime = 0; audioUnlocked = true; }).catch(e => {}); 
+        } 
+    }
+
     function formatTime(ts) { const d = (ts && !isNaN(ts)) ? new Date(ts) : new Date(); return d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0'); }
-    function getPfp(u) { if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`; return `<div style="width:100%; height:100%; background:#2a2a40; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`; }
+    
+    function getPfp(u) { 
+        if(u.pfp) return `<img src="${u.pfp}" style="width:100%; height:100%; object-fit:cover;">`; 
+        return `<div style="width:100%; height:100%; background:#2a2a40; display:flex; align-items:center; justify-content:center; color:white">${(u.pseudo || "U")[0].toUpperCase()}</div>`; 
+    }
+
     function pushState(id) { stateStack.push(id); history.pushState({id: id}, ""); }
+    
     function triggerBack() { history.back(); }
     
     window.onpopstate = (e) => { 
@@ -202,6 +230,7 @@
         el.classList.add('active');
     }
 
+    // --- AUTHENTIFICATION ---
     function toggleAuth(isLogin) {
         document.getElementById('loginUI').style.display = isLogin ? 'block' : 'none';
         document.getElementById('regUI').style.display = isLogin ? 'none' : 'block';
@@ -220,19 +249,75 @@
 
     function register() {
         const phone = "u_" + document.getElementById('rPhone').value.replace(/\D/g,'');
-        const nu = { id: phone, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, joined: new Date().toLocaleDateString(), pfp:'', code:'', startDate:'' };
+        const nu = { id: phone, pseudo: document.getElementById('rPseudo').value, pass: document.getElementById('rPass').value, joined: new Date().toLocaleDateString(), pfp:'', code:'', startDate:'', settings: {sound:'pop', notifEnabled:true} };
         db.ref('users/' + phone).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
+    // --- START & NOTIFICATIONS ---
     function start() {
         document.getElementById('authLayer').style.display='none';
         document.getElementById('mainApp').style.display='block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         document.getElementById('pfpPreview').innerHTML = getPfp(user);
-        if(user.wall && user.wall !== '') { document.body.style.background = user.wall; document.body.style.backgroundSize = "cover"; document.body.style.backgroundPosition = "center"; }
-        loadTimer(); loadContacts();
+        if(user.wall && user.wall !== '') { 
+            document.body.style.background = `url(${user.wall})`; 
+            document.body.style.backgroundSize = "cover"; 
+            document.body.style.backgroundPosition = "center"; 
+        }
+        loadTimer(); 
+        loadContacts();
+        updatePresence();
+        requestNotificationPermission();
+        startGlobalMessageListener();
     }
 
+    function requestNotificationPermission() {
+        if ("Notification" in window) Notification.requestPermission();
+    }
+
+    function notifyMe(title, body, isCocon = false) {
+        if (!audioUnlocked) return;
+        let soundSrc = isCocon ? sounds['cocon'] : sounds[user.settings?.sound || 'pop'];
+        const audio = new Audio(soundSrc);
+        audio.play().catch(e => {});
+
+        const isEnabledInSettings = user.settings?.notifEnabled !== false;
+        if (isEnabledInSettings && Notification.permission === "granted" && document.hidden) {
+            new Notification(title, {
+                body: isCocon ? "Nouveau message intime... 🌹" : body,
+                icon: isCocon ? 'https://img.icons8.com/emoji/96/rose.png' : (user.pfp || '')
+            });
+        }
+    }
+
+    function startGlobalMessageListener() {
+        db.ref('msgs').on('child_added', snapshot => {
+            const chatId = snapshot.key;
+            if (chatId.includes(user.id)) {
+                db.ref('msgs/' + chatId).limitToLast(1).on('child_added', msgSnap => {
+                    const m = msgSnap.val();
+                    if (m.sid !== user.id && (Date.now() - m.t) < 5000) {
+                        const contactId = chatId.replace(user.id, '').replace('_', '');
+                        if (activeId !== chatId || document.hidden) {
+                            db.ref('users/' + contactId + '/pseudo').once('value', s => {
+                                notifyMe(s.val(), m.type === 'text' ? m.txt : "📷 Média", false);
+                                const badge = document.getElementById('badge-' + contactId);
+                                if (badge) { badge.innerText = "!"; badge.style.display = 'flex'; }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        if(user.code) {
+            db.ref('cocon/' + user.code).limitToLast(1).on('child_added', snap => {
+                const m = snap.val();
+                if(m.sid !== user.id && (Date.now() - m.t) < 5000) notifyMe("Univers Privé", "", true);
+            });
+        }
+    }
+
+    // --- CHAT & COCON ---
     function viewPhoto(b64) { openModal("Photo", `<img src="${b64}" style="width:100%; border-radius:15px; margin-top:10px;">`, null); document.getElementById('modalActions').style.display = 'none'; }
 
     function loadContacts() {
@@ -245,7 +330,7 @@
                         <div class="contact-pfp" onclick="event.stopPropagation(); if('${u.pfp}'!=='undefined') viewPhoto('${u.pfp}')">${getPfp(u)}</div>
                         <div style="flex:1"><b>${u.pseudo}</b> <div class="wa-badge" id="badge-${u.id}">0</div></div>
                         <div class="opt-dots" onclick="openContactOptions(event, '${u.id}')">⋮</div>
-            </div>`;
+                    </div>`;
                 });
             });
         });
@@ -257,6 +342,16 @@
         document.getElementById('chatBox').style.display='flex';
         pushState('chatBox');
         sync('msgs', activeId, 'mArea');
+
+        db.ref('presence/'+id).on('value', s => {
+            const p = s.val();
+            const el = document.getElementById('cStatus');
+            if(p && p.status === 'online') el.innerHTML = `<span class="status-dot" style="background:var(--online)"></span> en ligne`;
+            else if(p) {
+                const min = Math.floor((Date.now() - p.last)/60000);
+                el.innerText = `vu il y a ${min < 1 ? 'quelques instants' : min + ' min'}`;
+            }
+        });
     }
 
     function askCoconCode() {
@@ -271,7 +366,6 @@
         });
     }
 
-    // --- CORRECTION SYNC POUR ACCESSIBILITÉ COCON ---
     function sync(path, target, areaId) {
         if (activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
@@ -279,8 +373,7 @@
             const area = document.getElementById(areaId);
             area.innerHTML = "";
             s.forEach(snap => {
-                const m = snap.val();
-                if(!m) return;
+                const m = snap.val(); if(!m) return;
                 const isMe = m.sid === user.id;
                 let content = cleanInput(m.txt);
                 if (m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:10px;" onclick="viewPhoto('${m.txt}')">`;
@@ -288,17 +381,20 @@
 
                 area.innerHTML += `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" oncontextmenu="event.preventDefault(); showMsgOpts('${activeChatPath}/${snap.key}', '${m.txt}', ${isMe})">
                     ${content}
-                    <div class="msg-meta"><span>${formatTime(m.t)}</span></div>
+                    <div class="msg-meta">
+                        <span>${formatTime(m.t)}</span>
+                        ${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'white'}">✓✓</span>` : ''}
+                    </div>
                 </div>`;
+                if(!isMe && !m.seen) db.ref(activeChatPath+'/'+snap.key).update({seen: true});
             });
             area.scrollTop = area.scrollHeight;
         });
     }
 
-    // --- NOUVELLE FONCTION SUPPRIMER/MODIFIER ---
     function showMsgOpts(fullPath, currentTxt, isMe) {
         let opts = `<button class="option-btn" onclick="deleteMsg('${fullPath}')">🗑️ Supprimer</button>`;
-        if(isMe && !currentTxt.includes('data:image') && !currentTxt.includes('data:audio')) {
+        if(isMe && !currentTxt.includes('data:')) {
             opts += `<button class="option-btn" onclick="editMsgPrompt('${fullPath}', '${currentTxt.replace(/'/g, "\\'")}')">✏️ Modifier</button>`;
         }
         openModal("Options", opts, null);
@@ -316,7 +412,7 @@
         const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         if(!inp.value.trim()) return;
         const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text' });
+        db.ref(path).push({ sid: user.id, txt: inp.value, t: Date.now(), type: 'text', seen: false });
         inp.value = "";
     }
 
@@ -325,12 +421,41 @@
         const reader = new FileReader();
         reader.onload = (e) => {
             const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-            db.ref(path).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: type });
+            db.ref(path).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: type, seen: false });
         };
         reader.readAsDataURL(file);
     }
 
-    // --- CORRECTION "AFFICHE" (MODALE DESIGN) ---
+    // --- RÉGLAGES AVANCÉS ---
+    function openNotificationSettings() {
+        let currentSound = user.settings?.sound || 'pop';
+        let notifEnabled = user.settings?.notifEnabled !== false;
+        let html = `
+            <div style="text-align:left; font-size:14px;">
+                <p><b>Son des messages :</b></p>
+                <select id="soundSelect" class="modal-input" style="background:var(--card); border:1px solid var(--accent)">
+                    <option value="pop" ${currentSound === 'pop' ? 'selected' : ''}>Classique (Pop)</option>
+                    <option value="doux" ${currentSound === 'doux' ? 'selected' : ''}>Doux</option>
+                    <option value="discret" ${currentSound === 'discret' ? 'selected' : ''}>Discret</option>
+                </select>
+                <button class="option-btn" onclick="const s=document.getElementById('soundSelect').value; new Audio(sounds[s]).play();">▶️ Tester le son</button>
+                <hr style="opacity:0.1; margin:15px 0">
+                <p><b>Notifications Système :</b></p>
+                <button class="option-btn" onclick="this.innerText = (this.innerText.includes('✅') ? '❌ Désactivées' : '✅ Activées')" id="btnNotifState">
+                    ${notifEnabled ? '✅ Activées' : '❌ Désactivées'}
+                </button>
+            </div>`;
+        openModal("Sons & Alertes", html, () => {
+            const selectedSound = document.getElementById('soundSelect').value;
+            const isNowEnabled = document.getElementById('btnNotifState').innerText.includes('✅');
+            const newSettings = { sound: selectedSound, notifEnabled: isNowEnabled };
+            db.ref('users/'+user.id+'/settings').set(newSettings);
+            user.settings = newSettings;
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+            triggerBack();
+        });
+    }
+
     function askPhoneForInfo() {
         openModal("Vérification", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro">`, (num) => {
             if("u_"+num.replace(/\D/g,'') === user.id) {
@@ -338,6 +463,23 @@
                     <b>ID:</b> ${user.id}<br><b>Pass:</b> ${user.pass}<br><b>Cocon:</b> ${user.code || 'Non défini'}
                 </div>`, null);
             } else document.getElementById('modalError').innerText = "Numéro incorrect";
+        });
+    }
+
+    function sendLoveNote() {
+        openModal("Envoyer un mot doux", `<textarea id="modalInput" class="modal-input" placeholder="Ton petit mot..."></textarea>`, (txt) => {
+            if(!txt) return;
+            db.ref('loveNotes/').push({ from: user.pseudo, txt: txt, t: Date.now() });
+            triggerBack();
+        });
+    }
+
+    function checkMood() { 
+        db.ref('loveNotes').limitToLast(1).once('value', s => {
+            let note = "Tu es mon tout. 💖";
+            s.forEach(snap => { note = snap.val().txt; });
+            document.getElementById('widgetText').innerText = note;
+            document.getElementById('vWidgetFull').style.display='flex';
         });
     }
 
@@ -359,11 +501,11 @@
     function openEdit(field, isDate = false) { openModal("Modifier", `<input type="${isDate?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { db.ref('users/'+user.id).update({[field]:v}).then(() => { user[field]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
     function changeWall() { openModal("Fond d'écran", `<input type="text" id="modalInput" class="modal-input" placeholder="URL Image">`, (url) => { db.ref('users/'+user.id).update({wall:url}).then(() => location.reload()); }); }
     function loadTimer() { if(!user.startDate) return; setInterval(() => { const diff = new Date() - new Date(user.startDate); document.getElementById('d-day').innerText = Math.floor(diff/86400000); document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24); }, 1000); }
-    function checkMood() { const w = ["Tu es mon tout. 💖", "Je t'aime plus que tout. ✨", "Toujours là pour toi. 🫂"]; document.getElementById('widgetText').innerText = w[Math.floor(Math.random()*w.length)]; document.getElementById('vWidgetFull').style.display='flex'; }
+    function updatePresence() { if(!user) return; const ref = db.ref('presence/' + user.id); ref.set({ status: 'online', last: Date.now() }); ref.onDisconnect().set({ status: 'offline', last: Date.now() }); }
     function logout() { localStorage.clear(); location.reload(); }
+    
     window.onload = () => { if(user) start(); else { document.getElementById('splash').style.display='none'; document.getElementById('authLayer').style.display='flex'; } };
 
-    // --- AUDIO LOGIC RESTORED ---
     function startRecord() { 
         navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -379,7 +521,7 @@
         mediaRecorder.onstop = () => {
             const blob = new Blob(audioChunks, { type: 'audio/mp3' });
             const reader = new FileReader();
-            reader.onload = (e) => db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: 'audio' });
+            reader.onload = (e) => db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: Date.now(), type: 'audio', seen: false });
             reader.readAsDataURL(blob); audioChunks = [];
         };
     }
