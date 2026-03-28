@@ -125,7 +125,7 @@
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px;">Pseudo</h2>
-            <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
+            <div id="globalStatus" style="fo'value'alue'-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
@@ -297,8 +297,7 @@
         if(activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
         
-        db.ref(activeChatPath).on('value', s
-                                   => {
+        db.ref(activeChatPath).on('value', s => {
             const area = document.getElementById(areaId);
             area.innerHTML = "";
             s.forEach(snap => {
