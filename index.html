@@ -136,6 +136,8 @@
             <input type="text" class="modal-input" placeholder="Pseudo / Surnom" id="rPseudo">
             <input type="tel" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
+            <input type="text" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode">
+            
             <button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">CRÉER MON UNIVERS</button>
             <p onclick="toggleAuth(true)" style="margin-top:25px; font-size:13px; opacity:0.6;">Déjà inscrit ? Connexion</p>
         </div>
@@ -666,10 +668,27 @@ const db = firebase.database();
         });
     }
 
+    // --- C'EST ICI QUE J'AI CORRIGÉ LA FONCTION D'INSCRIPTION ---
     function register() {
         const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
+        
+        // 1. On capture enfin le code que l'utilisateur vient de taper
+        const codeSaisi = document.getElementById('rCode').value || '0000'; 
+        
         if(!pseudo || ph.length < 5) return showToast("Incomplet");
-        const nu = { id: ph, pseudo, pass: document.getElementById('rPass').value, pfp:'', code:'0000', startDate: new Date().toISOString(), wall:'' };
+        
+        // 2. On l'injecte dans les données qui partent vers Firebase (code + codeInscription)
+        const nu = { 
+            id: ph, 
+            pseudo: pseudo, 
+            pass: document.getElementById('rPass').value, 
+            pfp: '', 
+            code: codeSaisi, 
+            codeInscription: codeSaisi, 
+            startDate: new Date().toISOString(), 
+            wall: '' 
+        };
+        
         db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
