@@ -646,6 +646,18 @@
         db.ref('users/'+ph).once('value', s => {
             if(s.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
             else showToast("Erreur identifiants");
+            // À mettre à l'intérieur de ta fonction login() après avoir trouvé l'utilisateur
+db.ref('banned/' + ph).once('value', bSnap => {
+    if(bSnap.exists()) {
+        showToast("Votre compte a été suspendu par l'administrateur.");
+    } else {
+        // ... ici le code normal qui connecte l'utilisateur ...
+        user = s.val(); 
+        localStorage.setItem('nu_user', JSON.stringify(user));
+        setupApp();
+    }
+});
+            
         });
     }
 
