@@ -367,7 +367,22 @@ function setupApp() {
         document.getElementById('setCodeDisplay').innerText = user.code;
         document.getElementById('setIdDisplay').innerText = user.id;
 
-        if(db) {
+        if(db) {//
+            // --- 🛡️ SYSTÈME DE BAN TEMPS RÉEL (À insérer ici) ---
+    db.ref('banned/' + user.id).on('value', snap => {
+        if (snap.exists() && snap.val() === true) {
+            // Effet visuel "Agent Secret"
+            document.body.style.filter = "grayscale(1) contrast(2)"; 
+            alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
+            
+            // On nettoie tout pour éviter qu'il revienne en arrière
+            localStorage.clear();
+            location.reload();
+        }
+    });
+        }
+    // --------------------------------------------------
+        
             updatePresence();
             loadContacts();
             updateTimeCounter();
@@ -382,7 +397,7 @@ function setupApp() {
                     document.getElementById('coconNoteDisplay').style.display = 'flex';
                 }
             });
-        }
+        });//
         
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
 
