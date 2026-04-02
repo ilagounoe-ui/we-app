@@ -243,14 +243,64 @@
 <input type="file" id="vidIn" hidden accept="video/*">
 
 <script>
-    // --- VARIABLES GLOBALES MANQUANTES ---
-    // Configuration Firebase manquante (à remplacer par la vraie)
-    // const firebaseConfig = { apiKey: "...", authDomain: "...", databaseURL: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..." };
-    // if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-    // const db = firebase.database(); 
+// --- CONFIGURATION FIREBASE (MISE À JOUR v45) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
+    authDomain: "notre-univers-d71a3.firebaseapp.com",
+    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
+    projectId: "notre-univers-d71a3",
+    storageBucket: "notre-univers-d71a3.firebasestorage.app",
+    messagingSenderId: "909531230264",
+    appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
+};
+
+// Initialisation au format "Compat" pour ton code actuel
+if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+}
+const db = firebase.database(); 
+
+// --- DÉBUT DU SETUP APP ---
+function setupApp() {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('authLayer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
     
-    // Remplacements factices pour éviter les erreurs dans cet environnement de test si non initialisé
-    const db = typeof firebase !== 'undefined' && firebase.apps.length ? firebase.database() : null; 
+    // 🛡️ SYSTÈME DE BAN TEMPS RÉEL (Le cœur de la sécurité)
+    db.ref('banned/' + user.id).on('value', snap => {
+        if (snap.exists() && snap.val() === true) {
+            alert("⚠️ Accès refusé. Votre compte a été suspendu par l'administrateur.");
+            localStorage.clear();
+            location.reload();
+        }
+    });
+
+    // Remplissage des infos utilisateur
+    document.getElementById('uNameDisp').innerText = user.pseudo;
+    document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
+    document.getElementById('setCodeDisplay').innerText = user.code;
+    document.getElementById('setIdDisplay').innerText = user.id;
+
+    // Lancement des services
+    updatePresence();
+    loadContacts();
+    updateTimeCounter();
+    initNotifications();
+
+    // Ton écouteur de mots doux (Global Notes)
+    db.ref('globalNotes/' + user.code).on('value', s => {
+        const note = s.val();
+        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+            document.getElementById('coconTabBtn').classList.add('cocon-notify');
+            if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
+            document.getElementById('coconNoteText').innerText = note.txt;
+            document.getElementById('coconNoteDisplay').style.display = 'flex';
+        }
+    });
+
+    if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
+    if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
+    }
     
     let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
     let currentPeerId = null;
