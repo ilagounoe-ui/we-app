@@ -262,37 +262,43 @@ const db = firebase.database();
 
 // --- DÉBUT DU SETUP APP ---
 function setupApp() {
+    // 1. On affiche l'interface immédiatement
     document.getElementById('splash').style.display = 'none';
     document.getElementById('authLayer').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     
-if(db) {
-            // 🛡️ SYSTÈME DE BAN TEMPS RÉEL
-            db.ref('banned/' + user.id).on('value', snap => {
-                if (snap.exists() && snap.val() === true) {
-                    document.body.style.filter = "grayscale(1) contrast(2)"; 
-                    alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
-                    localStorage.clear();
-                    location.reload();
-                }
-            });
-         } 
-            // Une fois le check de ban actif, on lance le reste
-            updatePresence();
-            loadContacts();
-            updateTimeCounter();
-            initNotifications();
+    // 2. Si la base de données est prête
+    if(db) {
+        // 🛡️ SYSTÈME DE BAN EN TEMPS RÉEL
+        db.ref('banned/' + user.id).on('value', snap => {
+            if (snap.exists() && snap.val() === true) {
+                document.body.style.filter = "grayscale(1) contrast(2)"; 
+                alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
+                localStorage.clear();
+                location.reload();
+            }
+        });
+
+        // Lancement des services (doivent être DANS le if(db))
+        updatePresence();
+        loadContacts();
+        updateTimeCounter();
+        initNotifications();
     
-    // Ton écouteur de mots doux (Global Notes)
-    db.ref('globalNotes/' + user.code).on('value', s => {
-        const note = s.val();
-        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-            document.getElementById('coconTabBtn').classList.add('cocon-notify');
-            if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
-            document.getElementById('coconNoteText').innerText = note.txt;
-            document.getElementById('coconNoteDisplay').style.display = 'flex';
-        }
-    });
+        // Écouteur des mots doux (Global Notes)
+        db.ref('globalNotes/' + user.code).on('value', s => {
+            const note = s.val();
+            if(note && note.sid !== user.id && (!note.readBy || !note.readBy[user.id])) {
+                document.getElementById('coconTabBtn').classList.add('cocon-notify');
+                if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
+                document.getElementById('coconNoteText').innerText = note.txt;
+                document.getElementById('coconNoteDisplay').style.display = 'flex';
+            }
+        });
+    } // <--- Fermeture du if(db)
+
+} // <--- C'EST CETTE ACCOLADE QUI MANQUAIT ! Elle ferme la fonction setupApp
+    
 
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
