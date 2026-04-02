@@ -266,31 +266,27 @@ function setupApp() {
     document.getElementById('authLayer').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
     
-    // 🛡️ SYSTÈME DE BAN TEMPS RÉEL (Le cœur de la sécurité)
-    db.ref('banned/' + user.id).on('value', snap => {
-        if (snap.exists() && snap.val() === true) {
-            alert("⚠️ Accès refusé. Votre compte a été suspendu par l'administrateur.");
-            localStorage.clear();
-            location.reload();
-        }
-    });
+if(db) {
+            // 🛡️ SYSTÈME DE BAN TEMPS RÉEL
+            db.ref('banned/' + user.id).on('value', snap => {
+                if (snap.exists() && snap.val() === true) {
+                    document.body.style.filter = "grayscale(1) contrast(2)"; 
+                    alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
+                    localStorage.clear();
+                    location.reload();
+                }
+            });
 
-    // Remplissage des infos utilisateur
-    document.getElementById('uNameDisp').innerText = user.pseudo;
-    document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
-    document.getElementById('setCodeDisplay').innerText = user.code;
-    document.getElementById('setIdDisplay').innerText = user.id;
-
-    // Lancement des services
-    updatePresence();
-    loadContacts();
-    updateTimeCounter();
-    initNotifications();
-
+            // Une fois le check de ban actif, on lance le reste
+            updatePresence();
+            loadContacts();
+            updateTimeCounter();
+            initNotifications();
+    
     // Ton écouteur de mots doux (Global Notes)
     db.ref('globalNotes/' + user.code).on('value', s => {
         const note = s.val();
-        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+        if(note && note.sid !== user.id && !note.readBy?.[user.id]) }
             document.getElementById('coconTabBtn').classList.add('cocon-notify');
             if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
             document.getElementById('coconNoteText').innerText = note.txt;
