@@ -239,9 +239,39 @@
 </div>
 
 <input type="file" id="imgIn" hidden accept="image/*">
-<input type="file" id=
+<input type="file" id="camIn" hidden accept="image/*" capture="environment">
+<input type="file" id="vidIn" hidden accept="video/*">
 
-        // --- MOTEUR DE CHIFFREMENT E2EE ---
+<script>
+    // --- VARIABLES GLOBALES MANQUANTES ---
+    // Configuration Firebase manquante (à remplacer par la vraie)
+    // const firebaseConfig = { apiKey: "...", authDomain: "...", databaseURL: "...", projectId: "...", storageBucket: "...", messagingSenderId: "...", appId: "..." };
+    // if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+    // const db = firebase.database(); 
+    
+    // Remplacements factices pour éviter les erreurs dans cet environnement de test si non initialisé
+    const db = typeof firebase !== 'undefined' && firebase.apps.length ? firebase.database() : null; 
+    
+    let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
+    let currentPeerId = null;
+    let activeId = null;
+    let activeChatPath = null;
+    let typingTimeout = null;
+    let stateStack = [];
+    let audioUnlocked = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let currentMediaMode = 'msgs';
+    
+    const sounds = { pop: 'https://actions.google.com/sounds/v1/water/water_drop.ogg' }; // Son par défaut
+    const moodLibrary = {
+        "Triste": ["Je suis là pour toi ❤️", "Un câlin virtuel pour toi !"],
+        "Joyeux": ["Que cette joie dure toujours !", "Ton sourire illumine l'Univers ✨"],
+        "Stressé": ["Respire profondément, tout va bien se passer.", "Prends une pause, tu l'as mérité."],
+        "Fatigué": ["Repose-toi bien mon amour.", "Une douce nuit s'annonce..."]
+    };
+
+    // --- MOTEUR DE CHIFFREMENT E2EE ---
     const E2EE = {
         encrypt: (text, key) => {
             if(!text) return "";
@@ -287,22 +317,24 @@
         document.getElementById('setCodeDisplay').innerText = user.code;
         document.getElementById('setIdDisplay').innerText = user.id;
 
-        updatePresence();
-        loadContacts();
-        updateTimeCounter();
-        initNotifications();
+        if(db) {
+            updatePresence();
+            loadContacts();
+            updateTimeCounter();
+            initNotifications();
+
+            db.ref('globalNotes/' + user.code).on('value', s => {
+                const note = s.val();
+                if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+                    document.getElementById('coconTabBtn').classList.add('cocon-notify');
+                    if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
+                    document.getElementById('coconNoteText').innerText = note.txt;
+                    document.getElementById('coconNoteDisplay').style.display = 'flex';
+                }
+            });
+        }
         
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
-
-        db.ref('globalNotes/' + user.code).on('value', s => {
-            const note = s.val();
-            if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-                document.getElementById('coconTabBtn').classList.add('cocon-notify');
-                if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
-                document.getElementById('coconNoteText').innerText = note.txt;
-                document.getElementById('coconNoteDisplay').style.display = 'flex';
-            }
-        });
 
         if(user.pfp) {
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -339,7 +371,7 @@
     function closeCoconNote() {
         document.getElementById('coconNoteDisplay').style.display = 'none';
         document.getElementById('coconTabBtn').classList.remove('cocon-notify');
-        db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
+        if(db) db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
     }
 
     function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
@@ -368,9 +400,12 @@
         watchStatus(id);
         syncMessages('msgs', activeId, 'mArea');
     }
-function closeChat() {
-        if(activeChatPath) db.ref(activeChatPath).off();
-        if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
+
+    function closeChat() {
+        if(db) {
+            if(activeChatPath) db.ref(activeChatPath).off();
+            if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
+        }
         document.getElementById('chatBox').style.display = 'none';
         document.getElementById('coconBox').style.display = 'none';
     }
@@ -378,7 +413,7 @@ function closeChat() {
     function getMsgHTML(snap, path, target) {
         const m = snap.val();
         const isMe = m.sid === user.id;
-        if(!isMe && !m.seen) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
+        if(!isMe && !m.seen && db) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
         
         // DÉCHIFFREMENT
         const cryptoKey = path === 'msgs' ? activeId : user.code;
@@ -400,6 +435,7 @@ function closeChat() {
     }
 
     function syncMessages(path, target, areaId) {
+        if(!db) return;
         if(activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
         const area = document.getElementById(areaId);
@@ -413,12 +449,14 @@ function closeChat() {
         if(Date.now() - time > 30 * 60 * 1000) return showToast("Délai dépassé.");
         openModal("Message", `<button class="option-btn" onclick="editMsg('${msgId}', '${txt}', '${path}', '${target}')">✏️ Modifier</button><button class="option-btn" style="color:var(--love)" onclick="delMsg('${msgId}', '${path}', '${target}')">🗑️ Supprimer</button>`, null);
     }
-    function delMsg(id, path, target) { db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
+    
+    function delMsg(id, path, target) { if(db) db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
+    
     function editMsg(id, old, path, target) { 
         openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
             const cryptoKey = path === 'msgs' ? activeId : user.code;
             const encryptedText = E2EE.encrypt(val, cryptoKey);
-            db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
+            if(db) db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
             triggerBack(); triggerBack(); 
         }); 
     }
@@ -426,7 +464,7 @@ function closeChat() {
     function sendMsg(mode) {
         const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         const text = inp.value.trim();
-        if(!text) return;
+        if(!text || !db) return;
         
         const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
@@ -439,9 +477,10 @@ function closeChat() {
         if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
     }
 
-    function handleTyping() { if(activeId) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
+    function handleTyping() { if(activeId && db) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
 
     function watchStatus(id) {
+        if(!db) return;
         db.ref('presence/' + id).on('value', s => {
             const p = s.val(), el = document.getElementById('cStatus');
             if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
@@ -461,6 +500,7 @@ function closeChat() {
         document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
         document.getElementById('vWidgetFull').style.display = "flex";
     }
+    
     function showMoodMessage(mood) {
         const choices = moodLibrary[mood];
         document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
@@ -471,7 +511,7 @@ function closeChat() {
     }
     function confirmDeleteContact() {
         openModal("Confirmer ?", `<p>Supprimer ce contact ?</p>`, () => {
-            db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
+            if(db) db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
             triggerBack(); triggerBack(); triggerBack();
         });
     }
@@ -495,13 +535,15 @@ function closeChat() {
     }
 
     function applyTheme(url) {
-        db.ref('users/'+user.id).update({wall: url});
+        if(db) db.ref('users/'+user.id).update({wall: url});
         user.wall = url;
         localStorage.setItem('nu_v33_user', JSON.stringify(user));
         document.body.style.backgroundImage = `url(${url})`;
         triggerBack();
         showToast("Univers mis à jour ! 🌌");
-    } // --- NOUVEAU MENU MULTIMÉDIA ---
+    } 
+
+    // --- NOUVEAU MENU MULTIMÉDIA ---
     function openMediaMenu(mode) {
         currentMediaMode = mode;
         openModal("Joindre", `
@@ -520,7 +562,7 @@ function closeChat() {
 
     function processMediaUpload(e, type) {
         const file = e.target.files[0];
-        if(!file) return;
+        if(!file || !db) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
             const data = ev.target.result;
@@ -536,7 +578,13 @@ function closeChat() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = e.target.result;
-            if(mode === 'pfp') { db.ref('users/'+user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
+            if(mode === 'pfp') { 
+                if(db) db.ref('users/'+user.id).update({ pfp: data }); 
+                user.pfp = data; 
+                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; 
+                showToast("Photo mise à jour !"); 
+            }
             else if(mode === 'wall') { applyTheme(data); }
         };
         reader.readAsDataURL(file);
@@ -561,6 +609,7 @@ function closeChat() {
     }
 
     function loadContacts() {
+        if(!db) return;
         db.ref('users/'+user.id+'/contacts').on('value', s => {
             const list = document.getElementById('chatList');
             list.innerHTML = "";
@@ -578,81 +627,8 @@ function closeChat() {
         openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
             const id = "u_" + tel.replace(/\D/g,'');
             if(id === user.id) return showToast("C'est vous !");
-            db.ref('users/'+id).once('value', s => {
+            if(db) db.ref('users/'+id).once('value', s => {
                 if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); showToast("Contact ajouté !"); }
                 else showToast("Inconnu");
             });
-        });
-    }
-
-    function askCoconCode() {
-        openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
-            if(val === user.code) {
-                document.getElementById('modalFrame').classList.add('unlocking');
-                setTimeout(() => {
-                    document.getElementById('customModal').style.display = 'none'; stateStack.pop();
-                    document.getElementById('coconBox').style.display = 'flex'; pushState('coconBox');
-                    syncMessages('cocon', user.code, 'coArea'); document.getElementById('modalFrame').classList.remove('unlocking');
-                }, 800);
-            } else showToast("Code incorrect...");
-        });
-    }
-
-    function startRecord() {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            mediaRecorder = new MediaRecorder(stream); mediaRecorder.start();
-            document.getElementById('micBtn').classList.add('recording'); audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        }).catch(() => showToast("Micro non autorisé"));
-    }
-    
-    function stopRecord() {
-        if(!mediaRecorder || mediaRecorder.state === "inactive") return;
-        mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording');
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(audioChunks, { type: 'audio/mp3' });
-            const r = new FileReader(); r.onload = (e) => db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
-            r.readAsDataURL(blob);
-        };
-    }
-
-    function login() {
-        const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
-        db.ref('users/'+ph).once('value', s => {
-            ifs.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
-            else showToast("Erreur identifiants");
-        });
-    }
-
-    function register() {
-        const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
-        if(!pseudo || ph.length < 5) return showToast("Incomplet");
-        const nu = { id: ph, pseudo, pass: document.getElementById('rPass').value, pfp:'', code:'0000', startDate: new Date().toISOString(), wall:'' };
-        db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
-    }
-
-    function confirmLogout() { openModal("Quitter ?", `<p>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
-    function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-    
-    function openEdit(f, d=false) { 
-        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
-            db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
-        }); 
-    }
-    
-    function sendGlobalNote() {
-        openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
-            if(!v) return;
-            db.ref('globalNotes/' + user.code).set({txt: v, sid: user.id, t: firebase.database.ServerValue.TIMESTAMP, readBy: null});
-            triggerBack();
-            showToast("Mot doux envoyé ! 💖");
-        });
-    }
-
-    function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px;">`, null); }
-    function unlockAudio() { if(!audioUnlocked) { new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); } }
-    function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
-    function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); new Audio(sounds.pop).play().catch(()=>{}); } }
-</script>
-</body>
-</html>
+        })
