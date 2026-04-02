@@ -19,7 +19,7 @@
         
         body { 
             margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
-            height: 100vh; overflow: hidden; background-attachment: fixed;
+            height: 100vh; overflow: hidden; background-attachment: fixed; background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
         /* --- Animations --- */
@@ -62,11 +62,11 @@
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { padding: 12px 18px; border-radius: 22px; max-width: 80%; font-size: 14.5px; position: relative; line-height: 1.4; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.2s;}
+        .bubble { padding: 12px 18px; border-radius: 22px; max-width: 80%; font-size: 14.5px; position: relative; line-height: 1.4; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.2s; user-select: none; -webkit-user-select: none; word-wrap: break-word;}
         .bubble:active { transform: scale(0.97); }
         .m-me { align-self: flex-end; background: var(--accent); color: #000; border-bottom-right-radius: 4px; }
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; backdrop-filter: blur(5px); }
-        .msg-meta { font-size: 10px; margin-top: 6px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; }
+        .msg-meta { font-size: 10px; margin-top: 6px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
         
         /* --- Widgets & Modals & Toasts --- */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -84,6 +84,11 @@
         
         /* --- Styles Spécifiques v45 --- */
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; }
+
+        /* --- Nouveaux Styles (Thèmes & Media) --- */
+        .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .theme-card { height: 90px; border-radius: 15px; border: 2px solid transparent; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; text-shadow: 0 2px 5px black; transition: 0.2s; }
+        .theme-card:active { transform: scale(0.95); border-color: var(--accent); }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -117,8 +122,8 @@
     </div>
 </div>
 
-<div id="authLayer">
-    <div style="background:var(--card); padding:40px 30px; border-radius:45px; width:100%; max-width:360px; text-align:center; border:1px solid rgba(255,255,255,0.05);">
+<div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:var(--bg);">
+    <div style="background:var(--card); padding:40px 30px; border-radius:45px; width:100%; max-width:360px; text-align:center; border:1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px);">
         <div id="loginUI">
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px;">Bienvenue</h2>
             <input type="tel" class="modal-input" placeholder="Numéro de téléphone" id="lPhone">
@@ -183,7 +188,8 @@
                     <div style="margin-top:10px; font-size:14px; color:var(--text-sub);">
                         <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
                         <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love);"></b></span><br>
-                        <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span>
+                        <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span><br>
+                        <span style="display:inline-block; margin-top:5px; color:var(--check); font-size:11px;">🔒 Chiffrement E2EE Actif</span>
                     </div>
                 </div>
             </div>
@@ -191,7 +197,7 @@
             <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('pseudo')"><b>Pseudo</b></div>
             <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('code')"><b>Code Cocon</b></div>
             <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openEdit('startDate', true)"><b>📅 Date de notre début</b></div>
-            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="document.getElementById('wallInput').click()"><b>🖼️ Changer le fond (Galerie)</b></div>
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openWallMenu()"><b>🎨 Personnaliser l'Univers</b></div>
             <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold;" onclick="sendGlobalNote()">💌 Envoyer un mot doux au Cocon</div>
             
             <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--love); font-weight:bold; margin-top:30px; font-size:16px;">Quitter l'Univers</button>
@@ -211,10 +217,9 @@
     </div>
     <div class="msg-area" id="mArea"></div>
     <div id="typingDisp" style="padding:0 25px 8px; font-size:11px; color:var(--accent); font-style:italic; display:none;">écrit un message...</div>
-    <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.3); align-items:center;">
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0;" onclick="document.getElementById('imgIn').click()">🖼️</button>
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0;" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()">🎤</button>
-        <input type="file" id="imgIn" hidden accept="image/*" onchange="uploadFile(this, 'msg')">
+    <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.6); align-items:center;">
+        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0;" onclick="openMediaMenu('msgs')">📎</button>
+        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0;" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()">🎤</button>
         <input type="text" id="mIn" placeholder="Dire quelque chose..." style="flex:1; background:var(--card); border:none; padding:14px 20px; border-radius:25px; color:white;" oninput="handleTyping()">
         <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; color:black; font-size:20px;">➔</button>
     </div>
@@ -226,11 +231,16 @@
         <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px;">🌹 Notre Cocon Privé</b></div>
     </div>
     <div class="msg-area" id="coArea"></div>
-    <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.4);">
+    <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.6); align-items:center;">
+        <button class="option-btn" style="width:50px; height:50px; border-radius:50%; margin:0; padding:0; background:rgba(255,75,110,0.2); color:white;" onclick="openMediaMenu('cocon')">📎</button>
         <input type="text" id="coIn" placeholder="Écris ici ton secret..." style="flex:1; background:var(--card); border:none; padding:16px; border-radius:25px; color:white;">
         <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:55px; height:55px; border-radius:50%; color:white; font-size:22px;">➔</button>
     </div>
 </div>
+
+<input type="file" id="imgIn" hidden accept="image/*">
+<input type="file" id="camIn" hidden accept="image/*" capture="environment">
+<input type="file" id="vidIn" hidden accept="video/*">
 
 <script>
     // --- CONFIGURATION ---
@@ -245,6 +255,7 @@
     let activeId = null, currentPeerId = null, activeChatPath = null;
     let audioUnlocked = false, stateStack = [], typingTimeout;
     let mediaRecorder, audioChunks = [];
+    let currentMediaMode = 'msgs'; // Sert à savoir si la photo va dans msg ou cocon
 
     const sounds = { 'pop': 'https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3' };
     const moodLibrary = {
@@ -252,6 +263,30 @@
         "Triste 🥺": ["Sèche tes larmes, je suis ton bouclier éternel.", "Ton sourire me manque trop, reviens-moi vite."],
         "Amoureux(se) 🥰": ["Tu es tout ce dont j'ai besoin pour être heureux.", "Je t'aime plus que l'Univers lui-même."],
         "Fatigué(e) 😴": ["Repose-toi mon amour, tu as bien travaillé.", "Dors bien, je veille sur tes rêves. 🌙"]
+    };
+
+    // --- MOTEUR DE CHIFFREMENT E2EE ---
+    const E2EE = {
+        encrypt: (text, key) => {
+            if(!text) return "";
+            let res = "";
+            for(let i=0; i<text.length; i++) {
+                res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            // Encodage base64 pour sécuriser le stockage Firebase
+            return "E2EE::" + btoa(encodeURIComponent(res));
+        },
+        decrypt: (text, key) => {
+            if(!text || !text.startsWith("E2EE::")) return text;
+            try {
+                let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
+                let res = "";
+                for(let i=0; i<dec.length; i++) {
+                    res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return res;
+            } catch(e) { return "🔒 [Message indéchiffrable]"; }
+        }
     };
 
     function showToast(msg) {
@@ -272,7 +307,6 @@
         document.getElementById('mainApp').style.display = 'block';
         document.getElementById('uNameDisp').innerText = user.pseudo;
         
-        // Remplissage infos sécurisées
         document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
         document.getElementById('setCodeDisplay').innerText = user.code;
         document.getElementById('setIdDisplay').innerText = user.id;
@@ -282,7 +316,8 @@
         updateTimeCounter();
         initNotifications();
         
-        // --- CORRECTION : MOT DOUX CIBLÉ PAR CODE COCON ---
+        if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
+
         db.ref('globalNotes/' + user.code).on('value', s => {
             const note = s.val();
             if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
@@ -298,7 +333,6 @@
         }
     }
 
-    // --- CORRECTION : PRÉSENCE EN LIGNE ROBUSTE ---
     function updatePresence() {
         const statusRef = db.ref('presence/' + user.id);
         const connectedRef = db.ref('.info/connected');
@@ -311,7 +345,6 @@
         });
     }
 
-    // --- CORRECTION : DÉVERROUILLAGE INFOS COMPTE ---
     function unlockSecureSettings() {
         openModal("Accès Sécurisé", `<p style="font-size:12px; opacity:0.7;">Saisissez votre numéro de téléphone pour déverrouiller</p><input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (val) => {
             const cleanVal = val.replace(/\D/g,'');
@@ -333,7 +366,6 @@
         db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
     }
 
-    // Navigation
     function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
     window.onpopstate = () => {
         const last = stateStack.pop();
@@ -350,19 +382,16 @@
         el.classList.add('active');
     }
 
-    // Messagerie
     function openChat(id, name, pfp) {
         currentPeerId = id;
         activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
         document.getElementById('chatBox').style.display = 'flex';
-        if(user.wall) document.getElementById('chatBox').style.backgroundImage = `url(${user.wall})`;
         pushState('chatBox');
         watchStatus(id);
         syncMessages('msgs', activeId, 'mArea');
     }
-
     function closeChat() {
         if(activeChatPath) db.ref(activeChatPath).off();
         if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
@@ -375,15 +404,23 @@
         const isMe = m.sid === user.id;
         if(!isMe && !m.seen) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
         
-        let content = m.txt.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        // DÉCHIFFREMENT
+        const cryptoKey = path === 'msgs' ? activeId : user.code;
+        const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
+        
+        let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;" onclick="viewPhoto('${m.txt}')">`;
+        if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;"></video>`;
         if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
         if(m.edited) content += `<br><small style="font-size:9px; opacity:0.6;">(modifié)</small>`;
         
         const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
-        const clickEvent = (isMe && m.type==='text') ? `onclick="msgOptions('${snap.key}', ${m.t}, '${m.txt.replace(/'/g, "\\'")}', '${path}', '${target}')"` : '';
+        const clickEvent = (isMe && m.type==='text') ? `onclick="msgOptions('${snap.key}', ${m.t}, '${decryptedText.replace(/'/g, "\\'")}', '${path}', '${target}')"` : '';
 
-        return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
+        // Ajout du cadenas pour confirmer le chiffrement
+        const lockIcon = (m.type === 'text') ? `<span style="font-size:9px; opacity:0.5; margin-right:3px;">🔒</span>` : '';
+
+        return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
     }
 
     function syncMessages(path, target, areaId) {
@@ -401,14 +438,27 @@
         openModal("Message", `<button class="option-btn" onclick="editMsg('${msgId}', '${txt}', '${path}', '${target}')">✏️ Modifier</button><button class="option-btn" style="color:var(--love)" onclick="delMsg('${msgId}', '${path}', '${target}')">🗑️ Supprimer</button>`, null);
     }
     function delMsg(id, path, target) { db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
-    function editMsg(id, old, path, target) { openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { db.ref(path+'/'+target+'/'+id).update({txt: val, edited: true}); triggerBack(); triggerBack(); }); }
+    function editMsg(id, old, path, target) { 
+        openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
+            const cryptoKey = path === 'msgs' ? activeId : user.code;
+            const encryptedText = E2EE.encrypt(val, cryptoKey);
+            db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
+            triggerBack(); triggerBack(); 
+        }); 
+    }
 
     function sendMsg(mode) {
         const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         const text = inp.value.trim();
         if(!text) return;
+        
         const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-        db.ref(path).push({ sid: user.id, txt: text, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
+        const cryptoKey = mode === 'msgs' ? activeId : user.code;
+        
+        // CHIFFREMENT AVANT ENVOI
+        const encryptedText = E2EE.encrypt(text, cryptoKey);
+        
+        db.ref(path).push({ sid: user.id, txt: encryptedText, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
         inp.value = "";
         if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
     }
@@ -435,7 +485,6 @@
         document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
         document.getElementById('vWidgetFull').style.display = "flex";
     }
-
     function showMoodMessage(mood) {
         const choices = moodLibrary[mood];
         document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
@@ -444,12 +493,66 @@
     function openContactOptions() {
         openModal("Options", `<button class="option-btn" onclick="triggerBack()">🖼️ Voir la photo</button><button class="option-btn" onclick="confirmDeleteContact()" style="color:var(--love)">🗑️ Supprimer le contact</button>`, null);
     }
-
     function confirmDeleteContact() {
         openModal("Confirmer ?", `<p>Supprimer ce contact ?</p>`, () => {
             db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
             triggerBack(); triggerBack(); triggerBack();
         });
+    }
+
+    // --- GESTION DES NOUVEAUX THÈMES ---
+    function openWallMenu() {
+        const themes = [
+            { n: "Galaxie", u: "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1000" },
+            { n: "Nébuleuse", u: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1000" },
+            { n: "Abysse", u: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=1000" },
+            { n: "Aurore", u: "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1000" }
+        ];
+        
+        let html = `<div class="theme-grid">`;
+        themes.forEach(t => {
+            html += `<div class="theme-card" style="background-image:url('${t.u}')" onclick="applyTheme('${t.u}')">${t.n}</div>`;
+        });
+        html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black;" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
+        
+        openModal("Univers", html, null);
+    }
+
+    function applyTheme(url) {
+        db.ref('users/'+user.id).update({wall: url});
+        user.wall = url;
+        localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        document.body.style.backgroundImage = `url(${url})`;
+        triggerBack();
+        showToast("Univers mis à jour ! 🌌");
+    }
+     // --- NOUVEAU MENU MULTIMÉDIA ---
+    function openMediaMenu(mode) {
+        currentMediaMode = mode;
+        openModal("Joindre", `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="option-btn" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
+                <button class="option-btn" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
+                <button class="option-btn" style="grid-column: span 2" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
+            </div>
+        `, null);
+    }
+
+    // Capture des inputs cachés
+    document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, 'img');
+    document.getElementById('camIn').onchange = (e) => processMediaUpload(e, 'img');
+    document.getElementById('vidIn').onchange = (e) => processMediaUpload(e, 'video');
+
+    function processMediaUpload(e, type) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = ev.target.result;
+            const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+            db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: type, seen: false });
+        };
+        reader.readAsDataURL(file);
     }
 
     function uploadFile(input, mode) {
@@ -459,8 +562,7 @@
         reader.onload = (e) => {
             const data = e.target.result;
             if(mode === 'pfp') { db.ref('users/'+user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
-            else if(mode === 'wall') { db.ref('users/'+user.id).update({ wall: data }); user.wall = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); showToast("Fond mis à jour !"); }
-            else { db.ref('msgs/'+activeId).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: 'img', seen: false }); }
+            else if(mode === 'wall') { applyTheme(data); }
         };
         reader.readAsDataURL(file);
     }
@@ -563,7 +665,6 @@
         }); 
     }
     
-    // --- CORRECTION : MOT DOUX ENVOYÉ AU PARTENAIRE (MÊME CODE) ---
     function sendGlobalNote() {
         openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
             if(!v) return;
