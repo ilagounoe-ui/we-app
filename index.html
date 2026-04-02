@@ -276,7 +276,7 @@ if(db) {
                     location.reload();
                 }
             });
-
+         } 
             // Une fois le check de ban actif, on lance le reste
             updatePresence();
             loadContacts();
@@ -286,7 +286,7 @@ if(db) {
     // Ton écouteur de mots doux (Global Notes)
     db.ref('globalNotes/' + user.code).on('value', s => {
         const note = s.val();
-        if(note && note.sid !== user.id && !note.readBy?.[user.id]) }
+        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
             document.getElementById('coconTabBtn').classList.add('cocon-notify');
             if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
             document.getElementById('coconNoteText').innerText = note.txt;
