@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="esp">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -200,6 +200,11 @@
             <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openWallMenu()"><b>🎨 Personnaliser l'Univers</b></div>
             <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold;" onclick="sendGlobalNote()">💌 Envoyer un mot doux au Cocon</div>
             
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--accent); margin-top: 10px;" onclick="openDashboard()">
+                <b>⚙️ Panel Administrateur</b>
+                <div style="font-size:12px; color:var(--text-sub); margin-top:5px;">Accéder au Dashboard</div>
+            </div>
+            
             <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--love); font-weight:bold; margin-top:30px; font-size:16px;">Quitter l'Univers</button>
         </div>
     </div>
@@ -243,6 +248,26 @@
 <input type="file" id="vidIn" hidden accept="video/*">
 
 <script>
+// --- VARIABLES GLOBALES MANQUANTES (CORRECTION) ---
+let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
+let stateStack = [];
+let activeId = null;
+let currentPeerId = null;
+let activeChatPath = null;
+let audioUnlocked = false;
+let currentMediaMode = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let typingTimeout = null;
+
+const sounds = { pop: '' }; // Evite le crash audio si aucun son n'est défini
+const moodLibrary = {
+    "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
+    "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
+    "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
+    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
+};
+
 // --- CONFIGURATION FIREBASE (MISE À JOUR v45) ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
@@ -259,71 +284,8 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig); 
 }
 const db = firebase.database(); 
-
-// --- DÉBUT DU SETUP APP ---
-function setupApp() {
-    // 1. On affiche l'interface immédiatement
-    document.getElementById('splash').style.display = 'none';
-    document.getElementById('authLayer').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    
-    // 2. Si la base de données est prête
-    if(db) {
-        // 🛡️ SYSTÈME DE BAN EN TEMPS RÉEL
-        db.ref('banned/' + user.id).on('value', snap => {
-            if (snap.exists() && snap.val() === true) {
-                document.body.style.filter = "grayscale(1) contrast(2)"; 
-                alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
-                localStorage.clear();
-                location.reload();
-            }
-        });
-
-        // Lancement des services (doivent être DANS le if(db))
-        updatePresence();
-        loadContacts();
-        updateTimeCounter();
-        initNotifications();
-    
-        // Écouteur des mots doux (Global Notes)
-        db.ref('globalNotes/' + user.code).on('value', s => {
-            const note = s.val();
-            if(note && note.sid !== user.id && (!note.readBy || !note.readBy[user.id])) {
-                document.getElementById('coconTabBtn').classList.add('cocon-notify');
-                if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
-                document.getElementById('coconNoteText').innerText = note.txt;
-                document.getElementById('coconNoteDisplay').style.display = 'flex';
-            }
-        });
-    } // <--- Fermeture du if(db)
-
-} // <--- C'EST CETTE ACCOLADE QUI MANQUAIT ! Elle ferme la fonction setupApp
-    
-
-    if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
-    if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
-    }
-    
-    let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
-    let currentPeerId = null;
-    let activeId = null;
-    let activeChatPath = null;
-    let typingTimeout = null;
-    let stateStack = [];
-    let audioUnlocked = false;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let currentMediaMode = 'msgs';
-    
-    const sounds = { pop: 'https://actions.google.com/sounds/v1/water/water_drop.ogg' }; // Son par défaut
-    const moodLibrary = {
-        "Triste": ["Je suis là pour toi ❤️", "Un câlin virtuel pour toi !"],
-        "Joyeux": ["Que cette joie dure toujours !", "Ton sourire illumine l'Univers ✨"],
-        "Stressé": ["Respire profondément, tout va bien se passer.", "Prends une pause, tu l'as mérité."],
-        "Fatigué": ["Repose-toi bien mon amour.", "Une douce nuit s'annonce..."]
-    };
-
-    // --- MOTEUR DE CHIFFREMENT E2EE ---
+   
+ // --- MOTEUR DE CHIFFREMENT E2EE ---
     const E2EE = {
         encrypt: (text, key) => {
             if(!text) return "";
@@ -369,39 +331,22 @@ function setupApp() {
         document.getElementById('setCodeDisplay').innerText = user.code;
         document.getElementById('setIdDisplay').innerText = user.id;
 
-        if(db) {//
-            // --- 🛡️ SYSTÈME DE BAN TEMPS RÉEL (À insérer ici) ---
-    db.ref('banned/' + user.id).on('value', snap => {
-        if (snap.exists() && snap.val() === true) {
-            // Effet visuel "Agent Secret"
-            document.body.style.filter = "grayscale(1) contrast(2)"; 
-            alert("🔒 ACCÈS RÉVOQUÉ\nVotre compte a été suspendu par l'administration.");
-            
-            // On nettoie tout pour éviter qu'il revienne en arrière
-            localStorage.clear();
-            location.reload();
-        }
-    });
-        }
-    // --------------------------------------------------
-        
-            updatePresence();
-            loadContacts();
-            updateTimeCounter();
-            initNotifications();
-
-            db.ref('globalNotes/' + user.code).on('value', s => {
-                const note = s.val();
-                if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-                    document.getElementById('coconTabBtn').classList.add('cocon-notify');
-                    if(audioUnlocked) new Audio(sounds.pop).play().catch(()=>{});
-                    document.getElementById('coconNoteText').innerText = note.txt;
-                    document.getElementById('coconNoteDisplay').style.display = 'flex';
-                }
-            });
-        });//
+        updatePresence();
+        loadContacts();
+        updateTimeCounter();
+        initNotifications();
         
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
+
+        db.ref('globalNotes/' + user.code).on('value', s => {
+            const note = s.val();
+            if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+                document.getElementById('coconTabBtn').classList.add('cocon-notify');
+                if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+                document.getElementById('coconNoteText').innerText = note.txt;
+                document.getElementById('coconNoteDisplay').style.display = 'flex';
+            }
+        });
 
         if(user.pfp) {
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -435,12 +380,6 @@ function setupApp() {
         });
     }
 
-    function closeCoconNote() {
-        document.getElementById('coconNoteDisplay').style.display = 'none';
-        document.getElementById('coconTabBtn').classList.remove('cocon-notify');
-        if(db) db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
-    }
-
     function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
     window.onpopstate = () => {
         const last = stateStack.pop();
@@ -469,10 +408,8 @@ function setupApp() {
     }
 
     function closeChat() {
-        if(db) {
-            if(activeChatPath) db.ref(activeChatPath).off();
-            if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
-        }
+        if(activeChatPath) db.ref(activeChatPath).off();
+        if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
         document.getElementById('chatBox').style.display = 'none';
         document.getElementById('coconBox').style.display = 'none';
     }
@@ -480,7 +417,7 @@ function setupApp() {
     function getMsgHTML(snap, path, target) {
         const m = snap.val();
         const isMe = m.sid === user.id;
-        if(!isMe && !m.seen && db) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
+        if(!isMe && !m.seen) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
         
         // DÉCHIFFREMENT
         const cryptoKey = path === 'msgs' ? activeId : user.code;
@@ -502,7 +439,6 @@ function setupApp() {
     }
 
     function syncMessages(path, target, areaId) {
-        if(!db) return;
         if(activeChatPath) db.ref(activeChatPath).off();
         activeChatPath = path + '/' + target;
         const area = document.getElementById(areaId);
@@ -517,13 +453,13 @@ function setupApp() {
         openModal("Message", `<button class="option-btn" onclick="editMsg('${msgId}', '${txt}', '${path}', '${target}')">✏️ Modifier</button><button class="option-btn" style="color:var(--love)" onclick="delMsg('${msgId}', '${path}', '${target}')">🗑️ Supprimer</button>`, null);
     }
     
-    function delMsg(id, path, target) { if(db) db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
+    function delMsg(id, path, target) { db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
     
     function editMsg(id, old, path, target) { 
         openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
             const cryptoKey = path === 'msgs' ? activeId : user.code;
             const encryptedText = E2EE.encrypt(val, cryptoKey);
-            if(db) db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
+            db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
             triggerBack(); triggerBack(); 
         }); 
     }
@@ -531,7 +467,7 @@ function setupApp() {
     function sendMsg(mode) {
         const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         const text = inp.value.trim();
-        if(!text || !db) return;
+        if(!text) return;
         
         const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
@@ -544,10 +480,9 @@ function setupApp() {
         if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
     }
 
-    function handleTyping() { if(activeId && db) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
+    function handleTyping() { if(activeId) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
 
     function watchStatus(id) {
-        if(!db) return;
         db.ref('presence/' + id).on('value', s => {
             const p = s.val(), el = document.getElementById('cStatus');
             if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
@@ -576,14 +511,14 @@ function setupApp() {
     function openContactOptions() {
         openModal("Options", `<button class="option-btn" onclick="triggerBack()">🖼️ Voir la photo</button><button class="option-btn" onclick="confirmDeleteContact()" style="color:var(--love)">🗑️ Supprimer le contact</button>`, null);
     }
+    
     function confirmDeleteContact() {
         openModal("Confirmer ?", `<p>Supprimer ce contact ?</p>`, () => {
-            if(db) db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
+            db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
             triggerBack(); triggerBack(); triggerBack();
         });
     }
 
-    // --- GESTION DES NOUVEAUX THÈMES ---
     function openWallMenu() {
         const themes = [
             { n: "Galaxie", u: "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1000" },
@@ -602,7 +537,7 @@ function setupApp() {
     }
 
     function applyTheme(url) {
-        if(db) db.ref('users/'+user.id).update({wall: url});
+        db.ref('users/'+user.id).update({wall: url});
         user.wall = url;
         localStorage.setItem('nu_v33_user', JSON.stringify(user));
         document.body.style.backgroundImage = `url(${url})`;
@@ -610,7 +545,6 @@ function setupApp() {
         showToast("Univers mis à jour ! 🌌");
     } 
 
-    // --- NOUVEAU MENU MULTIMÉDIA ---
     function openMediaMenu(mode) {
         currentMediaMode = mode;
         openModal("Joindre", `
@@ -622,14 +556,13 @@ function setupApp() {
         `, null);
     }
 
-    // Capture des inputs cachés
     document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, 'img');
     document.getElementById('camIn').onchange = (e) => processMediaUpload(e, 'img');
     document.getElementById('vidIn').onchange = (e) => processMediaUpload(e, 'video');
 
     function processMediaUpload(e, type) {
         const file = e.target.files[0];
-        if(!file || !db) return;
+        if(!file) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
             const data = ev.target.result;
@@ -645,13 +578,7 @@ function setupApp() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const data = e.target.result;
-            if(mode === 'pfp') { 
-                if(db) db.ref('users/'+user.id).update({ pfp: data }); 
-                user.pfp = data; 
-                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; 
-                showToast("Photo mise à jour !"); 
-            }
+            if(mode === 'pfp') { db.ref('users/'+user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
             else if(mode === 'wall') { applyTheme(data); }
         };
         reader.readAsDataURL(file);
@@ -676,7 +603,6 @@ function setupApp() {
     }
 
     function loadContacts() {
-        if(!db) return;
         db.ref('users/'+user.id+'/contacts').on('value', s => {
             const list = document.getElementById('chatList');
             list.innerHTML = "";
@@ -694,7 +620,7 @@ function setupApp() {
         openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
             const id = "u_" + tel.replace(/\D/g,'');
             if(id === user.id) return showToast("C'est vous !");
-            if(db) db.ref('users/'+id).once('value', s => {
+            db.ref('users/'+id).once('value', s => {
                 if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); showToast("Contact ajouté !"); }
                 else showToast("Inconnu");
             });
@@ -727,21 +653,15 @@ function setupApp() {
         mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording');
         mediaRecorder.onstop = () => {
             const blob = new Blob(audioChunks, { type: 'audio/mp3' });
-            const r = new FileReader(); 
-            r.onload = (e) => {
-                if(db) db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
-            };
+            const r = new FileReader(); r.onload = (e) => db.ref('msgs/'+activeId).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
             r.readAsDataURL(blob);
         };
     }
 
     function login() {
         const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
-        if(db) db.ref('users/'+ph).once('value', s => {
-            // CORRECTION DE L'ERREUR DE SYNTAXE ICI
-            if(s.exists() && s.val().pass === ps) { 
-                user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
-            }
+        db.ref('users/'+ph).once('value', s => {
+            if(s.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
             else showToast("Erreur identifiants");
         });
     }
@@ -750,7 +670,7 @@ function setupApp() {
         const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
         if(!pseudo || ph.length < 5) return showToast("Incomplet");
         const nu = { id: ph, pseudo, pass: document.getElementById('rPass').value, pfp:'', code:'0000', startDate: new Date().toISOString(), wall:'' };
-        if(db) db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
+        db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
     function confirmLogout() { openModal("Quitter ?", `<p>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
@@ -758,23 +678,31 @@ function setupApp() {
     
     function openEdit(f, d=false) { 
         openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
-            if(db) db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
+            db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
         }); 
     }
     
     function sendGlobalNote() {
         openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
             if(!v) return;
-            if(db) db.ref('globalNotes/' + user.code).set({txt: v, sid: user.id, t: firebase.database.ServerValue.TIMESTAMP, readBy: null});
+            db.ref('globalNotes/' + user.code).set({txt: v, sid: user.id, t: firebase.database.ServerValue.TIMESTAMP, readBy: null});
             triggerBack();
             showToast("Mot doux envoyé ! 💖");
         });
     }
 
+    // --- NOUVEAU : FONCTION DU DASHBOARD ---
+    function openDashboard() {
+        showToast("Ouverture du Dashboard...");
+        setTimeout(() => {
+            window.open('dashboard.html', '_blank'); 
+        }, 800);
+    }
+
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px;">`, null); }
-    function unlockAudio() { if(!audioUnlocked) { new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); } }
+    function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
     function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
-    function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); new Audio(sounds.pop).play().catch(()=>{}); } }
+    function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{}); } }
 </script>
 </body>
 </html>
