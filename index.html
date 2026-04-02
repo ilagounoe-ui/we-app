@@ -301,18 +301,30 @@
         else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
     };
 
-    function setupApp() {
+        function setupApp() {
+        // 1. On cache le chargement et l'écran de connexion
         document.getElementById('splash').style.display = 'none';
         document.getElementById('authLayer').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('uNameDisp').innerText = user.pseudo;
         
-        document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
-        document.getElementById('setCodeDisplay').innerText = user.code;
-        document.getElementById('setIdDisplay').innerText = user.id;
+        // 2. On affiche le pseudo de l'utilisateur
+        document.getElementById('uNameDisp').innerText = user.pseudo;
 
+        // --- LE VERROU ANTI-BAN EN TEMPS RÉEL (AJOUT ICI) ---
+        db.ref('banned/' + user.id).on('value', snap => {
+            if (snap.exists()) {
+                // Si l'admin ajoute cet ID dans la branche "banned", l'app réagit direct
+                alert("Votre session a expiré. (Compte suspendu par l'administrateur)");
+                logout(); // Cette fonction vide le localStorage et reload la page
+            }
+        });
+        // ----------------------------------------------------
+
+        // 3. On lance les fonctions habituelles
         updatePresence();
         loadContacts();
+        }
+    
         updateTimeCounter();
         initNotifications();
         
@@ -642,22 +654,26 @@
     }
 
     function login() {
-        const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
-        db.ref('users/'+ph).once('value', s => {
-            if(s.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
-            else showToast("Erreur identifiants");
-            // À mettre à l'intérieur de ta fonction login() après avoir trouvé l'utilisateur
-db.ref('banned/' + ph).once('value', bSnap => {
-    if(bSnap.exists()) {
-        showToast("Votre compte a été suspendu par l'administrateur.");
-    } else {
-        // ... ici le code normal qui connecte l'utilisateur ...
-        user = s.val(); 
-        localStorage.setItem('nu_user', JSON.stringify(user));
-        setupApp();
-    }
-});
-            
+    const phone = document.getElementById('lPhone').value.replace(/\D/g,'');
+    const phId = "u_" + phone;
+    const ps = document.getElementById('lPass').value;
+
+    // 1. Vérifier d'abord si l'utilisateur est banni
+    db.ref('banned/' + phId).once('value', bSnap => {
+        if (bSnap.exists()) {
+            showToast("🚫 Accès refusé : Ce compte a été suspendu.");
+            return; // On arrête tout ici
+        }
+
+        // 2. Si pas banni, on procède à la vérification du mot de passe
+        db.ref('users/' + phId).once('value', s => {
+            if (s.exists() && s.val().pass === ps) {
+                user = s.val();
+                localStorage.setItem('nu_user', JSON.stringify(user));
+                setupApp();
+            } else {
+                showToast("Identifiants incorrects");
+            });
         });
     }
 
