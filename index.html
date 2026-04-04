@@ -72,7 +72,7 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: #1a1a2e; width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid var(--accent); text-align: center; box-shadow: 0 0 30px rgba(187,134,252,0.2); }
         .modal-input { width: 100%; background: var(--card); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; }
-        .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: none; background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left; }
         
         .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 600; transition: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 999999; box-shadow: 0 10px 25px rgba(0,0,0,0.4); text-align: center; width: max-content; max-width: 90%; }
         .toast.show { bottom: 50px; }
@@ -89,6 +89,9 @@
         .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .theme-card { height: 90px; border-radius: 15px; border: 2px solid transparent; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; text-shadow: 0 2px 5px black; transition: 0.2s; }
         .theme-card:active { transform: scale(0.95); border-color: var(--accent); }
+        
+        /* Cacher la barre de scroll pour la liste des langues */
+        .scroll-hidden::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -116,8 +119,8 @@
         <h3 id="modalTitle" style="color:var(--accent); margin:0 0 15px 0; font-family:'Pacifico';">...</h3>
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:12px; margin-top:25px;">
-            <button class="option-btn" style="background:var(--card)" onclick="triggerBack()">Annuler</button>
-            <button class="option-btn" style="background:var(--accent); color:black" id="modalConfirmBtn">Valider</button>
+            <button class="option-btn" style="background:var(--card); justify-content:center;" onclick="triggerBack()">Annuler</button>
+            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center;" id="modalConfirmBtn">Valider</button>
         </div>
     </div>
 </div>
@@ -128,7 +131,7 @@
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px;">Bienvenue</h2>
             <input type="tel" class="modal-input" placeholder="Numéro de téléphone" id="lPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="lPass">
-            <button class="option-btn" style="background:var(--accent); color:black;" onclick="login()">ENTRER DANS L'UNIVERS</button>
+            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center;" onclick="login()">ENTRER DANS L'UNIVERS</button>
             <p onclick="toggleAuth(false)" style="margin-top:25px; font-size:13px; opacity:0.6;">Nouveau ici ? Créer un compte</p>
         </div>
         <div id="regUI" style="display:none;">
@@ -138,7 +141,7 @@
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
             <input type="text" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode">
             
-            <button class="option-btn" style="background:var(--accent); color:black;" onclick="register()">CRÉER MON UNIVERS</button>
+            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center;" onclick="register()">CRÉER MON UNIVERS</button>
             <p onclick="toggleAuth(true)" style="margin-top:25px; font-size:13px; opacity:0.6;">Déjà inscrit ? Connexion</p>
         </div>
     </div>
@@ -151,9 +154,9 @@
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:var(--card); border-radius:15px; color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)">Messages</div>
-            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">Le Cocon 🌹</div>
-            <div class="tab" onclick="switchV('vSet', this)">Réglages</div>
+            <div class="tab active" onclick="switchV('vChats', this)" data-i18n="tab_msg">Messages</div>
+            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)" data-i18n="tab_cocon">Le Cocon 🌹</div>
+            <div class="tab" onclick="switchV('vSet', this)" data-i18n="tab_set">Réglages</div>
         </div>
     </header>
 
@@ -196,18 +199,25 @@
                 </div>
             </div>
 
-            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('pseudo')"><b>Pseudo</b></div>
-            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('code')"><b>Code Cocon</b></div>
-            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openEdit('startDate', true)"><b>📅 Date de notre début</b></div>
-            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openWallMenu()"><b>🎨 Personnaliser l'Univers</b></div>
-            <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold;" onclick="sendGlobalNote()">💌 Envoyer un mot doux au Cocon</div>
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('pseudo')"><b data-i18n="set_pseudo">Pseudo</b></div>
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center;" onclick="openEdit('code')"><b data-i18n="set_code">Code Cocon</b></div>
+            
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openLangMenu()">
+                <b data-i18n="set_lang">🌐 Langue de l'Univers</b>
+                <div style="font-size:12px; color:var(--accent); margin-top:5px; font-weight:bold;" id="currentLangDisp">FR</div>
+            </div>
+
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openDateEdit()"><b data-i18n="set_date">📅 Date de notre début</b></div>
+            
+            <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2;" onclick="openWallMenu()"><b data-i18n="set_wall">🎨 Personnaliser l'Univers</b></div>
+            <div style="background:linear-gradient(135deg, var(--accent), var(--love)); padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold;" onclick="sendGlobalNote()" data-i18n="set_note">💌 Envoyer un mot doux au Cocon</div>
             
             <div style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--accent); margin-top: 10px;" onclick="openDashboard()">
-                <b>⚙️ Panel Administrateur</b>
+                <b data-i18n="set_admin">⚙️ Panel Administrateur</b>
                 <div style="font-size:12px; color:var(--text-sub); margin-top:5px;">Accéder au Dashboard</div>
             </div>
             
-            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--love); font-weight:bold; margin-top:30px; font-size:16px;">Quitter l'Univers</button>
+            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--love); font-weight:bold; margin-top:30px; font-size:16px; justify-content:center;" data-i18n="set_leave">Quitter l'Univers</button>
         </div>
     </div>
 </div>
@@ -225,10 +235,10 @@
     <div class="msg-area" id="mArea"></div>
     <div id="typingDisp" style="padding:0 25px 8px; font-size:11px; color:var(--accent); font-style:italic; display:none;">écrit un message...</div>
     <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.6); align-items:center;">
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0;" onclick="openMediaMenu('msgs')">📎</button>
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0;" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()">🎤</button>
+        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0; justify-content:center;" onclick="openMediaMenu('msgs')">📎</button>
+        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0; justify-content:center;" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()">🎤</button>
         <input type="text" id="mIn" placeholder="Dire quelque chose..." style="flex:1; background:var(--card); border:none; padding:14px 20px; border-radius:25px; color:white;" oninput="handleTyping()">
-        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; color:black; font-size:20px;">➔</button>
+        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:50px; height:50px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center;">➔</button>
     </div>
 </div>
 
@@ -239,9 +249,9 @@
     </div>
     <div class="msg-area" id="coArea"></div>
     <div style="padding:15px; display:flex; gap:10px; background:rgba(0,0,0,0.6); align-items:center;">
-        <button class="option-btn" style="width:50px; height:50px; border-radius:50%; margin:0; padding:0; background:rgba(255,75,110,0.2); color:white;" onclick="openMediaMenu('cocon')">📎</button>
+        <button class="option-btn" style="width:50px; height:50px; border-radius:50%; margin:0; padding:0; background:rgba(255,75,110,0.2); color:white; justify-content:center;" onclick="openMediaMenu('cocon')">📎</button>
         <input type="text" id="coIn" placeholder="Écris ici ton secret..." style="flex:1; background:var(--card); border:none; padding:16px; border-radius:25px; color:white;">
-        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:55px; height:55px; border-radius:50%; color:white; font-size:22px;">➔</button>
+        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:55px; height:55px; border-radius:50%; color:white; font-size:22px; display:flex; align-items:center; justify-content:center;">➔</button>
     </div>
 </div>
 
@@ -250,7 +260,7 @@
 <input type="file" id="vidIn" hidden accept="video/*">
 
 <script>
-// --- VARIABLES GLOBALES MANQUANTES (CORRECTION) ---
+// --- VARIABLES GLOBALES ---
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
 let stateStack = [];
 let activeId = null;
@@ -262,7 +272,38 @@ let mediaRecorder = null;
 let audioChunks = [];
 let typingTimeout = null;
 
-const sounds = { pop: '' }; // Evite le crash audio si aucun son n'est défini
+// --- MOTEUR DE LANGUES (i18n) ---
+const allLanguages = [
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'pt', name: 'Português', flag: '🇵🇹' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷' }
+];
+
+const i18n = {
+    'en': {
+        'tab_msg': 'Messages', 'tab_cocon': 'The Cocoon 🌹', 'tab_set': 'Settings',
+        'set_pseudo': 'Nickname', 'set_code': 'Cocoon Code', 'set_lang': '🌐 Universe Language',
+        'set_date': '📅 Date we met', 'set_wall': '🎨 Customize Universe', 'set_note': '💌 Send sweet note',
+        'set_admin': '⚙️ Admin Panel', 'set_leave': 'Leave Universe'
+    },
+    'es': {
+        'tab_msg': 'Mensajes', 'tab_cocon': 'El Capullo 🌹', 'tab_set': 'Ajustes',
+        'set_pseudo': 'Apodo', 'set_code': 'Código Capullo', 'set_lang': '🌐 Idioma del Universo',
+        'set_date': '📅 Fecha de inicio', 'set_wall': '🎨 Personalizar Universo', 'set_note': '💌 Enviar nota dulce',
+        'set_admin': '⚙️ Panel Admin', 'set_leave': 'Salir del Universo'
+    }
+};
+
+const sounds = { pop: '' }; 
 const moodLibrary = {
     "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
     "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
@@ -270,7 +311,7 @@ const moodLibrary = {
     "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
 };
 
-// --- CONFIGURATION FIREBASE (MISE À JOUR v45) ---
+// --- CONFIGURATION FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
     authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -281,7 +322,6 @@ const firebaseConfig = {
     appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
 };
 
-// Initialisation au format "Compat" pour ton code actuel
 if (!firebase.apps.length) { 
     firebase.initializeApp(firebaseConfig); 
 }
@@ -295,7 +335,6 @@ const db = firebase.database();
             for(let i=0; i<text.length; i++) {
                 res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
             }
-            // Encodage base64 pour sécuriser le stockage Firebase
             return "E2EE::" + btoa(encodeURIComponent(res));
         },
         decrypt: (text, key) => {
@@ -333,6 +372,11 @@ const db = firebase.database();
         document.getElementById('setCodeDisplay').innerText = user.code;
         document.getElementById('setIdDisplay').innerText = user.id;
 
+        // Affichage et application de la langue
+        if(!user.lang) user.lang = 'fr';
+        document.getElementById('currentLangDisp').innerText = user.lang.toUpperCase();
+        applyTranslations(user.lang);
+
         updatePresence();
         loadContacts();
         updateTimeCounter();
@@ -353,6 +397,78 @@ const db = firebase.database();
         if(user.pfp) {
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
         }
+    }
+
+    // --- FONCTIONS LANGUES ---
+    function applyTranslations(code) {
+        if(!i18n[code]) return; // Par défaut, on reste sur le HTML original (français)
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if(i18n[code][key]) el.innerText = i18n[code][key];
+        });
+    }
+
+    function openLangMenu() {
+        let html = `
+            <input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);">
+            <div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+        `;
+        html += generateLangListHTML(allLanguages);
+        html += `</div>`;
+        openModal("Langue", html, null);
+    }
+
+    function generateLangListHTML(list) {
+        return list.map(l => `
+            <button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')">
+                <span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span>
+            </button>
+        `).join('');
+    }
+
+    function filterLangs() {
+        const q = document.getElementById('langSearch').value.toLowerCase();
+        const filtered = allLanguages.filter(l => l.name.toLowerCase().includes(q));
+        document.getElementById('langList').innerHTML = generateLangListHTML(filtered);
+    }
+
+    function setAppLang(code) {
+        db.ref('users/'+user.id).update({lang: code}).then(() => {
+            user.lang = code;
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+            document.getElementById('currentLangDisp').innerText = code.toUpperCase();
+            applyTranslations(code);
+            triggerBack();
+            showToast("Langue modifiée ! 🌐");
+        });
+    }
+
+    // --- FONCTION DATE (PAVÉ NUMÉRIQUE) ---
+    function openDateEdit() {
+        const html = `
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+                <input type="number" id="dDay" class="modal-input" placeholder="JJ" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="31">
+                <input type="number" id="dMonth" class="modal-input" placeholder="MM" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="12">
+                <input type="number" id="dYear" class="modal-input" placeholder="AAAA" inputmode="numeric" pattern="[0-9]*" style="width:90px; text-align:center; margin:0;">
+            </div>
+            <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
+        `;
+        openModal("Notre début 📅", html, () => {
+            const j = document.getElementById('dDay').value.padStart(2, '0');
+            const m = document.getElementById('dMonth').value.padStart(2, '0');
+            const a = document.getElementById('dYear').value;
+            
+            if(j !== "00" && m !== "00" && a.length === 4) {
+                const isoDate = `${a}-${m}-${j}T00:00:00`;
+                db.ref('users/'+user.id).update({startDate: isoDate}).then(() => { 
+                    user.startDate = isoDate; 
+                    localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                    location.reload(); 
+                });
+            } else {
+                showToast("Date incomplète !");
+            }
+        });
     }
 
     function updatePresence() {
@@ -434,7 +550,6 @@ const db = firebase.database();
         const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
         const clickEvent = (isMe && m.type==='text') ? `onclick="msgOptions('${snap.key}', ${m.t}, '${decryptedText.replace(/'/g, "\\'")}', '${path}', '${target}')"` : '';
 
-        // Ajout du cadenas pour confirmer le chiffrement
         const lockIcon = (m.type === 'text') ? `<span style="font-size:9px; opacity:0.5; margin-right:3px;">🔒</span>` : '';
 
         return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
@@ -452,7 +567,7 @@ const db = firebase.database();
 
     function msgOptions(msgId, time, txt, path, target) {
         if(Date.now() - time > 30 * 60 * 1000) return showToast("Délai dépassé.");
-        openModal("Message", `<button class="option-btn" onclick="editMsg('${msgId}', '${txt}', '${path}', '${target}')">✏️ Modifier</button><button class="option-btn" style="color:var(--love)" onclick="delMsg('${msgId}', '${path}', '${target}')">🗑️ Supprimer</button>`, null);
+        openModal("Message", `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${txt}', '${path}', '${target}')">✏️ Modifier</button><button class="option-btn" style="color:var(--love); justify-content:center;" onclick="delMsg('${msgId}', '${path}', '${target}')">🗑️ Supprimer</button>`, null);
     }
     
     function delMsg(id, path, target) { db.ref(path+'/'+target+'/'+id).remove(); triggerBack(); }
@@ -474,7 +589,6 @@ const db = firebase.database();
         const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
         
-        // CHIFFREMENT AVANT ENVOI
         const encryptedText = E2EE.encrypt(text, cryptoKey);
         
         db.ref(path).push({ sid: user.id, txt: encryptedText, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
@@ -500,7 +614,7 @@ const db = firebase.database();
     function openMoodSelector() {
         const box = document.getElementById('moodOptions');
         box.innerHTML = "";
-        Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" onclick="showMoodMessage('${m}')">${m}</button>`; });
+        Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; });
         document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
         document.getElementById('vWidgetFull').style.display = "flex";
     }
@@ -511,7 +625,7 @@ const db = firebase.database();
     }
 
     function openContactOptions() {
-        openModal("Options", `<button class="option-btn" onclick="triggerBack()">🖼️ Voir la photo</button><button class="option-btn" onclick="confirmDeleteContact()" style="color:var(--love)">🗑️ Supprimer le contact</button>`, null);
+        openModal("Options", `<button class="option-btn" style="justify-content:center;" onclick="triggerBack()">🖼️ Voir la photo</button><button class="option-btn" onclick="confirmDeleteContact()" style="color:var(--love); justify-content:center;">🗑️ Supprimer le contact</button>`, null);
     }
     
     function confirmDeleteContact() {
@@ -533,7 +647,7 @@ const db = firebase.database();
         themes.forEach(t => {
             html += `<div class="theme-card" style="background-image:url('${t.u}')" onclick="applyTheme('${t.u}')">${t.n}</div>`;
         });
-        html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black;" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
+        html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black; justify-content:center;" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
         
         openModal("Univers", html, null);
     }
@@ -551,9 +665,9 @@ const db = firebase.database();
         currentMediaMode = mode;
         openModal("Joindre", `
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="option-btn" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
-                <button class="option-btn" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
-                <button class="option-btn" style="grid-column: span 2" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
+                <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
+                <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
+                <button class="option-btn" style="grid-column: span 2; justify-content:center;" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
             </div>
         `, null);
     }
@@ -668,16 +782,12 @@ const db = firebase.database();
         });
     }
 
-    // --- C'EST ICI QUE J'AI CORRIGÉ LA FONCTION D'INSCRIPTION ---
     function register() {
         const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
-        
-        // 1. On capture enfin le code que l'utilisateur vient de taper
         const codeSaisi = document.getElementById('rCode').value || '0000'; 
         
         if(!pseudo || ph.length < 5) return showToast("Incomplet");
         
-        // 2. On l'injecte dans les données qui partent vers Firebase (code + codeInscription)
         const nu = { 
             id: ph, 
             pseudo: pseudo, 
@@ -686,7 +796,8 @@ const db = firebase.database();
             code: codeSaisi, 
             codeInscription: codeSaisi, 
             startDate: new Date().toISOString(), 
-            wall: '' 
+            wall: '',
+            lang: 'fr' // Langue par défaut à l'inscription
         };
         
         db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
@@ -710,7 +821,6 @@ const db = firebase.database();
         });
     }
 
-    // --- NOUVEAU : FONCTION DU DASHBOARD ---
     function openDashboard() {
         showToast("Ouverture du Dashboard...");
         setTimeout(() => {
