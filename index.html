@@ -342,7 +342,37 @@ appCheck.activate(
     '6LfrEacsAAAAACuWqNTZnUB5ETdWf8iKt58UzlMY', 
     true 
 );
-// 👆 FIN DE L'AJOUT 👆
+// --- CONFIGURATION NOTIFICATIONS PUSH (V1) ---
+const messaging = Firebase.messaging();
+const maClePublicVapid = "BONjpvomV8j5QfspnSsKHINbKtgwgZ2erQGCwSArVAI_pgWfaZXrNwVNO7tecaDaXV4fjwSnBpOnXVLo4JOhM";
+
+async function configurerNotifications(utilisateurId) {
+    try {
+        // 1. Demander la permission au navigateur
+        const permission = await Notification.requestPermission();
+        
+        if (permission === 'granted') {
+            // 2. Enregistrer le Service Worker
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            
+            // 3. Récupérer le Token unique de l'appareil
+            const jeton = await messaging.getToken({ 
+                vapidKey: maClePublicVapid,
+                serviceWorkerRegistration: registration 
+            });
+
+            if (jeton) {
+                // 4. Sauvegarder dans ta Realtime Database
+                await Firebase.database().ref(`utilisateurs/${utilisateurId}/pushToken`).set(jeton);
+                console.log("🚀 Sentinelle : Appareil prêt pour les notifications !");
+            }
+        }
+    } catch (erreur) {
+        console.error("❌ Erreur Notifications :", erreur);
+    }
+}
+    
+    // 👆 FIN DE L'AJOUT 👆
 
 // 👇 AJOUT DE LA SENTINELLE : FONCTIONS DE SÉCURITÉ MATÉRIELLE 👇
 function getPersistentDeviceId() {
