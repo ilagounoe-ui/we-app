@@ -8,7 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
         :root { 
@@ -334,630 +336,686 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database(); 
    
- // --- MOTEUR DE CHIFFREMENT E2EE ---
-    const E2EE = {
-        encrypt: (text, key) => {
-            if(!text) return "";
-            let res = "";
-            for(let i=0; i<text.length; i++) {
-                res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
-            return "E2EE::" + btoa(encodeURIComponent(res));
-        },
-        decrypt: (text, key) => {
-            if(!text || !text.startsWith("E2EE::")) return text;
-            try {
-                let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
-                let res = "";
-                for(let i=0; i<dec.length; i++) {
-                    res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-                }
-                return res;
-            } catch(e) { return "🔒 [Message indéchiffrable]"; }
-        }
-    };
+// 👇 AJOUT DE LA SENTINELLE : ACTIVATION APP CHECK 👇
+const appCheck = firebase.appCheck();
+appCheck.activate(
+    '6LfrEacsAAAAACuWqNTZnUB5ETdWf8iKt58UzlMY', 
+    true 
+);
+// 👆 FIN DE L'AJOUT 👆
 
-    function showToast(msg) {
-        const t = document.getElementById('toastAlert');
-        t.innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3500);
+// 👇 AJOUT DE LA SENTINELLE : FONCTIONS DE SÉCURITÉ MATÉRIELLE 👇
+function getPersistentDeviceId() {
+    let id = localStorage.getItem('sentinel_device_id');
+    if (!id) {
+        id = 'DEV_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+        localStorage.setItem('sentinel_device_id', id);
     }
+    return id;
+}
 
-    window.onload = () => {
+async function demarrerSentinelle() {
+    console.log("🛡️ Sentinelle : Analyse de l'intégrité...");
+    try {
+        const deviceId = getPersistentDeviceId();
+        const dbFirestore = firebase.firestore();
+        const banRef = await dbFirestore.collection("system_integrity").doc(deviceId).get();
+        
+        if (banRef.exists && banRef.data().isBanned) {
+            bloquerApplication("ACCÈS RÉVOQUÉ : APPAREIL BANI");
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Erreur Sécurité (ou Mode hors-ligne):", error);
+        return true; // En cas de problème réseau, on laisse passer (App Check prendra le relais de toute façon)
+    }
+}
+
+function bloquerApplication(message) {
+    document.body.innerHTML = `
+        <div style="background:#000; color:#ff4d4d; height:100vh; display:flex; 
+                    flex-direction:column; align-items:center; justify-content:center; 
+                    text-align:center; font-family: 'Courier New', monospace; position:fixed; inset:0; z-index:9999999;">
+            <h1 style="border: 2px solid #ff4d4d; padding: 20px;">[ ERREUR SYSTÈME ]</h1>
+            <p style="font-size: 1.2em;">${message}</p>
+            <p style="color: #444; margin-top:20px;">Code: 0x88_MODIFICATION_DETECTEE</p>
+        </div>`;
+    window.stop();
+}
+// 👆 FIN DE L'AJOUT 👆
+
+// --- MOTEUR DE CHIFFREMENT E2EE ---
+const E2EE = {
+    encrypt: (text, key) => {
+        if(!text) return "";
+        let res = "";
+        for(let i=0; i<text.length; i++) {
+            res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+        }
+        return "E2EE::" + btoa(encodeURIComponent(res));
+    },
+    decrypt: (text, key) => {
+        if(!text || !text.startsWith("E2EE::")) return text;
+        try {
+            let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
+            let res = "";
+            for(let i=0; i<dec.length; i++) {
+                res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return res;
+        } catch(e) { return "🔒 [Message indéchiffrable]"; }
+    }
+};
+
+function showToast(msg) {
+    const t = document.getElementById('toastAlert');
+    t.innerText = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// 👇 MODIFICATION DE LA SENTINELLE : INTERCEPTION DU DÉMARRAGE 👇
+window.onload = async () => {
+    // La sentinelle bloque l'accès si l'appareil est frauduleux
+    const isSafe = await demarrerSentinelle();
+    
+    if (isSafe) {
         if(user) setupApp();
         else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
-    };
-
-    function setupApp() {
-        document.getElementById('splash').style.display = 'none';
-        document.getElementById('authLayer').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block';
-        document.getElementById('uNameDisp').innerText = user.pseudo;
-        
-        document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
-        document.getElementById('setCodeDisplay').innerText = user.code;
-        document.getElementById('setIdDisplay').innerText = user.id;
-
-        // Affichage et application de la langue
-        if(!user.lang) user.lang = 'fr';
-        document.getElementById('currentLangDisp').innerText = user.lang.toUpperCase();
-        applyTranslations(user.lang);
-
-        updatePresence();
-        loadContacts();
-        updateTimeCounter();
-        initNotifications();
-        
-        if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
-
-        db.ref('globalNotes/' + user.code).on('value', s => {
-            const note = s.val();
-            if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-                document.getElementById('coconTabBtn').classList.add('cocon-notify');
-                if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
-                document.getElementById('coconNoteText').innerText = note.txt;
-                document.getElementById('coconNoteDisplay').style.display = 'flex';
-            }
-        });
-
-        if(user.pfp) {
-            document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
-        }
     }
+};
+// 👆 FIN DE LA MODIFICATION 👆
 
-    // --- FONCTIONS LANGUES ---
-    function applyTranslations(code) {
-        const langData = i18n[code] || i18n['fr'];
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if(langData[key]) el.innerText = langData[key];
-        });
-    }
-
-    function openLangMenu() {
-        let html = `
-            <input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);">
-            <div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
-        `;
-        html += generateLangListHTML(allLanguages);
-        html += `</div>`;
-        openModal("Langue", html, null);
-    }
-
-    function generateLangListHTML(list) {
-        return list.map(l => `
-            <button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')">
-                <span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span>
-            </button>
-        `).join('');
-    }
-
-    function filterLangs() {
-        const q = document.getElementById('langSearch').value.toLowerCase();
-        const filtered = allLanguages.filter(l => l.name.toLowerCase().includes(q));
-        document.getElementById('langList').innerHTML = generateLangListHTML(filtered);
-    }
-
-    function setAppLang(code) {
-        db.ref('users/'+user.id).update({lang: code}).then(() => {
-            user.lang = code;
-            localStorage.setItem('nu_v33_user', JSON.stringify(user));
-            document.getElementById('currentLangDisp').innerText = code.toUpperCase();
-            applyTranslations(code);
-            triggerBack();
-            showToast("Langue modifiée ! 🌐");
-        });
-    }
-
-    // --- FONCTION DATE (PAVÉ NUMÉRIQUE) ---
-    function openDateEdit() {
-        const html = `
-            <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-                <input type="number" id="dDay" class="modal-input" placeholder="JJ" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="31">
-                <input type="number" id="dMonth" class="modal-input" placeholder="MM" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="12">
-                <input type="number" id="dYear" class="modal-input" placeholder="AAAA" inputmode="numeric" pattern="[0-9]*" style="width:90px; text-align:center; margin:0;">
-            </div>
-            <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
-        `;
-        openModal("Notre début 📅", html, () => {
-            const j = document.getElementById('dDay').value.padStart(2, '0');
-            const m = document.getElementById('dMonth').value.padStart(2, '0');
-            const a = document.getElementById('dYear').value;
-            
-            if(j !== "00" && m !== "00" && a.length === 4) {
-                const isoDate = `${a}-${m}-${j}T00:00:00`;
-                db.ref('users/'+user.id).update({startDate: isoDate}).then(() => { 
-                    user.startDate = isoDate; 
-                    localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                    location.reload(); 
-                });
-            } else {
-                showToast("Date incomplète !");
-            }
-        });
-    }
-
-    function updatePresence() {
-        const statusRef = db.ref('presence/' + user.id);
-        const connectedRef = db.ref('.info/connected');
-
-        connectedRef.on('value', snap => {
-            if (snap.val() === true) {
-                statusRef.onDisconnect().set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
-                statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
-            }
-        });
-    }
-
-    function unlockSecureSettings() {
-        openModal("Accès Sécurisé", `<p style="font-size:12px; opacity:0.7;">Saisissez votre numéro de téléphone pour déverrouiller</p><input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (val) => {
-            const cleanVal = val.replace(/\D/g,'');
-            const cleanUser = user.id.replace(/\D/g,'');
-            if(cleanVal === cleanUser) {
-                document.getElementById('secureBlurOverlay').style.display = 'none';
-                document.getElementById('secureContent').classList.remove('secure-blur');
-                triggerBack();
-                showToast("Infos déverrouillées 🔓");
-            } else {
-                showToast("Numéro incorrect !");
-            }
-        });
-    }
-
-    function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
-    window.onpopstate = () => {
-        const last = stateStack.pop();
-        if(last === 'modal') document.getElementById('customModal').style.display = 'none';
-        else if(last === 'chatBox' || last === 'coconBox') closeChat();
-    };
-    function triggerBack() { history.back(); }
-
-    function switchV(id, el) {
-        if(id === 'vCocon') document.getElementById('coconTabBtn').classList.remove('cocon-notify');
-        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-    }
-
-    function openChat(id, name, pfp) {
-        currentPeerId = id;
-        activeId = [user.id, id].sort().join('_');
-        document.getElementById('cName').innerText = name;
-        document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
-        document.getElementById('chatBox').style.display = 'flex';
-        pushState('chatBox');
-        
-        chatClearedAt = 0;
-        db.ref(`users/${user.id}/contacts/${currentPeerId}/clearedAt`).once('value', s => { 
-            chatClearedAt = s.val() || 0; 
-            watchStatus(id);
-            syncMessages('msgs', activeId, 'mArea');
-        });
-    }
-
-    function closeChat() {
-        if(activeChatPath) db.ref(activeChatPath).off();
-        if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
-        document.getElementById('chatBox').style.display = 'none';
-        document.getElementById('coconBox').style.display = 'none';
-    }
-
-    function getMsgHTML(snap, path, target) {
-        const m = snap.val();
-        if(m.deletedFor && m.deletedFor[user.id]) return ""; 
-        if(path === 'msgs' && m.t < chatClearedAt) return ""; 
-
-        const isMe = m.sid === user.id;
-        if(!isMe && !m.seen && !m.deletedForEveryone) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
-        
-        if(m.deletedForEveryone) {
-            return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'} msg-deleted">🚫 Ce message a été supprimé.</div>`;
-        }
-
-        const cryptoKey = path === 'msgs' ? activeId : user.code;
-        const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
-        
-        let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;" onclick="viewPhoto('${m.txt}')">`;
-        if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;"></video>`;
-        if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
-        if(m.edited) content += `<br><small style="font-size:9px; opacity:0.6;">(modifié)</small>`;
-        
-        const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
-        
-        const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
-        const clickEvent = `onclick="msgOptions('${snap.key}', ${m.t}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
-
-        const lockIcon = (m.type === 'text') ? `<span style="font-size:9px; opacity:0.5; margin-right:3px;">🔒</span>` : '';
-
-        return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
-    }
-
-    function syncMessages(path, target, areaId) {
-        if(activeChatPath) db.ref(activeChatPath).off();
-        activeChatPath = path + '/' + target;
-        const area = document.getElementById(areaId);
-        area.innerHTML = ""; 
-        db.ref(activeChatPath).on('child_added', snap => { 
-            const html = getMsgHTML(snap, path, target);
-            if(html) { area.insertAdjacentHTML('beforeend', html); area.scrollTop = area.scrollHeight; }
-        });
-        db.ref(activeChatPath).on('child_changed', snap => { 
-            const el = document.getElementById('msg_'+snap.key); 
-            const html = getMsgHTML(snap, path, target);
-            if(el && html) { 
-                const t=document.createElement('div'); t.innerHTML=html; 
-                el.replaceWith(t.firstElementChild); 
-            } else if (el && !html) {
-                el.remove();
-            }
-        });
-        db.ref(activeChatPath).on('child_removed', snap => { const el = document.getElementById('msg_'+snap.key); if(el) el.remove(); });
-    }
-
-    function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
-        const decodedTxt = decodeURIComponent(escTxt);
-        let html = "";
-        
-        if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
-            const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')">✏️ Modifier</button>`;
-        }
-        
-        html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour moi</button>`;
-        
-        if(isMe) {
-            html += `<button class="option-btn" style="color:var(--love); justify-content:center;" onclick="delMsgForAll('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour tous</button>`;
-        }
-        
-        openModal("Options du message", html, null);
-    }
+function setupApp() {
+    document.getElementById('splash').style.display = 'none';
+    document.getElementById('authLayer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    document.getElementById('uNameDisp').innerText = user.pseudo;
     
-    function delMsgForMe(id, path, target) { 
-        db.ref(`${path}/${target}/${id}/deletedFor/${user.id}`).set(true);
-        triggerBack(); 
-    }
+    document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
+    document.getElementById('setCodeDisplay').innerText = user.code;
+    document.getElementById('setIdDisplay').innerText = user.id;
+
+    // Affichage et application de la langue
+    if(!user.lang) user.lang = 'fr';
+    document.getElementById('currentLangDisp').innerText = user.lang.toUpperCase();
+    applyTranslations(user.lang);
+
+    updatePresence();
+    loadContacts();
+    updateTimeCounter();
+    initNotifications();
     
-    function delMsgForAll(id, path, target) {
-        db.ref(`${path}/${target}/${id}`).update({ deletedForEveryone: true, txt: "", type: "text" });
+    if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
+
+    db.ref('globalNotes/' + user.code).on('value', s => {
+        const note = s.val();
+        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+            document.getElementById('coconTabBtn').classList.add('cocon-notify');
+            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+            document.getElementById('coconNoteText').innerText = note.txt;
+            document.getElementById('coconNoteDisplay').style.display = 'flex';
+        }
+    });
+
+    if(user.pfp) {
+        document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
+    }
+}
+
+// --- FONCTIONS LANGUES ---
+function applyTranslations(code) {
+    const langData = i18n[code] || i18n['fr'];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if(langData[key]) el.innerText = langData[key];
+    });
+}
+
+function openLangMenu() {
+    let html = `
+        <input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);">
+        <div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+    `;
+    html += generateLangListHTML(allLanguages);
+    html += `</div>`;
+    openModal("Langue", html, null);
+}
+
+function generateLangListHTML(list) {
+    return list.map(l => `
+        <button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')">
+            <span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span>
+        </button>
+    `).join('');
+}
+
+function filterLangs() {
+    const q = document.getElementById('langSearch').value.toLowerCase();
+    const filtered = allLanguages.filter(l => l.name.toLowerCase().includes(q));
+    document.getElementById('langList').innerHTML = generateLangListHTML(filtered);
+}
+
+function setAppLang(code) {
+    db.ref('users/'+user.id).update({lang: code}).then(() => {
+        user.lang = code;
+        localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        document.getElementById('currentLangDisp').innerText = code.toUpperCase();
+        applyTranslations(code);
         triggerBack();
-    }
-    
-    function editMsg(id, old, path, target) { 
-        openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
-            const cryptoKey = path === 'msgs' ? activeId : user.code;
-            const encryptedText = E2EE.encrypt(val, cryptoKey);
-            db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
-            triggerBack(); triggerBack(); 
-        }); 
-    }
+        showToast("Langue modifiée ! 🌐");
+    });
+}
 
-    function sendMsg(mode) {
-        const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
-        const text = inp.value.trim();
-        if(!text) return;
+// --- FONCTION DATE (PAVÉ NUMÉRIQUE) ---
+function openDateEdit() {
+    const html = `
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+            <input type="number" id="dDay" class="modal-input" placeholder="JJ" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="31">
+            <input type="number" id="dMonth" class="modal-input" placeholder="MM" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="12">
+            <input type="number" id="dYear" class="modal-input" placeholder="AAAA" inputmode="numeric" pattern="[0-9]*" style="width:90px; text-align:center; margin:0;">
+        </div>
+        <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
+    `;
+    openModal("Notre début 📅", html, () => {
+        const j = document.getElementById('dDay').value.padStart(2, '0');
+        const m = document.getElementById('dMonth').value.padStart(2, '0');
+        const a = document.getElementById('dYear').value;
         
-        if(mode === 'msgs') {
-            db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
-                if(s.val()) { showToast("Impossible, contact bloqué."); return; }
-                proceedSend();
+        if(j !== "00" && m !== "00" && a.length === 4) {
+            const isoDate = `${a}-${m}-${j}T00:00:00`;
+            db.ref('users/'+user.id).update({startDate: isoDate}).then(() => { 
+                user.startDate = isoDate; 
+                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                location.reload(); 
             });
         } else {
+            showToast("Date incomplète !");
+        }
+    });
+}
+
+function updatePresence() {
+    const statusRef = db.ref('presence/' + user.id);
+    const connectedRef = db.ref('.info/connected');
+
+    connectedRef.on('value', snap => {
+        if (snap.val() === true) {
+            statusRef.onDisconnect().set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
+            statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
+        }
+    });
+}
+
+function unlockSecureSettings() {
+    openModal("Accès Sécurisé", `<p style="font-size:12px; opacity:0.7;">Saisissez votre numéro de téléphone pour déverrouiller</p><input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (val) => {
+        const cleanVal = val.replace(/\D/g,'');
+        const cleanUser = user.id.replace(/\D/g,'');
+        if(cleanVal === cleanUser) {
+            document.getElementById('secureBlurOverlay').style.display = 'none';
+            document.getElementById('secureContent').classList.remove('secure-blur');
+            triggerBack();
+            showToast("Infos déverrouillées 🔓");
+        } else {
+            showToast("Numéro incorrect !");
+        }
+    });
+}
+
+function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
+window.onpopstate = () => {
+    const last = stateStack.pop();
+    if(last === 'modal') document.getElementById('customModal').style.display = 'none';
+    else if(last === 'chatBox' || last === 'coconBox') closeChat();
+};
+function triggerBack() { history.back(); }
+
+function switchV(id, el) {
+    if(id === 'vCocon') document.getElementById('coconTabBtn').classList.remove('cocon-notify');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+}
+
+function openChat(id, name, pfp) {
+    currentPeerId = id;
+    activeId = [user.id, id].sort().join('_');
+    document.getElementById('cName').innerText = name;
+    document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
+    document.getElementById('chatBox').style.display = 'flex';
+    pushState('chatBox');
+    
+    chatClearedAt = 0;
+    db.ref(`users/${user.id}/contacts/${currentPeerId}/clearedAt`).once('value', s => { 
+        chatClearedAt = s.val() || 0; 
+        watchStatus(id);
+        syncMessages('msgs', activeId, 'mArea');
+    });
+}
+
+function closeChat() {
+    if(activeChatPath) db.ref(activeChatPath).off();
+    if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); }
+    document.getElementById('chatBox').style.display = 'none';
+    document.getElementById('coconBox').style.display = 'none';
+}
+
+function getMsgHTML(snap, path, target) {
+    const m = snap.val();
+    if(m.deletedFor && m.deletedFor[user.id]) return ""; 
+    if(path === 'msgs' && m.t < chatClearedAt) return ""; 
+
+    const isMe = m.sid === user.id;
+    if(!isMe && !m.seen && !m.deletedForEveryone) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
+    
+    if(m.deletedForEveryone) {
+        return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'} msg-deleted">🚫 Ce message a été supprimé.</div>`;
+    }
+
+    const cryptoKey = path === 'msgs' ? activeId : user.code;
+    const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
+    
+    let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;" onclick="viewPhoto('${m.txt}')">`;
+    if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px;"></video>`;
+    if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
+    if(m.edited) content += `<br><small style="font-size:9px; opacity:0.6;">(modifié)</small>`;
+    
+    const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
+    
+    const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
+    const clickEvent = `onclick="msgOptions('${snap.key}', ${m.t}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
+
+    const lockIcon = (m.type === 'text') ? `<span style="font-size:9px; opacity:0.5; margin-right:3px;">🔒</span>` : '';
+
+    return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
+}
+
+function syncMessages(path, target, areaId) {
+    if(activeChatPath) db.ref(activeChatPath).off();
+    activeChatPath = path + '/' + target;
+    const area = document.getElementById(areaId);
+    area.innerHTML = ""; 
+    db.ref(activeChatPath).on('child_added', snap => { 
+        const html = getMsgHTML(snap, path, target);
+        if(html) { area.insertAdjacentHTML('beforeend', html); area.scrollTop = area.scrollHeight; }
+    });
+    db.ref(activeChatPath).on('child_changed', snap => { 
+        const el = document.getElementById('msg_'+snap.key); 
+        const html = getMsgHTML(snap, path, target);
+        if(el && html) { 
+            const t=document.createElement('div'); t.innerHTML=html; 
+            el.replaceWith(t.firstElementChild); 
+        } else if (el && !html) {
+            el.remove();
+        }
+    });
+    db.ref(activeChatPath).on('child_removed', snap => { const el = document.getElementById('msg_'+snap.key); if(el) el.remove(); });
+}
+
+function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
+    const decodedTxt = decodeURIComponent(escTxt);
+    let html = "";
+    
+    if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
+        const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')">✏️ Modifier</button>`;
+    }
+    
+    html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour moi</button>`;
+    
+    if(isMe) {
+        html += `<button class="option-btn" style="color:var(--love); justify-content:center;" onclick="delMsgForAll('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour tous</button>`;
+    }
+    
+    openModal("Options du message", html, null);
+}
+
+function delMsgForMe(id, path, target) { 
+    db.ref(`${path}/${target}/${id}/deletedFor/${user.id}`).set(true);
+    triggerBack(); 
+}
+
+function delMsgForAll(id, path, target) {
+    db.ref(`${path}/${target}/${id}`).update({ deletedForEveryone: true, txt: "", type: "text" });
+    triggerBack();
+}
+
+function editMsg(id, old, path, target) { 
+    openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
+        const cryptoKey = path === 'msgs' ? activeId : user.code;
+        const encryptedText = E2EE.encrypt(val, cryptoKey);
+        db.ref(path+'/'+target+'/'+id).update({txt: encryptedText, edited: true}); 
+        triggerBack(); triggerBack(); 
+    }); 
+}
+
+function sendMsg(mode) {
+    const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+    const text = inp.value.trim();
+    if(!text) return;
+    
+    if(mode === 'msgs') {
+        db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
+            if(s.val()) { showToast("Impossible, contact bloqué."); return; }
             proceedSend();
-        }
-        
-        function proceedSend() {
-            const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-            const cryptoKey = mode === 'msgs' ? activeId : user.code;
-            const encryptedText = E2EE.encrypt(text, cryptoKey);
-            
-            db.ref(path).push({ sid: user.id, txt: encryptedText, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
-            inp.value = "";
-            if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
-        }
-    }
-
-    function handleTyping() { if(activeId) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
-
-    function watchStatus(id) {
-        db.ref('presence/' + id).on('value', s => {
-            const p = s.val(), el = document.getElementById('cStatus');
-            if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
-            else if(p && p.last) {
-                const d = new Date(p.last), n = new Date();
-                const isT = d.getDate() === n.getDate() && d.getMonth() === n.getMonth();
-                el.innerText = (isT ? "vu aujourd'hui à " : "vu le " + d.toLocaleDateString() + " à ") + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            } else el.innerText = "hors-ligne";
         });
-        db.ref('typing/'+activeId+'/'+id).on('value', s => { document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none'; });
-    }
-
-    function openMoodSelector() {
-        const box = document.getElementById('moodOptions');
-        box.innerHTML = "";
-        Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; });
-        document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
-        document.getElementById('vWidgetFull').style.display = "flex";
+    } else {
+        proceedSend();
     }
     
-    function showMoodMessage(mood) {
-        const choices = moodLibrary[mood];
-        document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+    function proceedSend() {
+        const path = mode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+        const cryptoKey = mode === 'msgs' ? activeId : user.code;
+        const encryptedText = E2EE.encrypt(text, cryptoKey);
+        
+        db.ref(path).push({ sid: user.id, txt: encryptedText, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
+        inp.value = "";
+        if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
     }
+}
 
-    function openContactOptions() {
-        let html = `
-            <button class="option-btn" style="justify-content:center;" onclick="triggerBack()">🖼️ Voir la photo</button>
-            <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center;" onclick="blockContact()">🚫 Bloquer le contact</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center;" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
-        `;
-        openModal("Options", html, null);
-    }
+function handleTyping() { if(activeId) { db.ref('typing/'+activeId+'/'+user.id).set(true); clearTimeout(typingTimeout); typingTimeout = setTimeout(() => db.ref('typing/'+activeId+'/'+user.id).set(false), 2000); } }
+
+function watchStatus(id) {
+    db.ref('presence/' + id).on('value', s => {
+        const p = s.val(), el = document.getElementById('cStatus');
+        if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online)">● en ligne</span>`;
+        else if(p && p.last) {
+            const d = new Date(p.last), n = new Date();
+            const isT = d.getDate() === n.getDate() && d.getMonth() === n.getMonth();
+            el.innerText = (isT ? "vu aujourd'hui à " : "vu le " + d.toLocaleDateString() + " à ") + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        } else el.innerText = "hors-ligne";
+    });
+    db.ref('typing/'+activeId+'/'+id).on('value', s => { document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none'; });
+}
+
+function openMoodSelector() {
+    const box = document.getElementById('moodOptions');
+    box.innerHTML = "";
+    Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; });
+    document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
+    document.getElementById('vWidgetFull').style.display = "flex";
+}
+
+function showMoodMessage(mood) {
+    const choices = moodLibrary[mood];
+    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+}
+
+function openContactOptions() {
+    let html = `
+        <button class="option-btn" style="justify-content:center;" onclick="triggerBack()">🖼️ Voir la photo</button>
+        <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
+        <button class="option-btn" style="color:var(--love); justify-content:center;" onclick="blockContact()">🚫 Bloquer le contact</button>
+        <button class="option-btn" style="color:var(--love); justify-content:center;" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
+    `;
+    openModal("Options", html, null);
+}
+
+function clearConversation() {
+    openModal("Vider ?", "<p>Les messages actuels seront masqués de votre côté.</p>", () => {
+        db.ref(`users/${user.id}/contacts/${currentPeerId}/clearedAt`).set(Date.now());
+        document.getElementById('mArea').innerHTML = "";
+        chatClearedAt = Date.now();
+        triggerBack(); triggerBack();
+        showToast("Conversation vidée");
+    });
+}
+
+function blockContact() {
+    openModal("Bloquer ?", "<p>Vous ne pourrez plus échanger avec ce contact.</p>", () => {
+        db.ref(`users/${user.id}/blocked/${currentPeerId}`).set(true);
+        triggerBack(); triggerBack(); closeChat();
+        showToast("Contact bloqué");
+    });
+}
+
+function confirmDeleteContact() {
+    openModal("Confirmer ?", `<p>Supprimer ce contact ?</p>`, () => {
+        db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
+        triggerBack(); triggerBack(); triggerBack();
+    });
+}
+
+function openWallMenu() {
+    const themes = [
+        { n: "Galaxie", u: "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1000" },
+        { n: "Nébuleuse", u: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1000" },
+        { n: "Abysse", u: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=1000" },
+        { n: "Aurore", u: "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1000" }
+    ];
     
-    function clearConversation() {
-        openModal("Vider ?", "<p>Les messages actuels seront masqués de votre côté.</p>", () => {
-            db.ref(`users/${user.id}/contacts/${currentPeerId}/clearedAt`).set(Date.now());
-            document.getElementById('mArea').innerHTML = "";
-            chatClearedAt = Date.now();
-            triggerBack(); triggerBack();
-            showToast("Conversation vidée");
+    let html = `<div class="theme-grid">`;
+    themes.forEach(t => {
+        html += `<div class="theme-card" style="background-image:url('${t.u}')" onclick="applyTheme('${t.u}')">${t.n}</div>`;
+    });
+    html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black; justify-content:center;" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
+    
+    openModal("Univers", html, null);
+}
+
+function applyTheme(url) {
+    db.ref('users/'+user.id).update({wall: url});
+    user.wall = url;
+    localStorage.setItem('nu_v33_user', JSON.stringify(user));
+    document.body.style.backgroundImage = `url(${url})`;
+    triggerBack();
+    showToast("Univers mis à jour ! 🌌");
+} 
+
+function openMediaMenu(mode) {
+    currentMediaMode = mode;
+    openModal("Joindre", `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
+            <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
+            <button class="option-btn" style="grid-column: span 2; justify-content:center;" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
+        </div>
+    `, null);
+}
+
+document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, 'img');
+document.getElementById('camIn').onchange = (e) => processMediaUpload(e, 'img');
+document.getElementById('vidIn').onchange = (e) => processMediaUpload(e, 'video');
+
+function processMediaUpload(e, type) {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    if(currentMediaMode === 'msgs') {
+        db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
+            if(s.val()) return showToast("Impossible, contact bloqué.");
+            continueUpload();
         });
-    }
+    } else continueUpload();
 
-    function blockContact() {
-        openModal("Bloquer ?", "<p>Vous ne pourrez plus échanger avec ce contact.</p>", () => {
-            db.ref(`users/${user.id}/blocked/${currentPeerId}`).set(true);
-            triggerBack(); triggerBack(); closeChat();
-            showToast("Contact bloqué");
-        });
-    }
-
-    function confirmDeleteContact() {
-        openModal("Confirmer ?", `<p>Supprimer ce contact ?</p>`, () => {
-            db.ref(`users/${user.id}/contacts/${currentPeerId}`).remove();
-            triggerBack(); triggerBack(); triggerBack();
-        });
-    }
-
-    function openWallMenu() {
-        const themes = [
-            { n: "Galaxie", u: "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1000" },
-            { n: "Nébuleuse", u: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1000" },
-            { n: "Abysse", u: "https://images.unsplash.com/photo-1506318137071-a8e063b4bcc0?q=80&w=1000" },
-            { n: "Aurore", u: "https://images.unsplash.com/photo-1531306728370-e2ebd9d7bb99?q=80&w=1000" }
-        ];
-        
-        let html = `<div class="theme-grid">`;
-        themes.forEach(t => {
-            html += `<div class="theme-card" style="background-image:url('${t.u}')" onclick="applyTheme('${t.u}')">${t.n}</div>`;
-        });
-        html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black; justify-content:center;" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
-        
-        openModal("Univers", html, null);
-    }
-
-    function applyTheme(url) {
-        db.ref('users/'+user.id).update({wall: url});
-        user.wall = url;
-        localStorage.setItem('nu_v33_user', JSON.stringify(user));
-        document.body.style.backgroundImage = `url(${url})`;
-        triggerBack();
-        showToast("Univers mis à jour ! 🌌");
-    } 
-
-    function openMediaMenu(mode) {
-        currentMediaMode = mode;
-        openModal("Joindre", `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
-                <button class="option-btn" style="justify-content:center;" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
-                <button class="option-btn" style="grid-column: span 2; justify-content:center;" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
-            </div>
-        `, null);
-    }
-
-    document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, 'img');
-    document.getElementById('camIn').onchange = (e) => processMediaUpload(e, 'img');
-    document.getElementById('vidIn').onchange = (e) => processMediaUpload(e, 'video');
-
-    function processMediaUpload(e, type) {
-        const file = e.target.files[0];
-        if(!file) return;
-        
-        if(currentMediaMode === 'msgs') {
-            db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
-                if(s.val()) return showToast("Impossible, contact bloqué.");
-                continueUpload();
-            });
-        } else continueUpload();
-
-        function continueUpload() {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const data = ev.target.result;
-                const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-                db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: type, seen: false });
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function uploadFile(input, mode) {
-        const file = input.files[0];
-        if(!file) return;
+    function continueUpload() {
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = e.target.result;
-            if(mode === 'pfp') { db.ref('users/'+user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
-            else if(mode === 'wall') { applyTheme(data); }
+        reader.onload = (ev) => {
+            const data = ev.target.result;
+            const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+            db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: type, seen: false });
         };
         reader.readAsDataURL(file);
     }
+}
 
-    function openModal(t, b, a) {
-        document.getElementById('modalTitle').innerText = t;
-        document.getElementById('modalBody').innerHTML = b;
-        document.getElementById('customModal').style.display = 'flex';
-        pushState('modal');
-        if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value); }
-        else document.getElementById('modalActions').style.display = 'none';
-    }
+function uploadFile(input, mode) {
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = e.target.result;
+        if(mode === 'pfp') { db.ref('users/'+user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
+        else if(mode === 'wall') { applyTheme(data); }
+    };
+    reader.readAsDataURL(file);
+}
 
-    function updateTimeCounter() {
-        if(!user.startDate) return;
-        setInterval(() => {
-            const diff = new Date() - new Date(user.startDate);
-            document.getElementById('d-day').innerText = Math.floor(diff/86400000);
-            document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
-        }, 1000);
-    }
+function openModal(t, b, a) {
+    document.getElementById('modalTitle').innerText = t;
+    document.getElementById('modalBody').innerHTML = b;
+    document.getElementById('customModal').style.display = 'flex';
+    pushState('modal');
+    if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value); }
+    else document.getElementById('modalActions').style.display = 'none';
+}
 
-    function loadContacts() {
-        db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList');
-            list.innerHTML = "";
-            if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>";
-            s.forEach(snap => {
-                db.ref('users/'+snap.key).once('value', us => {
-                    const u = us.val(); if(!u) return;
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b>${u.pseudo}</b><br><small style="opacity:0.6">Discuter</small></div><div class="opt-dots">›</div></div>`;
-                });
+function updateTimeCounter() {
+    if(!user.startDate) return;
+    setInterval(() => {
+        const diff = new Date() - new Date(user.startDate);
+        document.getElementById('d-day').innerText = Math.floor(diff/86400000);
+        document.getElementById('d-hour').innerText = Math.floor((diff/3600000)%24);
+    }, 1000);
+}
+
+function loadContacts() {
+    db.ref('users/'+user.id+'/contacts').on('value', s => {
+        const list = document.getElementById('chatList');
+        list.innerHTML = "";
+        if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>";
+        s.forEach(snap => {
+            db.ref('users/'+snap.key).once('value', us => {
+                const u = us.val(); if(!u) return;
+                list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b>${u.pseudo}</b><br><small style="opacity:0.6">Discuter</small></div><div class="opt-dots">›</div></div>`;
             });
         });
-    }
+    });
+}
 
-    function addFriend() {
-        openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
-            const id = "u_" + tel.replace(/\D/g,'');
-            if(id === user.id) return showToast("C'est vous !");
-            db.ref('users/'+id).once('value', s => {
-                if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); showToast("Contact ajouté !"); }
-                else showToast("Inconnu");
+function addFriend() {
+    openModal("Ajouter", `<input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
+        const id = "u_" + tel.replace(/\D/g,'');
+        if(id === user.id) return showToast("C'est vous !");
+        db.ref('users/'+id).once('value', s => {
+            if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); showToast("Contact ajouté !"); }
+            else showToast("Inconnu");
+        });
+    });
+}
+
+function askCoconCode() {
+    openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
+        if(val === user.code) {
+            document.getElementById('modalFrame').classList.add('unlocking');
+            setTimeout(() => {
+                document.getElementById('customModal').style.display = 'none'; stateStack.pop();
+                document.getElementById('coconBox').style.display = 'flex'; pushState('coconBox');
+                syncMessages('cocon', user.code, 'coArea'); document.getElementById('modalFrame').classList.remove('unlocking');
+            }, 800);
+        } else showToast("Code incorrect...");
+    });
+}
+
+function startRecord() {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        mediaRecorder = new MediaRecorder(stream); mediaRecorder.start();
+        document.getElementById('micBtn').classList.add('recording'); audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    }).catch(() => showToast("Micro non autorisé"));
+}
+
+function stopRecord() {
+    if(!mediaRecorder || mediaRecorder.state === "inactive") return;
+    mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording');
+    mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/mp3' });
+        const r = new FileReader(); r.onload = (e) => {
+            db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
+                if(s.val() && activeChatPath.startsWith('msgs')) return showToast("Impossible, contact bloqué.");
+                db.ref(activeChatPath).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
             });
-        });
-    }
-
-    function askCoconCode() {
-        openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
-            if(val === user.code) {
-                document.getElementById('modalFrame').classList.add('unlocking');
-                setTimeout(() => {
-                    document.getElementById('customModal').style.display = 'none'; stateStack.pop();
-                    document.getElementById('coconBox').style.display = 'flex'; pushState('coconBox');
-                    syncMessages('cocon', user.code, 'coArea'); document.getElementById('modalFrame').classList.remove('unlocking');
-                }, 800);
-            } else showToast("Code incorrect...");
-        });
-    }
-
-    function startRecord() {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            mediaRecorder = new MediaRecorder(stream); mediaRecorder.start();
-            document.getElementById('micBtn').classList.add('recording'); audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        }).catch(() => showToast("Micro non autorisé"));
-    }
-    
-    function stopRecord() {
-        if(!mediaRecorder || mediaRecorder.state === "inactive") return;
-        mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording');
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(audioChunks, { type: 'audio/mp3' });
-            const r = new FileReader(); r.onload = (e) => {
-                db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
-                    if(s.val() && activeChatPath.startsWith('msgs')) return showToast("Impossible, contact bloqué.");
-                    db.ref(activeChatPath).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
-                });
-            };
-            r.readAsDataURL(blob);
         };
-    }
+        r.readAsDataURL(blob);
+    };
+}
 
-    function login() {
-        const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
-        db.ref('users/'+ph).once('value', s => {
-            if(s.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
-            else showToast("Erreur identifiants");
-        });
-    }
+function login() {
+    const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
+    db.ref('users/'+ph).once('value', s => {
+        if(s.exists() && s.val().pass === ps) { user = s.val(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
+        else showToast("Erreur identifiants");
+    });
+}
 
-    function register() {
-        const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
-        const codeSaisi = document.getElementById('rCode').value || '0000'; 
-        
-        if(!pseudo || ph.length < 5) return showToast("Incomplet");
-        
-        const nu = { 
-            id: ph, 
-            pseudo: pseudo, 
-            pass: document.getElementById('rPass').value, 
-            pfp: '', 
-            code: codeSaisi, 
-            codeInscription: codeSaisi, 
-            startDate: new Date().toISOString(), 
-            wall: '',
-            lang: 'fr' // Langue par défaut à l'inscription
-        };
-        
-        db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
-    }
-
-    function confirmLogout() { openModal("Quitter ?", `<p>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
-    function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
+function register() {
+    const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
+    const codeSaisi = document.getElementById('rCode').value || '0000'; 
     
-    function openEdit(f, d=false) { 
-        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
-            db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
-        }); 
-    }
+    if(!pseudo || ph.length < 5) return showToast("Incomplet");
     
-    function sendGlobalNote() {
-        openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
-            if(!v) return;
-            db.ref('globalNotes/' + user.code).set({txt: v, sid: user.id, t: firebase.database.ServerValue.TIMESTAMP, readBy: null});
-            triggerBack();
-            showToast("Mot doux envoyé ! 💖");
-        });
-    }
+    const nu = { 
+        id: ph, 
+        pseudo: pseudo, 
+        pass: document.getElementById('rPass').value, 
+        pfp: '', 
+        code: codeSaisi, 
+        codeInscription: codeSaisi, 
+        startDate: new Date().toISOString(), 
+        wall: '',
+        lang: 'fr' // Langue par défaut à l'inscription
+    };
+    
+    db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
+}
 
-    function openBlockedList() {
-        db.ref('users/'+user.id+'/blocked').once('value', s => {
-            const blocked = s.val() || {};
-            const keys = Object.keys(blocked);
-            if(keys.length === 0) return openModal("Bloqués", "<p>Aucun contact bloqué.</p>", null);
+function confirmLogout() { openModal("Quitter ?", `<p>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
+function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
 
-            let html = `<div style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
-            let promises = keys.map(k => db.ref('users/'+k).once('value'));
-            Promise.all(promises).then(snaps => {
-                snaps.forEach(snap => {
-                    const u = snap.val();
-                    if(u) {
-                        html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:10px; border-radius:15px; border:1px solid rgba(255,255,255,0.1);">
-                            <span style="font-weight:bold;">${u.pseudo}</span>
-                            <button onclick="unblockContact('${u.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button>
-                        </div>`;
-                    }
-                });
-                html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px;">Fermer</button>`;
-                openModal("Contacts Bloqués", html, null);
-            });
-        });
-    }
+function openEdit(f, d=false) { 
+    openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
+        db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
+    }); 
+}
 
-    function unblockContact(id) {
-        db.ref('users/'+user.id+'/blocked/'+id).remove();
-        showToast("Contact débloqué !");
+function sendGlobalNote() {
+    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
+        if(!v) return;
+        db.ref('globalNotes/' + user.code).set({txt: v, sid: user.id, t: firebase.database.ServerValue.TIMESTAMP, readBy: null});
         triggerBack();
-    }
+        showToast("Mot doux envoyé ! 💖");
+    });
+}
 
-    function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px;">`, null); }
-    function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-    function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
-    function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{}); } }
+function openBlockedList() {
+    db.ref('users/'+user.id+'/blocked').once('value', s => {
+        const blocked = s.val() || {};
+        const keys = Object.keys(blocked);
+        if(keys.length === 0) return openModal("Bloqués", "<p>Aucun contact bloqué.</p>", null);
+
+        let html = `<div style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
+        let promises = keys.map(k => db.ref('users/'+k).once('value'));
+        Promise.all(promises).then(snaps => {
+            snaps.forEach(snap => {
+                const u = snap.val();
+                if(u) {
+                    html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--card); padding:10px; border-radius:15px; border:1px solid rgba(255,255,255,0.1);">
+                        <span style="font-weight:bold;">${u.pseudo}</span>
+                        <button onclick="unblockContact('${u.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button>
+                    </div>`;
+                }
+            });
+            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px;">Fermer</button>`;
+            openModal("Contacts Bloqués", html, null);
+        });
+    });
+}
+
+function unblockContact(id) {
+    db.ref('users/'+user.id+'/blocked/'+id).remove();
+    showToast("Contact débloqué !");
+    triggerBack();
+}
+
+function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px;">`, null); }
+function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
+function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
+function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{}); } }
 </script>
 </body>
 </html>
