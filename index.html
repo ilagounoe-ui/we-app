@@ -958,6 +958,13 @@ const db = firebase.database();
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
     function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
     function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{}); } }
+    
+    function closeCoconNote() {
+        document.getElementById('coconNoteDisplay').style.display = 'none';
+        if(user && user.code) {
+            db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
+        }
+    }
 </script>
 </body>
 </html>
