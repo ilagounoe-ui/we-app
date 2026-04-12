@@ -609,8 +609,14 @@ const db = firebase.database();
         const isMe = m.sid === user.id;
         if(!isMe && !m.seen && !m.deletedForEveryone) db.ref(path + '/' + target + '/' + snap.key).update({ seen: true });
         
+        const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
+
         if(m.deletedForEveryone) {
-            return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'} msg-deleted">🚫 Ce message a été supprimé.</div>`;
+            return `
+                <div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; border: 1px dashed var(--glass-border); background: transparent; color: var(--text-sub);">
+                    <span style="font-size: 12px;">🚫 Ce message a été supprimé</span>
+                    <div class="msg-meta"><span>${time}</span></div>
+                </div>`;
         }
 
         const cryptoKey = path === 'msgs' ? activeId : user.code;
@@ -621,8 +627,6 @@ const db = firebase.database();
         if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></video>`;
         if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
         if(m.edited) content += `<br><small style="font-size:9px; opacity:0.6;">(modifié)</small>`;
-        
-        const time = m.t ? new Date(m.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
         
         const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
         const clickEvent = `onclick="msgOptions('${snap.key}', ${m.t}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
@@ -745,13 +749,18 @@ const db = firebase.database();
     }
 
     function openContactOptions() {
-        let html = `
-            <button class="option-btn" style="justify-content:center;" onclick="triggerBack()">🖼️ Voir la photo</button>
-            <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">🚫 Bloquer le contact</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
-        `;
-        openModal("Options", html, null);
+        db.ref('users/' + currentPeerId).once('value', s => {
+            const u = s.val();
+            const pfpUrl = u && u.pfp ? u.pfp : null;
+            
+            let html = `
+                <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo de profil')`}">🖼️ Voir la photo</button>
+                <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
+                <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">🚫 Bloquer le contact</button>
+                <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
+            `;
+            openModal("Options", html, null);
+        });
     }
     
     function clearConversation() {
