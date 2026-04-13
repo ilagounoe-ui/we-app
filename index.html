@@ -6,8 +6,10 @@
     <title>Notre Univers v46 - Édition Sécurisée</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
@@ -838,18 +840,33 @@ const db = firebase.database();
         if(currentMediaMode === 'msgs') {
             db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
                 if(s.val()) return showToast("Impossible, contact bloqué.");
-                continueUpload(fileType);
+                continueUpload(file, fileType);
             });
-        } else continueUpload(fileType);
+        } else continueUpload(file, fileType);
 
-        function continueUpload(detectedType) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const data = ev.target.result;
-                const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-                db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
-            };
-            reader.readAsDataURL(file);
+        // NOUVELLE FONCTION UPLOAD AVEC STORAGE
+        function continueUpload(uploadFile, detectedType) {
+            showToast("Envoi en cours... ⏳");
+            
+            const fileName = Date.now() + '_' + uploadFile.name;
+            const storageRef = firebase.storage().ref('media/' + fileName);
+            
+            storageRef.put(uploadFile).then((snapshot) => {
+                snapshot.ref.getDownloadURL().then((downloadURL) => {
+                    const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
+                    db.ref(path).push({ 
+                        sid: user.id, 
+                        txt: downloadURL, 
+                        t: firebase.database.ServerValue.TIMESTAMP, 
+                        type: detectedType, 
+                        seen: false 
+                    });
+                    showToast("Média envoyé ! ✨");
+                });
+            }).catch((error) => {
+                console.error("Erreur Storage :", error);
+                showToast("Erreur lors de l'envoi ❌");
+            });
         }
     }
 
