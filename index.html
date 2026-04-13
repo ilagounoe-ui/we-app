@@ -63,7 +63,7 @@
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
             position: sticky; top: 0; z-index: 100; 
             border-bottom: 1px solid var(--glass-border); 
-            will-change: transform; /* Optimisation rendu mobile */
+            will-change: transform; 
         }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
@@ -106,7 +106,7 @@
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer;
             animation: springMsg 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            will-change: transform, opacity; /* Optimisation : évite les lags lors du scroll de nombreux messages */
+            will-change: transform, opacity; 
         }
         .bubble:active { transform: scale(0.96); }
         
@@ -233,8 +233,8 @@
 
     <div id="vSet" class="view">
         <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">👤</div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')">
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
+        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -307,9 +307,8 @@
     </div>
 </div>
 
-<input type="file" id="imgIn" hidden accept="image/*">
-<input type="file" id="camIn" hidden accept="image/*" capture="environment">
-<input type="file" id="vidIn" hidden accept="video/*">
+<input type="file" id="imgIn" hidden accept="image/*,video/*" onclick="this.value=null">
+<input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
 // --- VARIABLES GLOBALES ---
@@ -324,7 +323,7 @@ let mediaRecorder = null;
 let audioChunks = [];
 let typingTimeout = null;
 let chatClearedAt = 0; 
-let timeCounterInterval = null; // Ajout pour clear l'interval
+let timeCounterInterval = null; 
 
 const allLanguages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -391,7 +390,7 @@ const db = firebase.database();
         encrypt: (text, key) => {
             if(!text) return "";
             let res = "";
-            const kLen = key.length; // Optimisation : calcul de la taille une seule fois
+            const kLen = key.length; 
             for(let i=0; i<text.length; i++) {
                 res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
             }
@@ -590,7 +589,7 @@ const db = firebase.database();
 
     function closeChat() {
         if(activeChatPath) {
-            db.ref(activeChatPath).off(); // Détachement correct des listeners
+            db.ref(activeChatPath).off(); 
             activeChatPath = null;
         }
         if(currentPeerId) { 
@@ -638,7 +637,7 @@ const db = firebase.database();
     }
 
     function syncMessages(path, target, areaId) {
-        if(activeChatPath) db.ref(activeChatPath).off(); // Assure-toi que les anciens listeners sont tués
+        if(activeChatPath) db.ref(activeChatPath).off(); 
         activeChatPath = path + '/' + target;
         const area = document.getElementById(areaId);
         area.innerHTML = ""; 
@@ -822,32 +821,33 @@ const db = firebase.database();
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
                 <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
-                <button class="option-btn" style="grid-column: span 2; justify-content:center; margin:0;" onclick="document.getElementById('vidIn').click(); triggerBack();">🎥 Vidéo</button>
             </div>
         `, null);
     }
 
-    document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, 'img');
-    document.getElementById('camIn').onchange = (e) => processMediaUpload(e, 'img');
-    document.getElementById('vidIn').onchange = (e) => processMediaUpload(e, 'video');
+    document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
+    document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
-    function processMediaUpload(e, type) {
+    function processMediaUpload(e) {
         const file = e.target.files[0];
         if(!file) return;
+        
+        // Détection automatique du type de média
+        const fileType = file.type.startsWith('video/') ? 'video' : 'img';
         
         if(currentMediaMode === 'msgs') {
             db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
                 if(s.val()) return showToast("Impossible, contact bloqué.");
-                continueUpload();
+                continueUpload(fileType);
             });
-        } else continueUpload();
+        } else continueUpload(fileType);
 
-        function continueUpload() {
+        function continueUpload(detectedType) {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const data = ev.target.result;
                 const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-                db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: type, seen: false });
+                db.ref(path).push({ sid: user.id, txt: data, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
             };
             reader.readAsDataURL(file);
         }
@@ -874,7 +874,6 @@ const db = firebase.database();
         else document.getElementById('modalActions').style.display = 'none';
     }
 
-    // --- OPTIMISATION : Mise en cache du DOM pour l'intervalle ---
     function updateTimeCounter() {
         if(!user.startDate) return;
         if(timeCounterInterval) clearInterval(timeCounterInterval);
