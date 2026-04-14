@@ -673,7 +673,7 @@ const db = firebase.database();
         if (cachedHTML) {
             mArea.innerHTML = cachedHTML; 
         } else {
-            mArea.innerHTML = `<div style="text-align:center; padding:30px; opacity:0.6; color:var(--accent); animation: pulse 1.5s infinite;">Ouverture de la discussion... ✨</div>`;
+            mArea.innerHTML = ""; // <-- Modification appliquée ici
         }
 
         document.getElementById('chatBox').style.display = 'flex';
