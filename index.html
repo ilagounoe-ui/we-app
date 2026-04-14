@@ -108,6 +108,23 @@
             transition: all 0.3s ease;
         }
 
+        /* Badge non lu */
+        .badge-count {
+            background: #ff4b6e; /* Ta couleur --love */
+            color: white;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            margin-left: 10px;
+            box-shadow: 0 0 10px rgba(255, 75, 110, 0.4);
+        }
+
         /* Chat UI */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
@@ -776,8 +793,11 @@ const db = firebase.database();
             
             if(mode === 'msgs') {
                 db.ref('typing/'+activeId+'/'+user.id).set(false);
-                // MODE FANTÔME RÉVEILLÉ : On s'ajoute maintenant chez l'autre
-                db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
+                
+                // Mettre à jour l'heure du dernier message (remonte le contact en haut de liste)
+                const nowTs = Date.now();
+                db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
+                db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
             }
         }
     }
@@ -909,7 +929,13 @@ const db = firebase.database();
                 snapshot.ref.getDownloadURL().then((downloadURL) => {
                     const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
                     db.ref(path).push({ sid: user.id, txt: downloadURL, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
-                    if(currentMediaMode === 'msgs') db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
+                    
+                    if(currentMediaMode === 'msgs') {
+                        const nowTs = Date.now();
+                        db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
+                        db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
+                    }
+                    
                     showToast("Média envoyé ! ✨");
                 });
             }).catch(() => showToast("Erreur d'envoi ❌"));
@@ -951,23 +977,81 @@ const db = firebase.database();
         }, 1000);
     }
 
+    // NOUVEAU SYSTÈME DE CHARGEMENT DES CONTACTS
     function loadContacts() {
-        db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList');
-            list.innerHTML = "";
-            if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>";
+        const list = document.getElementById('chatList');
+        db.ref('users/' + user.id + '/contacts').on('value', s => {
+            let contactsArray = [];
+            let countLoaded = 0;
+            const total = s.numChildren();
+            
+            if (total === 0) { 
+                list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; 
+                return; 
+            }
+
             s.forEach(snap => {
-                db.ref('users/'+snap.key).on('value', us => { // Changement en .on pour l'humeur en temps réel
-                    const u = us.val(); if(!u) return;
-                    const moodHtml = u.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${u.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
-                    const elId = `contact_${u.id}`;
-                    let existingEl = document.getElementById(elId);
-                    const html = `<div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${u.pseudo}</b><br>${moodHtml}</div><div class="opt-dots">›</div>`;
-                    
-                    if(existingEl) existingEl.innerHTML = html;
-                    else list.innerHTML += `<div id="${elId}" class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')">${html}</div>`;
+                const peerId = snap.key;
+                
+                // Sécurité : au cas où la valeur est un booléen (suite au ancien ajout en mode fantôme)
+                const val = snap.val();
+                const contactMeta = typeof val === 'object' ? val : {}; 
+                
+                db.ref('users/' + peerId).once('value', us => {
+                    const u = us.val();
+                    if(u) {
+                        const chatId = [user.id, peerId].sort().join('_');
+                        db.ref('msgs/' + chatId).orderByChild('seen').equalTo(false).once('value', msgsSnap => {
+                            let unreadCount = 0;
+                            msgsSnap.forEach(m => { if(m.val().sid !== user.id) unreadCount++; });
+                            
+                            contactsArray.push({
+                                id: peerId,
+                                pseudo: u.pseudo,
+                                pfp: u.pfp,
+                                humeur: u.humeur,
+                                lastMsgAt: contactMeta.lastMsgAt || 0,
+                                unread: unreadCount
+                            });
+
+                            countLoaded++;
+                            if (countLoaded === total) {
+                                contactsArray.sort((a, b) => b.lastMsgAt - a.lastMsgAt);
+                                renderContacts(contactsArray);
+                            }
+                        });
+                    } else { 
+                        countLoaded++; 
+                        if (countLoaded === total) {
+                            contactsArray.sort((a, b) => b.lastMsgAt - a.lastMsgAt);
+                            renderContacts(contactsArray);
+                        }
+                    }
                 });
             });
+        });
+    }
+
+    function renderContacts(arr) {
+        const list = document.getElementById('chatList');
+        list.innerHTML = "";
+        
+        arr.forEach(c => {
+            const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
+            const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
+            
+            const html = `
+                <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : c.pseudo[0]}</div>
+                <div style="flex:1">
+                    <div style="display:flex; align-items:center;">
+                        <b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${c.pseudo}</b>
+                        ${badge}
+                    </div>
+                    ${moodHtml}
+                </div>
+                <div class="opt-dots">›</div>`;
+                
+            list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}','${c.pseudo}','${c.pfp}')">${html}</div>`;
         });
     }
 
@@ -977,8 +1061,7 @@ const db = firebase.database();
             if(id === user.id) return showToast("C'est vous !");
             db.ref('users/'+id).once('value', s => {
                 if(s.exists()) { 
-                    // FANTÔME : Ajouté chez toi, mais pas chez l'autre
-                    db.ref(`users/${user.id}/contacts/${id}`).set(true); 
+                    db.ref(`users/${user.id}/contacts/${id}`).update({ lastMsgAt: Date.now() }); 
                     triggerBack(); 
                     showToast("Contact ajouté 👻"); 
                 }
@@ -1017,7 +1100,12 @@ const db = firebase.database();
                 db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
                     if(s.val() && activeChatPath.startsWith('msgs')) return showToast("Impossible, contact bloqué.");
                     db.ref(activeChatPath).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
-                    if(activeChatPath.startsWith('msgs')) db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
+                    
+                    if(activeChatPath.startsWith('msgs')) {
+                        const nowTs = Date.now();
+                        db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
+                        db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
+                    }
                 });
             };
             r.readAsDataURL(blob);
