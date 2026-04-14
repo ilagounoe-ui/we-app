@@ -94,6 +94,20 @@
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
 
+        /* Bulle d'humeur */
+        .bulle-humeur {
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            padding: 4px 12px;
+            border-radius: 20px; 
+            font-size: 11px; 
+            color: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
         /* Chat UI */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
@@ -205,7 +219,10 @@
 <div id="mainApp" style="display:none;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
-            <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
+            <div style="display:flex; flex-direction:column;">
+                <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
+                <div id="myMoodDisp" class="bulle-humeur" style="display:none; margin-top:5px; width:max-content;"></div>
+            </div>
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
@@ -231,6 +248,7 @@
         </div>
         <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌹 DÉVERROUILLER LE COCON</button>
         <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌟 J'ai besoin d'un mot doux...</button>
+        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">💭 Définir mon humeur</button>
     </div>
 
     <div id="vSet" class="view">
@@ -327,6 +345,16 @@ let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
 
+const humeursCocon = [
+    { label: "✨ Sur un nuage" },
+    { label: "🎯 Focus" },
+    { label: "🌧️ Besoin de douceur" },
+    { label: "⏳ Ne pas déranger" },
+    { label: "💖 Amoureux(se)" },
+    { label: "👻 Mode Fantôme" },
+    { label: "❌ Retirer l'humeur" }
+];
+
 const allLanguages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
     { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -371,7 +399,6 @@ const moodLibrary = {
     "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
 };
 
-// --- CONFIGURATION FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
     authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -387,7 +414,6 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database(); 
    
- // --- MOTEUR DE CHIFFREMENT E2EE (Optimisé) ---
     const E2EE = {
         encrypt: (text, key) => {
             if(!text) return "";
@@ -445,6 +471,14 @@ const db = firebase.database();
         
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
 
+        // Écoute de l'humeur personnelle
+        db.ref('users/' + user.id + '/humeur').on('value', s => {
+            const h = s.val();
+            const el = document.getElementById('myMoodDisp');
+            if(h) { el.innerText = h; el.style.display = 'inline-block'; } 
+            else { el.style.display = 'none'; }
+        });
+
         db.ref('globalNotes/' + user.code).on('value', s => {
             const note = s.val();
             if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
@@ -458,6 +492,26 @@ const db = firebase.database();
         if(user.pfp) {
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
         }
+    }
+
+    function choisirHumeurCocon() {
+        let html = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">`;
+        humeursCocon.forEach(h => {
+            const isRemove = h.label.includes("Retirer");
+            html += `<div class="option-btn" style="margin:0; justify-content:center; ${isRemove ? 'grid-column: span 2; border-color:var(--love); color:var(--love);' : ''}" onclick="setHumeur('${isRemove ? '' : h.label}')">${h.label}</div>`;
+        });
+        html += `</div>`;
+        openModal("Mon Humeur", html, null);
+    }
+
+    function setHumeur(label) {
+        db.ref('users/' + user.id).update({ humeur: label }).then(() => {
+            user.humeur = label;
+            localStorage.setItem('nu_v33_user', JSON.stringify(user));
+            triggerBack();
+            if(label) showToast("Humeur mise à jour ! 💭");
+            else showToast("Humeur retirée.");
+        });
     }
 
     function applyTranslations(code) {
@@ -719,7 +773,12 @@ const db = firebase.database();
             
             db.ref(path).push({ sid: user.id, txt: encryptedText, t: firebase.database.ServerValue.TIMESTAMP, type: 'text', seen: false });
             inp.value = "";
-            if(mode === 'msgs') db.ref('typing/'+activeId+'/'+user.id).set(false);
+            
+            if(mode === 'msgs') {
+                db.ref('typing/'+activeId+'/'+user.id).set(false);
+                // MODE FANTÔME RÉVEILLÉ : On s'ajoute maintenant chez l'autre
+                db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
+            }
         }
     }
 
@@ -833,8 +892,6 @@ const db = firebase.database();
     function processMediaUpload(e) {
         const file = e.target.files[0];
         if(!file) return;
-        
-        // Détection automatique du type de média
         const fileType = file.type.startsWith('video/') ? 'video' : 'img';
         
         if(currentMediaMode === 'msgs') {
@@ -844,29 +901,18 @@ const db = firebase.database();
             });
         } else continueUpload(file, fileType);
 
-        // NOUVELLE FONCTION UPLOAD AVEC STORAGE
         function continueUpload(uploadFile, detectedType) {
             showToast("Envoi en cours... ⏳");
-            
             const fileName = Date.now() + '_' + uploadFile.name;
             const storageRef = firebase.storage().ref('media/' + fileName);
-            
             storageRef.put(uploadFile).then((snapshot) => {
                 snapshot.ref.getDownloadURL().then((downloadURL) => {
                     const path = currentMediaMode === 'msgs' ? 'msgs/'+activeId : 'cocon/'+user.code;
-                    db.ref(path).push({ 
-                        sid: user.id, 
-                        txt: downloadURL, 
-                        t: firebase.database.ServerValue.TIMESTAMP, 
-                        type: detectedType, 
-                        seen: false 
-                    });
+                    db.ref(path).push({ sid: user.id, txt: downloadURL, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
+                    if(currentMediaMode === 'msgs') db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
                     showToast("Média envoyé ! ✨");
                 });
-            }).catch((error) => {
-                console.error("Erreur Storage :", error);
-                showToast("Erreur lors de l'envoi ❌");
-            });
+            }).catch(() => showToast("Erreur d'envoi ❌"));
         }
     }
 
@@ -894,13 +940,10 @@ const db = firebase.database();
     function updateTimeCounter() {
         if(!user.startDate) return;
         if(timeCounterInterval) clearInterval(timeCounterInterval);
-        
         const elDay = document.getElementById('d-day');
         const elHour = document.getElementById('d-hour');
         if(!elDay || !elHour) return;
-
         const startTime = new Date(user.startDate).getTime();
-
         timeCounterInterval = setInterval(() => {
             const diff = Date.now() - startTime;
             elDay.innerText = Math.floor(diff/86400000);
@@ -914,9 +957,15 @@ const db = firebase.database();
             list.innerHTML = "";
             if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>";
             s.forEach(snap => {
-                db.ref('users/'+snap.key).once('value', us => {
+                db.ref('users/'+snap.key).on('value', us => { // Changement en .on pour l'humeur en temps réel
                     const u = us.val(); if(!u) return;
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${u.pseudo}</b><br><small style="opacity:0.6">Discuter</small></div><div class="opt-dots">›</div></div>`;
+                    const moodHtml = u.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${u.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
+                    const elId = `contact_${u.id}`;
+                    let existingEl = document.getElementById(elId);
+                    const html = `<div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${u.pseudo}</b><br>${moodHtml}</div><div class="opt-dots">›</div>`;
+                    
+                    if(existingEl) existingEl.innerHTML = html;
+                    else list.innerHTML += `<div id="${elId}" class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')">${html}</div>`;
                 });
             });
         });
@@ -927,7 +976,12 @@ const db = firebase.database();
             const id = "u_" + tel.replace(/\D/g,'');
             if(id === user.id) return showToast("C'est vous !");
             db.ref('users/'+id).once('value', s => {
-                if(s.exists()) { db.ref(`users/${user.id}/contacts/${id}`).set(true); db.ref(`users/${id}/contacts/${user.id}`).set(true); triggerBack(); showToast("Contact ajouté !"); }
+                if(s.exists()) { 
+                    // FANTÔME : Ajouté chez toi, mais pas chez l'autre
+                    db.ref(`users/${user.id}/contacts/${id}`).set(true); 
+                    triggerBack(); 
+                    showToast("Contact ajouté 👻"); 
+                }
                 else showToast("Inconnu");
             });
         });
@@ -963,6 +1017,7 @@ const db = firebase.database();
                 db.ref(`users/${user.id}/blocked/${currentPeerId}`).once('value', s => {
                     if(s.val() && activeChatPath.startsWith('msgs')) return showToast("Impossible, contact bloqué.");
                     db.ref(activeChatPath).push({ sid: user.id, txt: e.target.result, t: firebase.database.ServerValue.TIMESTAMP, type: 'audio', seen: false });
+                    if(activeChatPath.startsWith('msgs')) db.ref(`users/${currentPeerId}/contacts/${user.id}`).set(true);
                 });
             };
             r.readAsDataURL(blob);
@@ -980,32 +1035,14 @@ const db = firebase.database();
     function register() {
         const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
         const codeSaisi = document.getElementById('rCode').value || '0000'; 
-        
         if(!pseudo || ph.length < 5) return showToast("Incomplet");
-        
-        const nu = { 
-            id: ph, 
-            pseudo: pseudo, 
-            pass: document.getElementById('rPass').value, 
-            pfp: '', 
-            code: codeSaisi, 
-            codeInscription: codeSaisi, 
-            startDate: new Date().toISOString(), 
-            wall: '',
-            lang: 'fr' 
-        };
-        
+        const nu = { id: ph, pseudo: pseudo, pass: document.getElementById('rPass').value, pfp: '', code: codeSaisi, codeInscription: codeSaisi, startDate: new Date().toISOString(), wall: '', lang: 'fr' };
         db.ref('users/'+ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
     }
 
     function confirmLogout() { openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
     function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-    
-    function openEdit(f, d=false) { 
-        openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { 
-            db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); 
-        }); 
-    }
+    function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { db.ref('users/'+user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
     
     function sendGlobalNote() {
         openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
@@ -1021,19 +1058,12 @@ const db = firebase.database();
             const blocked = s.val() || {};
             const keys = Object.keys(blocked);
             if(keys.length === 0) return openModal("Bloqués", "<p>Aucun contact bloqué.</p>", null);
-
             let html = `<div style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
             let promises = keys.map(k => db.ref('users/'+k).once('value'));
             Promise.all(promises).then(snaps => {
                 snaps.forEach(snap => {
                     const u = snap.val();
-                    if(u) {
-                        html += `
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; border:1px solid var(--glass-border);">
-                            <span style="font-weight:bold;">${u.pseudo}</span>
-                            <button onclick="unblockContact('${u.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button>
-                        </div>`;
-                    }
+                    if(u) html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; border:1px solid var(--glass-border);"><span style="font-weight:bold;">${u.pseudo}</span><button onclick="unblockContact('${u.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button></div>`;
                 });
                 html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
                 openModal("Contacts Bloqués", html, null);
@@ -1041,23 +1071,11 @@ const db = firebase.database();
         });
     }
 
-    function unblockContact(id) {
-        db.ref('users/'+user.id+'/blocked/'+id).remove();
-        showToast("Contact débloqué !");
-        triggerBack();
-    }
-
+    function unblockContact(id) { db.ref('users/'+user.id+'/blocked/'+id).remove(); showToast("Contact débloqué !"); triggerBack(); }
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
     function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
-    function triggerNotification(m) { if(Notification.permission === "granted") { const n = new Notification("Nouveau message", { body: m.type === 'text' ? m.txt : "Fichier reçu" }); n.onclick = () => window.focus(); if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{}); } }
-    
-    function closeCoconNote() {
-        document.getElementById('coconNoteDisplay').style.display = 'none';
-        if(user && user.code) {
-            db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true);
-        }
-    }
+    function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true); }
 </script>
 </body>
 </html>
