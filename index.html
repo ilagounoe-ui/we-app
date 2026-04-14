@@ -55,6 +55,29 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* NOUVELLE ANIMATION : BATTEMENT DE COEUR PREMIUM */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.08); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.08); }
+            70% { transform: scale(1); }
+        }
+        .heartbeat-anim {
+            animation: heartbeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            color: var(--love) !important;
+            text-shadow: 0 0 15px var(--love-glow);
+            border-color: var(--love) !important;
+            background: rgba(255, 75, 110, 0.1) !important;
+        }
+
+        /* NOUVEAU STYLE : CONTACT FANTOME */
+        .ghost-reveal { 
+            opacity: 0.6; 
+            border: 1px dashed var(--accent) !important; 
+            box-shadow: 0 0 10px rgba(208, 168, 255, 0.2) !important;
+        }
+
         /* Layout & Glassmorphism */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
@@ -164,7 +187,7 @@
 
 <div id="vWidgetFull">
     <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
-    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">...</div>
+    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: all 0.3s ease;">...</div>
     <div id="moodOptions" class="mood-grid"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
 </div>
@@ -205,7 +228,7 @@
 <div id="mainApp" style="display:none;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
-            <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
+            <h2 id="uNameDisp" onclick="toggleGhosts()" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow); cursor:pointer;">Pseudo</h2>
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
@@ -326,6 +349,7 @@ let audioChunks = [];
 let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
+let showGhosts = false; // VARIABLE FANTOME
 
 const allLanguages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -364,11 +388,14 @@ const i18n = {
 };
 
 const sounds = { pop: '' }; 
+
+// AJOUT DE L'HUMEUR PREMIUM
 const moodLibrary = {
     "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
     "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
     "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
-    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
+    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."],
+    "Premium (Alicia) 👑": ["Mon cœur bat uniquement pour toi, Alicia.", "Un amour éternel, au-delà de l'univers."]
 };
 
 // --- CONFIGURATION FIREBASE ---
@@ -458,6 +485,13 @@ const db = firebase.database();
         if(user.pfp) {
             document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
         }
+    }
+
+    // FONCTION POUR BASCULER L'AFFICHAGE DES FANTOMES
+    function toggleGhosts() {
+        showGhosts = !showGhosts;
+        showToast(showGhosts ? "👁️ Mode Fantôme Activé" : "👻 Mode Fantôme Désactivé");
+        loadContacts();
     }
 
     function applyTranslations(code) {
@@ -743,12 +777,22 @@ const db = firebase.database();
         box.innerHTML = "";
         Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; });
         document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
+        document.getElementById('widgetText').classList.remove('heartbeat-anim'); // Reset animation
         document.getElementById('vWidgetFull').style.display = "flex";
     }
     
+    // GESTION DE L'AFFICHAGE DU MESSAGE ET DE L'ANIMATION PREMIUM
     function showMoodMessage(mood) {
         const choices = moodLibrary[mood];
-        document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+        const widgetText = document.getElementById('widgetText');
+        widgetText.innerText = choices[Math.floor(Math.random() * choices.length)];
+        
+        if(mood === "Premium (Alicia) 👑") {
+            widgetText.classList.add('heartbeat-anim');
+            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+        } else {
+            widgetText.classList.remove('heartbeat-anim');
+        }
     }
 
     function openContactOptions() {
@@ -759,10 +803,25 @@ const db = firebase.database();
             let html = `
                 <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo de profil')`}">🖼️ Voir la photo</button>
                 <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
+                <button class="option-btn" style="justify-content:center; color:#b3b3b3;" onclick="toggleGhostStatus()">👻 Rendre/Enlever Fantôme</button>
                 <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">🚫 Bloquer le contact</button>
                 <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
             `;
             openModal("Options", html, null);
+        });
+    }
+
+    // NOUVELLE FONCTION : CHANGER L'ETAT FANTOME D'UN CONTACT
+    function toggleGhostStatus() {
+        db.ref(`users/${user.id}/ghosts/${currentPeerId}`).once('value', s => {
+            if(s.val()) {
+                db.ref(`users/${user.id}/ghosts/${currentPeerId}`).remove();
+                showToast("Contact restauré");
+            } else {
+                db.ref(`users/${user.id}/ghosts/${currentPeerId}`).set(true);
+                showToast("Contact devenu fantôme 👻");
+            }
+            triggerBack(); triggerBack(); closeChat();
         });
     }
     
@@ -834,7 +893,6 @@ const db = firebase.database();
         const file = e.target.files[0];
         if(!file) return;
         
-        // Détection automatique du type de média
         const fileType = file.type.startsWith('video/') ? 'video' : 'img';
         
         if(currentMediaMode === 'msgs') {
@@ -844,7 +902,6 @@ const db = firebase.database();
             });
         } else continueUpload(file, fileType);
 
-        // NOUVELLE FONCTION UPLOAD AVEC STORAGE
         function continueUpload(uploadFile, detectedType) {
             showToast("Envoi en cours... ⏳");
             
@@ -908,15 +965,23 @@ const db = firebase.database();
         }, 1000);
     }
 
+    // CHARGEMENT DES CONTACTS (MISE A JOUR AVEC GESTION DES FANTOMES)
     function loadContacts() {
-        db.ref('users/'+user.id+'/contacts').on('value', s => {
-            const list = document.getElementById('chatList');
-            list.innerHTML = "";
-            if(!s.exists()) list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>";
-            s.forEach(snap => {
-                db.ref('users/'+snap.key).once('value', us => {
-                    const u = us.val(); if(!u) return;
-                    list.innerHTML += `<div class="contact-item" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${u.pseudo}</b><br><small style="opacity:0.6">Discuter</small></div><div class="opt-dots">›</div></div>`;
+        db.ref('users/'+user.id+'/ghosts').on('value', ghostSnap => {
+            const ghosts = ghostSnap.val() || {};
+            db.ref('users/'+user.id+'/contacts').on('value', s => {
+                const list = document.getElementById('chatList');
+                list.innerHTML = "";
+                if(!s.exists()) { list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; return; }
+                s.forEach(snap => {
+                    const isGhost = ghosts[snap.key];
+                    if(isGhost && !showGhosts) return; // Cache le contact si le mode fantôme n'est pas activé
+                    
+                    db.ref('users/'+snap.key).once('value', us => {
+                        const u = us.val(); if(!u) return;
+                        const ghostClass = isGhost ? "ghost-reveal" : "";
+                        list.innerHTML += `<div class="contact-item ${ghostClass}" onclick="openChat('${u.id}','${u.pseudo}','${u.pfp}')"><div class="pfp">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo[0]}</div><div style="flex:1"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${u.pseudo}</b><br><small style="opacity:0.6">Discuter</small></div><div class="opt-dots">›</div></div>`;
+                    });
                 });
             });
         });
