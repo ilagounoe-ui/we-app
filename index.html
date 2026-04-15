@@ -451,7 +451,7 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database(); 
 
-// --- NOUVELLE FONCTION ONESIGNAL (ENVOI DE NOTIFICATIONS) ---
+// --- NOUVELLE FONCTION ONESIGNAL CONSERVÉE AU CAS OÙ ---
 async function envoyerNotificationOneSignal(idDestinataire, messageTexte) {
     const url = 'https://onesignal.com/api/v1/notifications';
     const apiKey = "os_v2_app_gf6k7fycebfbjngl4rsscendw3ecb5alulku33mj5wajul4bayb4km2zal34pomddmbsvriwllvhtxsg6mvzn4q7v6meqsx2mmvlr5q";
@@ -478,7 +478,19 @@ async function envoyerNotificationOneSignal(idDestinataire, messageTexte) {
     }
 }
 
-// L'ancienne configuration Firebase Messaging est conservée au cas où
+// --- NOUVELLE FONCTION : NOTIFICATION WEB LOCALE (PWA) ---
+function envoyerNotification(titre, message) {
+    if (Notification.permission === "granted") {
+        const options = {
+            body: message,
+            icon: 'https://cdn-icons-png.flaticon.com/512/3114/3114810.png', // Icône galaxie
+            vibrate: [200, 100, 200], // Vibration
+            badge: 'https://cdn-icons-png.flaticon.com/512/3114/3114810.png'
+        };
+        new Notification(titre, options);
+    }
+}
+
 const messaging = firebase.messaging();
 const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzgGY39K5Re5r6eaWWGKmEO39bYfo";
    
@@ -562,6 +574,8 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
                 if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
                 document.getElementById('coconNoteText').innerText = note.txt;
                 document.getElementById('coconNoteDisplay').style.display = 'flex';
+                // --- NOTIFICATION WEB DU COCON ---
+                envoyerNotification("Le Cocon 🌹", "Tu as reçu un nouveau mot doux !");
             }
         });
 
@@ -816,6 +830,15 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
                 if(html) { 
                     area.insertAdjacentHTML('afterbegin', html); 
                     if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
+                    
+                    // --- MODIFICATION ICI : DÉCLENCHEMENT NOTIFICATION LOCALE ---
+                    const m = snap.val();
+                    if(m && m.sid !== user.id) {
+                        const cryptoKey = path === 'msgs' ? activeId : user.code;
+                        const msgTexte = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : (m.type === 'audio' ? '🎤 Nouveau message vocal' : '📎 Nouveau média');
+                        const exp = path === 'msgs' ? "Nouveau message" : "Cocon Secret 🌹";
+                        envoyerNotification(exp, msgTexte);
+                    }
                 }
             });
 
@@ -1273,21 +1296,10 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
     
-    // --- L'ANCIENNE FONCTION EST GARDÉE POUR LA RÉTROCOMPATIBILITÉ ---
+    // --- DEMANDE D'AUTORISATION ---
     function initNotifications() { 
-        if("Notification" in window) {
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    messaging.getToken({ vapidKey: VAPID_KEY }).then((currentToken) => {
-                        if (currentToken) {
-                            console.log("Voici ton Token FCM :", currentToken);
-                            db.ref('users/' + user.id).update({ fcmToken: currentToken });
-                        }
-                    }).catch((err) => {
-                        console.error('Erreur Token:', err);
-                    });
-                }
-            });
+        if("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
         }
     }
     
