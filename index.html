@@ -12,6 +12,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "317caf97-0220-4a14-b4cb-e4652111a3b6",
+        });
+      });
+    </script>
+
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
         
@@ -441,7 +451,34 @@ if (!firebase.apps.length) {
 }
 const db = firebase.database(); 
 
-// --- NOUVELLE CONFIGURATION MESSAGING ---
+// --- NOUVELLE FONCTION ONESIGNAL (ENVOI DE NOTIFICATIONS) ---
+async function envoyerNotificationOneSignal(idDestinataire, messageTexte) {
+    const url = 'https://onesignal.com/api/v1/notifications';
+    const apiKey = "os_v2_app_gf6k7fycebfbjngl4rsscendw3ecb5alulku33mj5wajul4bayb4km2zal34pomddmbsvriwllvhtxsg6mvzn4q7v6meqsx2mmvlr5q";
+
+    const data = {
+        app_id: "317caf97-0220-4a14-b4cb-e4652111a3b6",
+        include_external_user_ids: [idDestinataire],
+        contents: { "fr": messageTexte, "en": messageTexte },
+        headings: { "fr": "Sentinelle 🔒", "en": "Sentinelle 🔒" }
+    };
+
+    try {
+        await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + apiKey
+            },
+            body: JSON.stringify(data)
+        });
+        console.log("Notification envoyée à", idDestinataire);
+    } catch (error) {
+        console.error("Erreur d'envoi OneSignal :", error);
+    }
+}
+
+// L'ancienne configuration Firebase Messaging est conservée au cas où
 const messaging = firebase.messaging();
 const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzgGY39K5Re5r6eaWWGKmEO39bYfo";
    
@@ -499,6 +536,14 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
         loadContacts();
         updateTimeCounter();
         initNotifications();
+        
+        // INITIALISATION ONESIGNAL AVEC L'ID UTILISATEUR
+        if(window.OneSignalDeferred) {
+            OneSignalDeferred.push(async function(OneSignal) {
+                OneSignal.login(user.id);
+                await OneSignal.Slidedown.promptPush();
+            });
+        }
         
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
 
@@ -857,6 +902,8 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
             
             if(mode === 'msgs') {
                 db.ref('typing/'+activeId+'/'+user.id).set(false);
+                // DÉCLENCHEMENT DE LA NOTIFICATION ONESIGNAL
+                envoyerNotificationOneSignal(currentPeerId, "🔒 Tu as reçu un nouveau message chiffré.");
                 
                 const nowTs = Date.now();
                 db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
@@ -994,6 +1041,9 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
                     db.ref(path).push({ sid: user.id, txt: downloadURL, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
                     
                     if(currentMediaMode === 'msgs') {
+                        // DÉCLENCHEMENT DE LA NOTIFICATION POUR LES MÉDIAS
+                        envoyerNotificationOneSignal(currentPeerId, "📎 Tu as reçu un nouveau média.");
+                        
                         const nowTs = Date.now();
                         db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
                         db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
@@ -1223,7 +1273,7 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
     
-    // --- NOUVELLE FONCTION INIT NOTIFICATIONS ---
+    // --- L'ANCIENNE FONCTION EST GARDÉE POUR LA RÉTROCOMPATIBILITÉ ---
     function initNotifications() { 
         if("Notification" in window) {
             Notification.requestPermission().then((permission) => {
