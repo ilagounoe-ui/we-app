@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
 
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
@@ -130,13 +131,12 @@
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
         
-        /* OPTIMISATION FLUIDITÉ: Ajout de column-reverse */
         .msg-area { 
             flex: 1; 
             overflow-y: auto; 
             padding: 20px; 
             display: flex; 
-            flex-direction: column-reverse; /* Ancre le scroll en bas naturellement */
+            flex-direction: column-reverse;
             gap: 12px; 
             will-change: scroll-position;
         }
@@ -440,6 +440,10 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig); 
 }
 const db = firebase.database(); 
+
+// --- NOUVELLE CONFIGURATION MESSAGING ---
+const messaging = firebase.messaging();
+const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzgGY39K5Re5r6eaWWGKmEO39bYfo";
    
     const E2EE = {
         encrypt: (text, key) => {
@@ -667,13 +671,13 @@ const db = firebase.database();
         }
 
         const mArea = document.getElementById('mArea');
-        const cacheKey = `nu_cache_v2_${activeId}`; // CLÉ DE CACHE V2 POUR ÉVITER LES BUGS
+        const cacheKey = `nu_cache_v2_${activeId}`;
         const cachedHTML = localStorage.getItem(cacheKey);
 
         if (cachedHTML) {
             mArea.innerHTML = cachedHTML; 
         } else {
-            mArea.innerHTML = ""; // <-- Modification appliquée ici
+            mArea.innerHTML = "";
         }
 
         document.getElementById('chatBox').style.display = 'flex';
@@ -736,7 +740,6 @@ const db = firebase.database();
         return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
     }
 
-    // --- SYSTÈME OPTIMISÉ POUR COLUMN-REVERSE ---
     function syncMessages(path, target, areaId) {
         if(activeChatPath) db.ref(activeChatPath).off(); 
         activeChatPath = path + '/' + target;
@@ -752,7 +755,6 @@ const db = firebase.database();
             let tempHtml = "";
             snapshot.forEach(snap => {
                 const html = getMsgHTML(snap, path, target);
-                // On met les nouveaux messages au début de la string (qui sera en bas visuellement)
                 if(html) tempHtml = html + tempHtml; 
             });
             
@@ -767,7 +769,6 @@ const db = firebase.database();
 
                 const html = getMsgHTML(snap, path, target);
                 if(html) { 
-                    // Ajout tout en haut du DOM (donc tout en bas de l'écran)
                     area.insertAdjacentHTML('afterbegin', html); 
                     if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
                 }
@@ -857,7 +858,6 @@ const db = firebase.database();
             if(mode === 'msgs') {
                 db.ref('typing/'+activeId+'/'+user.id).set(false);
                 
-                // Mettre à jour l'heure du dernier message (remonte le contact en haut de liste)
                 const nowTs = Date.now();
                 db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
                 db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
@@ -1222,7 +1222,25 @@ const db = firebase.database();
     function unblockContact(id) { db.ref('users/'+user.id+'/blocked/'+id).remove(); showToast("Contact débloqué !"); triggerBack(); }
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-    function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
+    
+    // --- NOUVELLE FONCTION INIT NOTIFICATIONS ---
+    function initNotifications() { 
+        if("Notification" in window) {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    messaging.getToken({ vapidKey: VAPID_KEY }).then((currentToken) => {
+                        if (currentToken) {
+                            console.log("Voici ton Token FCM :", currentToken);
+                            db.ref('users/' + user.id).update({ fcmToken: currentToken });
+                        }
+                    }).catch((err) => {
+                        console.error('Erreur Token:', err);
+                    });
+                }
+            });
+        }
+    }
+    
     function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true); }
 </script>
 </body>
