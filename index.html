@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Notre Univers v50 - Édition Hors-Ligne (Firestore)</title>
     
+    <link rel="manifest" href="./manifest.json">
+    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -271,8 +273,8 @@
 
     <div id="vSet" class="view">
         <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">👤</div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')">
+        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -345,8 +347,8 @@
     </div>
 </div>
 
-<input type="file" id="imgIn" hidden accept="image/*,video/*" onclick="this.value=null">
-<input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
+<input type="file" id="imgIn" hidden accept="image/*,video/*">
+<input type="file" id="camIn" hidden accept="image/*" capture="environment">
 
 <script>
 // --- VARIABLES GLOBALES & INIT ---
@@ -483,7 +485,6 @@ function setupApp() {
     updatePresence();
     loadContacts();
     updateTimeCounter();
-    initNotifications();
     
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -646,7 +647,7 @@ function loadContacts() {
                         pfp: u.pfp,
                         humeur: u.humeur,
                         lastMsgAt: contactMeta.lastMsgAt || 0,
-                        unread: contactMeta.unread || 0 // Le compteur non lu est stocké directement ici par Firestore !
+                        unread: contactMeta.unread || 0 
                     };
                 }
                 return null;
@@ -690,7 +691,6 @@ function addFriend() {
         if(id === user.id) return showToast("C'est vous !");
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
-                // Mode Fantôme : S'ajoute uniquement dans ma propre sous-collection contact
                 fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ 
                     lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(),
                     unread: 0
@@ -709,7 +709,6 @@ function openChat(id, name, pfp) {
     document.getElementById('cName').innerText = name;
     document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
     
-    // Remise à zéro du badge de messages non lus
     fs.collection('users').doc(user.id).collection('contacts').doc(id).update({ unread: 0 });
 
     const mArea = document.getElementById('mArea');
@@ -738,7 +737,6 @@ function getMsgHTML(docId, m, path, target) {
 
     const isMe = m.sid === user.id;
     if(!isMe && !m.seen && !m.deletedForEveryone) {
-        // Marquer comme vu dans Firestore
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
@@ -861,7 +859,6 @@ function sendMsg(mode) {
         if(mode === 'msgs') {
             db.ref('typing/'+activeId+'/'+user.id).set(false); // Typing reste sur RTDB
             
-            // Mise à jour groupée de l'heure du dernier message (et incrément du non-lu chez le destinataire)
             const batch = fs.batch();
             const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
             batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -949,8 +946,8 @@ function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('imgIn').click(); triggerBack();">🖼️ Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('camIn').click(); triggerBack();">📸 Photo</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('imgIn').click(), 100);">🖼️ Galerie</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('camIn').click(), 100);">📸 Photo</button>
         </div>
     `, null);
 }
@@ -959,6 +956,7 @@ document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
 function processMediaUpload(e) {
+    triggerBack(); // Ferme le modal côté historique
     const file = e.target.files[0]; if(!file) return;
     const fileType = file.type.startsWith('video/') ? 'video' : 'img';
     
@@ -990,19 +988,33 @@ function processMediaUpload(e) {
                 }
                 showToast("Média envoyé ! ✨");
             });
-        }).catch(() => showToast("Erreur d'envoi ❌"));
+        }).catch(() => showToast("Erreur d'envoi ❌ (Vérifiez les règles Storage)"));
     }
 }
 
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = e.target.result;
-        if(mode === 'pfp') { fs.collection('users').doc(user.id).update({ pfp: data }); user.pfp = data; localStorage.setItem('nu_v33_user', JSON.stringify(user)); document.getElementById('pfpPreview').innerHTML = `<img src="${data}">`; showToast("Photo mise à jour !"); }
-        else if(mode === 'wall') { applyTheme(data); }
-    };
-    reader.readAsDataURL(file);
+    showToast("Téléchargement... ⏳");
+    const fileName = Date.now() + '_' + file.name;
+    const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
+    
+    storageRef.put(file).then((snapshot) => {
+        snapshot.ref.getDownloadURL().then((downloadURL) => {
+            if(mode === 'pfp') { 
+                fs.collection('users').doc(user.id).update({ pfp: downloadURL }).then(() => {
+                    user.pfp = downloadURL; 
+                    localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                    document.getElementById('pfpPreview').innerHTML = `<img src="${downloadURL}">`; 
+                    showToast("Photo mise à jour !"); 
+                });
+            } else if(mode === 'wall') { 
+                applyTheme(downloadURL); 
+            }
+        });
+    }).catch(err => {
+        console.error("Storage error:", err);
+        showToast("Erreur de téléchargement ❌");
+    });
 }
 
 function openModal(t, b, a) {
@@ -1015,7 +1027,9 @@ function openModal(t, b, a) {
 function updateTimeCounter() {
     if(!user.startDate) return;
     if(timeCounterInterval) clearInterval(timeCounterInterval);
-    const elDay = document.getElementById('d-day'), elHour = document.getElementById('d-hour');
+    const elDay = document.getElementById('d-day');
+    const elHour = document.getElementById('d-hour');
+    if(!elDay || !elHour) return;
     const startTime = new Date(user.startDate).getTime();
     timeCounterInterval = setInterval(() => {
         const diff = Date.now() - startTime;
@@ -1126,5 +1140,16 @@ function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.po
 function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
 function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) fs.collection('globalNotes').doc(user.code).update({ [`readBy.${user.id}`]: true }); }
 </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(err => {
+        console.log('Le Service Worker a échoué (normal si tu testes en local sans HTTPS) :', err);
+      });
+    });
+  }
+</script>
+
 </body>
 </html>
