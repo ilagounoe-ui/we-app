@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v50 - Édition Hors-Ligne (Firestore)</title>
+    <title>Notre Univers v50 - Édition Hors-Ligne Absolue</title>
     
     <link rel="manifest" href="./manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
@@ -43,32 +43,18 @@
             100% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
         }
         .unlocking { animation: scan 0.6s infinite !important; }
-
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
         .recording { animation: pulse 0.8s infinite; background: var(--love) !important; }
-        
         @keyframes alertCocon { 0% { background: var(--card); } 50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 100% { background: var(--card); } }
         .cocon-notify { animation: alertCocon 1s infinite !important; border: 1px solid white !important; }
-
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        @keyframes springMsg {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
+        @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
         /* Layout & Glassmorphism */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        .main-header { 
-            padding: 50px 20px 15px; 
-            background: rgba(11, 9, 20, 0.6); 
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-            position: sticky; top: 0; z-index: 100; 
-            border-bottom: 1px solid var(--glass-border); 
-            will-change: transform; 
-        }
+        .main-header { padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); will-change: transform; }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; }
@@ -78,16 +64,7 @@
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; scroll-behavior: smooth; }
         .view.active { display: block; }
 
-        .contact-item { 
-            display: flex; align-items: center; padding: 15px; 
-            background: rgba(255, 255, 255, 0.03); 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-radius: 25px; margin-bottom: 15px; 
-            border: 1px solid var(--glass-border); 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-            will-change: transform, background-color;
-        }
+        .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
         .contact-item:active { transform: scale(0.96); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
         
         .pfp { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #2a2a40; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
@@ -96,65 +73,26 @@
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
 
-        /* Bulle d'humeur */
-        .bulle-humeur {
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            padding: 4px 12px;
-            border-radius: 20px; 
-            font-size: 11px; 
-            color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
+        .bulle-humeur { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; transition: all 0.3s ease; }
 
-        /* Badge non lu */
-        .badge-count {
-            background: #ff4b6e;
-            color: white;
-            min-width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 6px;
-            margin-left: 10px;
-            box-shadow: 0 0 10px rgba(255, 75, 110, 0.4);
-        }
+        .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* Chat UI */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
         
         .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
-        .bubble { 
-            padding: 14px 20px; border-radius: 24px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.5; 
-            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer;
-            animation: springMsg 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            will-change: transform, opacity; 
-        }
+        .bubble { padding: 14px 20px; border-radius: 24px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.5; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer; animation: springMsg 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; will-change: transform, opacity; }
         .bubble:active { transform: scale(0.96); }
         
         .m-me { align-self: flex-end; background: var(--bubble-me); color: #000; border-bottom-right-radius: 6px; border-color: rgba(255,255,255,0.3); }
         .m-they { align-self: flex-start; background: rgba(255, 255, 255, 0.08); border-bottom-left-radius: 6px; }
         
         .msg-meta { font-size: 10px; margin-top: 6px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
-        .msg-deleted { opacity: 0.6; font-style: italic; border: 1px dashed var(--glass-border); background: transparent; }
         
         #mIn, #coIn { transition: all 0.3s; }
         #mIn:focus, #coIn:focus { background: rgba(255,255,255,0.1) !important; box-shadow: 0 0 0 2px var(--accent-glow); }
 
-        /* Widgets & Modals & Toasts */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
         
@@ -228,7 +166,6 @@
             <input type="tel" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" class="modal-input" placeholder="Mot de passe" id="rPass">
             <input type="text" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode">
-            
             <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="register()">CRÉER MON UNIVERS</button>
             <p onclick="toggleAuth(true)" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; transition:0.2s;" onmousedown="this.style.opacity='1'">Déjà inscrit ? Connexion</p>
         </div>
@@ -388,12 +325,6 @@ const i18n = {
         'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers',
         'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon',
         'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers'
-    },
-    'en': {
-        'tab_msg': 'Messages', 'tab_cocon': 'The Cocoon 🌹', 'tab_set': 'Settings',
-        'set_pseudo': 'Nickname', 'set_code': 'Cocoon Code', 'set_lang': '🌐 Universe Language',
-        'set_date': '📅 Date we met', 'set_wall': '🎨 Customize Universe', 'set_note': '💌 Send sweet note',
-        'set_blocked': '🚫 Blocked Contacts', 'set_leave': 'Leave Universe'
     }
 };
 
@@ -422,13 +353,10 @@ if (!firebase.apps.length) {
 const db = firebase.database(); 
 const fs = firebase.firestore();
 
-fs.enablePersistence().catch(function(err) {
-    if (err.code == 'failed-precondition') {
-        console.error("Plusieurs onglets ouverts, persistance impossible.");
-    } else if (err.code == 'unimplemented') {
-        console.error("Navigateur non compatible avec la persistance hors-ligne.");
-    }
-});
+// Tentative d'activation silencieuse du mode hors ligne Firestore
+try {
+    fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err));
+} catch(e) {}
 
 const E2EE = {
     encrypt: (text, key) => {
@@ -460,23 +388,37 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+// Fonction de compression ultra-rapide et robuste pour les mobiles
 function compressImage(file, maxWidth, callback) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = event => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let scaleSize = maxWidth / img.width;
-            if(scaleSize > 1) scaleSize = 1;
-            canvas.width = img.width * scaleSize;
-            canvas.height = img.height * scaleSize;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            callback(canvas.toDataURL('image/jpeg', 0.6)); 
-        }
+    if (!file.type.startsWith('image/')) {
+        callback(file, 'file'); return;
+    }
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+        URL.revokeObjectURL(img.src);
+        const canvas = document.createElement('canvas');
+        let scaleSize = maxWidth / img.width;
+        if(scaleSize > 1) scaleSize = 1;
+        canvas.width = img.width * scaleSize;
+        canvas.height = img.height * scaleSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        callback(canvas.toDataURL('image/jpeg', 0.7), 'data_url'); 
     };
+    img.onerror = () => callback(file, 'file'); // En cas d'erreur de lecture, on envoie le fichier tel quel
+}
+
+// Rétablissement de la fonction Mot Doux
+function openMoodSelector() {
+    const box = document.getElementById('moodOptions');
+    if(!box) return;
+    box.innerHTML = "";
+    Object.keys(moodLibrary).forEach(m => { 
+        box.innerHTML += `<button class="option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; 
+    });
+    document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
+    document.getElementById('vWidgetFull').style.display = "flex";
 }
 
 function showMoodMessage(mood) {
@@ -484,29 +426,28 @@ function showMoodMessage(mood) {
     document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
+// Initialisation sécurisée qui retire toujours l'écran de chargement
 window.onload = () => {
+    document.getElementById('splash').style.display = 'none';
     initApp();
 };
 
 function initApp() {
     try {
-        if(user) setupApp();
-        else { 
-            document.getElementById('splash').style.display = 'none'; 
+        if(user) {
+            document.getElementById('authLayer').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            setupApp();
+        } else { 
             document.getElementById('authLayer').style.display = 'flex'; 
         }
     } catch(e) {
         console.error(e);
-        document.getElementById('splash').style.display = 'none';
         showToast("Erreur de chargement");
     }
 }
 
 function setupApp() {
-    document.getElementById('splash').style.display = 'none';
-    document.getElementById('authLayer').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    
     document.getElementById('uNameDisp').innerText = user.pseudo;
     document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
     document.getElementById('setCodeDisplay').innerText = user.code;
@@ -519,7 +460,6 @@ function setupApp() {
     updatePresence();
     loadContacts();
     updateTimeCounter();
-    initNotifications();
     
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -931,8 +871,8 @@ function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('imgIn').click(), 100);">🖼️ Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('camIn').click(), 100);">📸 Photo</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">🖼️ Galerie</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">📸 Photo</button>
         </div>
     `, null);
 }
@@ -944,30 +884,28 @@ function processMediaUpload(e) {
     triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
     const fileType = file.type.startsWith('video/') ? 'video' : 'img';
-    
-    showToast("Envoi en cours... ⏳");
 
     if(currentMediaMode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
             if(doc.exists) { showToast("Impossible, contact bloqué."); return; }
             handleUpload();
-        });
+        }).catch(() => handleUpload()); 
     } else {
         handleUpload();
     }
 
     function handleUpload() {
         if (fileType === 'img') {
-            compressImage(file, 800, (base64Data) => {
-                uploadToFirebase(base64Data, 'data_url', 'img');
+            compressImage(file, 800, (data, format) => {
+                uploadToFirebase(data, format, 'img');
             });
         } else {
             uploadToFirebase(file, 'file', 'video');
         }
     }
 
-    function uploadToFirebase(data, format, detectedType) {
-        const fileName = Date.now() + (detectedType === 'img' ? '_img.jpg' : '_vid.mp4');
+    function uploadToFirebase(data, format, typeParam) {
+        const fileName = Date.now() + (typeParam === 'img' ? '_img.jpg' : '_vid.mp4');
         const storageRef = firebase.storage().ref('media/' + fileName);
         
         const uploadTask = format === 'data_url' ? storageRef.putString(data, 'data_url') : storageRef.put(data);
@@ -978,7 +916,7 @@ function processMediaUpload(e) {
                 const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
                 
                 fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-                    sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: detectedType, seen: false 
+                    sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
                 });
                 
                 if(currentMediaMode === 'msgs') {
@@ -987,34 +925,33 @@ function processMediaUpload(e) {
                     batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
                     batch.commit();
                 }
-                showToast("Média envoyé ! ✨");
             });
-        }).catch(err => { console.error(err); showToast("Erreur d'envoi ❌"); });
+        }).catch(err => { console.error(err); });
     }
 }
 
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
-    showToast("Mise à jour... ⏳");
     
-    compressImage(file, 800, (compressedData) => {
-        const fileName = Date.now() + '_profile.jpg';
+    compressImage(file, 800, (data, format) => {
+        const fileName = Date.now() + (mode === 'pfp' ? '_profile.jpg' : '_wall.jpg');
         const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
         
-        storageRef.putString(compressedData, 'data_url').then((snapshot) => {
+        const uploadTask = format === 'data_url' ? storageRef.putString(data, 'data_url') : storageRef.put(data);
+
+        uploadTask.then((snapshot) => {
             snapshot.ref.getDownloadURL().then((url) => {
                 if(mode === 'pfp') { 
                     fs.collection('users').doc(user.id).update({ pfp: url }).then(() => {
                         user.pfp = url; 
                         localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
                         document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
-                        showToast("Photo à jour !");
                     });
                 } else if(mode === 'wall') { 
                     applyTheme(url); 
                 }
             });
-        }).catch(err => { console.error(err); showToast("Erreur ❌"); });
+        }).catch(err => { console.error(err); });
     });
 }
 
