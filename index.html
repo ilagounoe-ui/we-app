@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
@@ -271,8 +272,8 @@
 
     <div id="vSet" class="view">
         <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">👤</div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')">
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
+        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -345,29 +346,11 @@
     </div>
 </div>
 
-<input type="file" id="imgIn" hidden accept="image/*" onclick="this.value=null">
+<input type="file" id="imgIn" hidden accept="image/*,video/*" onclick="this.value=null">
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
-// --- CONFIGURATION FIREBASE ---
-const firebaseConfig = {
-    apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
-    authDomain: "notre-univers-d71a3.firebaseapp.com",
-    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
-    projectId: "notre-univers-d71a3",
-    storageBucket: "notre-univers-d71a3.firebasestorage.app",
-    messagingSenderId: "909531230264",
-    appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
-};
-
-if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-}
-
-const db = firebase.database(); 
-const fs = firebase.firestore();
-
-// --- VARIABLES GLOBALES ---
+// --- VARIABLES GLOBALES & INIT ---
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
 let stateStack = [];
 let activeId = null;
@@ -400,12 +383,53 @@ const allLanguages = [
 ];
 
 const i18n = {
-    'fr': { 'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon 🌹', 'tab_set': 'Réglages', 'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers', 'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon', 'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers' }
+    'fr': {
+        'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon 🌹', 'tab_set': 'Réglages',
+        'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers',
+        'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon',
+        'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers'
+    },
+    'en': {
+        'tab_msg': 'Messages', 'tab_cocon': 'The Cocoon 🌹', 'tab_set': 'Settings',
+        'set_pseudo': 'Nickname', 'set_code': 'Cocoon Code', 'set_lang': '🌐 Universe Language',
+        'set_date': '📅 Date we met', 'set_wall': '🎨 Customize Universe', 'set_note': '💌 Send sweet note',
+        'set_blocked': '🚫 Blocked Contacts', 'set_leave': 'Leave Universe'
+    }
 };
 
 const sounds = { pop: '' }; 
+const moodLibrary = {
+    "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
+    "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
+    "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
+    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
+};
 
-// --- E2EE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
+    authDomain: "notre-univers-d71a3.firebaseapp.com",
+    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
+    projectId: "notre-univers-d71a3",
+    storageBucket: "notre-univers-d71a3.firebasestorage.app",
+    messagingSenderId: "909531230264",
+    appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
+};
+
+if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+}
+
+const db = firebase.database(); 
+const fs = firebase.firestore();
+
+fs.enablePersistence().catch(function(err) {
+    if (err.code == 'failed-precondition') {
+        console.error("Plusieurs onglets ouverts, persistance impossible.");
+    } else if (err.code == 'unimplemented') {
+        console.error("Navigateur non compatible avec la persistance hors-ligne.");
+    }
+});
+
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
@@ -430,7 +454,12 @@ const E2EE = {
     }
 };
 
-// --- OUTILS : COMPRESSEUR D'IMAGE ULTRA-RAPIDE ---
+function showToast(msg) {
+    const t = document.getElementById('toastAlert');
+    t.innerText = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
 function compressImage(file, maxWidth, callback) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -440,40 +469,36 @@ function compressImage(file, maxWidth, callback) {
         img.onload = () => {
             const canvas = document.createElement('canvas');
             let scaleSize = maxWidth / img.width;
-            // Ne pas agrandir l'image si elle est déjà petite
             if(scaleSize > 1) scaleSize = 1;
             canvas.width = img.width * scaleSize;
             canvas.height = img.height * scaleSize;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            // Retourne une chaine Base64 légère (JPEG 60%)
-            callback(canvas.toDataURL('image/jpeg', 0.6));
+            callback(canvas.toDataURL('image/jpeg', 0.6)); 
         }
     };
 }
 
-function showToast(msg) {
-    const t = document.getElementById('toastAlert');
-    t.innerText = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
+function showMoodMessage(mood) {
+    const choices = moodLibrary[mood] || ["L'univers veille sur toi."];
+    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
-// --- INITIALISATION (SÉCURITÉ HORS-LIGNE) ---
 window.onload = () => {
-    // On essaie d'activer le mode hors ligne. Que ça marche ou plante, on lance l'appli.
-    fs.enablePersistence()
-      .then(() => initApp())
-      .catch((err) => {
-          console.error("Mode hors-ligne : ", err);
-          initApp();
-      });
+    initApp();
 };
 
 function initApp() {
-    if(user) setupApp();
-    else { 
-        document.getElementById('splash').style.display = 'none'; 
-        document.getElementById('authLayer').style.display = 'flex'; 
+    try {
+        if(user) setupApp();
+        else { 
+            document.getElementById('splash').style.display = 'none'; 
+            document.getElementById('authLayer').style.display = 'flex'; 
+        }
+    } catch(e) {
+        console.error(e);
+        document.getElementById('splash').style.display = 'none';
+        showToast("Erreur de chargement");
     }
 }
 
@@ -494,6 +519,7 @@ function setupApp() {
     updatePresence();
     loadContacts();
     updateTimeCounter();
+    initNotifications();
     
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -503,6 +529,16 @@ function setupApp() {
         const el = document.getElementById('myMoodDisp');
         if(d && d.humeur) { el.innerText = d.humeur; el.style.display = 'inline-block'; } 
         else { el.style.display = 'none'; }
+    });
+
+    fs.collection('globalNotes').doc(user.code).onSnapshot(doc => {
+        const note = doc.data();
+        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
+            document.getElementById('coconTabBtn').classList.add('cocon-notify');
+            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+            document.getElementById('coconNoteText').innerText = note.txt;
+            document.getElementById('coconNoteDisplay').style.display = 'flex';
+        }
     });
 }
 
@@ -563,6 +599,7 @@ function openDateEdit() {
             <input type="number" id="dMonth" class="modal-input" placeholder="MM" style="width:70px; text-align:center; margin:0;" min="1" max="12">
             <input type="number" id="dYear" class="modal-input" placeholder="AAAA" style="width:90px; text-align:center; margin:0;">
         </div>
+        <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
     `;
     openModal("Notre début 📅", html, () => {
         const j = document.getElementById('dDay').value.padStart(2, '0');
@@ -606,6 +643,7 @@ window.onpopstate = () => {
 function triggerBack() { history.back(); }
 
 function switchV(id, el) {
+    if(id === 'vCocon') document.getElementById('coconTabBtn').classList.remove('cocon-notify');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active'); el.classList.add('active');
@@ -804,7 +842,8 @@ function sendMsg(mode) {
         inp.value = "";
         
         if(mode === 'msgs') {
-            db.ref('typing/'+activeId+'/'+user.id).set(false);
+            db.ref('typing/'+activeId+'/'+user.id).set(false); 
+            
             const batch = fs.batch();
             const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
             batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -892,61 +931,90 @@ function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">🖼️ Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">📸 Photo</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('imgIn').click(), 100);">🖼️ Galerie</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('camIn').click(), 100);">📸 Photo</button>
         </div>
     `, null);
 }
 
-// UPLOAD D'IMAGE : COMPRESSION LOCALE ABSOLUE 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
 function processMediaUpload(e) {
+    triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
+    const fileType = file.type.startsWith('video/') ? 'video' : 'img';
     
+    showToast("Envoi en cours... ⏳");
+
     if(currentMediaMode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
             if(doc.exists) { showToast("Impossible, contact bloqué."); return; }
-            // On compresse et on envoie directement l'image
-            compressImage(file, 800, (compressedData) => {
-                sendCompressedImage(compressedData);
-            });
+            handleUpload();
         });
-    } else { 
-        compressImage(file, 800, (compressedData) => {
-            sendCompressedImage(compressedData);
-        });
+    } else {
+        handleUpload();
     }
 
-    function sendCompressedImage(dataUrl) {
-        const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
-        const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
-        
-        fs.collection(collPath).doc(docTarget).collection('messages').add({ sid: user.id, txt: dataUrl, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'img', seen: false });
-        
-        if(currentMediaMode === 'msgs') {
-            const batch = fs.batch();
-            batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-            batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-            batch.commit();
+    function handleUpload() {
+        if (fileType === 'img') {
+            compressImage(file, 800, (base64Data) => {
+                uploadToFirebase(base64Data, 'data_url', 'img');
+            });
+        } else {
+            uploadToFirebase(file, 'file', 'video');
         }
+    }
+
+    function uploadToFirebase(data, format, detectedType) {
+        const fileName = Date.now() + (detectedType === 'img' ? '_img.jpg' : '_vid.mp4');
+        const storageRef = firebase.storage().ref('media/' + fileName);
+        
+        const uploadTask = format === 'data_url' ? storageRef.putString(data, 'data_url') : storageRef.put(data);
+
+        uploadTask.then((snapshot) => {
+            snapshot.ref.getDownloadURL().then((url) => {
+                const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
+                const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
+                
+                fs.collection(collPath).doc(docTarget).collection('messages').add({ 
+                    sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: detectedType, seen: false 
+                });
+                
+                if(currentMediaMode === 'msgs') {
+                    const batch = fs.batch();
+                    batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+                    batch.commit();
+                }
+                showToast("Média envoyé ! ✨");
+            });
+        }).catch(err => { console.error(err); showToast("Erreur d'envoi ❌"); });
     }
 }
 
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
+    showToast("Mise à jour... ⏳");
     
     compressImage(file, 800, (compressedData) => {
-        if(mode === 'pfp') { 
-            fs.collection('users').doc(user.id).update({ pfp: compressedData }).then(() => {
-                user.pfp = compressedData; 
-                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                document.getElementById('pfpPreview').innerHTML = `<img src="${compressedData}">`; 
+        const fileName = Date.now() + '_profile.jpg';
+        const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
+        
+        storageRef.putString(compressedData, 'data_url').then((snapshot) => {
+            snapshot.ref.getDownloadURL().then((url) => {
+                if(mode === 'pfp') { 
+                    fs.collection('users').doc(user.id).update({ pfp: url }).then(() => {
+                        user.pfp = url; 
+                        localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                        document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
+                        showToast("Photo à jour !");
+                    });
+                } else if(mode === 'wall') { 
+                    applyTheme(url); 
+                }
             });
-        } else if(mode === 'wall') { 
-            applyTheme(compressedData); 
-        }
+        }).catch(err => { console.error(err); showToast("Erreur ❌"); });
     });
 }
 
