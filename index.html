@@ -6,13 +6,11 @@
     <title>Notre Univers v50 - Édition Hors-Ligne (Firestore)</title>
     
     <link rel="manifest" href="./manifest.json">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
@@ -59,7 +57,7 @@
         }
 
         /* Layout & Glassmorphism */
-        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.5s; }
+        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
         .main-header { 
@@ -347,11 +345,29 @@
     </div>
 </div>
 
-<input type="file" id="imgIn" hidden accept="image/*,video/*">
-<input type="file" id="camIn" hidden accept="image/*" capture="environment">
+<input type="file" id="imgIn" hidden accept="image/*" onclick="this.value=null">
+<input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
-// --- VARIABLES GLOBALES & INIT ---
+// --- CONFIGURATION FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
+    authDomain: "notre-univers-d71a3.firebaseapp.com",
+    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
+    projectId: "notre-univers-d71a3",
+    storageBucket: "notre-univers-d71a3.firebasestorage.app",
+    messagingSenderId: "909531230264",
+    appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
+};
+
+if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+}
+
+const db = firebase.database(); 
+const fs = firebase.firestore();
+
+// --- VARIABLES GLOBALES ---
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
 let stateStack = [];
 let activeId = null;
@@ -364,7 +380,7 @@ let audioChunks = [];
 let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
-let unsubMsgs = null; // Utilisé pour désabonner le listener Firestore
+let unsubMsgs = null; 
 
 const humeursCocon = [
     { label: "✨ Sur un nuage" },
@@ -384,55 +400,12 @@ const allLanguages = [
 ];
 
 const i18n = {
-    'fr': {
-        'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon 🌹', 'tab_set': 'Réglages',
-        'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers',
-        'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon',
-        'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers'
-    },
-    'en': {
-        'tab_msg': 'Messages', 'tab_cocon': 'The Cocoon 🌹', 'tab_set': 'Settings',
-        'set_pseudo': 'Nickname', 'set_code': 'Cocoon Code', 'set_lang': '🌐 Universe Language',
-        'set_date': '📅 Date we met', 'set_wall': '🎨 Customize Universe', 'set_note': '💌 Send sweet note',
-        'set_blocked': '🚫 Blocked Contacts', 'set_leave': 'Leave Universe'
-    }
+    'fr': { 'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon 🌹', 'tab_set': 'Réglages', 'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers', 'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon', 'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers' }
 };
 
 const sounds = { pop: '' }; 
-const moodLibrary = {
-    "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
-    "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
-    "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
-    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
-};
 
-const firebaseConfig = {
-    apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
-    authDomain: "notre-univers-d71a3.firebaseapp.com",
-    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
-    projectId: "notre-univers-d71a3",
-    storageBucket: "notre-univers-d71a3.firebasestorage.app",
-    messagingSenderId: "909531230264",
-    appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
-};
-
-if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-}
-
-// 1. Initialiser Firestore et RTDB
-const db = firebase.database();  // Gardé UNIQUEMENT pour la présence (en ligne/écrit...)
-const fs = firebase.firestore(); // Firestore pour tout le reste (messages, profils, contacts)
-
-// 2. Activer la persistance hors-ligne Firestore
-fs.enablePersistence().catch(function(err) {
-    if (err.code == 'failed-precondition') {
-        console.error("Plusieurs onglets ouverts, persistance impossible.");
-    } else if (err.code == 'unimplemented') {
-        console.error("Navigateur non compatible avec la persistance hors-ligne.");
-    }
-});
-
+// --- E2EE ---
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
@@ -457,23 +430,59 @@ const E2EE = {
     }
 };
 
+// --- OUTILS : COMPRESSEUR D'IMAGE ULTRA-RAPIDE ---
+function compressImage(file, maxWidth, callback) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = event => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let scaleSize = maxWidth / img.width;
+            // Ne pas agrandir l'image si elle est déjà petite
+            if(scaleSize > 1) scaleSize = 1;
+            canvas.width = img.width * scaleSize;
+            canvas.height = img.height * scaleSize;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // Retourne une chaine Base64 légère (JPEG 60%)
+            callback(canvas.toDataURL('image/jpeg', 0.6));
+        }
+    };
+}
+
 function showToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerText = msg; t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
 }
 
+// --- INITIALISATION (SÉCURITÉ HORS-LIGNE) ---
 window.onload = () => {
-    if(user) setupApp();
-    else { document.getElementById('splash').style.display = 'none'; document.getElementById('authLayer').style.display = 'flex'; }
+    // On essaie d'activer le mode hors ligne. Que ça marche ou plante, on lance l'appli.
+    fs.enablePersistence()
+      .then(() => initApp())
+      .catch((err) => {
+          console.error("Mode hors-ligne : ", err);
+          initApp();
+      });
 };
+
+function initApp() {
+    if(user) setupApp();
+    else { 
+        document.getElementById('splash').style.display = 'none'; 
+        document.getElementById('authLayer').style.display = 'flex'; 
+    }
+}
 
 function setupApp() {
     document.getElementById('splash').style.display = 'none';
     document.getElementById('authLayer').style.display = 'none';
     document.getElementById('mainApp').style.display = 'block';
-    document.getElementById('uNameDisp').innerText = user.pseudo;
     
+    document.getElementById('uNameDisp').innerText = user.pseudo;
     document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
     document.getElementById('setCodeDisplay').innerText = user.code;
     document.getElementById('setIdDisplay').innerText = user.id;
@@ -489,23 +498,11 @@ function setupApp() {
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
 
-    // Écoute de l'humeur personnelle (FIRESTORE)
     fs.collection('users').doc(user.id).onSnapshot(doc => {
         const d = doc.data();
         const el = document.getElementById('myMoodDisp');
         if(d && d.humeur) { el.innerText = d.humeur; el.style.display = 'inline-block'; } 
         else { el.style.display = 'none'; }
-    });
-
-    // Notes Globales Cocon (FIRESTORE)
-    fs.collection('globalNotes').doc(user.code).onSnapshot(doc => {
-        const note = doc.data();
-        if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-            document.getElementById('coconTabBtn').classList.add('cocon-notify');
-            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
-            document.getElementById('coconNoteText').innerText = note.txt;
-            document.getElementById('coconNoteDisplay').style.display = 'flex';
-        }
     });
 }
 
@@ -544,10 +541,7 @@ function openLangMenu() {
     openModal("Langue", html, null);
 }
 
-function generateLangListHTML(list) {
-    return list.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span></button>`).join('');
-}
-
+function generateLangListHTML(list) { return list.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span></button>`).join(''); }
 function filterLangs() {
     const q = document.getElementById('langSearch').value.toLowerCase();
     const filtered = allLanguages.filter(l => l.name.toLowerCase().includes(q));
@@ -565,11 +559,10 @@ function setAppLang(code) {
 function openDateEdit() {
     const html = `
         <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
-            <input type="number" id="dDay" class="modal-input" placeholder="JJ" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="31">
-            <input type="number" id="dMonth" class="modal-input" placeholder="MM" inputmode="numeric" pattern="[0-9]*" style="width:70px; text-align:center; margin:0;" min="1" max="12">
-            <input type="number" id="dYear" class="modal-input" placeholder="AAAA" inputmode="numeric" pattern="[0-9]*" style="width:90px; text-align:center; margin:0;">
+            <input type="number" id="dDay" class="modal-input" placeholder="JJ" style="width:70px; text-align:center; margin:0;" min="1" max="31">
+            <input type="number" id="dMonth" class="modal-input" placeholder="MM" style="width:70px; text-align:center; margin:0;" min="1" max="12">
+            <input type="number" id="dYear" class="modal-input" placeholder="AAAA" style="width:90px; text-align:center; margin:0;">
         </div>
-        <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
     `;
     openModal("Notre début 📅", html, () => {
         const j = document.getElementById('dDay').value.padStart(2, '0');
@@ -585,7 +578,6 @@ function openDateEdit() {
 }
 
 function updatePresence() {
-    // On conserve RTDB uniquement pour le mode "en ligne" ultra-rapide
     const statusRef = db.ref('presence/' + user.id);
     db.ref('.info/connected').on('value', snap => {
         if (snap.val() === true) {
@@ -596,11 +588,11 @@ function updatePresence() {
 }
 
 function unlockSecureSettings() {
-    openModal("Accès Sécurisé", `<p style="font-size:12px; opacity:0.7;">Saisissez votre numéro de téléphone pour déverrouiller</p><input type="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (val) => {
+    openModal("Accès Sécurisé", `<input type="tel" id="modalInput" class="modal-input" placeholder="Ton numéro...">`, (val) => {
         if(val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
             document.getElementById('secureBlurOverlay').style.display = 'none';
             document.getElementById('secureContent').classList.remove('secure-blur');
-            triggerBack(); showToast("Infos déverrouillées 🔓");
+            triggerBack(); 
         } else showToast("Numéro incorrect !");
     });
 }
@@ -614,41 +606,25 @@ window.onpopstate = () => {
 function triggerBack() { history.back(); }
 
 function switchV(id, el) {
-    if(id === 'vCocon') document.getElementById('coconTabBtn').classList.remove('cocon-notify');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
 
-// --- OPTIMISATION FIRESTORE : Chargement des contacts ---
 function loadContacts() {
     const list = document.getElementById('chatList');
     
-    // Écoute de la sous-collection contacts (triée par lastMsgAt)
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
-        if (snap.empty) { 
-            list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; 
-            return; 
-        }
-
+        if (snap.empty) { list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; return; }
         let promises = [];
-
         snap.forEach(contactDoc => {
             const peerId = contactDoc.id;
             const contactMeta = contactDoc.data();
             
-            // On récupère le profil de l'utilisateur
             let p = fs.collection('users').doc(peerId).get().then(us => {
                 if(us.exists) {
                     const u = us.data();
-                    return {
-                        id: peerId,
-                        pseudo: u.pseudo,
-                        pfp: u.pfp,
-                        humeur: u.humeur,
-                        lastMsgAt: contactMeta.lastMsgAt || 0,
-                        unread: contactMeta.unread || 0 
-                    };
+                    return { id: peerId, pseudo: u.pseudo, pfp: u.pfp, humeur: u.humeur, lastMsgAt: contactMeta.lastMsgAt || 0, unread: contactMeta.unread || 0 };
                 }
                 return null;
             });
@@ -665,23 +641,15 @@ function loadContacts() {
 function renderContacts(arr) {
     const list = document.getElementById('chatList');
     list.innerHTML = "";
-    
     arr.forEach(c => {
         const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
         const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
         
-        const html = `
+        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}','${c.pseudo}','${c.pfp}')">
             <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : c.pseudo[0]}</div>
-            <div style="flex:1">
-                <div style="display:flex; align-items:center;">
-                    <b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${c.pseudo}</b>
-                    ${badge}
-                </div>
-                ${moodHtml}
-            </div>
-            <div class="opt-dots">›</div>`;
-            
-        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}','${c.pseudo}','${c.pfp}')">${html}</div>`;
+            <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${c.pseudo}</b>${badge}</div>${moodHtml}</div>
+            <div class="opt-dots">›</div>
+        </div>`;
     });
 }
 
@@ -691,29 +659,21 @@ function addFriend() {
         if(id === user.id) return showToast("C'est vous !");
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
-                fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ 
-                    lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    unread: 0
-                });
-                triggerBack(); 
-                showToast("Contact ajouté 👻"); 
-            }
-            else showToast("Inconnu");
+                fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 });
+                triggerBack(); showToast("Contact ajouté 👻"); 
+            } else showToast("Inconnu");
         });
     });
 }
 
 function openChat(id, name, pfp) {
-    currentPeerId = id;
-    activeId = [user.id, id].sort().join('_');
+    currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
     document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
     
     fs.collection('users').doc(user.id).collection('contacts').doc(id).update({ unread: 0 });
 
-    const mArea = document.getElementById('mArea');
-    mArea.innerHTML = "";
-
+    document.getElementById('mArea').innerHTML = "";
     document.getElementById('chatBox').style.display = 'flex';
     pushState('chatBox');
     
@@ -723,11 +683,7 @@ function openChat(id, name, pfp) {
 
 function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
-    if(currentPeerId) { 
-        db.ref('presence/'+currentPeerId).off(); 
-        db.ref('typing/'+activeId+'/'+currentPeerId).off(); 
-        currentPeerId = null;
-    }
+    if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
 }
@@ -745,31 +701,24 @@ function getMsgHTML(docId, m, path, target) {
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
     const time = ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
-    if(m.deletedForEveryone) {
-        return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; border: 1px dashed var(--glass-border); background: transparent; color: var(--text-sub);"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span><div class="msg-meta"><span>${time}</span></div></div>`;
-    }
+    if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
     
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="viewPhoto('${m.txt}')">`;
-    if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></video>`;
     if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
-    if(m.edited) content += `<br><small style="font-size:9px; opacity:0.6;">(modifié)</small>`;
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
 
-    const lockIcon = (m.type === 'text') ? `<span style="font-size:9px; opacity:0.5; margin-right:3px;">🔒</span>` : '';
-
-    return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
+    return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
 }
 
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
-    
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
@@ -796,15 +745,13 @@ function syncMessages(path, target, areaId) {
 function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     const decodedTxt = decodeURIComponent(escTxt);
     let html = "";
-    
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
         const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')">✏️ Modifier</button>`;
     }
     html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour moi</button>`;
     if(isMe) html += `<button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="delMsgForAll('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour tous</button>`;
-    
-    openModal("Options du message", html, null);
+    openModal("Options", html, null);
 }
 
 function delMsgForMe(id, path, target) { 
@@ -857,8 +804,7 @@ function sendMsg(mode) {
         inp.value = "";
         
         if(mode === 'msgs') {
-            db.ref('typing/'+activeId+'/'+user.id).set(false); // Typing reste sur RTDB
-            
+            db.ref('typing/'+activeId+'/'+user.id).set(false);
             const batch = fs.batch();
             const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
             batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
@@ -890,7 +836,7 @@ function openContactOptions() {
         const u = doc.data();
         const pfpUrl = u && u.pfp ? u.pfp : null;
         let html = `
-            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo de profil')`}">🖼️ Voir la photo</button>
+            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo')`}">🖼️ Voir la photo</button>
             <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
             <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">🚫 Bloquer le contact</button>
             <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
@@ -900,7 +846,7 @@ function openContactOptions() {
 }
 
 function clearConversation() {
-    openModal("Vider ?", "<p style='font-size:14px; opacity:0.8;'>Les messages actuels seront masqués de votre côté.</p>", () => {
+    openModal("Vider ?", "<p style='font-size:14px; opacity:0.8;'>Les messages seront masqués de votre côté.</p>", () => {
         fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).update({ clearedAt: Date.now() });
         document.getElementById('mArea').innerHTML = "";
         chatClearedAt = Date.now();
@@ -909,7 +855,7 @@ function clearConversation() {
 }
 
 function blockContact() {
-    openModal("Bloquer ?", "<p style='font-size:14px; opacity:0.8;'>Vous ne pourrez plus échanger avec ce contact.</p>", () => {
+    openModal("Bloquer ?", "<p style='font-size:14px; opacity:0.8;'>Vous ne pourrez plus échanger.</p>", () => {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).set({ blocked: true });
         triggerBack(); triggerBack(); closeChat(); showToast("Contact bloqué");
     });
@@ -946,74 +892,61 @@ function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('imgIn').click(), 100);">🖼️ Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; setTimeout(()=>document.getElementById('camIn').click(), 100);">📸 Photo</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">🖼️ Galerie</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">📸 Photo</button>
         </div>
     `, null);
 }
 
+// UPLOAD D'IMAGE : COMPRESSION LOCALE ABSOLUE 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
 function processMediaUpload(e) {
-    triggerBack(); // Ferme le modal côté historique
     const file = e.target.files[0]; if(!file) return;
-    const fileType = file.type.startsWith('video/') ? 'video' : 'img';
     
     if(currentMediaMode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
             if(doc.exists) { showToast("Impossible, contact bloqué."); return; }
-            continueUpload(file, fileType);
-        });
-    } else continueUpload(file, fileType);
-
-    function continueUpload(uploadFile, detectedType) {
-        showToast("Envoi en cours... ⏳");
-        const fileName = Date.now() + '_' + uploadFile.name;
-        const storageRef = firebase.storage().ref('media/' + fileName);
-        storageRef.put(uploadFile).then((snapshot) => {
-            snapshot.ref.getDownloadURL().then((downloadURL) => {
-                const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
-                const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
-                
-                fs.collection(collPath).doc(docTarget).collection('messages').add({ sid: user.id, txt: downloadURL, t: firebase.firestore.FieldValue.serverTimestamp(), type: detectedType, seen: false });
-                
-                if(currentMediaMode === 'msgs') {
-                    const batch = fs.batch();
-                    const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
-                    batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                    const peerContactRef = fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id);
-                    batch.set(peerContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-                    batch.commit();
-                }
-                showToast("Média envoyé ! ✨");
+            // On compresse et on envoie directement l'image
+            compressImage(file, 800, (compressedData) => {
+                sendCompressedImage(compressedData);
             });
-        }).catch(() => showToast("Erreur d'envoi ❌ (Vérifiez les règles Storage)"));
+        });
+    } else { 
+        compressImage(file, 800, (compressedData) => {
+            sendCompressedImage(compressedData);
+        });
+    }
+
+    function sendCompressedImage(dataUrl) {
+        const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
+        const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
+        
+        fs.collection(collPath).doc(docTarget).collection('messages').add({ sid: user.id, txt: dataUrl, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'img', seen: false });
+        
+        if(currentMediaMode === 'msgs') {
+            const batch = fs.batch();
+            batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            batch.commit();
+        }
     }
 }
 
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
-    showToast("Téléchargement... ⏳");
-    const fileName = Date.now() + '_' + file.name;
-    const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
     
-    storageRef.put(file).then((snapshot) => {
-        snapshot.ref.getDownloadURL().then((downloadURL) => {
-            if(mode === 'pfp') { 
-                fs.collection('users').doc(user.id).update({ pfp: downloadURL }).then(() => {
-                    user.pfp = downloadURL; 
-                    localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                    document.getElementById('pfpPreview').innerHTML = `<img src="${downloadURL}">`; 
-                    showToast("Photo mise à jour !"); 
-                });
-            } else if(mode === 'wall') { 
-                applyTheme(downloadURL); 
-            }
-        });
-    }).catch(err => {
-        console.error("Storage error:", err);
-        showToast("Erreur de téléchargement ❌");
+    compressImage(file, 800, (compressedData) => {
+        if(mode === 'pfp') { 
+            fs.collection('users').doc(user.id).update({ pfp: compressedData }).then(() => {
+                user.pfp = compressedData; 
+                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                document.getElementById('pfpPreview').innerHTML = `<img src="${compressedData}">`; 
+            });
+        } else if(mode === 'wall') { 
+            applyTheme(compressedData); 
+        }
     });
 }
 
@@ -1024,66 +957,12 @@ function openModal(t, b, a) {
     else document.getElementById('modalActions').style.display = 'none';
 }
 
-function updateTimeCounter() {
-    if(!user.startDate) return;
-    if(timeCounterInterval) clearInterval(timeCounterInterval);
-    const elDay = document.getElementById('d-day');
-    const elHour = document.getElementById('d-hour');
-    if(!elDay || !elHour) return;
-    const startTime = new Date(user.startDate).getTime();
-    timeCounterInterval = setInterval(() => {
-        const diff = Date.now() - startTime;
-        elDay.innerText = Math.floor(diff/86400000);
-        elHour.innerText = Math.floor((diff/3600000)%24);
-    }, 1000);
-}
-
-function askCoconCode() {
-    openModal("Cocon Secret", `<input type="password" id="modalInput" class="modal-input" placeholder="Code secret">`, (val) => {
-        if(val === user.code) {
-            document.getElementById('modalFrame').classList.add('unlocking');
-            setTimeout(() => {
-                document.getElementById('customModal').style.display = 'none'; stateStack.pop();
-                document.getElementById('coconBox').style.display = 'flex'; pushState('coconBox');
-                syncMessages('cocon', user.code, 'coArea'); document.getElementById('modalFrame').classList.remove('unlocking');
-            }, 800);
-        } else showToast("Code incorrect...");
-    });
-}
-
 function startRecord() {
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         mediaRecorder = new MediaRecorder(stream); mediaRecorder.start();
         document.getElementById('micBtn').classList.add('recording'); audioChunks = [];
         mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
     }).catch(() => showToast("Micro non autorisé"));
-}
-
-function stopRecord() {
-    if(!mediaRecorder || mediaRecorder.state === "inactive") return;
-    mediaRecorder.stop(); document.getElementById('micBtn').classList.remove('recording');
-    mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunks, { type: 'audio/mp3' });
-        const r = new FileReader(); r.onload = (e) => {
-            fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
-                if(doc.exists && activeChatPath.startsWith('chats')) return showToast("Impossible, contact bloqué.");
-                
-                const collPath = activeChatPath.startsWith('chats') ? 'chats' : 'cocon';
-                const docTarget = activeChatPath.startsWith('chats') ? activeId : user.code;
-                fs.collection(collPath).doc(docTarget).collection('messages').add({ sid: user.id, txt: e.target.result, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'audio', seen: false });
-                
-                if(activeChatPath.startsWith('chats')) {
-                    const batch = fs.batch();
-                    const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
-                    batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                    const peerContactRef = fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id);
-                    batch.set(peerContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-                    batch.commit();
-                }
-            });
-        };
-        r.readAsDataURL(blob);
-    };
 }
 
 function login() {
@@ -1107,7 +986,7 @@ function toggleAuth(isL) { document.getElementById('loginUI').style.display = is
 function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
 
 function sendGlobalNote() {
-    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire via le code : ${user.code}</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
+    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
         if(!v) return;
         fs.collection('globalNotes').doc(user.code).set({txt: v, sid: user.id, t: firebase.firestore.FieldValue.serverTimestamp(), readBy: {}});
         triggerBack(); showToast("Mot doux envoyé ! 💖");
@@ -1137,7 +1016,6 @@ function openBlockedList() {
 function unblockContact(id) { fs.collection('users').doc(user.id).collection('blocked').doc(id).delete(); showToast("Contact débloqué !"); triggerBack(); }
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
 function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) fs.collection('globalNotes').doc(user.code).update({ [`readBy.${user.id}`]: true }); }
 </script>
 
