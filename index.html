@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v47 - Édition Optimisée</title>
+    <title>Notre Univers v46 - Édition Sécurisée</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
@@ -27,16 +27,11 @@
             --online: #25D366;
             --gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             --bubble-me: linear-gradient(135deg, #d0a8ff 0%, #a66cfb 100%);
-            /* Variables pour s'adapter aux encoches (iOS/Android) */
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
         
         body { 
             margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
-            height: 100dvh; /* 100dvh règle le bug de la barre d'adresse */
-            overflow: hidden; background-attachment: fixed; background-size: cover; background-position: center; transition: background 0.5s ease;
-            display: flex; flex-direction: column;
+            height: 100vh; overflow: hidden; background-attachment: fixed; background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
         /* Animations */
@@ -56,23 +51,8 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @keyframes springMsg {
-            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            14% { transform: scale(1.08); }
-            28% { transform: scale(1); }
-            42% { transform: scale(1.08); }
-            70% { transform: scale(1); }
-        }
-        .heartbeat-anim {
-            animation: heartbeat 1.5s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
-            color: var(--love) !important;
-            text-shadow: 0 0 15px var(--love-glow);
-            border-color: var(--love) !important;
-            background: rgba(255, 75, 110, 0.1) !important;
         }
 
         /* Layout & Glassmorphism */
@@ -80,9 +60,9 @@
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
         .main-header { 
-            padding: calc(var(--safe-top) + 20px) 20px 15px; /* S'adapte à l'encoche */
+            padding: 50px 20px 15px; 
             background: rgba(11, 9, 20, 0.6); 
-            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
             position: sticky; top: 0; z-index: 100; 
             border-bottom: 1px solid var(--glass-border); 
             will-change: transform; 
@@ -93,14 +73,14 @@
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
-        .view { display: none; padding: 20px; flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+        .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; scroll-behavior: smooth; }
         .view.active { display: block; }
 
         .contact-item { 
             display: flex; align-items: center; padding: 15px; 
             background: rgba(255, 255, 255, 0.03); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            border-radius: 25px; margin-bottom: 12px; 
+            border-radius: 25px; margin-bottom: 15px; 
             border: 1px solid var(--glass-border); 
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
@@ -114,6 +94,7 @@
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
 
+        /* Bulle d'humeur */
         .bulle-humeur {
             background: rgba(255, 255, 255, 0.1); 
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -127,8 +108,9 @@
             transition: all 0.3s ease;
         }
 
+        /* Badge non lu */
         .badge-count {
-            background: #ff4b6e;
+            background: #ff4b6e; /* Ta couleur --love */
             color: white;
             min-width: 20px;
             height: 20px;
@@ -141,23 +123,13 @@
             padding: 0 6px;
             margin-left: 10px;
             box-shadow: 0 0 10px rgba(255, 75, 110, 0.4);
-            transition: opacity 0.2s ease;
         }
 
         /* Chat UI */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
-        .chat-head { padding: calc(var(--safe-top) + 20px) 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
+        .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
         
-        .msg-area { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column-reverse; 
-            gap: 12px; 
-            will-change: scroll-position;
-            scroll-behavior: smooth;
-        }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
         .bubble { 
             padding: 14px 20px; border-radius: 24px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.5; 
@@ -166,7 +138,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer;
-            animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: springMsg 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             will-change: transform, opacity; 
         }
         .bubble:active { transform: scale(0.96); }
@@ -179,11 +151,6 @@
         
         #mIn, #coIn { transition: all 0.3s; }
         #mIn:focus, #coIn:focus { background: rgba(255,255,255,0.1) !important; box-shadow: 0 0 0 2px var(--accent-glow); }
-
-        /* Ajustement barre du bas */
-        #chatBox > div:last-child, #coconBox > div:last-child {
-            padding-bottom: calc(var(--safe-bottom) + 15px);
-        }
 
         /* Widgets & Modals & Toasts */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -201,7 +168,7 @@
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; }
         
-        .fab { position: fixed; bottom: calc(var(--safe-bottom) + 30px); right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
@@ -224,7 +191,7 @@
     <button onclick="closeCoconNote()" style="margin-top:35px; padding:18px 40px; border-radius:30px; border:none; background:white; color:var(--love); font-weight:bold; font-size:16px; box-shadow: 0 10px 25px rgba(255,255,255,0.3); transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci 🌹</button>
 </div>
 
-<div id="splash"><div class="loader"></div></div>
+<div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation de l'Univers...</p></div>
 
 <div id="vWidgetFull">
     <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
@@ -446,8 +413,7 @@ const moodLibrary = {
     "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
     "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
     "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
-    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."],
-    "Premium (Alicia) 👑": ["Mon cœur bat uniquement pour toi, Alicia.", "Un amour éternel, au-delà de l'univers."]
+    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
 };
 
 const firebaseConfig = {
@@ -683,16 +649,6 @@ const db = firebase.database();
         activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
-        
-        const contactDiv = document.getElementById('contact_' + id);
-        if(contactDiv) {
-            const badge = contactDiv.querySelector('.badge-count');
-            if(badge) badge.style.display = 'none';
-        }
-
-        const mArea = document.getElementById('mArea');
-        mArea.innerHTML = "";
-
         document.getElementById('chatBox').style.display = 'flex';
         pushState('chatBox');
         
@@ -753,61 +709,27 @@ const db = firebase.database();
         return `<div id="msg_${snap.key}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta">${lockIcon}<span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
     }
 
-    // --- SYSTÈME OPTIMISÉ ---
     function syncMessages(path, target, areaId) {
         if(activeChatPath) db.ref(activeChatPath).off(); 
         activeChatPath = path + '/' + target;
-        const currentPath = activeChatPath;
         const area = document.getElementById(areaId);
-        const cacheKey = `nu_cache_v2_${target}`;
-
-        let initialLoadDone = false;
-
-        db.ref(currentPath).once('value', snapshot => {
-            if(activeChatPath !== currentPath) return;
-
-            let tempHtml = "";
-            snapshot.forEach(snap => {
-                const html = getMsgHTML(snap, path, target);
-                if(html) tempHtml = html + tempHtml; 
-            });
-            
-            area.innerHTML = tempHtml; 
-            
-            if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML); 
-            initialLoadDone = true;
-
-            db.ref(currentPath).on('child_added', snap => {
-                if (!initialLoadDone) return;
-                if (document.getElementById('msg_'+snap.key)) return; 
-
-                const html = getMsgHTML(snap, path, target);
-                if(html) { 
-                    area.insertAdjacentHTML('afterbegin', html); 
-                    if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-                }
-            });
-
-            db.ref(currentPath).on('child_changed', snap => { 
-                if (!initialLoadDone) return;
-                const el = document.getElementById('msg_'+snap.key); 
-                const html = getMsgHTML(snap, path, target);
-                if(el && html) { 
-                    const t=document.createElement('div'); t.innerHTML=html; 
-                    el.replaceWith(t.firstElementChild); 
-                } else if (el && !html) {
-                    el.remove();
-                }
-                if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-            });
-
-            db.ref(currentPath).on('child_removed', snap => { 
-                if (!initialLoadDone) return;
-                const el = document.getElementById('msg_'+snap.key); 
-                if(el) el.remove(); 
-                if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-            });
+        area.innerHTML = ""; 
+        
+        db.ref(activeChatPath).on('child_added', snap => { 
+            const html = getMsgHTML(snap, path, target);
+            if(html) { area.insertAdjacentHTML('beforeend', html); area.scrollTop = area.scrollHeight; }
         });
+        db.ref(activeChatPath).on('child_changed', snap => { 
+            const el = document.getElementById('msg_'+snap.key); 
+            const html = getMsgHTML(snap, path, target);
+            if(el && html) { 
+                const t=document.createElement('div'); t.innerHTML=html; 
+                el.replaceWith(t.firstElementChild); 
+            } else if (el && !html) {
+                el.remove();
+            }
+        });
+        db.ref(activeChatPath).on('child_removed', snap => { const el = document.getElementById('msg_'+snap.key); if(el) el.remove(); });
     }
 
     function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
@@ -900,21 +822,12 @@ const db = firebase.database();
         box.innerHTML = "";
         Object.keys(moodLibrary).forEach(m => { box.innerHTML += `<button class="mood-btn option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; });
         document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
-        document.getElementById('widgetText').classList.remove('heartbeat-anim'); // Reset animation
         document.getElementById('vWidgetFull').style.display = "flex";
     }
     
     function showMoodMessage(mood) {
         const choices = moodLibrary[mood];
-        const widgetText = document.getElementById('widgetText');
-        widgetText.innerText = choices[Math.floor(Math.random() * choices.length)];
-        
-        if(mood === "Premium (Alicia) 👑") {
-            widgetText.classList.add('heartbeat-anim');
-            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
-        } else {
-            widgetText.classList.remove('heartbeat-anim');
-        }
+        document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
     }
 
     function openContactOptions() {
@@ -1064,12 +977,12 @@ const db = firebase.database();
         }, 1000);
     }
 
-    // --- LOGIQUE OPTIMISÉE DES CONTACTS ---
+    // NOUVEAU SYSTÈME DE CHARGEMENT DES CONTACTS
     function loadContacts() {
         const list = document.getElementById('chatList');
-        
-        // On écoute notre propre liste de contacts
         db.ref('users/' + user.id + '/contacts').on('value', s => {
+            let contactsArray = [];
+            let countLoaded = 0;
             const total = s.numChildren();
             
             if (total === 0) { 
@@ -1077,45 +990,44 @@ const db = firebase.database();
                 return; 
             }
 
-            let promises = [];
-
             s.forEach(snap => {
                 const peerId = snap.key;
+                
+                // Sécurité : au cas où la valeur est un booléen (suite au ancien ajout en mode fantôme)
                 const val = snap.val();
                 const contactMeta = typeof val === 'object' ? val : {}; 
                 
-                // On prépare une Promise par contact
-                let p = db.ref('users/' + peerId).once('value').then(us => {
+                db.ref('users/' + peerId).once('value', us => {
                     const u = us.val();
                     if(u) {
                         const chatId = [user.id, peerId].sort().join('_');
-                        // On compte les non-lus
-                        return db.ref('msgs/' + chatId).orderByChild('seen').equalTo(false).once('value').then(msgsSnap => {
+                        db.ref('msgs/' + chatId).orderByChild('seen').equalTo(false).once('value', msgsSnap => {
                             let unreadCount = 0;
                             msgsSnap.forEach(m => { if(m.val().sid !== user.id) unreadCount++; });
                             
-                            return {
+                            contactsArray.push({
                                 id: peerId,
                                 pseudo: u.pseudo,
                                 pfp: u.pfp,
                                 humeur: u.humeur,
                                 lastMsgAt: contactMeta.lastMsgAt || 0,
                                 unread: unreadCount
-                            };
-                        });
-                    }
-                    return null;
-                });
-                
-                promises.push(p);
-            });
+                            });
 
-            // Une fois que TOUTES les infos de tous les contacts sont récupérées, on affiche tout d'un coup
-            Promise.all(promises).then(results => {
-                let validContacts = results.filter(c => c !== null);
-                // Tri du plus récent au plus ancien
-                validContacts.sort((a, b) => b.lastMsgAt - a.lastMsgAt);
-                renderContacts(validContacts);
+                            countLoaded++;
+                            if (countLoaded === total) {
+                                contactsArray.sort((a, b) => b.lastMsgAt - a.lastMsgAt);
+                                renderContacts(contactsArray);
+                            }
+                        });
+                    } else { 
+                        countLoaded++; 
+                        if (countLoaded === total) {
+                            contactsArray.sort((a, b) => b.lastMsgAt - a.lastMsgAt);
+                            renderContacts(contactsArray);
+                        }
+                    }
+                });
             });
         });
     }
