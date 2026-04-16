@@ -3,24 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Notre Univers v46 - Édition Sécurisée & Ultra-Rapide</title>
+    <title>Notre Univers v46 - Édition Sécurisée</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
-
-    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-    <script>
-      window.OneSignalDeferred = window.OneSignalDeferred || [];
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.init({
-          appId: "317caf97-0220-4a14-b4cb-e4652111a3b6",
-        });
-      });
-    </script>
 
     <style>
         * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
@@ -62,7 +51,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         @keyframes springMsg {
-            0% { opacity: 0; transform: translateY(15px) scale(0.95); }
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -121,7 +110,7 @@
 
         /* Badge non lu */
         .badge-count {
-            background: #ff4b6e;
+            background: #ff4b6e; /* Ta couleur --love */
             color: white;
             min-width: 20px;
             height: 20px;
@@ -134,22 +123,13 @@
             padding: 0 6px;
             margin-left: 10px;
             box-shadow: 0 0 10px rgba(255, 75, 110, 0.4);
-            transition: opacity 0.2s ease;
         }
 
         /* Chat UI */
         #chatBox, #coconBox { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; background-size: cover; background-position: center; }
         .chat-head { padding: 50px 20px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); }
         
-        .msg-area { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px; 
-            display: flex; 
-            flex-direction: column-reverse;
-            gap: 12px; 
-            will-change: scroll-position;
-        }
+        .msg-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
         
         .bubble { 
             padding: 14px 20px; border-radius: 24px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.5; 
@@ -158,7 +138,7 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer;
-            animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation: springMsg 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
             will-change: transform, opacity; 
         }
         .bubble:active { transform: scale(0.96); }
@@ -450,49 +430,6 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig); 
 }
 const db = firebase.database(); 
-
-// --- NOUVELLE FONCTION ONESIGNAL CONSERVÉE AU CAS OÙ ---
-async function envoyerNotificationOneSignal(idDestinataire, messageTexte) {
-    const url = 'https://onesignal.com/api/v1/notifications';
-    const apiKey = "os_v2_app_gf6k7fycebfbjngl4rsscendw3ecb5alulku33mj5wajul4bayb4km2zal34pomddmbsvriwllvhtxsg6mvzn4q7v6meqsx2mmvlr5q";
-
-    const data = {
-        app_id: "317caf97-0220-4a14-b4cb-e4652111a3b6",
-        include_external_user_ids: [idDestinataire],
-        contents: { "fr": messageTexte, "en": messageTexte },
-        headings: { "fr": "Sentinelle 🔒", "en": "Sentinelle 🔒" }
-    };
-
-    try {
-        await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + apiKey
-            },
-            body: JSON.stringify(data)
-        });
-        console.log("Notification envoyée à", idDestinataire);
-    } catch (error) {
-        console.error("Erreur d'envoi OneSignal :", error);
-    }
-}
-
-// --- NOUVELLE FONCTION : NOTIFICATION WEB LOCALE (PWA) ---
-function envoyerNotification(titre, message) {
-    if (Notification.permission === "granted") {
-        const options = {
-            body: message,
-            icon: 'https://cdn-icons-png.flaticon.com/512/3114/3114810.png', // Icône galaxie
-            vibrate: [200, 100, 200], // Vibration
-            badge: 'https://cdn-icons-png.flaticon.com/512/3114/3114810.png'
-        };
-        new Notification(titre, options);
-    }
-}
-
-const messaging = firebase.messaging();
-const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzgGY39K5Re5r6eaWWGKmEO39bYfo";
    
     const E2EE = {
         encrypt: (text, key) => {
@@ -549,14 +486,6 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
         updateTimeCounter();
         initNotifications();
         
-        // INITIALISATION ONESIGNAL AVEC L'ID UTILISATEUR
-        if(window.OneSignalDeferred) {
-            OneSignalDeferred.push(async function(OneSignal) {
-                OneSignal.login(user.id);
-                await OneSignal.Slidedown.promptPush();
-            });
-        }
-        
         if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
 
         // Écoute de l'humeur personnelle
@@ -574,8 +503,6 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
                 if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
                 document.getElementById('coconNoteText').innerText = note.txt;
                 document.getElementById('coconNoteDisplay').style.display = 'flex';
-                // --- NOTIFICATION WEB DU COCON ---
-                envoyerNotification("Le Cocon 🌹", "Tu as reçu un nouveau mot doux !");
             }
         });
 
@@ -722,23 +649,6 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
         activeId = [user.id, id].sort().join('_');
         document.getElementById('cName').innerText = name;
         document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
-        
-        const contactDiv = document.getElementById('contact_' + id);
-        if(contactDiv) {
-            const badge = contactDiv.querySelector('.badge-count');
-            if(badge) badge.style.display = 'none';
-        }
-
-        const mArea = document.getElementById('mArea');
-        const cacheKey = `nu_cache_v2_${activeId}`;
-        const cachedHTML = localStorage.getItem(cacheKey);
-
-        if (cachedHTML) {
-            mArea.innerHTML = cachedHTML; 
-        } else {
-            mArea.innerHTML = "";
-        }
-
         document.getElementById('chatBox').style.display = 'flex';
         pushState('chatBox');
         
@@ -802,66 +712,24 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
     function syncMessages(path, target, areaId) {
         if(activeChatPath) db.ref(activeChatPath).off(); 
         activeChatPath = path + '/' + target;
-        const currentPath = activeChatPath;
         const area = document.getElementById(areaId);
-        const cacheKey = `nu_cache_v2_${target}`;
-
-        let initialLoadDone = false;
-
-        db.ref(currentPath).once('value', snapshot => {
-            if(activeChatPath !== currentPath) return;
-
-            let tempHtml = "";
-            snapshot.forEach(snap => {
-                const html = getMsgHTML(snap, path, target);
-                if(html) tempHtml = html + tempHtml; 
-            });
-            
-            area.innerHTML = tempHtml; 
-            
-            if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML); 
-            initialLoadDone = true;
-
-            db.ref(currentPath).on('child_added', snap => {
-                if (!initialLoadDone) return;
-                if (document.getElementById('msg_'+snap.key)) return; 
-
-                const html = getMsgHTML(snap, path, target);
-                if(html) { 
-                    area.insertAdjacentHTML('afterbegin', html); 
-                    if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-                    
-                    // --- MODIFICATION ICI : DÉCLENCHEMENT NOTIFICATION LOCALE ---
-                    const m = snap.val();
-                    if(m && m.sid !== user.id) {
-                        const cryptoKey = path === 'msgs' ? activeId : user.code;
-                        const msgTexte = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : (m.type === 'audio' ? '🎤 Nouveau message vocal' : '📎 Nouveau média');
-                        const exp = path === 'msgs' ? "Nouveau message" : "Cocon Secret 🌹";
-                        envoyerNotification(exp, msgTexte);
-                    }
-                }
-            });
-
-            db.ref(currentPath).on('child_changed', snap => { 
-                if (!initialLoadDone) return;
-                const el = document.getElementById('msg_'+snap.key); 
-                const html = getMsgHTML(snap, path, target);
-                if(el && html) { 
-                    const t=document.createElement('div'); t.innerHTML=html; 
-                    el.replaceWith(t.firstElementChild); 
-                } else if (el && !html) {
-                    el.remove();
-                }
-                if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-            });
-
-            db.ref(currentPath).on('child_removed', snap => { 
-                if (!initialLoadDone) return;
-                const el = document.getElementById('msg_'+snap.key); 
-                if(el) el.remove(); 
-                if(path === 'msgs') localStorage.setItem(cacheKey, area.innerHTML);
-            });
+        area.innerHTML = ""; 
+        
+        db.ref(activeChatPath).on('child_added', snap => { 
+            const html = getMsgHTML(snap, path, target);
+            if(html) { area.insertAdjacentHTML('beforeend', html); area.scrollTop = area.scrollHeight; }
         });
+        db.ref(activeChatPath).on('child_changed', snap => { 
+            const el = document.getElementById('msg_'+snap.key); 
+            const html = getMsgHTML(snap, path, target);
+            if(el && html) { 
+                const t=document.createElement('div'); t.innerHTML=html; 
+                el.replaceWith(t.firstElementChild); 
+            } else if (el && !html) {
+                el.remove();
+            }
+        });
+        db.ref(activeChatPath).on('child_removed', snap => { const el = document.getElementById('msg_'+snap.key); if(el) el.remove(); });
     }
 
     function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
@@ -925,9 +793,8 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
             
             if(mode === 'msgs') {
                 db.ref('typing/'+activeId+'/'+user.id).set(false);
-                // DÉCLENCHEMENT DE LA NOTIFICATION ONESIGNAL
-                envoyerNotificationOneSignal(currentPeerId, "🔒 Tu as reçu un nouveau message chiffré.");
                 
+                // Mettre à jour l'heure du dernier message (remonte le contact en haut de liste)
                 const nowTs = Date.now();
                 db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
                 db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
@@ -1064,9 +931,6 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
                     db.ref(path).push({ sid: user.id, txt: downloadURL, t: firebase.database.ServerValue.TIMESTAMP, type: detectedType, seen: false });
                     
                     if(currentMediaMode === 'msgs') {
-                        // DÉCLENCHEMENT DE LA NOTIFICATION POUR LES MÉDIAS
-                        envoyerNotificationOneSignal(currentPeerId, "📎 Tu as reçu un nouveau média.");
-                        
                         const nowTs = Date.now();
                         db.ref(`users/${user.id}/contacts/${currentPeerId}`).update({ lastMsgAt: nowTs });
                         db.ref(`users/${currentPeerId}/contacts/${user.id}`).update({ lastMsgAt: nowTs });
@@ -1113,6 +977,7 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
         }, 1000);
     }
 
+    // NOUVEAU SYSTÈME DE CHARGEMENT DES CONTACTS
     function loadContacts() {
         const list = document.getElementById('chatList');
         db.ref('users/' + user.id + '/contacts').on('value', s => {
@@ -1127,6 +992,8 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
 
             s.forEach(snap => {
                 const peerId = snap.key;
+                
+                // Sécurité : au cas où la valeur est un booléen (suite au ancien ajout en mode fantôme)
                 const val = snap.val();
                 const contactMeta = typeof val === 'object' ? val : {}; 
                 
@@ -1295,14 +1162,7 @@ const VAPID_KEY = "BIdReix3_qY6diprgvK6G1Mx0LRZP1p7r6uy8lOrhH8z9KDBw1oMqVBqQSXzg
     function unblockContact(id) { db.ref('users/'+user.id+'/blocked/'+id).remove(); showToast("Contact débloqué !"); triggerBack(); }
     function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
     function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-    
-    // --- DEMANDE D'AUTORISATION ---
-    function initNotifications() { 
-        if("Notification" in window && Notification.permission !== "granted") {
-            Notification.requestPermission();
-        }
-    }
-    
+    function initNotifications() { if("Notification" in window) Notification.requestPermission(); }
     function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) db.ref('globalNotes/' + user.code + '/readBy/' + user.id).set(true); }
 </script>
 </body>
