@@ -135,15 +135,15 @@
         
         .msg-meta { font-size: 10px; margin-top: 6px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
         
-        /* REWORK DU CHAMP DE SAISIE */
+        /* REWORK DU CHAMP DE SAISIE : PLUS PETIT ET PLUS FIN */
         .chat-input-field {
             flex: 1; 
             background: rgba(255, 255, 255, 0.08); 
             border: 1px solid rgba(255, 255, 255, 0.15); 
-            padding: 16px 20px; 
-            border-radius: 30px; 
+            padding: 12px 16px; 
+            border-radius: 25px; 
             color: white; 
-            font-size: 15px; 
+            font-size: 14px; 
             transition: all 0.3s;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
             font-family: 'Poppins', sans-serif;
@@ -228,10 +228,10 @@
         </div>
         <div id="regUI" style="display:none;">
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Nouveau Profil</h2>
-            <input type="text" inputmode="text" enterkeyhint="next" class="modal-input" placeholder="Pseudo / Surnom" id="rPseudo">
+            <input type="text" enterkeyhint="next" class="modal-input" placeholder="Pseudo / Surnom" id="rPseudo">
             <input type="tel" inputmode="tel" enterkeyhint="next" class="modal-input" placeholder="Numéro" id="rPhone">
             <input type="password" enterkeyhint="next" class="modal-input" placeholder="Mot de passe" id="rPass">
-            <input type="text" inputmode="text" enterkeyhint="done" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode" onkeydown="if(event.key === 'Enter') register()">
+            <input type="text" enterkeyhint="done" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode" onkeydown="if(event.key === 'Enter') register()">
             <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="register()">CRÉER MON UNIVERS</button>
             <p onclick="toggleAuth(true)" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; transition:0.2s;" onmousedown="this.style.opacity='1'">Déjà inscrit ? Connexion</p>
         </div>
@@ -328,13 +328,12 @@
     </div>
     <div class="msg-area" id="mArea"></div>
     <div id="typingDisp" style="padding:0 25px 8px; font-size:11px; color:var(--accent); font-style:italic; display:none; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">écrit un message...</div>
-    <div style="padding:15px; display:flex; gap:10px; background:rgba(11,9,20,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; border-top:1px solid var(--glass-border);">
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0; justify-content:center; background:rgba(255,255,255,0.05);" onclick="openMediaMenu('msgs')">📎</button>
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0; justify-content:center; background:rgba(255,255,255,0.05);" id="micBtn" ontouchstart="startRecord()" ontouchend="stopRecord()">🎤</button>
+    <div style="padding:10px 15px; display:flex; gap:8px; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; border-top:1px solid var(--glass-border);">
+        <button class="option-btn" style="width:40px; height:40px; border-radius:50%; margin:0; padding:0; justify-content:center; background:rgba(255,255,255,0.05);" onclick="openMediaMenu('msgs')">📎</button>
         
-        <input type="text" inputmode="text" enterkeyhint="send" id="mIn" class="chat-input-field" placeholder="Écris ton message..." oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')">
+        <input type="text" id="mIn" class="chat-input-field" placeholder="Message..." oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')">
         
-        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+        <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:40px; height:40px; border-radius:50%; color:black; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
     </div>
 </div>
 
@@ -344,12 +343,12 @@
         <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3);">🌹 Notre Cocon Privé</b></div>
     </div>
     <div class="msg-area" id="coArea"></div>
-    <div style="padding:15px; display:flex; gap:10px; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; border-top:1px solid var(--glass-border);">
-        <button class="option-btn" style="width:45px; height:45px; border-radius:50%; margin:0; padding:0; background:rgba(255,75,110,0.15); border-color:rgba(255,75,110,0.3); color:white; justify-content:center;" onclick="openMediaMenu('cocon')">📎</button>
+    <div style="padding:10px 15px; display:flex; gap:8px; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); align-items:center; border-top:1px solid var(--glass-border);">
+        <button class="option-btn" style="width:40px; height:40px; border-radius:50%; margin:0; padding:0; background:rgba(255,75,110,0.15); border-color:rgba(255,75,110,0.3); color:white; justify-content:center;" onclick="openMediaMenu('cocon')">📎</button>
         
-        <input type="text" inputmode="text" enterkeyhint="send" id="coIn" class="chat-input-field" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);" placeholder="Écris ici ton secret..." onkeydown="if(event.key === 'Enter') sendMsg('cocon')">
+        <input type="text" id="coIn" class="chat-input-field" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);" placeholder="Secret..." onkeydown="if(event.key === 'Enter') sendMsg('cocon')">
         
-        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+        <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:40px; height:40px; border-radius:50%; color:white; font-size:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
     </div>
 </div>
 
@@ -373,8 +372,6 @@ let currentPeerId = null;
 let activeChatPath = null;
 let audioUnlocked = false;
 let currentMediaMode = null;
-let mediaRecorder = null;
-let audioChunks = [];
 let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
@@ -728,7 +725,7 @@ function updatePresence() {
 }
 
 function unlockSecureSettings() {
-    openModal("Accès Sécurisé", `<input type="tel" inputmode="tel" enterkeyhint="done" id="modalInput" class="modal-input" placeholder="Ton numéro...">`, (val) => {
+    openModal("Accès Sécurisé", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="Ton numéro...">`, (val) => {
         if(val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
             document.getElementById('secureBlurOverlay').style.display = 'none';
             document.getElementById('secureContent').classList.remove('secure-blur');
@@ -795,7 +792,7 @@ function renderContacts(arr) {
 }
 
 function addFriend() {
-    openModal("Ajouter", `<input type="tel" inputmode="tel" enterkeyhint="done" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
+    openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
         const id = "u_" + tel.replace(/\D/g,'');
         if(id === user.id) return showToast("C'est vous !");
         fs.collection('users').doc(id).get().then(doc => {
@@ -910,7 +907,7 @@ function delMsgForAll(id, path, target) {
 }
 
 function editMsg(id, old, path, target) { 
-    openModal("Modifier", `<input type="text" inputmode="text" enterkeyhint="done" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
+    openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
         const cryptoKey = path === 'msgs' ? activeId : user.code;
         const encryptedText = E2EE.encrypt(val, cryptoKey);
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
@@ -1125,14 +1122,6 @@ function openModal(t, b, a) {
     else document.getElementById('modalActions').style.display = 'none';
 }
 
-function startRecord() {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        mediaRecorder = new MediaRecorder(stream); mediaRecorder.start();
-        document.getElementById('micBtn').classList.add('recording'); audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    }).catch(() => showToast("Micro non autorisé"));
-}
-
 function login() {
     const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
     fs.collection('users').doc(ph).get().then(doc => {
@@ -1151,10 +1140,10 @@ function register() {
 
 function confirmLogout() { openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
 function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" inputmode="${d?'none':'text'}" enterkeyhint="done" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
+function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
 
 function sendGlobalNote() {
-    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" inputmode="text" enterkeyhint="send" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
+    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
         if(!v) return;
         fs.collection('globalNotes').doc(user.code).set({txt: v, sid: user.id, t: firebase.firestore.FieldValue.serverTimestamp(), readBy: {}});
         triggerBack(); showToast("Mot doux envoyé ! 💖");
@@ -1196,7 +1185,7 @@ function closeCoconNote() {
 
 // --- FONCTION POUR DÉVERROUILLER LE COCON ---
 function askCoconCode() {
-    openModal("Accès au Cocon", `<input type="password" enterkeyhint="done" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
+    openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
             triggerBack(); // Ferme la modale
             document.getElementById('coconBox').style.display = 'flex';
@@ -1232,18 +1221,6 @@ function updateTimeCounter() {
 
     updateDate(); // Appel immédiat
     timeCounterInterval = setInterval(updateDate, 60000); // Mise à jour chaque minute
-}
-
-// --- FONCTION MANQUANTE POUR LE MICRO (ontouchend="stopRecord()") ---
-function stopRecord() {
-    if(mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        document.getElementById('micBtn').classList.remove('recording');
-        mediaRecorder.onstop = () => {
-            // Optionnel : lier l'upload du blob audio vers Firebase ici
-            showToast("Vocal enregistré ! 🎤");
-        };
-    }
 }
 </script>
 
