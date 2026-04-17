@@ -35,11 +35,13 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
-        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
+        /* FIX ULTIME POUR LE CLAVIER : HAUTEUR DYNAMIQUE FORCÉE STRICTE */
         html, body { 
             margin: 0; padding: 0; 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%; 
+            position: fixed; top: 0; left: 0;
             overflow: hidden; 
+            overscroll-behavior-y: none; /* Empêche le rafraîchissement au tirage et le rebond natif */
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
@@ -152,7 +154,7 @@
             border-radius: 25px;
             padding: 2px 5px 2px 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 0; /* CRUCIAL: Force le champ à ne pas déborder */
+            min-width: 0;
         }
 
         .chat-input-field {
@@ -161,14 +163,14 @@
             padding: 12px 0; color: white; font-size: 15px; 
             font-family: 'Poppins', sans-serif;
             outline: none;
-            min-width: 0; /* CRUCIAL: Empêche le champ de grossir à l'infini */
+            min-width: 0;
             width: 100%;
         }
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
             font-size: 20px; padding: 10px; cursor: pointer;
-            flex-shrink: 0; /* Verrouille la taille du trombone */
+            flex-shrink: 0; 
         }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -378,16 +380,34 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
-window.addEventListener('resize', () => {
+// --- LE BOUCLIER ANTI-CLAVIER (HACK WEBVIEW) ---
+function lockAppHeight() {
+    const trueHeight = window.innerHeight;
+    document.body.style.height = trueHeight + 'px';
+    
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    
     if(document.getElementById('chatBox').style.display === 'flex') {
         const area = document.getElementById('mArea');
-        area.scrollTop = area.scrollHeight;
+        if(area) area.scrollTop = area.scrollHeight;
     }
     if(document.getElementById('coconBox').style.display === 'flex') {
         const area = document.getElementById('coArea');
-        area.scrollTop = area.scrollHeight;
+        if(area) area.scrollTop = area.scrollHeight;
     }
-});
+}
+
+window.addEventListener('resize', lockAppHeight);
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', lockAppHeight);
+    window.visualViewport.addEventListener('scroll', () => {
+        window.scrollTo(0, 0);
+    });
+}
+
+lockAppHeight();
 
 window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
@@ -602,10 +622,6 @@ function showMoodMessage(mood) {
     const randomMsg = choices[Math.floor(Math.random() * choices.length)];
     document.getElementById('widgetText').innerText = randomMsg;
 }
-
-window.onload = () => {
-    initApp();
-};
 
 function initApp() {
     try {
@@ -1210,7 +1226,6 @@ function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
             
-            // ---> LE FIX QUI RÈGLE LE PROBLÈME DE FERMETURE DU COCON EST ICI <---
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
             
