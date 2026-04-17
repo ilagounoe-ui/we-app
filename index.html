@@ -106,7 +106,7 @@
         .toast.show { bottom: 50px; }
 
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
-        .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; }
+        .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; }
         
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
@@ -131,12 +131,12 @@
     <button onclick="closeCoconNote()" style="margin-top:35px; padding:18px 40px; border-radius:30px; border:none; background:white; color:var(--love); font-weight:bold; font-size:16px; box-shadow: 0 10px 25px rgba(255,255,255,0.3); transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci 🌹</button>
 </div>
 
-<div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation de l'Univers...</p></div>
+<div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
     <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
-    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">...</div>
-    <div id="moodOptions" class="mood-grid"></div>
+    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
+    <div id="moodOptions" class="mood-grid scroll-hidden"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
 </div>
 
@@ -287,6 +287,14 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
+// --- FAILSAFE ABSOLU: Retire TOUJOURS l'écran de chargement quoi qu'il arrive ---
+window.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if(splash) splash.style.display = 'none';
+    }, 800); 
+});
+
 // --- VARIABLES GLOBALES & INIT ---
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
 let stateStack = [];
@@ -329,11 +337,58 @@ const i18n = {
 };
 
 const sounds = { pop: '' }; 
+
+// --- NOUVELLE BIBLIOTHÈQUE DE MOTS DOUX ---
 const moodLibrary = {
-    "Heureux": ["C'est une journée magnifique pour s'aimer !", "Ton sourire illumine l'univers."],
-    "Triste": ["N'oublie jamais que je suis là pour toi.", "Après la pluie vient toujours le beau temps."],
-    "Fatigué": ["Repose-toi bien, tu l'as mérité.", "Ferme les yeux et laisse-toi porter par la douceur."],
-    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur est pour toi."]
+    "Heureux": [
+        "Ton bonheur est ma plus belle réussite. ✨",
+        "C'est une journée magnifique pour s'aimer encore plus !",
+        "Ton sourire est le soleil de mon univers. ☀️",
+        "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
+        "Rien ne me rend plus joyeux que de te savoir épanoui(e)."
+    ],
+    "Triste": [
+        "N'oublie jamais que je suis ton port d'attache. ⚓",
+        "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.",
+        "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️",
+        "Prends le temps qu'il faut, je ne bouge pas d'ici.",
+        "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"
+    ],
+    "Fatigué": [
+        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴",
+        "Ferme les yeux, laisse-toi porter par ma douceur.",
+        "Tu as le droit de ne rien faire, je veille sur tout le reste.",
+        "Un gros câlin virtuel pour te redonner de la force. 🫂",
+        "Dors bien, je serai ton premier message au réveil."
+    ],
+    "Amoureux": [
+        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨",
+        "Chaque battement de mon cœur porte ton nom.",
+        "Je t'aime plus qu'hier et bien moins que demain.",
+        "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
+        "Mon endroit préféré au monde ? Partout où tu es."
+    ],
+    "Stressée par les cours": [
+        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
+        "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
+        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
+        "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
+        "Même les génies ont besoin de repos. Cierra les cahiers et viens te détendre."
+    ],
+    "Besoin d'un bisou": [
+        "Un doux baiser déposé tendrement sur ton front... 😘",
+        "Je t'envoie un million de bisous à travers l'univers.",
+        "Imagine mes lèvres sur tes joues. Je suis là.",
+        "Un petit bisou volé pour te faire sourire. 💋",
+        "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."
+    ],
+    "Besoin d'un câlin": [
+        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂",
+        "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.",
+        "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️",
+        "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.",
+        "Un long câlin silencieux, pour apaiser toutes tes tempêtes."
+    ]
 };
 
 const firebaseConfig = {
@@ -388,10 +443,10 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// Fonction de compression ultra-rapide et robuste pour les mobiles
+// --- FONCTION COMPRESSION ROBUSTE AU FORMAT BLOB (RÈGLE LE CRASH DES GROSSES PHOTOS) ---
 function compressImage(file, maxWidth, callback) {
     if (!file.type.startsWith('image/')) {
-        callback(file, 'file'); return;
+        callback(file); return;
     }
     const img = new Image();
     img.src = URL.createObjectURL(file);
@@ -404,18 +459,24 @@ function compressImage(file, maxWidth, callback) {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        callback(canvas.toDataURL('image/jpeg', 0.7), 'data_url'); 
+        
+        // On retourne un fichier (Blob) et non plus un long texte Base64
+        canvas.toBlob((blob) => {
+            callback(blob);
+        }, 'image/jpeg', 0.7); 
     };
-    img.onerror = () => callback(file, 'file'); // En cas d'erreur de lecture, on envoie le fichier tel quel
+    img.onerror = () => callback(file);
 }
 
-// Rétablissement de la fonction Mot Doux
+// --- RÉPARATION DU MENU MOT DOUX (AVEC GESTION DES APOSTROPHES) ---
 function openMoodSelector() {
     const box = document.getElementById('moodOptions');
     if(!box) return;
     box.innerHTML = "";
     Object.keys(moodLibrary).forEach(m => { 
-        box.innerHTML += `<button class="option-btn" style="justify-content:center;" onclick="showMoodMessage('${m}')">${m}</button>`; 
+        // On sécurise les guillemets pour ne pas casser le onClick (Ex: "Besoin d'un bisou")
+        let safeM = m.replace(/'/g, "\\'");
+        box.innerHTML += `<button class="option-btn" style="justify-content:center;" onclick="showMoodMessage('${safeM}')">${m}</button>`; 
     });
     document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
     document.getElementById('vWidgetFull').style.display = "flex";
@@ -426,9 +487,7 @@ function showMoodMessage(mood) {
     document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
-// Initialisation sécurisée qui retire toujours l'écran de chargement
 window.onload = () => {
-    document.getElementById('splash').style.display = 'none';
     initApp();
 };
 
@@ -877,6 +936,7 @@ function openMediaMenu(mode) {
     `, null);
 }
 
+// CORRECTION UPLOAD MÉDIA : Utilisation du BLOB
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
@@ -896,19 +956,20 @@ function processMediaUpload(e) {
 
     function handleUpload() {
         if (fileType === 'img') {
-            compressImage(file, 800, (data, format) => {
-                uploadToFirebase(data, format, 'img');
+            compressImage(file, 800, (data) => {
+                uploadToFirebase(data, 'img');
             });
         } else {
-            uploadToFirebase(file, 'file', 'video');
+            uploadToFirebase(file, 'video');
         }
     }
 
-    function uploadToFirebase(data, format, typeParam) {
+    function uploadToFirebase(data, typeParam) {
         const fileName = Date.now() + (typeParam === 'img' ? '_img.jpg' : '_vid.mp4');
         const storageRef = firebase.storage().ref('media/' + fileName);
         
-        const uploadTask = format === 'data_url' ? storageRef.putString(data, 'data_url') : storageRef.put(data);
+        // On envoie directement l'objet Blob ou File avec .put()
+        const uploadTask = storageRef.put(data);
 
         uploadTask.then((snapshot) => {
             snapshot.ref.getDownloadURL().then((url) => {
@@ -933,11 +994,11 @@ function processMediaUpload(e) {
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
     
-    compressImage(file, 800, (data, format) => {
+    compressImage(file, 800, (data) => {
         const fileName = Date.now() + (mode === 'pfp' ? '_profile.jpg' : '_wall.jpg');
         const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
         
-        const uploadTask = format === 'data_url' ? storageRef.putString(data, 'data_url') : storageRef.put(data);
+        const uploadTask = storageRef.put(data);
 
         uploadTask.then((snapshot) => {
             snapshot.ref.getDownloadURL().then((url) => {
