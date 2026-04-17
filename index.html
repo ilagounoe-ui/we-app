@@ -1103,14 +1103,23 @@ function unblockContact(id) { fs.collection('users').doc(user.id).collection('bl
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
 function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) fs.collection('globalNotes').doc(user.code).update({ [`readBy.${user.id}`]: true }); }
+
 // --- FONCTION POUR DÉVERROUILLER LE COCON ---
 function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
-            triggerBack(); // Ferme la modale
-            document.getElementById('coconBox').style.display = 'flex';
+            // 1. On ferme MANUELLEMENT la modale sans attendre l'historique
+            document.getElementById('customModal').style.display = 'none';
+            stateStack = stateStack.filter(s => s !== 'modal'); 
+
+            // 2. On affiche le Cocon avec une priorité maximale
+            const cocon = document.getElementById('coconBox');
+            cocon.style.setProperty('display', 'flex', 'important');
+            
+            // 3. On lance la synchro des messages
             pushState('coconBox');
             syncMessages('cocon', user.code, 'coArea');
+            
             showToast("Bienvenue dans notre Cocon 🌹");
         } else {
             showToast("Code incorrect ! ❌");
@@ -1154,7 +1163,6 @@ function stopRecord() {
         };
     }
 }
-
 </script>
 
 <script>
