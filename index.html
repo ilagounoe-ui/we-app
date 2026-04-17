@@ -35,6 +35,7 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
+        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
         html, body { 
             margin: 0; padding: 0; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -128,18 +129,6 @@
             background: rgba(255, 75, 110, 0.1); 
             border: 1px solid rgba(255, 75, 110, 0.4); 
             color: #ffe6eb;
-        }
-
-        /* Style du lecteur de musique */
-        .music-btn {
-            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,75,110,0.3);
-            border-radius: 50%; width: 38px; height: 38px; color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; font-size: 16px;
-        }
-        .music-btn.playing {
-            background: var(--love); box-shadow: 0 0 15px var(--love-glow);
-            animation: pulse 2s infinite;
         }
 
         /* Animation des clics magiques (Roses et étincelles) */
@@ -398,7 +387,7 @@
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')">📎</button>
             </div>
             <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
@@ -411,7 +400,6 @@
         <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px;">←</span>
         <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3);">🌹 Notre Cocon Privé</b></div>
         
-        <div id="coconMusicBtn" class="music-btn" onclick="toggleCoconMusic()">🎵</div>
         <audio id="coconAudio" loop src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
     </div>
     
@@ -420,7 +408,7 @@
     <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">📎</button>
             </div>
             <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
@@ -466,7 +454,6 @@ if (window.visualViewport) {
 
 // --- PLUIE DE ROSES INTERACTIVE ---
 document.getElementById('coArea').addEventListener('click', function(e) {
-    // Si on clique sur une bulle de message, on ne fait pas apparaître de rose
     if(e.target.closest('.bubble') || e.target.closest('button')) return;
     
     const rose = document.createElement('div');
@@ -480,25 +467,8 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     rose.style.zIndex = '99999';
     document.body.appendChild(rose);
     
-    // Supprime l'emoji après l'animation
     setTimeout(() => rose.remove(), 1000);
 });
-
-// --- LECTEUR AUDIO DU COCON ---
-function toggleCoconMusic() {
-    const audio = document.getElementById('coconAudio');
-    const btn = document.getElementById('coconMusicBtn');
-    
-    if (audio.paused) {
-        audio.play().catch(e => showToast("Erreur lecture audio"));
-        btn.classList.add('playing');
-        btn.innerText = '⏸';
-    } else {
-        audio.pause();
-        btn.classList.remove('playing');
-        btn.innerText = '🎵';
-    }
-}
 
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -956,12 +926,11 @@ function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
     
-    // Arrêter la musique en quittant
+    // --- NOUVEAU : Couper la musique à la sortie ---
     const audio = document.getElementById('coconAudio');
     if(audio && !audio.paused) {
         audio.pause();
-        document.getElementById('coconMusicBtn').classList.remove('playing');
-        document.getElementById('coconMusicBtn').innerText = '🎵';
+        audio.currentTime = 0; // Remet le morceau au début
     }
     
     document.getElementById('chatBox').style.display = 'none';
@@ -1339,6 +1308,10 @@ function askCoconCode() {
             lockAppHeight(); 
             syncMessages('cocon', user.code, 'coArea');
             
+            // --- LECTURE AUTO DE LA MUSIQUE ---
+            const audio = document.getElementById('coconAudio');
+            if(audio) audio.play().catch(e => console.log("Lecture audio bloquée", e));
+
             showToast("Bienvenue dans notre Cocon 🌹");
         } else {
             showToast("Code incorrect ! ❌");
