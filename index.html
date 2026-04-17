@@ -1103,6 +1103,58 @@ function unblockContact(id) { fs.collection('users').doc(user.id).collection('bl
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
 function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; if(user && user.code) fs.collection('globalNotes').doc(user.code).update({ [`readBy.${user.id}`]: true }); }
+// --- FONCTION POUR DÉVERROUILLER LE COCON ---
+function askCoconCode() {
+    openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
+        if (val === user.code) {
+            triggerBack(); // Ferme la modale
+            document.getElementById('coconBox').style.display = 'flex';
+            pushState('coconBox');
+            syncMessages('cocon', user.code, 'coArea');
+            showToast("Bienvenue dans notre Cocon 🌹");
+        } else {
+            showToast("Code incorrect ! ❌");
+        }
+    });
+}
+
+// --- FONCTION MANQUANTE POUR LE COMPTEUR (appelée dans setupApp) ---
+function updateTimeCounter() {
+    if (!user.startDate) return;
+    
+    const updateDate = () => {
+        const start = new Date(user.startDate).getTime();
+        const now = new Date().getTime();
+        const diff = now - start;
+        
+        if (diff > 0) {
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            
+            const elDay = document.getElementById('d-day');
+            const elHour = document.getElementById('d-hour');
+            
+            if(elDay) elDay.innerText = days;
+            if(elHour) elHour.innerText = hours;
+        }
+    };
+
+    updateDate(); // Appel immédiat
+    timeCounterInterval = setInterval(updateDate, 60000); // Mise à jour chaque minute
+}
+
+// --- FONCTION MANQUANTE POUR LE MICRO (ontouchend="stopRecord()") ---
+function stopRecord() {
+    if(mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        document.getElementById('micBtn').classList.remove('recording');
+        mediaRecorder.onstop = () => {
+            // Optionnel : lier l'upload du blob audio vers Firebase ici
+            showToast("Vocal enregistré ! 🎤");
+        };
+    }
+}
+
 </script>
 
 <script>
