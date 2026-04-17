@@ -35,7 +35,6 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
-        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
         html, body { 
             margin: 0; padding: 0; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -80,14 +79,7 @@
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
-        /* Le conteneur principal gère le scroll pour l'appli de base */
-        #mainApp {
-            height: 100%;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .view { display: none; padding: 20px; min-height: calc(100vh - 180px); }
+        .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; scroll-behavior: smooth; }
         .view.active { display: block; }
 
         .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
@@ -103,14 +95,62 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* STRUCTURE CHAT : BOTTOM-UP */
-        #chatBox, #coconBox { 
+        #chatBox { 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
         }
+
+        /* --------------------------------------------------- */
+        /* ✨ NOUVEAU DESIGN EXCLUSIF : LE COCON PRIVÉ ✨      */
+        /* --------------------------------------------------- */
+
+        @keyframes coconPulseBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #coconBox { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914);
+            background-size: 400% 400%;
+            animation: coconPulseBg 15s ease infinite;
+            z-index: 9999; display: none; 
+        }
+
+        /* Bulles Premium pour le Cocon */
+        #coconBox .m-me { 
+            background: linear-gradient(135deg, #ff4b6e 0%, #ff7eb3 100%); 
+            color: white; border: none; box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4);
+        }
+        #coconBox .m-they { 
+            background: rgba(255, 75, 110, 0.1); 
+            border: 1px solid rgba(255, 75, 110, 0.4); 
+            color: #ffe6eb;
+        }
+
+        /* Style du lecteur de musique */
+        .music-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,75,110,0.3);
+            border-radius: 50%; width: 38px; height: 38px; color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; font-size: 16px;
+        }
+        .music-btn.playing {
+            background: var(--love); box-shadow: 0 0 15px var(--love-glow);
+            animation: pulse 2s infinite;
+        }
+
+        /* Animation des clics magiques (Roses et étincelles) */
+        @keyframes universDust {
+            0% { opacity: 0; transform: scale(0.5) translate(0, 0); }
+            20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
+            100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
+        }
+
+        /* --------------------------------------------------- */
         
-        /* En-tête : Position absolue en haut */
         .chat-head { 
             position: absolute; top: 0; left: 0; width: 100%; height: 90px;
             padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; 
@@ -119,18 +159,16 @@
             z-index: 20;
         }
         
-        /* Zone de messages : Prend l'espace entre l'en-tête et le pied, ancrée en bas */
         .msg-area { 
             position: absolute; 
-            top: 90px; /* Commence après l'en-tête */
-            bottom: 70px; /* Ajusté par JS dynamique */
+            top: 90px;
+            bottom: 70px;
             left: 0; right: 0;
             overflow-y: auto; padding: 15px; 
             display: flex; flex-direction: column; gap: 8px; 
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Pied de page : Ancré en bas */
         .chat-footer {
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: rgba(11,9,20,0.9);
@@ -157,7 +195,6 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
         
-        /* CHAMP DE SAISIE FIXÉ POUR NE PAS ÉCRASER LES BOUTONS */
         .chat-input-wrapper {
             flex: 1;
             display: flex;
@@ -266,7 +303,7 @@
     </div>
 </div>
 
-<div id="mainApp" style="display:none;">
+<div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
@@ -370,9 +407,12 @@
 </div>
 
 <div id="coconBox">
-    <div class="chat-head" style="background:rgba(255,75,110,0.7); color:white; border-bottom:none;">
+    <div class="chat-head" style="background:rgba(0,0,0,0.4); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
         <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px;">←</span>
         <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3);">🌹 Notre Cocon Privé</b></div>
+        
+        <div id="coconMusicBtn" class="music-btn" onclick="toggleCoconMusic()">🎵</div>
+        <audio id="coconAudio" loop src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
     </div>
     
     <div class="msg-area" id="coArea"></div>
@@ -392,8 +432,13 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
-// --- LE HACK JAVASCRIPT BOTTOM-UP POUR AJUSTER L'AFFICHAGE ---
-function adjustChatAreas() {
+function lockAppHeight() {
+    const trueHeight = window.innerHeight;
+    document.body.style.height = trueHeight + 'px';
+    
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    
     const chatFooterHeight = document.getElementById('chatFooter')?.offsetHeight || 0;
     const mArea = document.getElementById('mArea');
     if (mArea) mArea.style.bottom = chatFooterHeight + 'px';
@@ -401,27 +446,66 @@ function adjustChatAreas() {
     const coconFooterHeight = document.getElementById('coconFooter')?.offsetHeight || 0;
     const coArea = document.getElementById('coArea');
     if (coArea) coArea.style.bottom = coconFooterHeight + 'px';
+
+    if(document.getElementById('chatBox').style.display === 'flex' && mArea) {
+        mArea.scrollTop = mArea.scrollHeight;
+    }
+    if(document.getElementById('coconBox').style.display === 'flex' && coArea) {
+        coArea.scrollTop = coArea.scrollHeight;
+    }
 }
 
-window.addEventListener('resize', () => {
-    adjustChatAreas();
-    if(document.getElementById('chatBox').style.display === 'flex') {
-        const area = document.getElementById('mArea');
-        if(area) area.scrollTop = area.scrollHeight;
-    }
-    if(document.getElementById('coconBox').style.display === 'flex') {
-        const area = document.getElementById('coArea');
-        if(area) area.scrollTop = area.scrollHeight;
-    }
+window.addEventListener('resize', lockAppHeight);
+
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', lockAppHeight);
+    window.visualViewport.addEventListener('scroll', () => {
+        window.scrollTo(0, 0);
+    });
+}
+
+// --- PLUIE DE ROSES INTERACTIVE ---
+document.getElementById('coArea').addEventListener('click', function(e) {
+    // Si on clique sur une bulle de message, on ne fait pas apparaître de rose
+    if(e.target.closest('.bubble') || e.target.closest('button')) return;
+    
+    const rose = document.createElement('div');
+    rose.innerText = Math.random() > 0.5 ? '🌹' : '✨';
+    rose.style.position = 'fixed';
+    rose.style.left = (e.clientX - 10) + 'px';
+    rose.style.top = (e.clientY - 10) + 'px';
+    rose.style.animation = 'universDust 1s ease-out forwards';
+    rose.style.pointerEvents = 'none';
+    rose.style.fontSize = '20px';
+    rose.style.zIndex = '99999';
+    document.body.appendChild(rose);
+    
+    // Supprime l'emoji après l'animation
+    setTimeout(() => rose.remove(), 1000);
 });
 
-// --- L'OUBLI RÉPARÉ EST ICI ---
+// --- LECTEUR AUDIO DU COCON ---
+function toggleCoconMusic() {
+    const audio = document.getElementById('coconAudio');
+    const btn = document.getElementById('coconMusicBtn');
+    
+    if (audio.paused) {
+        audio.play().catch(e => showToast("Erreur lecture audio"));
+        btn.classList.add('playing');
+        btn.innerText = '⏸';
+    } else {
+        audio.pause();
+        btn.classList.remove('playing');
+        btn.innerText = '🎵';
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
-    initApp(); // ON DÉMARRE LE MOTEUR !
+    initApp();
     setTimeout(() => {
         const splash = document.getElementById('splash');
         if(splash) splash.style.display = 'none';
-        adjustChatAreas(); 
+        lockAppHeight(); 
     }, 800); 
 });
 
@@ -861,7 +945,7 @@ function openChat(id, name, pfp) {
 
     document.getElementById('mArea').innerHTML = "";
     document.getElementById('chatBox').style.display = 'flex';
-    adjustChatAreas(); 
+    lockAppHeight(); 
     pushState('chatBox');
     
     watchStatus(id);
@@ -871,6 +955,15 @@ function openChat(id, name, pfp) {
 function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
+    
+    // Arrêter la musique en quittant
+    const audio = document.getElementById('coconAudio');
+    if(audio && !audio.paused) {
+        audio.pause();
+        document.getElementById('coconMusicBtn').classList.remove('playing');
+        document.getElementById('coconMusicBtn').innerText = '🎵';
+    }
+    
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
 }
@@ -1243,7 +1336,7 @@ function askCoconCode() {
             cocon.style.setProperty('display', 'flex', 'important');
             
             pushState('coconBox');
-            adjustChatAreas(); // On ajuste pour être sûr
+            lockAppHeight(); 
             syncMessages('cocon', user.code, 'coArea');
             
             showToast("Bienvenue dans notre Cocon 🌹");
