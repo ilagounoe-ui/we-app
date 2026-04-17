@@ -345,7 +345,7 @@ const moodLibrary = {
         "C'est une journée magnifique pour s'aimer encore plus !",
         "Ton sourire est le soleil de mon univers. ☀️",
         "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
-        "Rien ne me rend plus joyeux que de te savoir épanoui(e)."
+        "Rien ne me rend plus joyeux que de te savoir épanouie."
     ],
     "Triste": [
         "N'oublie jamais que je suis ton port d'attache. ⚓",
@@ -368,12 +368,26 @@ const moodLibrary = {
         "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
         "Mon endroit préféré au monde ? Partout où tu es."
     ],
+    "Besoin de force": [
+        "Tu es bien plus forte que tu ne le penses. 💪",
+        "Respire un grand coup, tu vas tout déchirer !",
+        "Je crois en toi plus que n'importe qui d'autre.",
+        "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.",
+        "Une étape à la fois, je marche juste derrière toi."
+    ],
+    "Seule": [
+        "Regarde le ciel, on regarde la même lune. 🌙",
+        "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.",
+        "Ferme les yeux, imagine mes bras autour de toi... je suis là.",
+        "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️",
+        "Mon esprit ne te quitte pas d'une semelle aujourd'hui."
+    ],
     "Stressée par les cours": [
         "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
         "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
         "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
         "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
-        "Même les génies ont besoin de repos. Cierra les cahiers et viens te détendre."
+        "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."
     ],
     "Besoin d'un bisou": [
         "Un doux baiser déposé tendrement sur ton front... 😘",
@@ -443,7 +457,7 @@ function showToast(msg) {
     setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// --- FONCTION COMPRESSION ROBUSTE AU FORMAT BLOB (RÈGLE LE CRASH DES GROSSES PHOTOS) ---
+// --- FONCTION COMPRESSION ROBUSTE AU FORMAT BLOB ---
 function compressImage(file, maxWidth, callback) {
     if (!file.type.startsWith('image/')) {
         callback(file); return;
@@ -460,7 +474,6 @@ function compressImage(file, maxWidth, callback) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // On retourne un fichier (Blob) et non plus un long texte Base64
         canvas.toBlob((blob) => {
             callback(blob);
         }, 'image/jpeg', 0.7); 
@@ -468,23 +481,32 @@ function compressImage(file, maxWidth, callback) {
     img.onerror = () => callback(file);
 }
 
-// --- RÉPARATION DU MENU MOT DOUX (AVEC GESTION DES APOSTROPHES) ---
+// --- RÉPARATION DU MENU MOT DOUX ---
 function openMoodSelector() {
     const box = document.getElementById('moodOptions');
-    if(!box) return;
+    const widgetText = document.getElementById('widgetText');
+    if(!box || !widgetText) return;
+    
     box.innerHTML = "";
+    widgetText.innerText = "Comment te sens-tu ?";
+    
     Object.keys(moodLibrary).forEach(m => { 
-        // On sécurise les guillemets pour ne pas casser le onClick (Ex: "Besoin d'un bisou")
-        let safeM = m.replace(/'/g, "\\'");
-        box.innerHTML += `<button class="option-btn" style="justify-content:center;" onclick="showMoodMessage('${safeM}')">${m}</button>`; 
+        const btn = document.createElement('button');
+        btn.className = "option-btn";
+        btn.style.justifyContent = "center";
+        btn.innerText = m;
+        btn.onclick = () => showMoodMessage(m);
+        box.appendChild(btn);
     });
-    document.getElementById('widgetText').innerText = "Comment te sens-tu ?";
+    
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
 function showMoodMessage(mood) {
-    const choices = moodLibrary[mood] || ["L'univers veille sur toi."];
-    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+    const choices = moodLibrary[mood];
+    if(!choices) return;
+    const randomMsg = choices[Math.floor(Math.random() * choices.length)];
+    document.getElementById('widgetText').innerText = randomMsg;
 }
 
 window.onload = () => {
@@ -936,7 +958,6 @@ function openMediaMenu(mode) {
     `, null);
 }
 
-// CORRECTION UPLOAD MÉDIA : Utilisation du BLOB
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
@@ -968,7 +989,6 @@ function processMediaUpload(e) {
         const fileName = Date.now() + (typeParam === 'img' ? '_img.jpg' : '_vid.mp4');
         const storageRef = firebase.storage().ref('media/' + fileName);
         
-        // On envoie directement l'objet Blob ou File avec .put()
         const uploadTask = storageRef.put(data);
 
         uploadTask.then((snapshot) => {
