@@ -35,13 +35,13 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
-        /* HACK WHATSAPP : 100dvh (Dynamic Viewport Height) pour gérer le clavier */
+        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
         html, body { 
             margin: 0; padding: 0; 
-            width: 100%; height: 100%; height: 100dvh; 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             overflow: hidden; 
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
-            background-attachment: fixed; background-size: cover; background-position: center; transition: background 0.5s ease;
+            background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
         /* Animations */
@@ -98,9 +98,9 @@
 
         /* STRUCTURE WHATSAPP : FLEXBOX COLUMN */
         #chatBox, #coconBox { 
-            position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
             background: var(--bg); z-index: 9999; display: none; 
-            flex-direction: column; /* Organise les enfants en colonne */
+            flex-direction: column;
             background-size: cover; background-position: center; 
         }
         
@@ -108,26 +108,26 @@
             padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; 
             background: rgba(0,0,0,0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
             border-bottom: 1px solid var(--glass-border); 
-            flex-shrink: 0; /* Empêche l'en-tête de rétrécir */
+            flex-shrink: 0; 
             z-index: 10;
         }
         
         .msg-area { 
-            flex: 1; /* Prend tout l'espace restant entre l'en-tête et le clavier */
+            flex: 1; 
             overflow-y: auto; padding: 15px; 
             display: flex; flex-direction: column; gap: 8px; 
         }
 
         .chat-footer {
-            flex-shrink: 0; /* Empêche le pied de page de rétrécir */
+            flex-shrink: 0; 
             background: rgba(11,9,20,0.9);
             z-index: 10;
         }
 
         .chat-bottom-bar {
-            padding: 10px 15px 15px; /* Padding un peu plus généreux en bas pour l'ergonomie */
+            padding: 10px 15px 15px; 
             display: flex; gap: 10px; 
-            align-items: flex-end; /* Aligne les boutons avec le bas du texte si multi-lignes */
+            align-items: flex-end; 
         }
 
         .typing-indicator { 
@@ -143,7 +143,7 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
         
-        /* CHAMP DE SAISIE WHATSAPP-LIKE */
+        /* CHAMP DE SAISIE FIXÉ POUR NE PAS ÉCRASER LES BOUTONS */
         .chat-input-wrapper {
             flex: 1;
             display: flex;
@@ -152,6 +152,7 @@
             border-radius: 25px;
             padding: 2px 5px 2px 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 0; /* CRUCIAL: Force le champ à ne pas déborder */
         }
 
         .chat-input-field {
@@ -160,11 +161,14 @@
             padding: 12px 0; color: white; font-size: 15px; 
             font-family: 'Poppins', sans-serif;
             outline: none;
+            min-width: 0; /* CRUCIAL: Empêche le champ de grossir à l'infini */
+            width: 100%;
         }
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
             font-size: 20px; padding: 10px; cursor: pointer;
+            flex-shrink: 0; /* Verrouille la taille du trombone */
         }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -248,7 +252,7 @@
     </div>
 </div>
 
-<div id="mainApp" style="display:none;">
+<div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
@@ -343,10 +347,10 @@
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')">📎</button>
             </div>
-            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
         </div>
     </div>
 </div>
@@ -362,10 +366,10 @@
     <div class="chat-footer">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">📎</button>
             </div>
-            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
         </div>
     </div>
 </div>
@@ -374,7 +378,6 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
-// --- ÉCOUTEUR GLOBAL DE REDIMENSIONNEMENT POUR AUTO-SCROLL (CLAVIER) ---
 window.addEventListener('resize', () => {
     if(document.getElementById('chatBox').style.display === 'flex') {
         const area = document.getElementById('mArea');
@@ -960,7 +963,7 @@ function sendMsg(mode) {
             sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
         });
         inp.value = "";
-        inp.focus(); // Garder le focus après l'envoi pour écrire à nouveau
+        inp.focus(); 
         
         if(mode === 'msgs') {
             db.ref('typing/'+activeId+'/'+user.id).set(false); 
@@ -1206,10 +1209,17 @@ function closeCoconNote() {
 function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
-            triggerBack(); 
-            document.getElementById('coconBox').style.display = 'flex';
+            
+            // ---> LE FIX QUI RÈGLE LE PROBLÈME DE FERMETURE DU COCON EST ICI <---
+            document.getElementById('customModal').style.display = 'none';
+            stateStack = stateStack.filter(s => s !== 'modal'); 
+            
+            const cocon = document.getElementById('coconBox');
+            cocon.style.setProperty('display', 'flex', 'important');
+            
             pushState('coconBox');
             syncMessages('cocon', user.code, 'coArea');
+            
             showToast("Bienvenue dans notre Cocon 🌹");
         } else {
             showToast("Code incorrect ! ❌");
