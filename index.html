@@ -35,10 +35,10 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
-        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
+        /* CORRECTION : Hauteur à 100vh, mais on gère le scroll sur un conteneur principal */
         html, body { 
             margin: 0; padding: 0; 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%; height: 100%; height: 100vh;
             overflow: hidden; 
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
             background-size: cover; background-position: center; transition: background 0.5s ease;
@@ -80,7 +80,14 @@
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
-        .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; scroll-behavior: smooth; }
+        /* Le conteneur principal gère le scroll pour l'appli de base */
+        #mainApp {
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .view { display: none; padding: 20px; min-height: calc(100vh - 180px); }
         .view.active { display: block; }
 
         .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
@@ -96,32 +103,40 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* STRUCTURE WHATSAPP : FLEXBOX COLUMN */
+        /* STRUCTURE CHAT : BOTTOM-UP */
         #chatBox, #coconBox { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
-            flex-direction: column;
+            /* On n'utilise plus flex-direction: column sur le parent global */
             background-size: cover; background-position: center; 
         }
         
+        /* En-tête : Position absolue en haut */
         .chat-head { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 90px; /* Hauteur fixe explicite */
             padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; 
             background: rgba(0,0,0,0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
             border-bottom: 1px solid var(--glass-border); 
-            flex-shrink: 0; 
-            z-index: 10;
+            z-index: 20;
         }
         
+        /* Zone de messages : Prend l'espace entre l'en-tête et le pied, ancrée en bas */
         .msg-area { 
-            flex: 1; 
+            position: absolute; 
+            top: 90px; /* Commence après l'en-tête */
+            bottom: 70px; /* S'arrête avant la barre de saisie (ajusté par JS) */
+            left: 0; right: 0;
             overflow-y: auto; padding: 15px; 
             display: flex; flex-direction: column; gap: 8px; 
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* Pied de page : Ancré en bas */
         .chat-footer {
-            flex-shrink: 0; 
+            position: absolute; bottom: 0; left: 0; width: 100%;
             background: rgba(11,9,20,0.9);
-            z-index: 10;
+            z-index: 20;
+            /* La hauteur de ce conteneur va définir le "bottom" de msg-area */
         }
 
         .chat-bottom-bar {
@@ -133,6 +148,8 @@
         .typing-indicator { 
             padding: 5px 25px 2px; font-size: 11px; color: var(--accent); font-style: italic; 
             text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            /* Ajout visuel pour s'assurer qu'il prend de la place au dessus de la barre */
+            position: absolute; top: -20px; left: 0;
         }
         
         .bubble { padding: 12px 18px; border-radius: 20px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.4; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer; animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; will-change: transform, opacity; }
@@ -143,7 +160,6 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
         
-        /* CHAMP DE SAISIE FIXÉ POUR NE PAS ÉCRASER LES BOUTONS */
         .chat-input-wrapper {
             flex: 1;
             display: flex;
@@ -152,7 +168,7 @@
             border-radius: 25px;
             padding: 2px 5px 2px 15px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 0; /* CRUCIAL: Force le champ à ne pas déborder */
+            min-width: 0; 
         }
 
         .chat-input-field {
@@ -161,14 +177,14 @@
             padding: 12px 0; color: white; font-size: 15px; 
             font-family: 'Poppins', sans-serif;
             outline: none;
-            min-width: 0; /* CRUCIAL: Empêche le champ de grossir à l'infini */
+            min-width: 0; 
             width: 100%;
         }
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
             font-size: 20px; padding: 10px; cursor: pointer;
-            flex-shrink: 0; /* Verrouille la taille du trombone */
+            flex-shrink: 0; 
         }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -252,7 +268,7 @@
     </div>
 </div>
 
-<div id="mainApp" style="display:none; height: 100%; overflow: auto;">
+<div id="mainApp">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
@@ -343,11 +359,11 @@
     
     <div class="msg-area" id="mArea"></div>
     
-    <div class="chat-footer">
+    <div class="chat-footer" id="chatFooter">
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')">
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')">📎</button>
             </div>
             <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
@@ -363,10 +379,10 @@
     
     <div class="msg-area" id="coArea"></div>
     
-    <div class="chat-footer">
+    <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')">
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">📎</button>
             </div>
             <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
@@ -378,14 +394,27 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
+// --- LE HACK JAVASCRIPT BOTTOM-UP POUR AJUSTER L'AFFICHAGE ---
+function adjustChatAreas() {
+    // Calcule la hauteur exacte du footer de chat pour définir la limite basse de la zone de message
+    const chatFooterHeight = document.getElementById('chatFooter').offsetHeight;
+    document.getElementById('mArea').style.bottom = chatFooterHeight + 'px';
+    
+    const coconFooterHeight = document.getElementById('coconFooter').offsetHeight;
+    document.getElementById('coArea').style.bottom = coconFooterHeight + 'px';
+}
+
+// Assurer l'ajustement au démarrage et à chaque changement de taille d'écran
 window.addEventListener('resize', () => {
+    adjustChatAreas();
+    // Scroll auto en bas
     if(document.getElementById('chatBox').style.display === 'flex') {
         const area = document.getElementById('mArea');
-        area.scrollTop = area.scrollHeight;
+        if(area) area.scrollTop = area.scrollHeight;
     }
     if(document.getElementById('coconBox').style.display === 'flex') {
         const area = document.getElementById('coArea');
-        area.scrollTop = area.scrollHeight;
+        if(area) area.scrollTop = area.scrollHeight;
     }
 });
 
@@ -393,6 +422,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         const splash = document.getElementById('splash');
         if(splash) splash.style.display = 'none';
+        adjustChatAreas(); // Premier ajustement
     }, 800); 
 });
 
@@ -602,10 +632,6 @@ function showMoodMessage(mood) {
     const randomMsg = choices[Math.floor(Math.random() * choices.length)];
     document.getElementById('widgetText').innerText = randomMsg;
 }
-
-window.onload = () => {
-    initApp();
-};
 
 function initApp() {
     try {
@@ -836,6 +862,7 @@ function openChat(id, name, pfp) {
 
     document.getElementById('mArea').innerHTML = "";
     document.getElementById('chatBox').style.display = 'flex';
+    adjustChatAreas(); // On ajuste au moment d'ouvrir le chat
     pushState('chatBox');
     
     watchStatus(id);
@@ -963,7 +990,6 @@ function sendMsg(mode) {
             sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
         });
         inp.value = "";
-        inp.focus(); 
         
         if(mode === 'msgs') {
             db.ref('typing/'+activeId+'/'+user.id).set(false); 
@@ -1210,7 +1236,6 @@ function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
             
-            // ---> LE FIX QUI RÈGLE LE PROBLÈME DE FERMETURE DU COCON EST ICI <---
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
             
@@ -1218,6 +1243,7 @@ function askCoconCode() {
             cocon.style.setProperty('display', 'flex', 'important');
             
             pushState('coconBox');
+            adjustChatAreas(); // On ajuste pour être sûr
             syncMessages('cocon', user.code, 'coArea');
             
             showToast("Bienvenue dans notre Cocon 🌹");
