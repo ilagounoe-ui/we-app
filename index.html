@@ -35,7 +35,6 @@
             --notif-glow: rgba(0, 229, 255, 0.25);
         }
         
-        /* FIX ULTIME POUR LE CLAVIER : ON CLOUE LA PAGE AUX 4 COINS DE L'ÉCRAN */
         html, body { 
             margin: 0; padding: 0; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
@@ -58,6 +57,17 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
+        /* ✨ L'ANIMATION MAGIQUE DE LA CAPSULE ✨ */
+        @keyframes capsuleOpenAnim {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
+            20% { transform: scale(1.2) rotate(-10deg); }
+            40% { transform: scale(1.2) rotate(10deg); }
+            60% { transform: scale(1.2) rotate(-10deg); }
+            80% { transform: scale(1.4) rotate(0deg); opacity: 0.8; filter: brightness(1.5); }
+            100% { transform: scale(1.6); opacity: 0; filter: brightness(2); }
+        }
+        .capsule-anim { animation: capsuleOpenAnim 0.5s forwards !important; pointer-events: none; }
+
         .notif-cocon-turquoise {
             top: 20px; left: 5%; width: 90%; 
             background: rgba(0, 77, 64, 0.85); 
@@ -69,7 +79,6 @@
             position: relative; overflow: hidden;
         }
 
-        /* Layout & Glassmorphism */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
@@ -102,10 +111,6 @@
             background-size: cover; background-position: center; 
         }
 
-        /* --------------------------------------------------- */
-        /* ✨ DESIGN EXCLUSIF : LE COCON PRIVÉ ✨              */
-        /* --------------------------------------------------- */
-
         @keyframes coconPulseBg {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -120,7 +125,6 @@
             z-index: 9999; display: none; 
         }
 
-        /* Bulles Premium pour le Cocon */
         #coconBox .m-me { 
             background: linear-gradient(135deg, #ff4b6e 0%, #ff7eb3 100%); 
             color: white; border: none; box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4);
@@ -131,13 +135,11 @@
             color: #ffe6eb;
         }
 
-        /* Animation des clics magiques (Roses et étincelles) */
         @keyframes universDust {
             0% { opacity: 0; transform: scale(0.5) translate(0, 0); }
             20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
             100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
         }
-        /* --------------------------------------------------- */
         
         .chat-head { 
             position: absolute; top: 0; left: 0; width: 100%; height: 90px;
@@ -330,6 +332,7 @@
         <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">👤</div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
+        <input type="file" id="audioIn" hidden accept="audio/*" onchange="processAudioUpload(this)" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -358,6 +361,11 @@
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()"><b data-i18n="set_date">📅 Date de notre début</b></div>
             
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()"><b data-i18n="set_wall">🎨 Personnaliser l'Univers</b></div>
+            
+            <div class="option-btn" style="background:rgba(255,255,255,0.05); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; border: 1px solid var(--accent); color: var(--accent);" onclick="document.getElementById('audioIn').click()">
+                <b>🎵 Ajouter une musique au Cocon</b>
+            </div>
+
             <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">💌 Envoyer un mot doux au Cocon</div>
             
             <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()">
@@ -397,11 +405,12 @@
 <div id="coconBox">
     <div class="chat-head" style="background:rgba(0,0,0,0.4); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
         <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px;">←</span>
+        
         <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer;">🌹 Notre Cocon Privé <span style="font-size:12px; opacity:0.5;">⏭</span></b>
         </div>
         
-        <audio id="coconAudio" src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
+        <audio id="coconAudio" src=""></audio>
     </div>
     
     <div class="msg-area" id="coArea"></div>
@@ -472,22 +481,29 @@ document.getElementById('coArea').addEventListener('click', function(e) {
 });
 
 // --- LE JUKEBOX PERSONNEL ---
-const coconPlaylist = [
-    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", // Piste 1 Douce
-    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", // Piste 2 Mystérieuse
-    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  // Piste 3 Sombre/Mélancolique
+const defaultPlaylist = [
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", 
+    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  
 ];
 let currentTrackIndex = 0;
 
 function nextCoconTrack() {
-    currentTrackIndex = (currentTrackIndex + 1) % coconPlaylist.length;
+    const activePlaylist = (user && user.playlist && user.playlist.length > 0) ? user.playlist : defaultPlaylist;
+    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = coconPlaylist[currentTrackIndex];
-        audio.play().catch(e => console.log("Lecture audio bloquée", e));
+        audio.src = activePlaylist[currentTrackIndex];
+        audio.play().catch(e => console.log("Lecture bloquée", e));
         showToast("🎵 Musique suivante...");
     }
 }
+
+// Relance automatique en fin de piste
+window.addEventListener('DOMContentLoaded', () => {
+    const audioEl = document.getElementById('coconAudio');
+    if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
+});
 
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -496,12 +512,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if(splash) splash.style.display = 'none';
         lockAppHeight(); 
     }, 800); 
-
-    // Relancer la musique suivante automatiquement quand une piste se termine
-    const audioEl = document.getElementById('coconAudio');
-    if (audioEl) {
-        audioEl.addEventListener('ended', nextCoconTrack);
-    }
 });
 
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
@@ -951,7 +961,6 @@ function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
     
-    // --- COUPER LA MUSIQUE EN SORTANT ---
     const audio = document.getElementById('coconAudio');
     if(audio && !audio.paused) {
         audio.pause();
@@ -960,6 +969,21 @@ function closeChat() {
     
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
+}
+
+// --- DÉCLENCHEUR D'ANIMATION CAPSULE ---
+function revealCapsule(docId, path) {
+    const inner = document.getElementById('capsule_inner_' + docId);
+    if(inner) {
+        inner.classList.add('capsule-anim');
+    }
+    if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+    
+    setTimeout(() => {
+        const collPath = path === 'msgs' ? 'chats' : 'cocon';
+        const docTarget = path === 'msgs' ? activeId : user.code;
+        fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ opened: true });
+    }, 500);
 }
 
 function getMsgHTML(docId, m, path, target) {
@@ -977,19 +1001,31 @@ function getMsgHTML(docId, m, path, target) {
 
     if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
 
-    // --- INTERCEPTION : CAPSULE TEMPORELLE 🔒 ---
-    if (m.unlockAt && m.unlockAt > Date.now()) {
-        const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-        return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
-                    <div style="text-align:center; opacity:0.8;">
-                        <div style="font-size:24px; margin-bottom:5px;">🔒</div>
-                        <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
-                        <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
-                    </div>
-                    <div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div>
-                </div>`;
+    // --- INTERCEPTION : CAPSULE TEMPORELLE ---
+    if (m.unlockAt && !m.opened) {
+        const now = Date.now();
+        if (m.unlockAt > now) {
+            // Bloqué
+            const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
+                        <div style="text-align:center; opacity:0.8;">
+                            <div style="font-size:24px; margin-bottom:5px;">🔒</div>
+                            <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
+                            <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
+                        </div>
+                    </div>`;
+        } else {
+            // Prêt à être ouvert
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer;" onclick="revealCapsule('${docId}', '${path}')">
+                        <div id="capsule_inner_${docId}" style="text-align:center;">
+                            <div style="font-size:28px; animation: pulse 1.5s infinite;">🎁</div>
+                            <div style="font-size:12px; font-weight:bold;">Capsule prête !</div>
+                            <div style="font-size:10px; opacity:0.8;">Appuie pour ouvrir</div>
+                        </div>
+                    </div>`;
+        }
     }
-    // --------------------------------------------
+    // ------------------------------------------
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
@@ -1178,7 +1214,7 @@ function applyTheme(url) {
     triggerBack(); showToast("Univers mis à jour ! 🌌");
 } 
 
-// --- NOUVEAU MENU PIÈCES JOINTES : AJOUT DE LA CAPSULE ---
+// --- NOUVEAU MENU MEDIA AVEC CAPSULE ---
 function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
@@ -1190,12 +1226,12 @@ function openMediaMenu(mode) {
     `, null);
 }
 
-// --- FONCTION DE CRÉATION DE LA CAPSULE TEMPORELLE ---
+// --- CRÉATION DE LA CAPSULE ---
 function openCapsuleCreator() {
     const html = `
         <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand Alicia pourra-t-elle ouvrir ce message ?</p>
         <input type="datetime-local" id="capsuleDate" class="modal-input" style="color-scheme: dark; padding: 12px; font-size:14px;">
-        <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none;" placeholder="Ton message secret..."></textarea>
+        <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none; font-family: 'Poppins', sans-serif;" placeholder="Ton message secret..."></textarea>
     `;
     
     openModal("Capsule ⏳", html, () => {
@@ -1208,11 +1244,10 @@ function openCapsuleCreator() {
         if(unlockTimestamp <= Date.now()) return showToast("Choisis une date future !");
         
         sendCapsule(textVal, unlockTimestamp);
-        triggerBack(); // Ferme la modale
+        triggerBack(); 
     });
 }
 
-// --- FONCTION D'ENVOI DE LA CAPSULE DANS FIREBASE ---
 function sendCapsule(text, unlockTimestamp) {
     const mode = currentMediaMode; 
     const cryptoKey = mode === 'msgs' ? activeId : user.code;
@@ -1226,7 +1261,8 @@ function sendCapsule(text, unlockTimestamp) {
         txt: encryptedText, 
         t: firebase.firestore.FieldValue.serverTimestamp(), 
         type: 'text', 
-        unlockAt: unlockTimestamp, // La date magique
+        unlockAt: unlockTimestamp, 
+        opened: false, // Flag pour gérer l'animation
         seen: false 
     });
     
@@ -1287,6 +1323,32 @@ function processMediaUpload(e) {
     }
 }
 
+// --- FONCTION D'UPLOAD DE MUSIQUE DANS FIREBASE ---
+function processAudioUpload(input) {
+    const file = input.files[0]; 
+    if(!file) return;
+    if(!file.type.startsWith('audio/')) { showToast("Format audio invalide !"); return; }
+    
+    showToast("Upload de ta musique en cours... ⏳");
+    
+    const fileName = Date.now() + '_music.mp3';
+    const storageRef = firebase.storage().ref('musics/' + fileName);
+    const uploadTask = storageRef.put(file);
+    
+    uploadTask.then((snapshot) => {
+        snapshot.ref.getDownloadURL().then((url) => {
+            let currentPlaylist = user.playlist || [];
+            currentPlaylist.push(url);
+            
+            fs.collection('users').doc(user.id).update({ playlist: currentPlaylist }).then(() => {
+                user.playlist = currentPlaylist; 
+                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                showToast("Musique ajoutée au Jukebox ! 🎵");
+            });
+        });
+    }).catch(err => { showToast("Erreur d'upload ❌"); console.error(err); });
+}
+
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
     
@@ -1315,8 +1377,16 @@ function uploadFile(input, mode) {
 function openModal(t, b, a) {
     document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b;
     document.getElementById('customModal').style.display = 'flex'; pushState('modal');
-    if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value || document.getElementById('capsuleDate')?.value); }
-    else document.getElementById('modalActions').style.display = 'none';
+    if(a) { 
+        document.getElementById('modalActions').style.display = 'flex'; 
+        document.getElementById('modalConfirmBtn').onclick = () => {
+            // Support multi-inputs
+            const val = document.getElementById('modalInput')?.value || null;
+            a(val);
+        };
+    } else {
+        document.getElementById('modalActions').style.display = 'none';
+    }
 }
 
 function login() {
@@ -1393,9 +1463,13 @@ function askCoconCode() {
             lockAppHeight(); 
             syncMessages('cocon', user.code, 'coArea');
             
-            // --- LECTURE AUTO DE LA MUSIQUE ---
             const audio = document.getElementById('coconAudio');
-            if(audio) audio.play().catch(e => console.log("Lecture audio bloquée", e));
+            if(audio) {
+                const activePlaylist = (user.playlist && user.playlist.length > 0) ? user.playlist : defaultPlaylist;
+                audio.src = activePlaylist[0];
+                currentTrackIndex = 0;
+                audio.play().catch(e => console.log("Lecture audio bloquée", e));
+            }
 
             showToast("Bienvenue dans notre Cocon 🌹");
         } else {
