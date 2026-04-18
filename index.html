@@ -57,7 +57,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* ✨ L'ANIMATION MAGIQUE DE LA CAPSULE ✨ */
         @keyframes capsuleOpenAnim {
             0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
             20% { transform: scale(1.2) rotate(-10deg); }
@@ -79,6 +78,7 @@
             position: relative; overflow: hidden;
         }
 
+        /* Layout & Glassmorphism */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
@@ -110,6 +110,10 @@
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
         }
+
+        /* --------------------------------------------------- */
+        /* ✨ DESIGN EXCLUSIF : LE COCON PRIVÉ ✨              */
+        /* --------------------------------------------------- */
 
         @keyframes coconPulseBg {
             0% { background-position: 0% 50%; }
@@ -228,7 +232,7 @@
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; }
         
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
@@ -250,17 +254,19 @@
 
 <div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); flex-direction: column; align-items: center; text-align: center;">
     <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 15px;">
-        <div style="font-size:28px; animation:pulse 2s infinite;">💖</div>
+        <svg style="width:32px; height:32px; fill:var(--notif-vibrant); animation:pulse 2s infinite;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         <h2 style="font-family:'Pacifico'; font-size:22px; color:var(--notif-vibrant); margin:0; text-shadow: 0 2px 10px rgba(0,229,255,0.3);">Mot doux reçu...</h2>
     </div>
     <p id="coconNoteText" style="font-size:15px; font-weight:500; color:white; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:18px; width:100%; line-height:1.5; border: 1px solid var(--glass-border); margin: 0 0 20px 0; font-style: italic;"></p>
-    <button onclick="closeCoconNote()" style="width:100%; padding:14px; border-radius:20px; border:none; background:var(--notif-vibrant); color:white; font-weight:bold; font-size:15px; box-shadow: 0 8px 20px rgba(0,229,255,0.3); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci 🌹</button>
+    <button onclick="closeCoconNote()" style="width:100%; padding:14px; border-radius:20px; border:none; background:var(--notif-vibrant); color:white; font-weight:bold; font-size:15px; box-shadow: 0 8px 20px rgba(0,229,255,0.3); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci</button>
 </div>
 
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
+        L'Univers te parle... <svg class="svg-icon-lg" style="fill:var(--love); stroke:none;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+    </div>
     <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
@@ -363,8 +369,11 @@
                     </span>
                 </div>
                 <div id="secureContent" class="secure-blur">
-                    <b>📌 Infos du compte</b><br>
-                    <div style="margin-top:10px; font-size:14px; color:var(--text-sub);">
+                    <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> 
+                        <b>Infos du compte</b>
+                    </div>
+                    <div style="font-size:14px; color:var(--text-sub);">
                         <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
                         <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love); text-shadow: 0 0 10px var(--love-glow);"></b></span><br>
                         <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span><br>
@@ -462,7 +471,8 @@
         
         <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                🌹 Notre Cocon Privé 
+                <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                Notre Cocon Privé 
                 <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
             </b>
         </div>
@@ -523,22 +533,25 @@ if (window.visualViewport) {
     });
 }
 
-// --- PLUIE DE ROSES INTERACTIVE ---
+// --- PLUIE MAGIQUE SANS EMOJIS (SVG) ---
 document.getElementById('coArea').addEventListener('click', function(e) {
     if(e.target.closest('.bubble') || e.target.closest('button')) return;
     
     const rose = document.createElement('div');
-    rose.innerText = Math.random() > 0.5 ? '🌹' : '✨';
+    // Alterne entre un petit coeur et une étoile scintillante
+    rose.innerHTML = Math.random() > 0.5 
+        ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
+    
     rose.style.position = 'fixed';
-    rose.style.left = (e.clientX - 10) + 'px';
-    rose.style.top = (e.clientY - 10) + 'px';
-    rose.style.animation = 'universDust 1s ease-out forwards';
+    rose.style.left = (e.clientX - 12) + 'px';
+    rose.style.top = (e.clientY - 12) + 'px';
+    rose.style.animation = 'universDust 1.5s ease-out forwards';
     rose.style.pointerEvents = 'none';
-    rose.style.fontSize = '20px';
     rose.style.zIndex = '99999';
     document.body.appendChild(rose);
     
-    setTimeout(() => rose.remove(), 1000);
+    setTimeout(() => rose.remove(), 1500);
 });
 
 // --- LE JUKEBOX PERSONNEL ---
@@ -555,17 +568,12 @@ function nextCoconTrack() {
     const audio = document.getElementById('coconAudio');
     if (audio) {
         audio.src = activePlaylist[currentTrackIndex];
-        // FORCE LE CHARGEMENT POUR ÉVITER LE BUG DE LECTURE SUR MOBILE
         audio.load();
-        audio.play().catch(e => {
-            console.log("Lecture audio bloquée", e);
-            showToast("Erreur de lecture ❌");
-        });
-        showToast(`🎵 Piste ${currentTrackIndex + 1}/${activePlaylist.length}`);
+        audio.play().catch(e => console.log("Lecture bloquée", e));
+        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
     }
 }
 
-// Relance automatique en fin de piste
 window.addEventListener('DOMContentLoaded', () => {
     const audioEl = document.getElementById('coconAudio');
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
@@ -593,13 +601,13 @@ let timeCounterInterval = null;
 let unsubMsgs = null; 
 
 const humeursCocon = [
-    { label: "✨ Sur un nuage" },
-    { label: "🎯 Focus" },
-    { label: "🌧️ Besoin de douceur" },
-    { label: "⏳ Ne pas déranger" },
-    { label: "💖 Amoureux(se)" },
-    { label: "👻 Mode Fantôme" },
-    { label: "❌ Retirer l'humeur" }
+    { label: "Sur un nuage" },
+    { label: "Focus" },
+    { label: "Besoin de douceur" },
+    { label: "Ne pas déranger" },
+    { label: "Amoureux(se)" },
+    { label: "Mode Fantôme" },
+    { label: "Retirer l'humeur" }
 ];
 
 const allLanguages = [
@@ -611,10 +619,10 @@ const allLanguages = [
 
 const i18n = {
     'fr': {
-        'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon 🌹', 'tab_set': 'Réglages',
-        'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': '🌐 Langue de l\'Univers',
-        'set_date': '📅 Date de notre début', 'set_wall': '🎨 Personnaliser l\'Univers', 'set_note': '💌 Envoyer un mot doux au Cocon',
-        'set_blocked': '🚫 Contacts bloqués', 'set_leave': 'Quitter l\'Univers'
+        'tab_msg': 'Messages', 'tab_cocon': 'Le Cocon', 'tab_set': 'Réglages',
+        'set_pseudo': 'Pseudo', 'set_code': 'Code Cocon', 'set_lang': 'Langue de l\'Univers',
+        'set_date': 'Date de notre début', 'set_wall': 'Personnaliser l\'Univers', 'set_note': 'Envoyer un mot doux au Cocon',
+        'set_blocked': 'Contacts bloqués', 'set_leave': 'Quitter l\'Univers'
     }
 };
 
@@ -622,65 +630,65 @@ const sounds = { pop: '' };
 
 const moodLibrary = {
     "Heureux": [
-        "Ton bonheur est ma plus belle réussite. ✨",
+        "Ton bonheur est ma plus belle réussite.",
         "C'est une journée magnifique pour s'aimer encore plus !",
-        "Ton sourire est le soleil de mon univers. ☀️",
+        "Ton sourire est le soleil de mon univers.",
         "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
         "Rien ne me rend plus joyeux que de te savoir épanouie."
     ],
     "Triste": [
-        "N'oublie jamais que je suis ton port d'attache. ⚓",
+        "N'oublie jamais que je suis ton port d'attache.",
         "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.",
-        "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️",
+        "Tes larmes sont mes larmes. Je suis là, tout près de toi.",
         "Prends le temps qu'il faut, je ne bouge pas d'ici.",
-        "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"
+        "Même dans le noir, notre lien brille. Courage ma princesse."
     ],
     "Fatigué": [
-        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴",
+        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui.",
         "Ferme les yeux, laisse-toi porter par ma douceur.",
         "Tu as le droit de ne rien faire, je veille sur tout le reste.",
-        "Un gros câlin virtuel pour te redonner de la force. 🫂",
+        "Un gros câlin virtuel pour te redonner de la force.",
         "Dors bien, je serai ton premier message au réveil."
     ],
     "Amoureux": [
-        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨",
+        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles.",
         "Chaque battement de mon cœur porte ton nom.",
         "Je t'aime plus qu'hier et bien moins que demain.",
-        "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
+        "Tu es la plus belle chose qui soit arrivée dans mon Univers.",
         "Mon endroit préféré au monde ? Partout où tu es."
     ],
     "Besoin de force": [
-        "Tu es bien plus forte que tu ne le penses. 💪",
+        "Tu es bien plus forte que tu ne le penses.",
         "Respire un grand coup, tu vas tout déchirer !",
         "Je crois en toi plus que n'importe qui d'autre.",
         "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.",
         "Une étape à la fois, je marche juste derrière toi."
     ],
     "Seule": [
-        "Regarde le ciel, on regarde la même lune. 🌙",
+        "Regarde le ciel, on regarde la même lune.",
         "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.",
         "Ferme les yeux, imagine mes bras autour de toi... je suis là.",
-        "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️",
+        "Tu n'es jamais seule, je suis ta sentinelle personnelle.",
         "Mon esprit ne te quitte pas d'une semelle aujourd'hui."
     ],
     "Stressée par les cours": [
-        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
+        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es.",
         "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
-        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
+        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive.",
         "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
         "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."
     ],
     "Besoin d'un bisou": [
-        "Un doux baiser déposé tendrement sur ton front... 😘",
+        "Un doux baiser déposé tendrement sur ton front...",
         "Je t'envoie un million de bisous à travers l'univers.",
         "Imagine mes lèvres sur tes joues. Je suis là.",
-        "Un petit bisou volé pour te faire sourire. 💋",
+        "Un petit bisou volé pour te faire sourire.",
         "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."
     ],
     "Besoin d'un câlin": [
-        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂",
+        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer.",
         "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.",
-        "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️",
+        "Ferme les yeux. Imagine que je te serre très fort contre moi.",
         "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.",
         "Un long câlin silencieux, pour apaiser toutes tes tempêtes."
     ]
@@ -733,7 +741,8 @@ const E2EE = {
 
 function showToast(msg) {
     const t = document.getElementById('toastAlert');
-    t.innerText = msg; t.classList.add('show');
+    t.innerHTML = msg; 
+    t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3500);
 }
 
@@ -860,7 +869,7 @@ function setHumeur(label) {
         user.humeur = label;
         localStorage.setItem('nu_v33_user', JSON.stringify(user));
         triggerBack();
-        if(label) showToast("Humeur mise à jour ! 💭");
+        if(label) showToast("Humeur mise à jour !");
         else showToast("Humeur retirée.");
     });
 }
@@ -891,7 +900,7 @@ function setAppLang(code) {
     fs.collection('users').doc(user.id).update({lang: code}).then(() => {
         user.lang = code; localStorage.setItem('nu_v33_user', JSON.stringify(user));
         document.getElementById('currentLangDisp').innerText = code.toUpperCase();
-        applyTranslations(code); triggerBack(); showToast("Langue modifiée ! 🌐");
+        applyTranslations(code); triggerBack(); showToast("Langue modifiée !");
     });
 }
 
@@ -904,7 +913,7 @@ function openDateEdit() {
         </div>
         <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
     `;
-    openModal("Notre début 📅", html, () => {
+    openModal("Notre début", html, () => {
         const j = document.getElementById('dDay').value.padStart(2, '0');
         const m = document.getElementById('dMonth').value.padStart(2, '0');
         const a = document.getElementById('dYear').value;
@@ -1001,7 +1010,7 @@ function addFriend() {
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
                 fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 });
-                triggerBack(); showToast("Contact ajouté 👻"); 
+                triggerBack(); showToast("Contact ajouté"); 
             } else showToast("Inconnu");
         });
     });
@@ -1070,7 +1079,7 @@ function getMsgHTML(docId, m, path, target) {
     if (m.unlockAt && !m.opened) {
         const now = Date.now();
         if (m.unlockAt > now) {
-            // Bloqué (Cadenas)
+            // Bloqué (Cadenas SVG)
             const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
                         <div style="text-align:center; opacity:0.8;">
@@ -1082,14 +1091,14 @@ function getMsgHTML(docId, m, path, target) {
                         </div>
                     </div>`;
         } else {
-            // Prêt à être ouvert (Cadeau/Étoile)
+            // Prêt à être ouvert (Cadeau/Étoile SVG)
             return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')">
                         <div id="capsule_inner_${docId}" style="text-align:center;">
                             <div style="display:flex; justify-content:center; margin-bottom:5px;">
                                 <svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                             </div>
                             <div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div>
-                            <div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir ✨</div>
+                            <div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir</div>
                         </div>
                     </div>`;
         }
@@ -1140,10 +1149,10 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     let html = "";
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
         const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')">✏️ Modifier</button>`;
+        html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier</button>`;
     }
-    html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour moi</button>`;
-    if(isMe) html += `<button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="delMsgForAll('${msgId}', '${path}', '${target}')">🗑️ Supprimer pour tous</button>`;
+    html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer pour moi</button>`;
+    if(isMe) html += `<button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="delMsgForAll('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg> Supprimer pour tous</button>`;
     openModal("Options", html, null);
 }
 
@@ -1231,10 +1240,18 @@ function openContactOptions() {
         const u = doc.data();
         const pfpUrl = u && u.pfp ? u.pfp : null;
         let html = `
-            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo')`}">🖼️ Voir la photo</button>
-            <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">🧹 Vider la conversation</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">🚫 Bloquer le contact</button>
-            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">🗑️ Supprimer le contact</button>
+            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo')`}">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Voir la photo
+            </button>
+            <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg> Vider la conversation
+            </button>
+            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> Bloquer le contact
+            </button>
+            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer le contact
+            </button>
         `;
         openModal("Options", html, null);
     });
@@ -1272,7 +1289,7 @@ function openWallMenu() {
     ];
     let html = `<div class="theme-grid">`;
     themes.forEach(t => { html += `<div class="theme-card" style="background-image:url('${t.u}')" onclick="applyTheme('${t.u}')">${t.n}</div>`; });
-    html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black; border:none; justify-content:center; box-shadow:0 5px 15px var(--accent-glow);" onclick="document.getElementById('wallInput').click(); triggerBack();">🖼️ Choisir depuis ma Galerie</button>`;
+    html += `</div><button class="option-btn" style="margin-top:20px; background:var(--accent); color:black; border:none; justify-content:center; box-shadow:0 5px 15px var(--accent-glow);" onclick="document.getElementById('wallInput').click(); triggerBack();"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Choisir depuis ma Galerie</button>`;
     openModal("Univers", html, null);
 }
 
@@ -1280,7 +1297,7 @@ function applyTheme(url) {
     fs.collection('users').doc(user.id).update({wall: url});
     user.wall = url; localStorage.setItem('nu_v33_user', JSON.stringify(user));
     document.body.style.backgroundImage = `url(${url})`;
-    triggerBack(); showToast("Univers mis à jour ! 🌌");
+    triggerBack(); showToast("Univers mis à jour !");
 } 
 
 function openMediaMenu(mode) {
@@ -1307,7 +1324,7 @@ function openCapsuleCreator() {
         <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none; font-family: 'Poppins', sans-serif;" placeholder="Ton message secret..."></textarea>
     `;
     
-    openModal("Capsule ⏳", html, () => {
+    openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule</div>", html, () => {
         const dateVal = document.getElementById('capsuleDate').value;
         const textVal = document.getElementById('capsuleText').value.trim();
         
@@ -1339,9 +1356,8 @@ function sendCapsule(text, unlockTimestamp) {
         seen: false 
     });
     
-    showToast("Capsule envoyée dans le futur... ⏳");
+    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
-
 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
@@ -1402,7 +1418,7 @@ function processAudioUpload(input) {
     if(!file) return;
     if(!file.type.startsWith('audio/')) { showToast("Format audio invalide !"); return; }
     
-    showToast("Upload de ta musique en cours... ⏳");
+    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Upload de ta musique en cours...</div>");
     
     const fileName = Date.now() + '_music.mp3';
     const storageRef = firebase.storage().ref('musics/' + fileName);
@@ -1416,10 +1432,10 @@ function processAudioUpload(input) {
             fs.collection('users').doc(user.id).update({ playlist: currentPlaylist }).then(() => {
                 user.playlist = currentPlaylist; 
                 localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                showToast("Musique ajoutée au Jukebox ! 🎵");
+                showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée au Jukebox !</div>");
             });
         });
-    }).catch(err => { showToast("Erreur d'upload ❌"); console.error(err); });
+    }).catch(err => { showToast("Erreur d'upload"); console.error(err); });
 }
 
 function uploadFile(input, mode) {
@@ -1448,7 +1464,8 @@ function uploadFile(input, mode) {
 }
 
 function openModal(t, b, a) {
-    document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b;
+    document.getElementById('modalTitle').innerHTML = t; 
+    document.getElementById('modalBody').innerHTML = b;
     document.getElementById('customModal').style.display = 'flex'; pushState('modal');
     if(a) { 
         document.getElementById('modalActions').style.display = 'flex'; 
@@ -1485,7 +1502,7 @@ function sendGlobalNote() {
     openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
         if(!v) return;
         fs.collection('globalNotes').doc(user.code).set({txt: v, sid: user.id, t: firebase.firestore.FieldValue.serverTimestamp(), readBy: {}});
-        triggerBack(); showToast("Mot doux envoyé ! 💖");
+        triggerBack(); showToast("Mot doux envoyé !");
     });
 }
 
@@ -1544,9 +1561,9 @@ function askCoconCode() {
                 audio.play().catch(e => console.log("Lecture audio bloquée", e));
             }
 
-            showToast("Bienvenue dans notre Cocon 🌹");
+            showToast("Bienvenue dans notre Cocon");
         } else {
-            showToast("Code incorrect ! ❌");
+            showToast("Code incorrect !");
         }
     });
 }
@@ -1580,7 +1597,7 @@ function updateTimeCounter() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').catch(err => {
-        console.log('Le Service Worker a échoué (normal si tu testes en local sans HTTPS) :', err);
+        console.log('Le Service Worker a échoué :', err);
       });
     });
   }
