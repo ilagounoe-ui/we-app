@@ -57,6 +57,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
+        /* ✨ L'ANIMATION MAGIQUE DE LA CAPSULE ✨ */
         @keyframes capsuleOpenAnim {
             0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
             20% { transform: scale(1.2) rotate(-10deg); }
@@ -110,10 +111,6 @@
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
         }
-
-        /* --------------------------------------------------- */
-        /* ✨ DESIGN EXCLUSIF : LE COCON PRIVÉ ✨              */
-        /* --------------------------------------------------- */
 
         @keyframes coconPulseBg {
             0% { background-position: 0% 50%; }
@@ -212,10 +209,9 @@
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
-            padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; transition: color 0.2s;
+            font-size: 20px; padding: 10px; cursor: pointer;
+            flex-shrink: 0; 
         }
-        .btn-attachment:hover { color: white; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
@@ -232,7 +228,7 @@
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; }
         
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
@@ -501,6 +497,8 @@
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
 
 <script>
+window.sharedPlaylist = [];
+
 function lockAppHeight() {
     const trueHeight = window.innerHeight;
     document.body.style.height = trueHeight + 'px';
@@ -533,12 +531,10 @@ if (window.visualViewport) {
     });
 }
 
-// --- PLUIE MAGIQUE SANS EMOJIS (SVG) ---
 document.getElementById('coArea').addEventListener('click', function(e) {
     if(e.target.closest('.bubble') || e.target.closest('button')) return;
     
     const rose = document.createElement('div');
-    // Alterne entre un petit coeur et une étoile scintillante
     rose.innerHTML = Math.random() > 0.5 
         ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
         : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
@@ -554,7 +550,6 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
-// --- LE JUKEBOX PERSONNEL ---
 const defaultPlaylist = [
     "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
     "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", 
@@ -563,7 +558,7 @@ const defaultPlaylist = [
 let currentTrackIndex = 0;
 
 function nextCoconTrack() {
-    const activePlaylist = (user && user.playlist && user.playlist.length > 0) ? user.playlist : defaultPlaylist;
+    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
     currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
@@ -852,6 +847,15 @@ function setupApp() {
             setTimeout(() => { el.classList.remove('cocon-with-dust'); }, 1500);
         }
     });
+
+    // --- SYNCHRONISATION DE LA PLAYLIST COCON PARTAGÉE ---
+    fs.collection('cocon').doc(user.code).onSnapshot(doc => {
+        if(doc.exists && doc.data().playlist && doc.data().playlist.length > 0) {
+            window.sharedPlaylist = doc.data().playlist;
+        } else {
+            window.sharedPlaylist = defaultPlaylist;
+        }
+    });
 }
 
 function choisirHumeurCocon() {
@@ -998,7 +1002,9 @@ function renderContacts(arr) {
         list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}','${c.pseudo}','${c.pfp}')">
             <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : c.pseudo[0]}</div>
             <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${c.pseudo}</b>${badge}</div>${moodHtml}</div>
-            <div class="opt-dots">›</div>
+            <div class="opt-dots">
+                <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
         </div>`;
     });
 }
@@ -1046,7 +1052,6 @@ function closeChat() {
     document.getElementById('coconBox').style.display = 'none';
 }
 
-// --- DÉCLENCHEUR D'ANIMATION CAPSULE ---
 function revealCapsule(docId, path) {
     const inner = document.getElementById('capsule_inner_' + docId);
     if(inner) {
@@ -1075,11 +1080,9 @@ function getMsgHTML(docId, m, path, target) {
 
     if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
 
-    // --- INTERCEPTION : CAPSULE TEMPORELLE ---
     if (m.unlockAt && !m.opened) {
         const now = Date.now();
         if (m.unlockAt > now) {
-            // Bloqué (Cadenas SVG)
             const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
                         <div style="text-align:center; opacity:0.8;">
@@ -1091,7 +1094,6 @@ function getMsgHTML(docId, m, path, target) {
                         </div>
                     </div>`;
         } else {
-            // Prêt à être ouvert (Cadeau/Étoile SVG)
             return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')">
                         <div id="capsule_inner_${docId}" style="text-align:center;">
                             <div style="display:flex; justify-content:center; margin-bottom:5px;">
@@ -1103,7 +1105,6 @@ function getMsgHTML(docId, m, path, target) {
                     </div>`;
         }
     }
-    // ------------------------------------------
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
@@ -1153,7 +1154,7 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     }
     html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer pour moi</button>`;
     if(isMe) html += `<button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="delMsgForAll('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg> Supprimer pour tous</button>`;
-    openModal("Options", html, null);
+    openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon-lg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='1'></circle><circle cx='12' cy='5' r='1'></circle><circle cx='12' cy='19' r='1'></circle></svg> Options</div>", html, null);
 }
 
 function delMsgForMe(id, path, target) { 
@@ -1253,7 +1254,7 @@ function openContactOptions() {
                 <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer le contact
             </button>
         `;
-        openModal("Options", html, null);
+        openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon-lg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='1'></circle><circle cx='12' cy='5' r='1'></circle><circle cx='12' cy='19' r='1'></circle></svg> Options</div>", html, null);
     });
 }
 
@@ -1365,6 +1366,13 @@ document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 function processMediaUpload(e) {
     triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
+    
+    // VÉRIFICATION DE LA TAILLE DE L'IMAGE/VIDÉO (10 Mo)
+    if(file.size > 10 * 1024 * 1024) {
+        showToast("❌ Fichier trop lourd (Max 10 Mo)");
+        return;
+    }
+
     const fileType = file.type.startsWith('video/') ? 'video' : 'img';
 
     if(currentMediaMode === 'msgs') {
@@ -1389,57 +1397,86 @@ function processMediaUpload(e) {
     function uploadToFirebase(data, typeParam) {
         const fileName = Date.now() + (typeParam === 'img' ? '_img.jpg' : '_vid.mp4');
         const storageRef = firebase.storage().ref('media/' + fileName);
-        
         const uploadTask = storageRef.put(data);
 
-        uploadTask.then((snapshot) => {
-            snapshot.ref.getDownloadURL().then((url) => {
-                const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
-                const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
-                
-                fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-                    sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
+        // SUIVI DE LA PROGRESSION
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                showToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='15'></line><polyline points='19 8 12 15 5 8'></polyline><line x1='12' y1='15' x2='12' y2='22'></line></svg> Envoi : ${progress}%</div>`);
+            },
+            (error) => { console.error(error); showToast("❌ Erreur d'envoi"); },
+            () => {
+                uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+                    const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
+                    const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
+                    
+                    fs.collection(collPath).doc(docTarget).collection('messages').add({ 
+                        sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
+                    });
+                    
+                    showToast("Fichier envoyé ! ✅");
+                    
+                    if(currentMediaMode === 'msgs') {
+                        const batch = fs.batch();
+                        batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                        batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+                        batch.commit();
+                    }
                 });
-                
-                if(currentMediaMode === 'msgs') {
-                    const batch = fs.batch();
-                    batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                    batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-                    batch.commit();
-                }
-            });
-        }).catch(err => { console.error(err); });
+            }
+        );
     }
 }
 
-// --- FONCTION D'UPLOAD DE MUSIQUE DANS FIREBASE ---
+// --- FONCTION D'UPLOAD DE MUSIQUE AVEC LIMITE (10 Mo) ET PROGRESSION ---
 function processAudioUpload(input) {
     const file = input.files[0]; 
     if(!file) return;
-    if(!file.type.startsWith('audio/')) { showToast("Format audio invalide !"); return; }
     
-    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Upload de ta musique en cours...</div>");
+    // Vérification de la limite de 10 Mo
+    if(file.size > 10 * 1024 * 1024) { 
+        showToast("Fichier trop lourd (Max 10 Mo)"); 
+        return; 
+    }
+    
+    if(!file.type.startsWith('audio/')) { showToast("Format audio invalide !"); return; }
     
     const fileName = Date.now() + '_music.mp3';
     const storageRef = firebase.storage().ref('musics/' + fileName);
     const uploadTask = storageRef.put(file);
     
-    uploadTask.then((snapshot) => {
-        snapshot.ref.getDownloadURL().then((url) => {
-            let currentPlaylist = user.playlist || [];
-            currentPlaylist.push(url);
-            
-            fs.collection('users').doc(user.id).update({ playlist: currentPlaylist }).then(() => {
-                user.playlist = currentPlaylist; 
-                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée au Jukebox !</div>");
+    // Écoute de l'avancement
+    uploadTask.on('state_changed', 
+        (snapshot) => {
+            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            showToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Upload musique : ${progress}%</div>`);
+        },
+        (err) => { showToast("Erreur d'upload ❌"); },
+        () => {
+            uploadTask.snapshot.ref.getDownloadURL().then((url) => {
+                // Utilise la playlist partagée actuelle
+                let currentP = window.sharedPlaylist === defaultPlaylist ? [] : [...window.sharedPlaylist];
+                currentP.push(url);
+                
+                // Sauvegarde dans la collection Cocon partagée
+                fs.collection('cocon').doc(user.code).set({ playlist: currentP }, { merge: true }).then(() => {
+                    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée au Cocon ! ✅</div>");
+                });
             });
-        });
-    }).catch(err => { showToast("Erreur d'upload"); console.error(err); });
+        }
+    );
 }
 
 function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
+    
+    if(file.size > 10 * 1024 * 1024) {
+        showToast("❌ Image trop lourde (Max 10 Mo)");
+        return;
+    }
+    
+    showToast("Mise à jour en cours...");
     
     compressImage(file, 800, (data) => {
         const fileName = Date.now() + (mode === 'pfp' ? '_profile.jpg' : '_wall.jpg');
@@ -1454,6 +1491,7 @@ function uploadFile(input, mode) {
                         user.pfp = url; 
                         localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
                         document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
+                        showToast("Profil mis à jour ! ✅");
                     });
                 } else if(mode === 'wall') { 
                     applyTheme(url); 
@@ -1554,7 +1592,7 @@ function askCoconCode() {
             
             const audio = document.getElementById('coconAudio');
             if(audio) {
-                const activePlaylist = (user.playlist && user.playlist.length > 0) ? user.playlist : defaultPlaylist;
+                const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
                 audio.src = activePlaylist[0];
                 currentTrackIndex = 0;
                 audio.load();
