@@ -85,7 +85,7 @@
         .main-header { padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); will-change: transform; }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
-        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; display: flex; align-items: center; justify-content: center; gap: 8px;}
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
@@ -95,7 +95,7 @@
         .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
         .contact-item:active { transform: scale(0.96); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
         
-        .pfp { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #2a2a40; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .pfp { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #2a2a40; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); color: white;}
         .pfp img { width: 100%; height: 100%; object-fit: cover; }
         
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
@@ -208,14 +208,15 @@
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
-            font-size: 20px; padding: 10px; cursor: pointer;
-            flex-shrink: 0; 
+            padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: color 0.2s;
         }
+        .btn-attachment:hover { color: white; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
         
-        .modal-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; }
+        .modal-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; font-family: 'Poppins', sans-serif;}
         .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
         
         .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -237,6 +238,10 @@
         .theme-card:active { transform: scale(0.92); border-color: var(--accent); }
         
         .scroll-hidden::-webkit-scrollbar { display: none; }
+
+        /* SVG ICONS HELPER CLASSES */
+        .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+        .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -303,15 +308,23 @@
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)" data-i18n="tab_msg">Messages</div>
-            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)" data-i18n="tab_cocon">Le Cocon 🌹</div>
-            <div class="tab" onclick="switchV('vSet', this)" data-i18n="tab_set">Réglages</div>
+            <div class="tab active" onclick="switchV('vChats', this)" data-i18n="tab_msg">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Messages
+            </div>
+            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)" data-i18n="tab_cocon">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> Le Cocon
+            </div>
+            <div class="tab" onclick="switchV('vSet', this)" data-i18n="tab_set">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Réglages
+            </div>
         </div>
     </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
-        <div class="fab" onclick="addFriend()">+</div>
+        <div class="fab" onclick="addFriend()">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
     </div>
 
     <div id="vCocon" class="view">
@@ -323,21 +336,31 @@
                 <div style="background:rgba(0,0,0,0.2); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px; border-radius:22px; min-width:85px; border:1px solid rgba(255,255,255,0.1);"><b id="d-hour" style="font-size:26px">0</b><br><small>Heures</small></div>
             </div>
         </div>
-        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌹 DÉVERROUILLER LE COCON</button>
-        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">🌟 J'ai besoin d'un mot doux...</button>
-        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">💭 Définir mon humeur</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
+        </button>
+        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux...
+        </button>
+        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur
+        </button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">👤</div>
+        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+            <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
         <input type="file" id="audioIn" hidden accept="audio/*" onchange="processAudioUpload(this)" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
-                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="unlockSecureSettings()">
-                    <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; background:rgba(0,0,0,0.5); border-radius:20px; border:1px solid var(--accent);">🔒 Appuyez pour voir les infos</span>
+                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
+                    <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; background:rgba(0,0,0,0.5); border-radius:20px; border:1px solid var(--accent); display:flex; align-items:center; gap:8px;">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Appuyez pour voir les infos
+                    </span>
                 </div>
                 <div id="secureContent" class="secure-blur">
                     <b>📌 Infos du compte</b><br>
@@ -345,47 +368,72 @@
                         <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
                         <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love); text-shadow: 0 0 10px var(--love-glow);"></b></span><br>
                         <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span><br>
-                        <span style="display:inline-block; margin-top:5px; color:var(--check); font-size:11px;">🔒 Chiffrement E2EE Actif</span>
+                        <span style="display:inline-block; margin-top:5px; color:var(--check); font-size:11px; display:inline-flex; align-items:center; justify-content:center; gap:4px;">
+                            <svg style="width:12px; height:12px; stroke:currentColor; stroke-width:2; fill:none;" viewBox="0 0 24 24"><path d="M21 13.25V6l-9-4-9 4v7.25c0 6.27 4.28 11.83 9 13.15 4.72-1.32 9-6.88 9-13.15z"></path></svg> Chiffrement E2EE Actif
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0;" onclick="openEdit('pseudo')"><b data-i18n="set_pseudo">Pseudo</b></div>
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0;" onclick="openEdit('code')"><b data-i18n="set_code">Code Cocon</b></div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('pseudo')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <b data-i18n="set_pseudo">Pseudo</b>
+            </div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('code')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <b data-i18n="set_code">Code Cocon</b>
+            </div>
             
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; flex-direction:column; gap:5px;" onclick="openLangMenu()">
-                <b data-i18n="set_lang">🌐 Langue de l'Univers</b>
+                <div style="display:flex; align-items:center; gap:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> <b data-i18n="set_lang">Langue de l'Univers</b></div>
                 <div style="font-size:12px; color:var(--accent); font-weight:bold;" id="currentLangDisp">FR</div>
             </div>
 
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()"><b data-i18n="set_date">📅 Date de notre début</b></div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <b data-i18n="set_date">Date de notre début</b>
+            </div>
             
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()"><b data-i18n="set_wall">🎨 Personnaliser l'Univers</b></div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <b data-i18n="set_wall">Personnaliser l'Univers</b>
+            </div>
             
             <div class="option-btn" style="background:rgba(255,255,255,0.05); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; border: 1px solid var(--accent); color: var(--accent);" onclick="document.getElementById('audioIn').click()">
-                <b>🎵 Ajouter une musique au Cocon</b>
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                <b>Ajouter une musique au Cocon</b>
             </div>
 
-            <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">💌 Envoyer un mot doux au Cocon</div>
-            
-            <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()">
-                <b data-i18n="set_blocked" style="color:var(--love);">🚫 Contacts bloqués</b>
+            <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">
+                <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                Envoyer un mot doux au Cocon
             </div>
             
-            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--text-sub); font-weight:bold; margin-top:30px; font-size:14px; justify-content:center; transition:0.2s;" onmousedown="this.style.color='white'" data-i18n="set_leave">Quitter l'Univers</button>
+            <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()">
+                <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                <b data-i18n="set_blocked" style="color:var(--love);">Contacts bloqués</b>
+            </div>
+            
+            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--text-sub); font-weight:bold; margin-top:30px; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;" onmousedown="this.style.color='white'" data-i18n="set_leave">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Quitter l'Univers
+            </button>
         </div>
     </div>
 </div>
 
 <div id="chatBox">
     <div class="chat-head">
-        <span onclick="triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px;">←</span>
+        <span onclick="triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
         <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0; border:none;"></div>
         <div style="flex:1">
             <b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br>
             <small id="cStatus" style="font-size:11px; opacity:0.8;"></small>
         </div>
-        <div class="opt-dots" id="chatDots" onclick="openContactOptions()">⋮</div>
+        <div class="opt-dots" id="chatDots" onclick="openContactOptions()" style="display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </div>
     </div>
     
     <div class="msg-area" id="mArea"></div>
@@ -395,19 +443,28 @@
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
                 <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
-                <button class="btn-attachment" onclick="openMediaMenu('msgs')">📎</button>
+                <button class="btn-attachment" onclick="openMediaMenu('msgs')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
             </div>
-            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 </div>
 
 <div id="coconBox">
     <div class="chat-head" style="background:rgba(0,0,0,0.4); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
-        <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px;">←</span>
+        <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
         
         <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
-            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer;">🌹 Notre Cocon Privé <span style="font-size:12px; opacity:0.5;">⏭</span></b>
+            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                🌹 Notre Cocon Privé 
+                <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+            </b>
         </div>
         
         <audio id="coconAudio" src=""></audio>
@@ -419,9 +476,13 @@
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
                 <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
-                <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">📎</button>
+                <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
             </div>
-            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">➔</button>
+            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 </div>
@@ -494,8 +555,13 @@ function nextCoconTrack() {
     const audio = document.getElementById('coconAudio');
     if (audio) {
         audio.src = activePlaylist[currentTrackIndex];
-        audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast("🎵 Musique suivante...");
+        // FORCE LE CHARGEMENT POUR ÉVITER LE BUG DE LECTURE SUR MOBILE
+        audio.load();
+        audio.play().catch(e => {
+            console.log("Lecture audio bloquée", e);
+            showToast("Erreur de lecture ❌");
+        });
+        showToast(`🎵 Piste ${currentTrackIndex + 1}/${activePlaylist.length}`);
     }
 }
 
@@ -977,7 +1043,6 @@ function revealCapsule(docId, path) {
     if(inner) {
         inner.classList.add('capsule-anim');
     }
-    if(sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
     
     setTimeout(() => {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
@@ -1005,22 +1070,26 @@ function getMsgHTML(docId, m, path, target) {
     if (m.unlockAt && !m.opened) {
         const now = Date.now();
         if (m.unlockAt > now) {
-            // Bloqué
+            // Bloqué (Cadenas)
             const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
             return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
                         <div style="text-align:center; opacity:0.8;">
-                            <div style="font-size:24px; margin-bottom:5px;">🔒</div>
+                            <div style="margin-bottom:5px; display:flex; justify-content:center;">
+                                <svg class="svg-icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
                             <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
                             <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
                         </div>
                     </div>`;
         } else {
-            // Prêt à être ouvert
-            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer;" onclick="revealCapsule('${docId}', '${path}')">
+            // Prêt à être ouvert (Cadeau/Étoile)
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')">
                         <div id="capsule_inner_${docId}" style="text-align:center;">
-                            <div style="font-size:28px; animation: pulse 1.5s infinite;">🎁</div>
-                            <div style="font-size:12px; font-weight:bold;">Capsule prête !</div>
-                            <div style="font-size:10px; opacity:0.8;">Appuie pour ouvrir</div>
+                            <div style="display:flex; justify-content:center; margin-bottom:5px;">
+                                <svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                            </div>
+                            <div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div>
+                            <div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir ✨</div>
                         </div>
                     </div>`;
         }
@@ -1214,19 +1283,23 @@ function applyTheme(url) {
     triggerBack(); showToast("Univers mis à jour ! 🌌");
 } 
 
-// --- NOUVEAU MENU MEDIA AVEC CAPSULE ---
 function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">🖼️ Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">📸 Photo</button>
-            <button class="option-btn" style="justify-content:center; margin:0; grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="openCapsuleCreator()">⏳ Capsule Temporelle</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Galerie
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Photo
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0; grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="openCapsuleCreator()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Capsule Temporelle
+            </button>
         </div>
     `, null);
 }
 
-// --- CRÉATION DE LA CAPSULE ---
 function openCapsuleCreator() {
     const html = `
         <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand Alicia pourra-t-elle ouvrir ce message ?</p>
@@ -1262,7 +1335,7 @@ function sendCapsule(text, unlockTimestamp) {
         t: firebase.firestore.FieldValue.serverTimestamp(), 
         type: 'text', 
         unlockAt: unlockTimestamp, 
-        opened: false, // Flag pour gérer l'animation
+        opened: false, 
         seen: false 
     });
     
@@ -1380,7 +1453,6 @@ function openModal(t, b, a) {
     if(a) { 
         document.getElementById('modalActions').style.display = 'flex'; 
         document.getElementById('modalConfirmBtn').onclick = () => {
-            // Support multi-inputs
             const val = document.getElementById('modalInput')?.value || null;
             a(val);
         };
@@ -1468,6 +1540,7 @@ function askCoconCode() {
                 const activePlaylist = (user.playlist && user.playlist.length > 0) ? user.playlist : defaultPlaylist;
                 audio.src = activePlaylist[0];
                 currentTrackIndex = 0;
+                audio.load();
                 audio.play().catch(e => console.log("Lecture audio bloquée", e));
             }
 
