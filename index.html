@@ -103,7 +103,7 @@
         }
 
         /* --------------------------------------------------- */
-        /* ✨ NOUVEAU DESIGN EXCLUSIF : LE COCON PRIVÉ ✨      */
+        /* ✨ DESIGN EXCLUSIF : LE COCON PRIVÉ ✨              */
         /* --------------------------------------------------- */
 
         @keyframes coconPulseBg {
@@ -137,7 +137,6 @@
             20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
             100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
         }
-
         /* --------------------------------------------------- */
         
         .chat-head { 
@@ -398,9 +397,11 @@
 <div id="coconBox">
     <div class="chat-head" style="background:rgba(0,0,0,0.4); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
         <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px;">←</span>
-        <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3);">🌹 Notre Cocon Privé</b></div>
+        <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
+            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer;">🌹 Notre Cocon Privé <span style="font-size:12px; opacity:0.5;">⏭</span></b>
+        </div>
         
-        <audio id="coconAudio" loop src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
+        <audio id="coconAudio" src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3"></audio>
     </div>
     
     <div class="msg-area" id="coArea"></div>
@@ -470,6 +471,24 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1000);
 });
 
+// --- LE JUKEBOX PERSONNEL ---
+const coconPlaylist = [
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", // Piste 1 Douce
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", // Piste 2 Mystérieuse
+    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  // Piste 3 Sombre/Mélancolique
+];
+let currentTrackIndex = 0;
+
+function nextCoconTrack() {
+    currentTrackIndex = (currentTrackIndex + 1) % coconPlaylist.length;
+    const audio = document.getElementById('coconAudio');
+    if (audio) {
+        audio.src = coconPlaylist[currentTrackIndex];
+        audio.play().catch(e => console.log("Lecture audio bloquée", e));
+        showToast("🎵 Musique suivante...");
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
     setTimeout(() => {
@@ -477,6 +496,12 @@ window.addEventListener('DOMContentLoaded', () => {
         if(splash) splash.style.display = 'none';
         lockAppHeight(); 
     }, 800); 
+
+    // Relancer la musique suivante automatiquement quand une piste se termine
+    const audioEl = document.getElementById('coconAudio');
+    if (audioEl) {
+        audioEl.addEventListener('ended', nextCoconTrack);
+    }
 });
 
 let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
@@ -926,11 +951,11 @@ function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
     
-    // --- NOUVEAU : Couper la musique à la sortie ---
+    // --- COUPER LA MUSIQUE EN SORTANT ---
     const audio = document.getElementById('coconAudio');
     if(audio && !audio.paused) {
         audio.pause();
-        audio.currentTime = 0; // Remet le morceau au début
+        audio.currentTime = 0;
     }
     
     document.getElementById('chatBox').style.display = 'none';
@@ -951,6 +976,20 @@ function getMsgHTML(docId, m, path, target) {
     const time = ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
     if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
+
+    // --- INTERCEPTION : CAPSULE TEMPORELLE 🔒 ---
+    if (m.unlockAt && m.unlockAt > Date.now()) {
+        const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+        return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
+                    <div style="text-align:center; opacity:0.8;">
+                        <div style="font-size:24px; margin-bottom:5px;">🔒</div>
+                        <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
+                        <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
+                    </div>
+                    <div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div>
+                </div>`;
+    }
+    // --------------------------------------------
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
@@ -1139,15 +1178,61 @@ function applyTheme(url) {
     triggerBack(); showToast("Univers mis à jour ! 🌌");
 } 
 
+// --- NOUVEAU MENU PIÈCES JOINTES : AJOUT DE LA CAPSULE ---
 function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
             <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">🖼️ Galerie</button>
             <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">📸 Photo</button>
+            <button class="option-btn" style="justify-content:center; margin:0; grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="openCapsuleCreator()">⏳ Capsule Temporelle</button>
         </div>
     `, null);
 }
+
+// --- FONCTION DE CRÉATION DE LA CAPSULE TEMPORELLE ---
+function openCapsuleCreator() {
+    const html = `
+        <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand Alicia pourra-t-elle ouvrir ce message ?</p>
+        <input type="datetime-local" id="capsuleDate" class="modal-input" style="color-scheme: dark; padding: 12px; font-size:14px;">
+        <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none;" placeholder="Ton message secret..."></textarea>
+    `;
+    
+    openModal("Capsule ⏳", html, () => {
+        const dateVal = document.getElementById('capsuleDate').value;
+        const textVal = document.getElementById('capsuleText').value.trim();
+        
+        if(!dateVal || !textVal) return showToast("Données incomplètes");
+        
+        const unlockTimestamp = new Date(dateVal).getTime();
+        if(unlockTimestamp <= Date.now()) return showToast("Choisis une date future !");
+        
+        sendCapsule(textVal, unlockTimestamp);
+        triggerBack(); // Ferme la modale
+    });
+}
+
+// --- FONCTION D'ENVOI DE LA CAPSULE DANS FIREBASE ---
+function sendCapsule(text, unlockTimestamp) {
+    const mode = currentMediaMode; 
+    const cryptoKey = mode === 'msgs' ? activeId : user.code;
+    const encryptedText = E2EE.encrypt(text, cryptoKey);
+    
+    const collPath = mode === 'msgs' ? 'chats' : 'cocon';
+    const docTarget = mode === 'msgs' ? activeId : user.code;
+    
+    fs.collection(collPath).doc(docTarget).collection('messages').add({ 
+        sid: user.id, 
+        txt: encryptedText, 
+        t: firebase.firestore.FieldValue.serverTimestamp(), 
+        type: 'text', 
+        unlockAt: unlockTimestamp, // La date magique
+        seen: false 
+    });
+    
+    showToast("Capsule envoyée dans le futur... ⏳");
+}
+
 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
@@ -1230,7 +1315,7 @@ function uploadFile(input, mode) {
 function openModal(t, b, a) {
     document.getElementById('modalTitle').innerText = t; document.getElementById('modalBody').innerHTML = b;
     document.getElementById('customModal').style.display = 'flex'; pushState('modal');
-    if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value); }
+    if(a) { document.getElementById('modalActions').style.display = 'flex'; document.getElementById('modalConfirmBtn').onclick = () => a(document.getElementById('modalInput')?.value || document.getElementById('capsuleDate')?.value); }
     else document.getElementById('modalActions').style.display = 'none';
 }
 
