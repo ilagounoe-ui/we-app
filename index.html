@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
@@ -43,7 +44,6 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* Animations */
         @keyframes scan {
             0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
             50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); }
@@ -238,6 +238,7 @@
         
         .scroll-hidden::-webkit-scrollbar { display: none; }
 
+        /* SVG ICONS HELPER CLASSES */
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
     </style>
@@ -281,7 +282,7 @@
     <div style="background:rgba(26,26,46,0.6); padding:40px 30px; border-radius:45px; width:100%; max-width:360px; text-align:center; border:1px solid var(--glass-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         <div id="loginUI">
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Bienvenue</h2>
-            <input type="tel" inputmode="tel" enterkeyhint="next" class="modal-input" placeholder="Numéro de téléphone" id="lPhone">
+            <input type="email" enterkeyhint="next" class="modal-input" placeholder="Adresse Email" id="lEmail">
             <input type="password" enterkeyhint="done" class="modal-input" placeholder="Mot de passe" id="lPass" onkeydown="if(event.key === 'Enter') login()">
             <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="login()">ENTRER DANS L'UNIVERS</button>
             <p onclick="toggleAuth(false)" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; transition:0.2s;" onmousedown="this.style.opacity='1'">Nouveau ici ? Créer un compte</p>
@@ -289,7 +290,7 @@
         <div id="regUI" style="display:none;">
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Nouveau Profil</h2>
             <input type="text" enterkeyhint="next" class="modal-input" placeholder="Pseudo / Surnom" id="rPseudo">
-            <input type="tel" inputmode="tel" enterkeyhint="next" class="modal-input" placeholder="Numéro" id="rPhone">
+            <input type="email" enterkeyhint="next" class="modal-input" placeholder="Adresse Email" id="rEmail">
             <input type="password" enterkeyhint="next" class="modal-input" placeholder="Mot de passe" id="rPass">
             <input type="text" enterkeyhint="done" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode" onkeydown="if(event.key === 'Enter') register()">
             <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="register()">CRÉER MON UNIVERS</button>
@@ -340,7 +341,6 @@
                 <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-sec" style="font-size:22px; color:var(--love);">0</b><br><small style="opacity:0.7;">Sec</small></div>
             </div>
         </div>
-
         <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
         </button>
@@ -358,6 +358,7 @@
         </div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
+        <input type="file" id="audioIn" hidden accept="audio/*" onchange="processAudioUpload(this)" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -372,7 +373,7 @@
                         <b>Infos du compte</b>
                     </div>
                     <div style="font-size:14px; color:var(--text-sub);">
-                        <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
+                        <span>Email : <b id="setEmailDisplay" style="color:white;"></b></span><br>
                         <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love); text-shadow: 0 0 10px var(--love-glow);"></b></span><br>
                         <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span><br>
                         <span style="display:inline-block; margin-top:5px; color:var(--check); font-size:11px; display:inline-flex; align-items:center; justify-content:center; gap:4px;">
@@ -404,6 +405,11 @@
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()">
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                 <b data-i18n="set_wall">Personnaliser l'Univers</b>
+            </div>
+            
+            <div class="option-btn" style="background:rgba(255,255,255,0.05); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; border: 1px solid var(--accent); color: var(--accent);" onclick="document.getElementById('audioIn').click()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                <b>Ajouter une musique au Cocon</b>
             </div>
 
             <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">
@@ -466,6 +472,7 @@
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                 <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 Notre Cocon Privé 
+                <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
             </b>
         </div>
         
@@ -546,20 +553,22 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
-// --- LE JUKEBOX PERSONNEL ---
+const defaultPlaylist = [
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", 
+    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  
+];
+let currentTrackIndex = 0;
+
 function nextCoconTrack() {
-    // Si la playlist n'est pas encore chargée par l'utilisateur, on le signale
-    if(!window.sharedPlaylist || window.sharedPlaylist.length === 0) {
-        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12.01' y2='16'></line></svg> Ta playlist est vide. Envoie-moi les liens !</div>");
-        return;
-    }
-    
-    currentTrackIndex = (currentTrackIndex + 1) % window.sharedPlaylist.length;
+    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
+    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = window.sharedPlaylist[currentTrackIndex];
+        audio.src = activePlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
+        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
     }
 }
 
@@ -568,16 +577,12 @@ window.addEventListener('DOMContentLoaded', () => {
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
 });
 
+// --- LE MOTEUR D'INITIALISATION FIREBASE AUTHENTICATION ---
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
-    setTimeout(() => {
-        const splash = document.getElementById('splash');
-        if(splash) splash.style.display = 'none';
-        lockAppHeight(); 
-    }, 800); 
 });
 
-let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
+let user = null; // On supprime le chargement localStorage ici pour prioriser Firebase Auth
 let stateStack = [];
 let activeId = null;
 let currentPeerId = null;
@@ -799,23 +804,46 @@ function showMoodMessage(mood) {
 }
 
 function initApp() {
-    try {
-        if(user) {
-            document.getElementById('authLayer').style.display = 'none';
-            document.getElementById('mainApp').style.display = 'block';
-            setupApp();
-        } else { 
-            document.getElementById('authLayer').style.display = 'flex'; 
+    // Écoute de l'état d'authentification officiel de Firebase
+    firebase.auth().onAuthStateChanged((firebaseUser) => {
+        if (firebaseUser) {
+            // L'utilisateur est connecté, on récupère ses données
+            fs.collection('users').doc(firebaseUser.uid).get().then((doc) => {
+                if(doc.exists) {
+                    user = doc.data();
+                    document.getElementById('authLayer').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    setupApp();
+                    
+                    // Retirer le splash screen une fois chargé
+                    setTimeout(() => {
+                        const splash = document.getElementById('splash');
+                        if(splash) splash.style.display = 'none';
+                        lockAppHeight(); 
+                    }, 800);
+                } else {
+                    // Compte non trouvé dans Firestore malgré l'Auth
+                    firebase.auth().signOut();
+                }
+            }).catch(e => {
+                showToast("Erreur de récupération du profil");
+                firebase.auth().signOut();
+            });
+        } else {
+            // Pas d'utilisateur connecté
+            document.getElementById('authLayer').style.display = 'flex';
+            setTimeout(() => {
+                const splash = document.getElementById('splash');
+                if(splash) splash.style.display = 'none';
+            }, 800);
         }
-    } catch(e) {
-        console.error(e);
-        showToast("Erreur de chargement");
-    }
+    });
 }
 
 function setupApp() {
     document.getElementById('uNameDisp').innerText = user.pseudo;
-    document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
+    // On affiche l'email au lieu du numéro !
+    document.getElementById('setEmailDisplay').innerText = user.email || "Email non renseigné";
     document.getElementById('setCodeDisplay').innerText = user.code;
     document.getElementById('setIdDisplay').innerText = user.id;
 
@@ -855,6 +883,13 @@ function setupApp() {
         }
     });
 
+    fs.collection('cocon').doc(user.code).onSnapshot(doc => {
+        if(doc.exists && doc.data().playlist && doc.data().playlist.length > 0) {
+            window.sharedPlaylist = doc.data().playlist;
+        } else {
+            window.sharedPlaylist = defaultPlaylist;
+        }
+    });
 }
 
 function choisirHumeurCocon() {
@@ -870,7 +905,6 @@ function choisirHumeurCocon() {
 function setHumeur(label) {
     fs.collection('users').doc(user.id).update({ humeur: label }).then(() => {
         user.humeur = label;
-        localStorage.setItem('nu_v33_user', JSON.stringify(user));
         triggerBack();
         if(label) showToast("Humeur mise à jour !");
         else showToast("Humeur retirée.");
@@ -901,7 +935,7 @@ function filterLangs() {
 
 function setAppLang(code) {
     fs.collection('users').doc(user.id).update({lang: code}).then(() => {
-        user.lang = code; localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        user.lang = code; 
         document.getElementById('currentLangDisp').innerText = code.toUpperCase();
         applyTranslations(code); triggerBack(); showToast("Langue modifiée !");
     });
@@ -923,7 +957,7 @@ function openDateEdit() {
         if(j !== "00" && m !== "00" && a.length === 4) {
             const isoDate = `${a}-${m}-${j}T00:00:00`;
             fs.collection('users').doc(user.id).update({startDate: isoDate}).then(() => { 
-                user.startDate = isoDate; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
+                user.startDate = isoDate; location.reload(); 
             });
         } else showToast("Date incomplète !");
     });
@@ -940,12 +974,12 @@ function updatePresence() {
 }
 
 function unlockSecureSettings() {
-    openModal("Accès Sécurisé", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="Ton numéro...">`, (val) => {
-        if(val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
+    openModal("Accès Sécurisé", `<input type="email" enterkeyhint="done" id="modalInput" class="modal-input" placeholder="Ton adresse email...">`, (val) => {
+        if(val.toLowerCase() === user.email.toLowerCase()) {
             document.getElementById('secureBlurOverlay').style.display = 'none';
             document.getElementById('secureContent').classList.remove('secure-blur');
             triggerBack(); 
-        } else showToast("Numéro incorrect !");
+        } else showToast("Email incorrect !");
     });
 }
 
@@ -1009,14 +1043,22 @@ function renderContacts(arr) {
 }
 
 function addFriend() {
-    openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
-        const id = "u_" + tel.replace(/\D/g,'');
-        if(id === user.id) return showToast("C'est vous !");
-        fs.collection('users').doc(id).get().then(doc => {
-            if(doc.exists) { 
-                fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 });
-                triggerBack(); showToast("Contact ajouté"); 
-            } else showToast("Inconnu");
+    openModal("Ajouter", `<input type="email" id="modalInput" class="modal-input" placeholder="Email du contact">`, (email) => {
+        if(!email) return;
+        
+        // Recherche l'utilisateur par son email
+        fs.collection('users').where('email', '==', email).get().then(querySnapshot => {
+            if(querySnapshot.empty) {
+                showToast("Inconnu");
+            } else {
+                querySnapshot.forEach(doc => {
+                    const id = doc.id;
+                    if(id === user.id) return showToast("C'est vous !");
+                    
+                    fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 });
+                    triggerBack(); showToast("Contact ajouté");
+                });
+            }
         });
     });
 }
@@ -1368,6 +1410,7 @@ function processMediaUpload(e) {
     triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
     
+    // VÉRIFICATION DE LA TAILLE DE L'IMAGE/VIDÉO (10 Mo)
     if(file.size > 10 * 1024 * 1024) {
         showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>");
         return;
@@ -1433,6 +1476,7 @@ function processAudioUpload(input) {
     const file = input.files[0]; 
     if(!file) return;
     
+    // Vérification de la limite de 10 Mo
     if(file.size > 10 * 1024 * 1024) { 
         showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>"); 
         return; 
@@ -1452,7 +1496,14 @@ function processAudioUpload(input) {
         (err) => { showToast("Erreur d'upload"); },
         () => {
             uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-                showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée !</div>");
+                // Utilise la playlist partagée actuelle
+                let currentP = window.sharedPlaylist === defaultPlaylist ? [] : [...window.sharedPlaylist];
+                currentP.push(url);
+                
+                // Sauvegarde dans la collection Cocon partagée
+                fs.collection('cocon').doc(user.code).set({ playlist: currentP }, { merge: true }).then(() => {
+                    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée au Cocon ! ✅</div>");
+                });
             });
         }
     );
@@ -1479,7 +1530,7 @@ function uploadFile(input, mode) {
                 if(mode === 'pfp') { 
                     fs.collection('users').doc(user.id).update({ pfp: url }).then(() => {
                         user.pfp = url; 
-                        localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                        // Firebase Auth mettra à jour en arrière-plan, mais on peut rafraîchir l'UI
                         document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
                         showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'></path><polyline points='22 4 12 14.01 9 11.01'></polyline></svg> Profil mis à jour !</div>");
                     });
@@ -1506,25 +1557,70 @@ function openModal(t, b, a) {
     }
 }
 
+// --- CONNEXION OFFICIELLE FIREBASE ---
 function login() {
-    const ph = "u_" + document.getElementById('lPhone').value.replace(/\D/g,''), ps = document.getElementById('lPass').value;
-    fs.collection('users').doc(ph).get().then(doc => {
-        if(doc.exists && doc.data().pass === ps) { user = doc.data(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }
-        else showToast("Erreur identifiants");
+    const email = document.getElementById('lEmail').value.trim();
+    const ps = document.getElementById('lPass').value;
+    
+    if(!email || !ps) return showToast("Informations incomplètes");
+    
+    showProgressToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:spin 1s linear infinite;' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='6'></line><line x1='12' y1='18' x2='12' y2='22'></line><line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line><line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line><line x1='2' y1='12' x2='6' y2='12'></line><line x1='18' y1='12' x2='22' y2='12'></line><line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line><line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line></svg> Connexion...</div>");
+    
+    firebase.auth().signInWithEmailAndPassword(email, ps)
+    .then((userCredential) => {
+        // La redirection sera gérée par onAuthStateChanged dans initApp()
+        location.reload(); 
+    })
+    .catch((error) => {
+        showToast("Erreur identifiants ❌");
     });
 }
 
 function register() {
-    const ph = "u_" + document.getElementById('rPhone').value.replace(/\D/g,''), pseudo = document.getElementById('rPseudo').value;
+    const email = document.getElementById('rEmail').value.trim();
+    const pseudo = document.getElementById('rPseudo').value.trim();
+    const ps = document.getElementById('rPass').value;
     const codeSaisi = document.getElementById('rCode').value || '0000'; 
-    if(!pseudo || ph.length < 5) return showToast("Incomplet");
-    const nu = { id: ph, pseudo: pseudo, pass: document.getElementById('rPass').value, pfp: '', code: codeSaisi, codeInscription: codeSaisi, startDate: new Date().toISOString(), wall: '', lang: 'fr' };
-    fs.collection('users').doc(ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
+    
+    if(!pseudo || !email || !ps) return showToast("Informations incomplètes");
+    
+    showProgressToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:spin 1s linear infinite;' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='6'></line><line x1='12' y1='18' x2='12' y2='22'></line><line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line><line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line><line x1='2' y1='12' x2='6' y2='12'></line><line x1='18' y1='12' x2='22' y2='12'></line><line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line><line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line></svg> Création de ton Univers...</div>");
+
+    firebase.auth().createUserWithEmailAndPassword(email, ps)
+    .then((userCredential) => {
+        const uid = userCredential.user.uid;
+        const nu = { 
+            id: uid, 
+            email: email, // On sauvegarde l'email
+            pseudo: pseudo, 
+            pfp: '', 
+            code: codeSaisi, 
+            codeInscription: codeSaisi, 
+            startDate: new Date().toISOString(), 
+            wall: '', 
+            lang: 'fr',
+            playlist: []
+        };
+        
+        fs.collection('users').doc(uid).set(nu).then(() => { 
+            location.reload(); 
+        });
+    })
+    .catch((error) => {
+        showToast("Erreur d'inscription ❌");
+    });
 }
 
-function confirmLogout() { openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
+function confirmLogout() { 
+    openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
+        firebase.auth().signOut().then(() => {
+            location.reload(); 
+        });
+    }); 
+}
+
 function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
+function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; location.reload(); }); }); }
 
 function sendGlobalNote() {
     openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
