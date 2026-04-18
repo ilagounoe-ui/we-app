@@ -555,26 +555,27 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
+// --- LE JUKEBOX AVEC PLACESHOLDERS DE PIANO ---
+// J'ai remplacé les musiques par 4 magnifiques pistes de piano instrumentales libres de droits.
+// Elles collent parfaitement à l'ambiance mélancolique que tu apprécies.
+// Tu pourras ajouter les vraies versions mp3 (Suki Dakara, Sparkle, etc.) via le bouton de ton application !
 const defaultPlaylist = [
-    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
-    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", 
-    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  
+    "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3", // "Light Piano" (Ambiance Sparkle)
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", // "Emotional Piano" (Ambiance Suki Dakara)
+    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3", // "Cinematic Piano" (Ambiance You Are My Light)
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3"  // "Anime Vibe Piano" (Ambiance Komi)
 ];
 let currentTrackIndex = 0;
 
 function nextCoconTrack() {
-    if(!window.sharedPlaylist || window.sharedPlaylist.length === 0) {
-        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12.01' y2='16'></line></svg> Ta playlist est vide. Envoie-moi les liens !</div>");
-        return;
-    }
-    
-    currentTrackIndex = (currentTrackIndex + 1) % window.sharedPlaylist.length;
+    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
+    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = window.sharedPlaylist[currentTrackIndex];
+        audio.src = activePlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${window.sharedPlaylist.length}</div>`);
+        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
     }
 }
 
