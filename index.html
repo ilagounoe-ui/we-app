@@ -44,7 +44,6 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* Animations */
         @keyframes scan {
             0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
             50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); }
@@ -478,6 +477,7 @@
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                 <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 Notre Cocon Privé 
+                <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
             </b>
         </div>
         
@@ -583,6 +583,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
 });
 
+// --- INIT APP GÉRANT LE REDIRECT GOOGLE ---
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
@@ -742,17 +743,19 @@ function showProgressToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
     t.classList.add('show');
+    persistentToast = true;
     if(toastTimeout) { clearTimeout(toastTimeout); toastTimeout = null; }
 }
 
 function showToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
-    t.classList.add('show');
+    if(!t.classList.contains('show')) t.classList.add('show');
     
+    persistentToast = false;
     if(toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
-        t.classList.remove('show');
+        if(!persistentToast) t.classList.remove('show');
     }, 3500);
 }
 
@@ -811,22 +814,26 @@ function initApp() {
         if (firebaseUser) {
             fs.collection('users').doc(firebaseUser.uid).get().then((doc) => {
                 if(doc.exists) {
-                    user = doc.data();
-                    document.getElementById('authLayer').style.display = 'none';
-                    document.getElementById('mainApp').style.display = 'block';
-                    setupApp();
-                    
-                    setTimeout(() => {
-                        const splash = document.getElementById('splash');
-                        if(splash) splash.style.display = 'none';
-                        lockAppHeight(); 
-                    }, 800);
+                    launchApp(doc.data());
                 } else {
-                    firebase.auth().signOut();
+                    // Création propre si le profil n'existait pas (connexion Google neuve)
+                    const newUser = {
+                        id: firebaseUser.uid, 
+                        email: firebaseUser.email || '', 
+                        pseudo: firebaseUser.displayName || 'Moi',
+                        pfp: firebaseUser.photoURL || '', 
+                        code: '0000', 
+                        startDate: new Date().toISOString(),
+                        wall: '', 
+                        lang: 'fr', 
+                        playlist: []
+                    };
+                    fs.collection('users').doc(firebaseUser.uid).set(newUser).then(() => {
+                        launchApp(newUser);
+                    });
                 }
             }).catch(e => {
                 showToast("Erreur de récupération du profil");
-                firebase.auth().signOut();
             });
         } else {
             document.getElementById('authLayer').style.display = 'flex';
@@ -836,6 +843,19 @@ function initApp() {
             }, 800);
         }
     });
+}
+
+function launchApp(userData) {
+    user = userData;
+    document.getElementById('authLayer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    setupApp();
+    
+    setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if(splash) splash.style.display = 'none';
+        lockAppHeight(); 
+    }, 800);
 }
 
 function setupApp() {
@@ -900,7 +920,7 @@ function choisirHumeurCocon() {
 }
 
 function setHumeur(label) {
-    fs.collection('users').doc(user.id).update({ humeur: label }).then(() => {
+    fs.collection('users').doc(user.id).set({ humeur: label }, { merge: true }).then(() => {
         user.humeur = label;
         triggerBack();
         if(label) showToast("Humeur mise à jour !");
@@ -931,7 +951,7 @@ function filterLangs() {
 }
 
 function setAppLang(code) {
-    fs.collection('users').doc(user.id).update({lang: code}).then(() => {
+    fs.collection('users').doc(user.id).set({lang: code}, { merge: true }).then(() => {
         user.lang = code; 
         document.getElementById('currentLangDisp').innerText = code.toUpperCase();
         applyTranslations(code); triggerBack(); showToast("Langue modifiée !");
@@ -953,7 +973,7 @@ function openDateEdit() {
         const a = document.getElementById('dYear').value;
         if(j !== "00" && m !== "00" && a.length === 4) {
             const isoDate = `${a}-${m}-${j}T00:00:00`;
-            fs.collection('users').doc(user.id).update({startDate: isoDate}).then(() => { 
+            fs.collection('users').doc(user.id).set({startDate: isoDate}, { merge: true }).then(() => { 
                 user.startDate = isoDate; location.reload(); 
             });
         } else showToast("Date incomplète !");
@@ -972,7 +992,7 @@ function updatePresence() {
 
 function unlockSecureSettings() {
     openModal("Accès Sécurisé", `<input type="email" enterkeyhint="done" id="modalInput" class="modal-input" placeholder="Ton adresse email...">`, (val) => {
-        if(val.toLowerCase() === user.email.toLowerCase()) {
+        if(val && user.email && val.toLowerCase() === user.email.toLowerCase()) {
             document.getElementById('secureBlurOverlay').style.display = 'none';
             document.getElementById('secureContent').classList.remove('secure-blur');
             triggerBack(); 
@@ -1051,7 +1071,7 @@ function addFriend() {
                     const id = doc.id;
                     if(id === user.id) return showToast("C'est vous !");
                     
-                    fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 });
+                    fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                     triggerBack(); showToast("Contact ajouté");
                 });
             }
@@ -1064,7 +1084,7 @@ function openChat(id, name, pfp) {
     document.getElementById('cName').innerText = name;
     document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
     
-    fs.collection('users').doc(user.id).collection('contacts').doc(id).update({ unread: 0 });
+    fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ unread: 0 }, { merge: true });
 
     document.getElementById('mArea').innerHTML = "";
     document.getElementById('chatBox').style.display = 'flex';
@@ -1333,7 +1353,7 @@ function openWallMenu() {
 }
 
 function applyTheme(url) {
-    fs.collection('users').doc(user.id).set({wall: url}, {merge: true});
+    fs.collection('users').doc(user.id).set({wall: url}, { merge: true });
     user.wall = url; localStorage.setItem('nu_v33_user', JSON.stringify(user));
     document.body.style.backgroundImage = `url(${url})`;
     triggerBack(); showToast("Univers mis à jour !");
@@ -1548,7 +1568,6 @@ function openModal(t, b, a) {
     }
 }
 
-// --- CONNEXION FIREBASE OFFICIELLE ---
 function login() {
     const email = document.getElementById('lEmail').value.trim();
     const ps = document.getElementById('lPass').value;
@@ -1559,7 +1578,7 @@ function login() {
     
     firebase.auth().signInWithEmailAndPassword(email, ps)
     .then((userCredential) => {
-        location.reload(); 
+        // Redirection gérée par onAuthStateChanged
     })
     .catch((error) => {
         showToast("Erreur identifiants ❌");
@@ -1605,37 +1624,13 @@ function loginWithGoogle() {
     const provider = new firebase.auth.GoogleAuthProvider();
     showProgressToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:spin 1s linear infinite;' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='6'></line><line x1='12' y1='18' x2='12' y2='22'></line><line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line><line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line><line x1='2' y1='12' x2='6' y2='12'></line><line x1='18' y1='12' x2='22' y2='12'></line><line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line><line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line></svg> Google Auth...</div>");
     
-    firebase.auth().signInWithPopup(provider).then((result) => {
-        const u = result.user;
-        fs.collection('users').doc(u.uid).get().then(doc => {
-            if(!doc.exists) {
-                const newUser = {
-                    id: u.uid,
-                    email: u.email,
-                    pseudo: u.displayName || 'Moi',
-                    pfp: u.photoURL || '',
-                    code: '0000', 
-                    startDate: new Date().toISOString(),
-                    wall: '',
-                    lang: 'fr',
-                    playlist: []
-                };
-                fs.collection('users').doc(u.uid).set(newUser).then(() => {
-                    location.reload();
-                });
-            } else {
-                location.reload();
-            }
-        });
-    }).catch(err => {
-        showToast("Erreur Google ❌");
-        console.error(err);
-    });
+    // Le redirect est nécessaire pour les WebViews
+    firebase.auth().signInWithRedirect(provider);
 }
 
 function confirmLogout() { openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { firebase.auth().signOut().then(()=>{ location.reload(); }); }); }
 function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).update({[f]:v}).then(() => { user[f]=v; location.reload(); }); }); }
+function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => { user[f]=v; location.reload(); }); }); }
 
 function sendGlobalNote() {
     openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
@@ -1674,7 +1669,7 @@ function closeCoconNote() {
     el.classList.add('cocon-closing'); 
     setTimeout(() => { el.style.display = 'none'; el.classList.remove('cocon-closing'); }, 500); 
 
-    if(user && user.code) fs.collection('globalNotes').doc(user.code).update({ [`readBy.${user.id}`]: true }); 
+    if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ [`readBy.${user.id}`]: true }, { merge: true }); 
 }
 
 function askCoconCode() {
