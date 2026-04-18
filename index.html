@@ -474,7 +474,6 @@
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                 <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 Notre Cocon Privé 
-                <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
             </b>
         </div>
         
@@ -564,14 +563,18 @@ const defaultPlaylist = [
 let currentTrackIndex = 0;
 
 function nextCoconTrack() {
-    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
-    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
+    if(!window.sharedPlaylist || window.sharedPlaylist.length === 0) {
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12.01' y2='16'></line></svg> Ta playlist est vide. Envoie-moi les liens !</div>");
+        return;
+    }
+    
+    currentTrackIndex = (currentTrackIndex + 1) % window.sharedPlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = activePlaylist[currentTrackIndex];
+        audio.src = window.sharedPlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
+        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${window.sharedPlaylist.length}</div>`);
     }
 }
 
@@ -1535,7 +1538,6 @@ function openModal(t, b, a) {
     }
 }
 
-// --- CONNEXION CLASSIQUE AVEC NUMERO ---
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
