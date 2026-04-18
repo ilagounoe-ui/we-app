@@ -57,7 +57,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* ✨ L'ANIMATION MAGIQUE DE LA CAPSULE ✨ */
         @keyframes capsuleOpenAnim {
             0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
             20% { transform: scale(1.2) rotate(-10deg); }
@@ -79,7 +78,6 @@
             position: relative; overflow: hidden;
         }
 
-        /* Layout & Glassmorphism */
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
@@ -209,9 +207,10 @@
         
         .btn-attachment {
             background: transparent; border: none; color: var(--text-sub);
-            font-size: 20px; padding: 10px; cursor: pointer;
-            flex-shrink: 0; 
+            padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: color 0.2s;
         }
+        .btn-attachment:hover { color: white; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
@@ -228,7 +227,7 @@
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; }
         
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
@@ -239,7 +238,6 @@
         
         .scroll-hidden::-webkit-scrollbar { display: none; }
 
-        /* SVG ICONS HELPER CLASSES */
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
     </style>
@@ -330,14 +328,19 @@
     </div>
 
     <div id="vCocon" class="view">
-        <div style="background:var(--gradient); padding:35px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 15px 40px rgba(106,17,203,0.4); border: 1px solid rgba(255,255,255,0.2);">
-            <div style="font-size:50px; margin-bottom:10px; text-shadow: 0 4px 15px rgba(0,0,0,0.3);">♾️</div>
-            <h3 style="margin:0; font-family:'Pacifico'; text-shadow: 0 2px 5px rgba(0,0,0,0.3);">Notre Éternité</h3>
-            <div style="display:flex; justify-content:center; gap:15px; margin-top:20px;">
-                <div style="background:rgba(0,0,0,0.2); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px; border-radius:22px; min-width:85px; border:1px solid rgba(255,255,255,0.1);"><b id="d-day" style="font-size:26px">0</b><br><small>Jours</small></div>
-                <div style="background:rgba(0,0,0,0.2); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px; border-radius:22px; min-width:85px; border:1px solid rgba(255,255,255,0.1);"><b id="d-hour" style="font-size:26px">0</b><br><small>Heures</small></div>
+        <div style="background: linear-gradient(135deg, #0b0914 0%, #1a0b2e 100%); padding:35px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 15px 40px rgba(208, 168, 255, 0.15); border: 1px solid rgba(208, 168, 255, 0.2);">
+            <div style="display:flex; justify-content:center; margin-bottom:15px;">
+                <svg class="svg-icon" style="width:45px; height:45px; stroke:var(--accent); fill:none; animation: pulse 2s infinite;" viewBox="0 0 24 24"><path d="M10 8c-3-3-8-1-8 4s5 7 10 7 10-2 10-7-5-7-8-4-4 4-4 4"></path></svg>
+            </div>
+            <h3 style="margin:0; font-family:'Pacifico'; color: white; text-shadow: 0 2px 10px rgba(208, 168, 255, 0.4);">Notre Éternité</h3>
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:25px; flex-wrap: wrap;">
+                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-day" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Jours</small></div>
+                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-hour" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Heures</small></div>
+                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-min" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Min</small></div>
+                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-sec" style="font-size:22px; color:var(--love);">0</b><br><small style="opacity:0.7;">Sec</small></div>
             </div>
         </div>
+
         <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
         </button>
@@ -355,7 +358,6 @@
         </div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
-        <input type="file" id="audioIn" hidden accept="audio/*" onchange="processAudioUpload(this)" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -402,11 +404,6 @@
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()">
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                 <b data-i18n="set_wall">Personnaliser l'Univers</b>
-            </div>
-            
-            <div class="option-btn" style="background:rgba(255,255,255,0.05); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; border: 1px solid var(--accent); color: var(--accent);" onclick="document.getElementById('audioIn').click()">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-                <b>Ajouter une musique au Cocon</b>
             </div>
 
             <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">
@@ -469,7 +466,6 @@
             <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                 <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                 Notre Cocon Privé 
-                <svg class="svg-icon" style="width:14px; height:14px; opacity:0.6;" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
             </b>
         </div>
         
@@ -550,22 +546,20 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
-const defaultPlaylist = [
-    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
-    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3", 
-    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3"  
-];
-let currentTrackIndex = 0;
-
+// --- LE JUKEBOX PERSONNEL ---
 function nextCoconTrack() {
-    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
-    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
+    // Si la playlist n'est pas encore chargée par l'utilisateur, on le signale
+    if(!window.sharedPlaylist || window.sharedPlaylist.length === 0) {
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12.01' y2='16'></line></svg> Ta playlist est vide. Envoie-moi les liens !</div>");
+        return;
+    }
+    
+    currentTrackIndex = (currentTrackIndex + 1) % window.sharedPlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = activePlaylist[currentTrackIndex];
+        audio.src = window.sharedPlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
     }
 }
 
@@ -734,11 +728,24 @@ const E2EE = {
     }
 };
 
-function showToast(msg) {
+let persistentToast = false;
+
+function showProgressToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
     t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3500);
+    persistentToast = true;
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toastAlert');
+    t.innerHTML = msg; 
+    if(!t.classList.contains('show')) t.classList.add('show');
+    
+    persistentToast = false;
+    setTimeout(() => {
+        if(!persistentToast) t.classList.remove('show');
+    }, 3500);
 }
 
 function compressImage(file, maxWidth, callback) {
@@ -848,14 +855,6 @@ function setupApp() {
         }
     });
 
-    // --- SYNCHRONISATION DE LA PLAYLIST COCON PARTAGÉE ---
-    fs.collection('cocon').doc(user.code).onSnapshot(doc => {
-        if(doc.exists && doc.data().playlist && doc.data().playlist.length > 0) {
-            window.sharedPlaylist = doc.data().playlist;
-        } else {
-            window.sharedPlaylist = defaultPlaylist;
-        }
-    });
 }
 
 function choisirHumeurCocon() {
@@ -1111,6 +1110,7 @@ function getMsgHTML(docId, m, path, target) {
     
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="viewPhoto('${m.txt}')">`;
+    if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></video>`;
     if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
@@ -1363,13 +1363,13 @@ function sendCapsule(text, unlockTimestamp) {
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
 
+// --- FONCTION MEDIA AVEC PROGRESSION ET LIMITE 10MO ---
 function processMediaUpload(e) {
     triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
     
-    // VÉRIFICATION DE LA TAILLE DE L'IMAGE/VIDÉO (10 Mo)
     if(file.size > 10 * 1024 * 1024) {
-        showToast("❌ Fichier trop lourd (Max 10 Mo)");
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>");
         return;
     }
 
@@ -1399,13 +1399,12 @@ function processMediaUpload(e) {
         const storageRef = firebase.storage().ref('media/' + fileName);
         const uploadTask = storageRef.put(data);
 
-        // SUIVI DE LA PROGRESSION
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-                showToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='15'></line><polyline points='19 8 12 15 5 8'></polyline><line x1='12' y1='15' x2='12' y2='22'></line></svg> Envoi : ${progress}%</div>`);
+                showProgressToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:pulse 2s infinite;' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='15'></line><polyline points='19 8 12 15 5 8'></polyline><line x1='12' y1='15' x2='12' y2='22'></line></svg> Envoi : ${progress}%</div>`);
             },
-            (error) => { console.error(error); showToast("❌ Erreur d'envoi"); },
+            (error) => { console.error(error); showToast("Erreur d'envoi"); },
             () => {
                 uploadTask.snapshot.ref.getDownloadURL().then((url) => {
                     const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
@@ -1415,7 +1414,7 @@ function processMediaUpload(e) {
                         sid: user.id, txt: url, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
                     });
                     
-                    showToast("Fichier envoyé ! ✅");
+                    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'></path><polyline points='22 4 12 14.01 9 11.01'></polyline></svg> Fichier envoyé !</div>");
                     
                     if(currentMediaMode === 'msgs') {
                         const batch = fs.batch();
@@ -1434,9 +1433,8 @@ function processAudioUpload(input) {
     const file = input.files[0]; 
     if(!file) return;
     
-    // Vérification de la limite de 10 Mo
     if(file.size > 10 * 1024 * 1024) { 
-        showToast("Fichier trop lourd (Max 10 Mo)"); 
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>"); 
         return; 
     }
     
@@ -1446,23 +1444,15 @@ function processAudioUpload(input) {
     const storageRef = firebase.storage().ref('musics/' + fileName);
     const uploadTask = storageRef.put(file);
     
-    // Écoute de l'avancement
     uploadTask.on('state_changed', 
         (snapshot) => {
             const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            showToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Upload musique : ${progress}%</div>`);
+            showProgressToast(`<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:pulse 2s infinite;' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Upload musique : ${progress}%</div>`);
         },
-        (err) => { showToast("Erreur d'upload ❌"); },
+        (err) => { showToast("Erreur d'upload"); },
         () => {
             uploadTask.snapshot.ref.getDownloadURL().then((url) => {
-                // Utilise la playlist partagée actuelle
-                let currentP = window.sharedPlaylist === defaultPlaylist ? [] : [...window.sharedPlaylist];
-                currentP.push(url);
-                
-                // Sauvegarde dans la collection Cocon partagée
-                fs.collection('cocon').doc(user.code).set({ playlist: currentP }, { merge: true }).then(() => {
-                    showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée au Cocon ! ✅</div>");
-                });
+                showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg> Musique ajoutée !</div>");
             });
         }
     );
@@ -1472,11 +1462,11 @@ function uploadFile(input, mode) {
     const file = input.files[0]; if(!file) return;
     
     if(file.size > 10 * 1024 * 1024) {
-        showToast("❌ Image trop lourde (Max 10 Mo)");
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>");
         return;
     }
     
-    showToast("Mise à jour en cours...");
+    showProgressToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='animation:spin 1s linear infinite;' viewBox='0 0 24 24'><line x1='12' y1='2' x2='12' y2='6'></line><line x1='12' y1='18' x2='12' y2='22'></line><line x1='4.93' y1='4.93' x2='7.76' y2='7.76'></line><line x1='16.24' y1='16.24' x2='19.07' y2='19.07'></line><line x1='2' y1='12' x2='6' y2='12'></line><line x1='18' y1='12' x2='22' y2='12'></line><line x1='4.93' y1='19.07' x2='7.76' y2='16.24'></line><line x1='16.24' y1='7.76' x2='19.07' y2='4.93'></line></svg> Mise à jour en cours...</div>");
     
     compressImage(file, 800, (data) => {
         const fileName = Date.now() + (mode === 'pfp' ? '_profile.jpg' : '_wall.jpg');
@@ -1491,7 +1481,7 @@ function uploadFile(input, mode) {
                         user.pfp = url; 
                         localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
                         document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
-                        showToast("Profil mis à jour ! ✅");
+                        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'></path><polyline points='22 4 12 14.01 9 11.01'></polyline></svg> Profil mis à jour !</div>");
                     });
                 } else if(mode === 'wall') { 
                     applyTheme(url); 
@@ -1599,7 +1589,7 @@ function askCoconCode() {
                 audio.play().catch(e => console.log("Lecture audio bloquée", e));
             }
 
-            showToast("Bienvenue dans notre Cocon");
+            showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' style='stroke:var(--love);fill:var(--love);' viewBox='0 0 24 24'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'></path></svg> Bienvenue dans notre Cocon</div>");
         } else {
             showToast("Code incorrect !");
         }
@@ -1617,17 +1607,24 @@ function updateTimeCounter() {
         if (diff > 0) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
             const elDay = document.getElementById('d-day');
             const elHour = document.getElementById('d-hour');
+            const elMin = document.getElementById('d-min');
+            const elSec = document.getElementById('d-sec');
             
             if(elDay) elDay.innerText = days;
             if(elHour) elHour.innerText = hours;
+            if(elMin) elMin.innerText = minutes;
+            if(elSec) elSec.innerText = seconds;
         }
     };
 
     updateDate(); 
-    timeCounterInterval = setInterval(updateDate, 60000); 
+    if(timeCounterInterval) clearInterval(timeCounterInterval);
+    timeCounterInterval = setInterval(updateDate, 1000); 
 }
 </script>
 
