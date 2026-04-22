@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Univers">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <title>Notre Univers v56 - Édition PWA Absolue</title>
+    <title>Notre Univers v56 - Édition Ultime</title>
     
     <link rel="manifest" href="./manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
@@ -46,17 +46,11 @@
         }
         
         html, body { 
-            margin: 0; 
-            padding: 0; 
-            position: absolute; 
-            top: 0; left: 0; right: 0; bottom: 0;
+            margin: 0; padding: 0; 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             overflow: hidden; 
-            font-family: 'Poppins', sans-serif; 
-            background: var(--bg); 
-            color: white; 
-            background-size: cover; 
-            background-position: center; 
-            transition: background 0.5s ease;
+            font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
+            background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
         /* Animations */
@@ -66,29 +60,23 @@
             100% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
         }
         .unlocking { animation: scan 0.6s infinite !important; }
-        
+
         @keyframes pulse { 
             0% { transform: scale(1); } 
             50% { transform: scale(1.15); background: var(--love); } 
             100% { transform: scale(1); } 
         }
-        
-        /* Style spécial quand on enregistre un vocal */
-        .recording { 
-            animation: pulse 0.8s infinite; 
-            background: var(--love) !important; 
-            color: white !important; 
-        }
-        
+        .recording { animation: pulse 0.8s infinite; background: var(--love) !important; color: white !important; }
+
         @keyframes alertCocon { 
             0% { background: var(--card); } 
             50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 
             100% { background: var(--card); } 
         }
         .cocon-notify { animation: alertCocon 1s infinite !important; border: 1px solid white !important; }
-        
+
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
         @keyframes springMsg { 
             0% { opacity: 0; transform: translateY(20px) scale(0.95); } 
             100% { opacity: 1; transform: translateY(0) scale(1); } 
@@ -120,8 +108,8 @@
             margin: 0 0 20px 0;
             text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2);
         }
-        
-        /* Design unifié pour le compteur (plus de carré rose) */
+
+        /* NOUVEAU DESIGN COMPTEUR UNIFIÉ (SANS ROSE) */
         .time-box {
             background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
             backdrop-filter: blur(12px);
@@ -135,22 +123,8 @@
             align-items: center;
             justify-content: center;
         }
-        
-        .time-val { 
-            font-size: 24px; 
-            font-weight: 600; 
-            color: white; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.3); 
-            line-height: 1.1; 
-        }
-        
-        .time-label { 
-            font-size: 9px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            color: var(--text-sub); 
-            margin-top: 4px; 
-        }
+        .time-val { font-size: 24px; font-weight: 600; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); line-height: 1.1; }
+        .time-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); margin-top: 4px; }
 
         .notif-cocon-turquoise {
             top: 20px; left: 5%; width: 90%; 
@@ -163,18 +137,10 @@
             position: relative; overflow: hidden;
         }
 
-        #splash { 
-            position: fixed; inset: 0; background: var(--bg); z-index: 100000; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; 
-        }
-        
-        .loader { 
-            width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; 
-        }
+        #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
+        .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        .main-header { 
-            padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); will-change: transform; 
-        }
+        .main-header { padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); will-change: transform; }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
         .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; display: flex; align-items: center; justify-content: center; gap: 8px;}
@@ -416,7 +382,7 @@
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> Le Cocon
             </div>
             <div class="tab" onclick="switchV('vSet', this)" data-i18n="tab_set">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Réglages
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Réglages
             </div>
         </div>
     </header>
@@ -475,8 +441,8 @@
         <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
             <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="uploadFile(this, 'pfp')" onclick="this.value=null">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="uploadFile(this, 'wall')" onclick="this.value=null">
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')" onclick="this.value=null">
+        <input type="file" id="wallInput" hidden accept="image/*" onchange="processMediaUpload(event, 'wall')" onclick="this.value=null">
         
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
@@ -568,7 +534,6 @@
                 <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
-
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                 </button>
@@ -606,7 +571,6 @@
                 <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
-
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                 </button>
@@ -618,9 +582,8 @@
     </div>
 </div>
 
-<input type="file" id="imgIn" hidden accept="image/*,video/*" onclick="this.value=null">
-<input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
-<input type="file" id="audioChatIn" hidden accept="audio/*" onclick="this.value=null">
+<input type="file" id="imgIn" hidden accept="image/*,video/*" onchange="processMediaUpload(event, currentMediaMode)" onclick="this.value=null">
+<input type="file" id="camIn" hidden accept="image/*" capture="environment" onchange="processMediaUpload(event, currentMediaMode)" onclick="this.value=null">
 
 <script>
 window.sharedPlaylist = [];
@@ -693,7 +656,7 @@ function nextCoconTrack() {
         audio.src = defaultPlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast("Musique : Piste " + (currentTrackIndex + 1) + "/4");
+        showToast("Musique : Piste " + (currentTrackIndex + 1));
     }
 }
 
@@ -710,8 +673,6 @@ let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
 let stateStack = [];
 let activeId = null;
 let currentPeerId = null;
-let activeChatPath = null;
-let audioUnlocked = false;
 let currentMediaMode = null;
 let typingTimeout = null;
 let chatClearedAt = 0; 
