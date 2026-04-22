@@ -1,14 +1,15 @@
 {
   "name": "Notre Univers",
   "short_name": "Univers",
-  "start_url": "index.html",
+  "description": "Notre application de messagerie intime et notre cocon privé.",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0b0914",
   "theme_color": "#d0a8ff",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2534/2534836.png",
+      "src": "https://cdn-icons-png.flaticon.com/192/2534/2534836.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
@@ -17,7 +18,21 @@
       "src": "https://cdn-icons-png.flaticon.com/512/2534/2534836.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://images.unsplash.com/photo-1464802686167-b939a6910659?q=80&w=1080",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1920",
+      "sizes": "1920x1080",
+      "type": "image/jpeg",
+      "form_factor": "wide"
     }
   ]
 }
