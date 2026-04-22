@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Univers">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <title>Notre Univers v50 - Édition Hors-Ligne Absolue</title>
+    <title>Notre Univers v56 - Édition PWA Absolue</title>
     
     <link rel="manifest" href="./manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
@@ -395,7 +395,7 @@
                     <span id="d-min" class="time-val">0</span>
                     <span class="time-label">Min</span>
                 </div>
-                <div class="time-box" style="border-color: rgba(255,75,110,0.3);">
+                <div class="time-box">
                     <span id="d-sec" class="time-val love">0</span>
                     <span class="time-label" style="color: var(--love);">Sec</span>
                 </div>
@@ -558,6 +558,7 @@
 
 <input type="file" id="imgIn" hidden accept="image/*,video/*" onclick="this.value=null">
 <input type="file" id="camIn" hidden accept="image/*" capture="environment" onclick="this.value=null">
+<input type="file" id="audioChatIn" hidden accept="audio/*" onclick="this.value=null">
 
 <script>
 window.sharedPlaylist = [];
@@ -1049,6 +1050,7 @@ function switchV(id, el) {
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
 
+// ✅ CORRECTION MAJEURE DU BUG D'AFFICHAGE DES CONTACTS
 function loadContacts() {
     const list = document.getElementById('chatList');
     
@@ -1083,9 +1085,15 @@ function renderContacts(arr) {
         const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
         const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
         
-        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}','${c.pseudo}','${c.pfp}')">
-            <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : c.pseudo[0]}</div>
-            <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${c.pseudo}</b>${badge}</div>${moodHtml}</div>
+        // Sécurité anti-crash si le pseudo est vide
+        const pseudoSafe = (c.pseudo && c.pseudo.length > 0) ? c.pseudo : "Inconnu";
+        const initial = pseudoSafe.charAt(0).toUpperCase();
+        const safeName = pseudoSafe.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const safePfp = c.pfp ? c.pfp.replace(/'/g, "\\'") : '';
+        
+        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}', '${safeName}', '${safePfp}')">
+            <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : initial}</div>
+            <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${pseudoSafe}</b>${badge}</div>${moodHtml}</div>
             <div class="opt-dots">
                 <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </div>
@@ -1110,7 +1118,7 @@ function addFriend() {
 function openChat(id, name, pfp) {
     currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
-    document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name[0];
+    document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name.charAt(0).toUpperCase();
     
     fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ unread: 0 }, { merge: true });
 
@@ -1197,7 +1205,7 @@ function getMsgHTML(docId, m, path, target) {
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="viewPhoto('${m.txt}')">`;
     if(m.type === 'video') content = `<video controls src="${m.txt}" style="width:100%; border-radius:15px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.2);"></video>`;
-    if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px;"></audio>`;
+    if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:220px; outline:none; border-radius: 15px; margin-top:5px;"></audio>`;
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
@@ -1387,18 +1395,22 @@ function applyTheme(url) {
     triggerBack(); showToast("Univers mis à jour !");
 } 
 
+// ✅ NOUVEAU MENU PIÈCES JOINTES (AVEC AUDIO INTÉGRÉ)
 function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('imgIn').click();">
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('imgIn').click(), 300);">
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Galerie
             </button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="document.getElementById('customModal').style.display='none'; document.getElementById('camIn').click();">
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('camIn').click(), 300);">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Photo
             </button>
-            <button class="option-btn" style="justify-content:center; margin:0; grid-column: span 2; border-color:var(--accent); color:var(--accent);" onclick="openCapsuleCreator()">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Capsule Temporelle
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('audioChatIn').click(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Audio
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0; border-color:var(--accent); color:var(--accent);" onclick="triggerBack(); setTimeout(() => openCapsuleCreator(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Capsule
             </button>
         </div>
     `, null);
@@ -1448,17 +1460,20 @@ function sendCapsule(text, unlockTimestamp) {
 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e);
+document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e);
 
+// ✅ NOUVEAU PROCESSUS UNIFIÉ POUR TOUS LES MÉDIAS
 function processMediaUpload(e) {
-    triggerBack(); 
     const file = e.target.files[0]; if(!file) return;
     
-    if(file.size > 10 * 1024 * 1024) {
-        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>");
+    if(file.size > 15 * 1024 * 1024) {
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 15 Mo)</div>");
         return;
     }
 
-    const fileType = file.type.startsWith('video/') ? 'video' : 'img';
+    let fileType = 'img';
+    if(file.type.startsWith('video/')) fileType = 'video';
+    if(file.type.startsWith('audio/')) fileType = 'audio';
 
     if(currentMediaMode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
@@ -1475,12 +1490,13 @@ function processMediaUpload(e) {
                 uploadToFirebase(data, 'img');
             });
         } else {
-            uploadToFirebase(file, 'video');
+            uploadToFirebase(file, fileType);
         }
     }
 
     function uploadToFirebase(data, typeParam) {
-        const fileName = Date.now() + (typeParam === 'img' ? '_img.jpg' : '_vid.mp4');
+        let ext = typeParam === 'img' ? '_img.jpg' : (typeParam === 'video' ? '_vid.mp4' : '_audio.mp3');
+        const fileName = Date.now() + ext;
         const storageRef = firebase.storage().ref('media/' + fileName);
         const uploadTask = storageRef.put(data);
 
@@ -1517,8 +1533,8 @@ function processAudioUpload(input) {
     const file = input.files[0]; 
     if(!file) return;
     
-    if(file.size > 10 * 1024 * 1024) { 
-        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 10 Mo)</div>"); 
+    if(file.size > 15 * 1024 * 1024) { 
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='15' y1='9' x2='9' y2='15'></line><line x1='9' y1='9' x2='15' y2='15'></line></svg> Fichier trop lourd (Max 15 Mo)</div>"); 
         return; 
     }
     
@@ -1726,7 +1742,7 @@ function askCoconCode() {
 }
 
 function updateTimeCounter() {
-    if (!user.startDate) return;
+    if (!user || !user.startDate) return;
     
     const updateDate = () => {
         const start = new Date(user.startDate).getTime();
@@ -1739,15 +1755,15 @@ function updateTimeCounter() {
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
-            const elDay = document.getElementById('d-day');
-            const elHour = document.getElementById('d-hour');
-            const elMin = document.getElementById('d-min');
-            const elSec = document.getElementById('d-sec');
+            const elD = document.getElementById('d-day');
+            const elH = document.getElementById('d-hour');
+            const elM = document.getElementById('d-min');
+            const elS = document.getElementById('d-sec');
             
-            if(elDay) elDay.innerText = days;
-            if(elHour) elHour.innerText = hours;
-            if(elMin) elMin.innerText = minutes;
-            if(elSec) elSec.innerText = seconds;
+            if(elD) elD.innerText = days;
+            if(elH) elH.innerText = hours;
+            if(elM) elM.innerText = minutes;
+            if(elS) elS.innerText = seconds;
         }
     };
 
