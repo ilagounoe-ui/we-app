@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="theme-color" content="#0b0914">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Univers">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <title>Notre Univers v50 - Édition Hors-Ligne Absolue</title>
     
     <link rel="manifest" href="./manifest.json">
@@ -57,7 +64,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* ✨ L'ANIMATION MAGIQUE DE LA CAPSULE ✨ */
+        /* ✨ ANIMATION MAGIQUE DE LA CAPSULE ✨ */
         @keyframes capsuleOpenAnim {
             0% { transform: scale(1) rotate(0deg); opacity: 1; filter: brightness(1); }
             20% { transform: scale(1.2) rotate(-10deg); }
@@ -67,6 +74,39 @@
             100% { transform: scale(1.6); opacity: 0; filter: brightness(2); }
         }
         .capsule-anim { animation: capsuleOpenAnim 0.5s forwards !important; pointer-events: none; }
+
+        /* ✨ NOUVEAU DESIGN COMPTEUR ✨ */
+        @keyframes textShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .eternity-title {
+            background: linear-gradient(90deg, #d0a8ff, #ff4b6e, #d0a8ff);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textShimmer 3s linear infinite;
+            font-family: 'Pacifico', cursive;
+            font-size: 26px;
+            margin: 0 0 20px 0;
+            text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2);
+        }
+        .time-box {
+            background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 18px 5px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 15px rgba(255,255,255,0.02);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .time-val { font-size: 24px; font-weight: 600; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); line-height: 1.1; }
+        .time-val.love { color: var(--love); text-shadow: 0 0 15px var(--love-glow); animation: pulse 1s infinite; }
+        .time-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); margin-top: 4px; }
 
         .notif-cocon-turquoise {
             top: 20px; left: 5%; width: 90%; 
@@ -331,18 +371,37 @@
     </div>
 
     <div id="vCocon" class="view">
-        <div style="background: linear-gradient(135deg, #0b0914 0%, #1a0b2e 100%); padding:35px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 15px 40px rgba(208, 168, 255, 0.15); border: 1px solid rgba(208, 168, 255, 0.2);">
-            <div style="display:flex; justify-content:center; margin-bottom:15px;">
-                <svg class="svg-icon" style="width:45px; height:45px; stroke:var(--accent); fill:none; animation: pulse 2s infinite;" viewBox="0 0 24 24"><path d="M10 8c-3-3-8-1-8 4s5 7 10 7 10-2 10-7-5-7-8-4-4 4-4 4"></path></svg>
+        <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 0 30px rgba(208, 168, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); position: relative; overflow: hidden;">
+            
+            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
             </div>
-            <h3 style="margin:0; font-family:'Pacifico'; color: white; text-shadow: 0 2px 10px rgba(208, 168, 255, 0.4);">Notre Éternité</h3>
-            <div style="display:flex; justify-content:center; gap:10px; margin-top:25px; flex-wrap: wrap;">
-                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-day" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Jours</small></div>
-                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-hour" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Heures</small></div>
-                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-min" style="font-size:22px; color:var(--accent);">0</b><br><small style="opacity:0.7;">Min</small></div>
-                <div style="background:rgba(255,255,255,0.05); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); padding:15px 10px; border-radius:20px; min-width:70px; border:1px solid rgba(255,255,255,0.1);"><b id="d-sec" style="font-size:22px; color:var(--love);">0</b><br><small style="opacity:0.7;">Sec</small></div>
+
+            <h3 class="eternity-title">Notre Éternité</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
+                <div class="time-box">
+                    <span id="d-day" class="time-val">0</span>
+                    <span class="time-label">Jours</span>
+                </div>
+                <div class="time-box">
+                    <span id="d-hour" class="time-val">0</span>
+                    <span class="time-label">Heures</span>
+                </div>
+                <div class="time-box">
+                    <span id="d-min" class="time-val">0</span>
+                    <span class="time-label">Min</span>
+                </div>
+                <div class="time-box" style="border-color: rgba(255,75,110,0.3);">
+                    <span id="d-sec" class="time-val love">0</span>
+                    <span class="time-label" style="color: var(--love);">Sec</span>
+                </div>
             </div>
         </div>
+
         <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
         </button>
@@ -555,27 +614,26 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
-// --- LE JUKEBOX AVEC PLACESHOLDERS DE PIANO ---
-// J'ai remplacé les musiques par 4 magnifiques pistes de piano instrumentales libres de droits.
-// Elles collent parfaitement à l'ambiance mélancolique que tu apprécies.
-// Tu pourras ajouter les vraies versions mp3 (Suki Dakara, Sparkle, etc.) via le bouton de ton application !
 const defaultPlaylist = [
-    "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3", // "Light Piano" (Ambiance Sparkle)
-    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", // "Emotional Piano" (Ambiance Suki Dakara)
-    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3", // "Cinematic Piano" (Ambiance You Are My Light)
-    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3"  // "Anime Vibe Piano" (Ambiance Komi)
+    "https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3", 
+    "https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3", 
+    "https://cdn.pixabay.com/audio/2021/11/25/audio_91b3ec51b1.mp3", 
+    "https://cdn.pixabay.com/audio/2022/03/15/audio_73138b3dae.mp3"  
 ];
 let currentTrackIndex = 0;
 
 function nextCoconTrack() {
-    const activePlaylist = (window.sharedPlaylist && window.sharedPlaylist.length > 0) ? window.sharedPlaylist : defaultPlaylist;
-    currentTrackIndex = (currentTrackIndex + 1) % activePlaylist.length;
+    if(!window.sharedPlaylist || window.sharedPlaylist.length === 0) {
+        showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><line x1='12' y1='8' x2='12' y2='12'></line><line x1='12' y1='16' x2='12.01' y2='16'></line></svg> Ta playlist est vide. Envoie-moi les liens !</div>");
+        return;
+    }
+    
+    currentTrackIndex = (currentTrackIndex + 1) % window.sharedPlaylist.length;
     const audio = document.getElementById('coconAudio');
     if (audio) {
-        audio.src = activePlaylist[currentTrackIndex];
+        audio.src = window.sharedPlaylist[currentTrackIndex];
         audio.load();
         audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast(`<div style="display:flex;align-items:center;gap:5px;"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Piste ${currentTrackIndex + 1}/${activePlaylist.length}</div>`);
     }
 }
 
