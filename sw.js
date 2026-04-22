@@ -1,59 +1,59 @@
-const CACHE_NAME = 'univers-cache-v55';
+const CACHE_NAME = 'univers-cache-v56'; // Tu peux laisser ce nom, ce n'est plus lui qui bloque
 
-// Liste des fichiers "fixes" à sauvegarder sur le téléphone
-const ASSETS_TO_CACHE = [
-    './',
-    './index.html',
-    './manifest.json',
-    'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap'
+// Les fichiers essentiels à charger dès l'installation
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
-// 1. Installation du Service Worker et mise en cache
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Mise en cache des ressources');
-            return cache.addAll(ASSETS_TO_CACHE);
-        })
-    );
-    self.skipWaiting(); // Force la mise à jour immédiate
+// À l'installation, on force le nouveau Service Worker à prendre le contrôle
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(urlsToCache))
+  );
+  self.skipWaiting(); 
 });
 
-// 2. Activation et nettoyage des vieilles versions (si tu changes de V55 à V56 par ex)
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cache) => {
-                    if (cache !== CACHE_NAME) {
-                        console.log('[Service Worker] Suppression de l\'ancien cache:', cache);
-                        return caches.delete(cache);
-                    }
-                })
-            );
+// Nettoyage des vieux caches si jamais on change de version
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cache => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
         })
-    );
-    self.clients.claim();
+      );
+    })
+  );
+  self.clients.claim(); 
 });
 
-// 3. Interception des requêtes réseau (La magie du mode hors-ligne)
-self.addEventListener('fetch', (event) => {
-    // ⚠️ On exclut Firebase du cache du Service Worker ! 
-    // Firebase Firestore a déjà sa propre base de données hors-ligne activée dans ton index.html
-    if (event.request.url.includes('firestore.googleapis.com') || 
-        event.request.url.includes('firebasestorage.googleapis.com') ||
-        event.request.url.includes('firebaseio.com')) {
-        return; 
-    }
+// STRATÉGIE "NETWORK FIRST" : Le cœur de la mise à jour automatique
+self.addEventListener('fetch', event => {
+  // On ignore les requêtes qui ne sont pas "http" ou "https" (ex: extensions Chrome)
+  if (!event.request.url.startsWith('http')) return;
 
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // Si le fichier est dans le cache, on le charge depuis la mémoire du téléphone
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            // Sinon, on va le chercher sur internet normalement
-            return fetch(event.request);
-        })
-    );
+  event.respondWith(
+    fetch(event.request)
+      .then(networkResponse => {
+        // Si on a récupéré la donnée sur GitHub avec succès, on met à jour le cache
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            });
+        }
+        // On retourne la version fraîche de GitHub !
+        return networkResponse; 
+      })
+      .catch(() => {
+        // SI ON EST HORS-LIGNE (Le fetch réseau a échoué) : On retourne la version en cache
+        return caches.match(event.request);
+      })
+  );
 });
