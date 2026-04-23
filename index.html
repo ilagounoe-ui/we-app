@@ -139,6 +139,7 @@
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
+        /* FIX DU DESIGN DE L'EN-TÊTE ET DU SCROLL */
         .main-header { 
             padding: 50px 20px 15px; 
             background: rgba(11, 9, 20, 0.85); 
@@ -154,7 +155,13 @@
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
-        .view { display: none; padding: 130px 20px 20px; height: 100vh; overflow-y: auto; scroll-behavior: smooth; }
+        .view { 
+            display: none; 
+            height: 100vh; 
+            padding: 150px 20px 120px 20px; /* Grand espace en haut (header) et en bas (menu téléphone) */
+            overflow-y: auto; 
+            scroll-behavior: smooth; 
+        }
         .view.active { display: block; }
 
         .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
@@ -170,10 +177,12 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        #chatBox { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        /* FIX DU CHAT BOX ET COCON BOX QUI BOUGEAIENT */
+        #chatBox, #coconBox { 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
+            overflow: hidden; /* Empêche le fond du chat de scroller avec le clavier */
         }
 
         @keyframes coconPulseBg {
@@ -183,11 +192,9 @@
         }
 
         #coconBox { 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914);
             background-size: 400% 400%;
             animation: coconPulseBg 15s ease infinite;
-            z-index: 9999; display: none; 
         }
 
         #coconBox .m-me { 
@@ -371,7 +378,7 @@
     </div>
 </div>
 
-<div id="mainApp" style="display:none; height: 100%; overflow: auto;">
+<div id="mainApp" style="display:none; height: 100%; overflow: hidden; width: 100%;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
@@ -689,14 +696,14 @@ const sounds = {
     pop: "" 
 };
 
-// BIBLIOTHÈQUE DES HUMEURS ENRICHIE POUR ALICIA
+// BIBLIOTHÈQUE DES HUMEURS ENRICHIE
 const moodLibrary = {
     "Heureux 😊": ["Je me sens tellement bien aujourd'hui !", "Tout sourit dans notre univers ✨", "Savoir que tu es dans ma vie rend tout plus beau, ma princesse."],
     "Triste 😔": ["J'ai un peu le moral dans les chaussettes...", "Le ciel est gris dans ma tête aujourd'hui.", "J'aimerais que tu sois là pour me faire oublier tout ça."],
     "Amoureux 🥰": ["Je pense tellement à toi...", "J'aime ma princesse ! ❤️", "Tu es la meilleure chose qui me soit arrivée.", "J'ai hâte de vivre notre avenir ensemble, Alicia."],
     "Fatigué 🥱": ["Grosse journée, j'ai besoin de repos...", "Je m'endors debout 💤", "Vivement qu'on puisse dormir dans les bras l'un de l'autre."],
     "Besoin d'un câlin 🫂": ["J'aimerais tellement que tu sois là pour me serrer fort...", "Un câlin de toi réglerait tous mes problèmes 🥺", "Je veux juste me blottir contre ma princesse."],
-    "Stressé 😥": ["J'ai l'esprit qui tourne à 100 à l'heure...", "Besoin que tu me rassures un peu.", "Le lycée me pèse aujourd'hui, j'ai besoin de t'entendre."],
+    "Stressé 😥": ["J'ai l'esprit qui tourne à 100 à l'heure...", "Besoin que tu me rassures un peu.", "J'ai besoin de t'entendre."],
     "Nostalgique 🕰️": ["Je repense à tous nos beaux moments...", "J'ai tellement hâte qu'on réalise tous nos projets à deux."],
     "Motivé 🚀": ["Je suis prêt à soulever des montagnes aujourd'hui !", "Je code l'avenir pour nous deux ! 💻✨"]
 };
@@ -739,7 +746,6 @@ try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err));
 } catch(e) {}
 
-// --- LANCEMENT DE L'APPLICATION ---
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
@@ -1159,6 +1165,8 @@ function getMsgHTML(docId, m, path, target) {
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
     
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    
+    /* FIX DESIGN MULTIMÉDIA */
     if(m.type === 'img') content = `<img src="${m.txt}" style="width:100%; border-radius:12px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.3);" onclick="viewPhoto('${m.txt}')">`;
     if(m.type === 'video') content = `<video controls preload="metadata" src="${m.txt}" style="width:100%; max-height:250px; background:#000; border-radius:12px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.3); outline:none;"></video>`;
     if(m.type === 'audio') content = `<audio controls src="${m.txt}" style="width:100%; max-width:240px; height:40px; outline:none; border-radius:30px; margin-top:5px; filter: invert(0.9) hue-rotate(180deg);"></audio>`;
@@ -1413,7 +1421,7 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// 🎙️ ENREGISTREMENT VOCAL
+// 🎙️ ENREGISTREMENT VOCAL : FIX DU DELAI D'AFFICHAGE DE L'ERREUR
 async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
@@ -1664,12 +1672,17 @@ function unblockContact(id) { fs.collection('users').doc(user.id).collection('bl
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
 
+// CORRECTIF : ENREGISTRE LA LECTURE DE LA NOTE DANS LA BASE DE DONNÉES
 function closeCoconNote() { 
     const el = document.getElementById('coconNoteDisplay');
     el.classList.add('cocon-closing'); 
     setTimeout(() => { el.style.display = 'none'; el.classList.remove('cocon-closing'); }, 500); 
 
-    if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ [`readBy.${user.id}`]: true }, { merge: true }); 
+    if(user && user.code) {
+        fs.collection('globalNotes').doc(user.code).set({
+            readBy: { [user.id]: true }
+        }, { merge: true }); 
+    }
 }
 
 function askCoconCode() {
