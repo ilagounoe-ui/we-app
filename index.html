@@ -16,6 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
@@ -42,7 +43,7 @@
             --bubble-me: linear-gradient(135deg, #d0a8ff 0%, #a66cfb 100%);
             --notif-vibrant: #00e5ff;
             --notif-accent: #00897b;
-            --notif-glow: rgba(0, 229, 255, 0.25);
+            --notif-glow: rgba(0, 225, 255, 0.25);
         }
         
         html, body { 
@@ -109,7 +110,6 @@
             text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2);
         }
 
-        /* NOUVEAU DESIGN COMPTEUR UNIFIÉ (SANS ROSE) */
         .time-box {
             background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
             backdrop-filter: blur(12px);
@@ -304,7 +304,6 @@
         
         .scroll-hidden::-webkit-scrollbar { display: none; }
 
-        /* SVG ICONS HELPER CLASSES */
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
     </style>
@@ -344,7 +343,7 @@
     </div>
 </div>
 
-<div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; background:var(--bg);">
+<div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; background:var(--bg);">
     <div style="background:rgba(26,26,46,0.6); padding:40px 30px; border-radius:45px; width:100%; max-width:360px; text-align:center; border:1px solid var(--glass-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         <div id="loginUI">
             <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Bienvenue</h2>
@@ -477,7 +476,7 @@
             </div>
             
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; flex-direction:column; gap:5px;" onclick="openLangMenu()">
-                <div style="display:flex; align-items:center; gap:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> <b data-i18n="set_lang">Langue de l'Univers</b></div>
+                <div style="display:flex; align-items:center; gap:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> <b data-i18n="set_lang">Langue de l'Univers</b></div>
                 <div style="font-size:12px; color:var(--accent); font-weight:bold;" id="currentLangDisp">FR</div>
             </div>
 
@@ -665,11 +664,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
 });
 
-window.addEventListener('DOMContentLoaded', () => {
-    initApp();
-});
-
-let user = JSON.parse(localStorage.getItem('nu_v33_user')) || null;
+// --- VARIABLES GLOBALES MANQUANTES AJOUTÉES ---
+let user = null;
 let stateStack = [];
 let activeId = null;
 let currentPeerId = null;
@@ -678,12 +674,39 @@ let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
 let unsubMsgs = null; 
-
-// --- VARIABLES POUR L'ENREGISTREMENT VOCAL ---
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
+let audioUnlocked = false;
 
+const sounds = {
+    pop: "" // Peut être remplacé par un Data URI audio (base64) pour le son de notification
+};
+
+const moodLibrary = {
+    "Heureux 😊": ["Je me sens tellement bien aujourd'hui !", "Tout sourit dans notre univers ✨"],
+    "Triste 😔": ["J'ai un peu le moral dans les chaussettes...", "J'aurais bien besoin d'un câlin 🫂"],
+    "Amoureux 🥰": ["Je pense tellement à toi...", "J'aime ma princesse ! ❤️", "Tu es la meilleure chose qui me soit arrivée."],
+    "Fatigué 🥱": ["Grosse journée, j'ai besoin de repos...", "Je m'endors debout 💤"]
+};
+
+const humeursCocon = [
+    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, 
+    {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, 
+    {label: "❌ Retirer l'humeur"}
+];
+
+const allLanguages = [
+    {code: 'fr', name: 'Français', flag: '🇫🇷'},
+    {code: 'en', name: 'English', flag: '🇬🇧'}
+];
+
+const i18n = {
+    fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon", set_lang: "Langue de l'Univers", set_date: "Date de notre début", set_wall: "Personnaliser l'Univers", set_note: "Envoyer un mot doux", set_blocked: "Contacts bloqués", set_leave: "Quitter l'Univers" },
+    en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code", set_lang: "Universe Language", set_date: "Our Beginning", set_wall: "Customize Universe", set_note: "Send a sweet note", set_blocked: "Blocked contacts", set_leave: "Leave Universe" }
+};
+
+// --- INITIALISATION FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
     authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -698,12 +721,43 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig); 
 }
 
+const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
 
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err));
 } catch(e) {}
+
+// --- LANCEMENT DE L'APPLICATION ---
+window.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
+
+function initApp() {
+    // Vérification de la session sécurisée avec Firebase Auth
+    auth.onAuthStateChanged(firebaseUser => {
+        if (firebaseUser) {
+            const ph = "u_" + firebaseUser.email.split('@')[0];
+            fs.collection('users').doc(ph).get().then(doc => {
+                if(doc.exists) {
+                    user = doc.data();
+                    document.getElementById('authLayer').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    setupApp();
+                } else {
+                    document.getElementById('authLayer').style.display = 'flex';
+                    document.getElementById('mainApp').style.display = 'none';
+                }
+                document.getElementById('splash').style.display = 'none';
+            });
+        } else {
+            document.getElementById('authLayer').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('splash').style.display = 'none';
+        }
+    });
+}
 
 const E2EE = {
     encrypt: (text, key) => {
@@ -1305,7 +1359,7 @@ function openMediaMenu(mode) {
 
 function openCapsuleCreator() {
     const html = `
-        <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand Alicia pourra-t-elle ouvrir ce message ?</p>
+        <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand la capsule pourra-t-elle s'ouvrir ?</p>
         <input type="datetime-local" id="capsuleDate" class="modal-input" style="color-scheme: dark; padding: 12px; font-size:14px;">
         <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none; font-family: 'Poppins', sans-serif;" placeholder="Ton message secret..."></textarea>
     `;
@@ -1382,9 +1436,8 @@ function stopRecording(e) {
 
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode);
-document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e, currentMediaMode);
+document.getElementById('audioChatIn') ? document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 
-// 🚀 UPLOAD INSTANTANÉ, SANS BARRE DE PROGRESSION
 function processMediaUpload(e, targetMode) {
     const file = e.target.files[0]; 
     if(!file) return;
@@ -1418,10 +1471,10 @@ function processMediaUpload(e, targetMode) {
     }
 }
 
-// 🚀 ENVOI EN ARRIÈRE-PLAN
+// ORGANISATION SÉCURISÉE DES MÉDIAS PAR UTILISATEUR
 function uploadToFirebase(data, typeParam, targetPath) {
     const ext = typeParam === 'img' ? '_img.jpg' : (typeParam === 'video' ? '_vid.mp4' : '_audio.mp3');
-    const storageRef = firebase.storage().ref('media/' + Date.now() + ext);
+    const storageRef = firebase.storage().ref(`media/${user.id}/${Date.now()}${ext}`);
 
     storageRef.put(data).then((snapshot) => {
         snapshot.ref.getDownloadURL().then((url) => {
@@ -1492,23 +1545,30 @@ function openModal(t, b, a) {
     }
 }
 
+// --- CONNEXION SÉCURISÉE AVEC FIREBASE AUTH ---
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
-    const ph = "u_" + phStr;
+    
     const ps = document.getElementById('lPass').value;
+    const fakeEmail = phStr + "@univers.com"; 
+    const ph = "u_" + phStr;
 
-    fs.collection('users').doc(ph).get().then(doc => {
-        if(doc.exists && doc.data().pass === ps) { 
-            user = doc.data(); 
-            localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-            location.reload(); 
-        } else {
-            showToast("Erreur identifiants ❌");
-        }
-    }).catch(err => {
-        showToast("Erreur de connexion");
-    });
+    auth.signInWithEmailAndPassword(fakeEmail, ps)
+        .then(() => fs.collection('users').doc(ph).get())
+        .then(doc => {
+            if(doc.exists) { 
+                user = doc.data(); 
+                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                location.reload(); 
+            } else {
+                showToast("Profil introuvable.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast("Identifiants incorrects ❌");
+        });
 }
 
 function register() {
@@ -1520,30 +1580,44 @@ function register() {
     if(!pseudo || phStr.length < 5 || !ps) return showToast("Informations incomplètes");
     
     const ph = "u_" + phStr;
+    const fakeEmail = phStr + "@univers.com";
 
-    const nu = { 
-        id: ph, 
-        pseudo: pseudo, 
-        pass: ps, 
-        pfp: '', 
-        code: codeSaisi, 
-        codeInscription: codeSaisi, 
-        startDate: new Date().toISOString(), 
-        wall: '', 
-        lang: 'fr',
-        playlist: []
-    };
-    
-    fs.collection('users').doc(ph).set(nu).then(() => { 
-        user = nu; 
-        localStorage.setItem('nu_v33_user', JSON.stringify(nu)); 
-        location.reload(); 
-    }).catch(err => {
-        showToast("Erreur d'inscription ❌");
-    });
+    auth.createUserWithEmailAndPassword(fakeEmail, ps)
+        .then(() => {
+            const nu = { 
+                id: ph, 
+                pseudo: pseudo, 
+                pfp: '', 
+                code: codeSaisi, 
+                codeInscription: codeSaisi, 
+                startDate: new Date().toISOString(), 
+                wall: '', 
+                lang: 'fr',
+                playlist: []
+            };
+            return fs.collection('users').doc(ph).set(nu).then(() => {
+                user = nu; 
+                localStorage.setItem('nu_v33_user', JSON.stringify(nu)); 
+                location.reload(); 
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            if(err.code === 'auth/email-already-in-use') showToast("Ce numéro est déjà inscrit !");
+            else if (err.code === 'auth/weak-password') showToast("Mot de passe trop faible");
+            else showToast("Erreur d'inscription ❌");
+        });
 }
 
-function confirmLogout() { openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { localStorage.clear(); location.reload(); }); }
+function confirmLogout() { 
+    openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
+        auth.signOut().then(() => {
+            localStorage.clear(); 
+            location.reload(); 
+        });
+    }); 
+}
+
 function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
 function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
 
