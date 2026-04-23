@@ -1601,14 +1601,13 @@ function register() {
                 location.reload(); 
             });
         })
-        .catch(err => {
+                .catch(err => {
             console.error(err);
             if(err.code === 'auth/email-already-in-use') showToast("Ce numéro est déjà inscrit !");
             else if (err.code === 'auth/weak-password') showToast("Mot de passe trop faible");
-            else showToast("Erreur d'inscription ❌");
+            else showToast("Erreur : " + err.code); // <-- On affiche le code d'erreur exact de Firebase
         });
-}
-
+    
 function confirmLogout() { 
     openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
         auth.signOut().then(() => {
