@@ -19,7 +19,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <style>
         * { 
@@ -712,7 +711,6 @@ const firebaseConfig = {
     authDomain: "notre-univers-d71a3.firebaseapp.com",
     databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
     projectId: "notre-univers-d71a3",
-    storageBucket: "notre-univers-d71a3.firebasestorage.app",
     messagingSenderId: "909531230264",
     appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
 };
@@ -1444,6 +1442,8 @@ function stopRecording(e) {
 document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode);
 document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode);
 document.getElementById('audioChatIn') ? document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
+document.getElementById('pfpInput').onchange = (e) => processMediaUpload(e, 'pfp');
+document.getElementById('wallInput').onchange = (e) => processMediaUpload(e, 'wall');
 
 function processMediaUpload(e, targetMode) {
     const file = e.target.files[0]; 
@@ -1468,6 +1468,7 @@ function processMediaUpload(e, targetMode) {
     }
 
     function handleUpload() {
+        showToast("Envoi en cours...");
         if (fileType === 'img') {
             compressImage(file, 800, (data) => {
                 uploadToFirebase(data, 'img', targetMode);
@@ -1478,63 +1479,58 @@ function processMediaUpload(e, targetMode) {
     }
 }
 
-// ORGANISATION SÉCURISÉE DES MÉDIAS PAR UTILISATEUR
-function uploadToFirebase(data, typeParam, targetPath) {
-    const ext = typeParam === 'img' ? '_img.jpg' : (typeParam === 'video' ? '_vid.mp4' : '_audio.mp3');
-    const storageRef = firebase.storage().ref(`media/${user.id}/${Date.now()}${ext}`);
+// ORGANISATION SÉCURISÉE DES MÉDIAS VIA CLOUDINARY
+async function uploadToFirebase(fileData, typeParam, targetPath) {
+    // ⚠️ REMPLACE CES DEUX LIGNES PAR TES VRAIS IDENTIFIANTS CLOUDINARY
+    const CLOUD_NAME = "dgiy2zapd"; 
+    const UPLOAD_PRESET = "evyegpfe"; 
 
-    storageRef.put(data).then((snapshot) => {
-        snapshot.ref.getDownloadURL().then((url) => {
-            const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
-            const docTarget = targetPath === 'msgs' ? activeId : user.code;
-            
-            fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-                sid: user.id, 
-                txt: url, 
-                t: firebase.firestore.FieldValue.serverTimestamp(), 
-                type: typeParam, 
-                seen: false 
-            });
-            
-            if(targetPath === 'msgs') {
-                const batch = fs.batch();
-                batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-                batch.commit();
-            }
-        });
-    }).catch(err => console.error("Erreur envoi:", err));
-}
+    const formData = new FormData();
+    formData.append('file', fileData);
+    formData.append('upload_preset', UPLOAD_PRESET);
 
-function uploadFile(input, mode) {
-    const file = input.files[0]; 
-    if(!file) return;
-    
-    if(file.size > 10 * 1024 * 1024) {
-        showToast("Fichier trop lourd (Max 10 Mo)");
-        return;
-    }
-    
-    compressImage(file, 800, (data) => {
-        const fileName = Date.now() + (mode === 'pfp' ? '_profile.jpg' : '_wall.jpg');
-        const storageRef = firebase.storage().ref((mode === 'pfp' ? 'profils/' : 'walls/') + fileName);
+    let resourceType = 'image';
+    if(typeParam === 'video' || typeParam === 'audio') resourceType = 'video';
+
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
+
+    try {
+        const response = await fetch(url, { method: 'POST', body: formData });
+        const data = await response.json();
         
-        storageRef.put(data).then((snapshot) => {
-            snapshot.ref.getDownloadURL().then((url) => {
-                if(mode === 'pfp') { 
-                    fs.collection('users').doc(user.id).set({ pfp: url }, { merge: true }).then(() => {
-                        user.pfp = url; 
-                        localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                        document.getElementById('pfpPreview').innerHTML = `<img src="${url}">`; 
-                    });
-                } else if(mode === 'wall') { 
-                    fs.collection('users').doc(user.id).set({ wall: url }, { merge: true }).then(() => {
-                        applyTheme(url); 
-                    });
+        if(data.secure_url) {
+            const secureUrl = data.secure_url;
+            
+            if (targetPath === 'pfp') {
+                await fs.collection('users').doc(user.id).set({ pfp: secureUrl }, { merge: true });
+                user.pfp = secureUrl; localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                document.getElementById('pfpPreview').innerHTML = `<img src="${secureUrl}">`;
+                showToast("Photo de profil mise à jour !");
+            } else if (targetPath === 'wall') {
+                await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
+                applyTheme(secureUrl);
+            } else {
+                const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
+                const docTarget = targetPath === 'msgs' ? activeId : user.code;
+                
+                await fs.collection(collPath).doc(docTarget).collection('messages').add({ 
+                    sid: user.id, txt: secureUrl, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
+                });
+                
+                if(targetPath === 'msgs') {
+                    const batch = fs.batch();
+                    batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+                    batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+                    await batch.commit();
                 }
-            });
-        }).catch(err => { console.error(err); });
-    });
+            }
+        } else {
+            showToast("Erreur lors de l'envoi du fichier");
+        }
+    } catch (err) {
+        console.error("Erreur Cloudinary:", err);
+        showToast("Échec de l'envoi du média ❌");
+    }
 }
 
 function openModal(t, b, a) {
