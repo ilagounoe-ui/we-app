@@ -139,17 +139,14 @@
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        /* HEADER PRINCIPAL RESTAURÉ */
         .main-header { 
             padding: 50px 20px 15px; 
-            background: rgba(11, 9, 20, 0.6); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
+            background: rgba(11, 9, 20, 0.85); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+            position: fixed; 
+            top: 0; left: 0; right: 0; 
+            z-index: 1000; 
             border-bottom: 1px solid var(--glass-border); 
-            will-change: transform; 
         }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
@@ -157,11 +154,10 @@
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
-        /* VUE PRINCIPALE RESTAURÉE (SCROLL CORRIGÉ) */
         .view { 
             display: none; 
-            padding: 20px; 
-            height: calc(100vh - 180px); 
+            height: 100vh; 
+            padding: 150px 20px 120px 20px; 
             overflow-y: auto; 
             scroll-behavior: smooth; 
         }
@@ -180,12 +176,11 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* FENÊTRES DE CONVERSATION FIXÉES POUR LE CLAVIER */
         #chatBox, #coconBox { 
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
+            overflow: hidden; 
         }
 
         @keyframes coconPulseBg {
@@ -341,14 +336,14 @@
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
-        L'Univers te parle... <svg class="svg-icon-lg" style="fill:var(--love); stroke:none;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-    </div>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
+    
     <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
+    
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
+    
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
 </div>
-
 <div class="modal-overlay" id="customModal">
     <div class="modal-content" id="modalFrame">
         <h3 id="modalTitle" style="color:var(--accent); margin:0 0 15px 0; font-family:'Pacifico'; text-shadow: 0 2px 10px var(--accent-glow);">...</h3>
@@ -699,32 +694,70 @@ const sounds = {
     pop: "" 
 };
 
-// BIBLIOTHÈQUE DES HUMEURS ENRICHIE
+// BIBLIOTHÈQUE DES MOTS DOUX 
 const moodLibrary = {
-    "Heureux 😊": [
-        "Je me sens tellement bien aujourd'hui !", 
-        "Avec ma princesse, tout est parfait ✨"
+    "Heureux": [
+        "Ton bonheur est ma plus belle réussite. ✨",
+        "C'est une journée magnifique pour s'aimer encore plus !",
+        "Ton sourire est le soleil de mon univers. ☀️",
+        "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
+        "Rien ne me rend plus joyeux que de te savoir épanouie."
     ],
-    "Triste 😔": [
-        "J'ai un peu le moral dans les chaussettes...", 
-        "J'ai besoin de toi pour retrouver le sourire."
+    "Triste": [
+        "N'oublie jamais que je suis ton port d'attache. ⚓",
+        "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.",
+        "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️",
+        "Prends le temps qu'il faut, je ne bouge pas d'ici.",
+        "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"
     ],
-    "Amoureux 🥰": [
-        "Je t'aime ma princesse ! ❤️", 
-        "Tu es mon univers tout entier, Alicia.", 
-        "Je pense tellement à toi..."
+    "Fatigué": [
+        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴",
+        "Ferme les yeux, laisse-toi porter par ma douceur.",
+        "Tu as le droit de ne rien faire, je veille sur tout le reste.",
+        "Un gros câlin virtuel pour te redonner de la force. 🫂",
+        "Dors bien, je serai ton premier message au réveil."
     ],
-    "Fatigué 🥱": [
-        "Grosse journée, j'ai besoin de repos...", 
-        "Je m'endors debout 💤"
+    "Amoureux": [
+        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨",
+        "Chaque battement de mon cœur porte ton nom.",
+        "Je t'aime plus qu'hier et bien moins que demain.",
+        "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
+        "Mon endroit préféré au monde ? Partout où tu es."
     ],
-    "Besoin d'un câlin 🫂": [
-        "J'aimerais tellement que tu sois là pour me serrer fort...", 
-        "Un câlin de ma princesse et tout ira mieux 🥺"
+    "Besoin de force": [
+        "Tu es bien plus forte que tu ne le penses. 💪",
+        "Respire un grand coup, tu vas tout déchirer !",
+        "Je crois en toi plus que n'importe qui d'autre.",
+        "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.",
+        "Une étape à la fois, je marche juste derrière toi."
     ],
-    "Motivé 🚀": [
-        "Je suis prêt à tout déchirer aujourd'hui !", 
-        "L'avenir est à nous ! 💻✨"
+    "Seule": [
+        "Regarde le ciel, on regarde la même lune. 🌙",
+        "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.",
+        "Ferme les yeux, imagine mes bras autour de toi... je suis là.",
+        "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️",
+        "Mon esprit ne te quitte pas d'une semelle aujourd'hui."
+    ],
+    "Stressée par les cours": [
+        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
+        "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
+        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
+        "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
+        "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."
+    ],
+    "Besoin d'un bisou": [
+        "Un doux baiser déposé tendrement sur ton front... 😘",
+        "Je t'envoie un million de bisous à travers l'univers.",
+        "Imagine mes lèvres sur tes joues. Je suis là.",
+        "Un petit bisou volé pour te faire sourire. 💋",
+        "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."
+    ],
+    "Besoin d'un câlin": [
+        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂",
+        "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.",
+        "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️",
+        "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.",
+        "Un long câlin silencieux, pour apaiser toutes tes tempêtes."
     ]
 };
 
@@ -857,6 +890,7 @@ function compressImage(file, maxWidth, callback) {
     img.onerror = () => callback(file);
 }
 
+// Ouvre la fenêtre noire et crée un bouton pour chaque catégorie de la bibliothèque
 function openMoodSelector() {
     const box = document.getElementById('moodOptions');
     const widgetText = document.getElementById('widgetText');
@@ -870,6 +904,7 @@ function openMoodSelector() {
         btn.className = "option-btn";
         btn.style.justifyContent = "center";
         btn.innerText = m;
+        // Au clic, on appelle la fonction qui affiche le message
         btn.onclick = () => showMoodMessage(m);
         box.appendChild(btn);
     });
@@ -877,6 +912,7 @@ function openMoodSelector() {
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
+// Sélectionne un message aléatoire dans la catégorie cliquée
 function showMoodMessage(mood) {
     const choices = moodLibrary[mood];
     if(!choices) return;
@@ -1691,6 +1727,7 @@ function unblockContact(id) { fs.collection('users').doc(user.id).collection('bl
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
 
+// CORRECTIF : ENREGISTRE LA LECTURE DE LA NOTE DANS LA BASE DE DONNÉES
 function closeCoconNote() { 
     const el = document.getElementById('coconNoteDisplay');
     el.classList.add('cocon-closing'); 
