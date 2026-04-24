@@ -384,13 +384,61 @@
             animation: sun-pulse 3s infinite alternate;
         }
         @keyframes sun-pulse { 0% { transform: scale(1); opacity:0.8;} 100% { transform: scale(1.1); opacity:1;} }
-        .galaxy-item {
-            position: absolute; top: -35px; left: -35px; width: 70px; height: 70px;
-            border-radius: 50%; border: 2px solid rgba(255,255,255,0.6);
-            object-fit: cover; box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            cursor: pointer; transition: transform 0.2s;
+        
+        /* Fond étoilé animé */
+        .stars-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at bottom, #1a0b2e 0%, #000000 100%);
+            z-index: 1;
         }
-        .galaxy-item:active { transform: scale(0.9); }
+        .stars-bg::after {
+            content: "";
+            position: absolute;
+            inset: -100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 160px 120px, #ddd, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: rotateStars 100s linear infinite;
+            opacity: 0.6;
+        }
+        @keyframes rotateStars {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Structure des planètes */
+        .planet-wrapper {
+            position: absolute; top: -35px; left: -35px; 
+            width: 70px; height: 70px; 
+            cursor: pointer; 
+            transform-style: preserve-3d;
+            transition: transform 0.2s;
+        }
+        .planet-wrapper:active { transform: scale(0.9); }
+
+        .planet-sphere {
+            width: 100%; height: 100%; 
+            border-radius: 50%; 
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.6), 0 0 15px rgba(255,255,255,0.2); 
+            background-size: cover; 
+            background-position: center; 
+            display: flex; align-items: center; justify-content: center; 
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .planet-plus {
+            font-size: 32px; 
+            color: white; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8); 
+            font-weight: 300;
+        }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -405,23 +453,23 @@
 </div>
 
 <div id="galaxyBox">
+    <audio id="galaxyAudio" loop src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
+
+    <div class="stars-bg"></div>
+
     <div style="position:absolute; top:40px; left:20px; z-index:10;" onclick="closeGalaxy()">
         <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; backdrop-filter:blur(5px);">
             <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </div>
     </div>
-    <div style="position:absolute; top:40px; right:20px; z-index:10;" onclick="document.getElementById('galaxyInput').click()">
-        <div style="background:rgba(208, 168, 255, 0.2); padding:10px; border-radius:50%; backdrop-filter:blur(5px); border: 1px solid var(--accent);">
-            <svg class="svg-icon-lg" style="color:var(--accent);"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </div>
-    </div>
+    
     <input type="file" id="galaxyInput" hidden accept="image/*" onchange="processMediaUpload(event, 'galaxy')" onclick="this.value=null">
 
-    <div id="galaxyUniverse" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; perspective: 1000px;">
+    <div id="galaxyUniverse" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; perspective: 1000px; z-index: 5;">
         <div id="galaxyCenter" style="position:relative; width:0; height:0; transform-style:preserve-3d;">
             <div class="galaxy-sun"></div>
             <div id="galaxyOrbit" style="position:absolute; top:0; left:0; transform-style:preserve-3d;">
-            </div>
+                </div>
         </div>
     </div>
 </div>
@@ -1775,11 +1823,11 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
             } else if (targetPath === 'galaxy') {
-                await fs.collection('cocon').doc(user.code).collection('galaxy').add({
+                await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + currentPlanetIndex).set({
                     url: secureUrl,
                     t: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                showToast("Étoile ajoutée à la galaxie ! ✨");
+                showToast("Planète illuminée ! ✨");
             } else {
                 const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
                 const docTarget = targetPath === 'msgs' ? activeId : user.code;
@@ -2010,20 +2058,9 @@ function promptGalaxyAccess() {
     });
 }
 
-function openGalaxy() {
-    document.getElementById('galaxyBox').style.display = 'block';
-    pushState('galaxy');
-    syncGalaxy();
-    animateGalaxy();
-}
-
-function closeGalaxy(fromHistory = false) {
-    document.getElementById('galaxyBox').style.display = 'none';
-    if(autoRotateReq) cancelAnimationFrame(autoRotateReq);
-    if(!fromHistory) triggerBack();
-}
-
-let galaxyImages = [];
+// VARIABLES GLOBALES DE LA GALAXIE
+let galaxyPlanetsData = {};
+let currentPlanetIndex = null;
 let baseRotation = 0;
 let isDraggingGalaxy = false;
 let startX = 0;
@@ -2031,12 +2068,51 @@ let lastX = 0;
 let autoRotateReq;
 let unsubGalaxy = null;
 
+// Les 9 couleurs distinctes pour les planètes vides
+const planetColors = [
+    'linear-gradient(45deg, #ff9a9e, #fecfef)', // Rose poudré
+    'linear-gradient(45deg, #a18cd1, #fbc2eb)', // Violet doux
+    'linear-gradient(45deg, #84fab0, #8fd3f4)', // Vert d'eau
+    'linear-gradient(45deg, #fccb90, #d57eeb)', // Orange ambré
+    'linear-gradient(45deg, #e0c3fc, #8ec5fc)', // Bleu ciel pastel
+    'linear-gradient(45deg, #f093fb, #f5576c)', // Framboise
+    'linear-gradient(45deg, #4facfe, #00f2fe)', // Cyan profond
+    'linear-gradient(45deg, #43e97b, #38f9d7)', // Menthe
+    'linear-gradient(45deg, #fa709a, #fee140)'  // Or rose
+];
+
+function openGalaxy() {
+    document.getElementById('galaxyBox').style.display = 'block';
+    pushState('galaxy');
+    syncGalaxy();
+    animateGalaxy();
+    
+    // Lancement de la musique des vagues
+    const audio = document.getElementById('galaxyAudio');
+    if(audio) audio.play().catch(e => console.log("Lecture audio bloquée par le navigateur", e));
+}
+
+function closeGalaxy(fromHistory = false) {
+    document.getElementById('galaxyBox').style.display = 'none';
+    if(autoRotateReq) cancelAnimationFrame(autoRotateReq);
+    
+    // Arrêt de la musique
+    const audio = document.getElementById('galaxyAudio');
+    if(audio) {
+        audio.pause();
+        audio.currentTime = 0;
+    }
+    
+    if(!fromHistory) triggerBack();
+}
+
 function syncGalaxy() {
     if(unsubGalaxy) unsubGalaxy();
-    unsubGalaxy = fs.collection('cocon').doc(user.code).collection('galaxy').orderBy('t', 'asc').onSnapshot(snap => {
-        galaxyImages = [];
+    unsubGalaxy = fs.collection('cocon').doc(user.code).collection('galaxyPlanets').onSnapshot(snap => {
+        galaxyPlanetsData = {};
         snap.forEach(doc => {
-            galaxyImages.push({ id: doc.id, url: doc.data().url });
+            const idx = parseInt(doc.id.replace('planet_', ''));
+            galaxyPlanetsData[idx] = { id: doc.id, url: doc.data().url };
         });
         renderGalaxy();
     });
@@ -2045,24 +2121,38 @@ function syncGalaxy() {
 function renderGalaxy() {
     const orbit = document.getElementById('galaxyOrbit');
     orbit.innerHTML = "";
-    if (galaxyImages.length === 0) return;
-    
-    const angleStep = 360 / galaxyImages.length;
+    const angleStep = 360 / 9; // 9 planètes fixes
 
-    galaxyImages.forEach((img, i) => {
+    for(let i = 0; i < 9; i++) {
         const angle = angleStep * i;
-        const el = document.createElement('img');
-        el.src = img.url.replace('/upload/', '/upload/c_fill,w_150,h_150,q_auto/'); 
-        el.className = 'galaxy-item';
-        el.dataset.angle = angle;
-        el.onclick = (e) => { e.stopPropagation(); explodeAndView(img.url, e.clientX, e.clientY); };
-        orbit.appendChild(el);
-    });
+        const pData = galaxyPlanetsData[i];
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'galaxy-item planet-wrapper';
+        wrapper.dataset.angle = angle;
+        
+        const sphere = document.createElement('div');
+        sphere.className = 'planet-sphere';
+        
+        if(pData && pData.url) {
+            // Planète avec photo
+            sphere.style.backgroundImage = `url('${pData.url.replace('/upload/', '/upload/c_fill,w_150,h_150,q_auto/')}')`;
+            sphere.onclick = (e) => { e.stopPropagation(); explodeAndView(pData.url, e.clientX, e.clientY); };
+        } else {
+            // Planète vide avec la couleur et le signe +
+            sphere.style.background = planetColors[i];
+            sphere.innerHTML = `<div class="planet-plus">+</div>`;
+            sphere.onclick = (e) => { e.stopPropagation(); addPhotoToPlanet(i); };
+        }
+        
+        wrapper.appendChild(sphere);
+        orbit.appendChild(wrapper);
+    }
     updateGalaxyPositions();
 }
 
 function updateGalaxyPositions() {
-    const items = document.querySelectorAll('.galaxy-item');
+    const items = document.querySelectorAll('.planet-wrapper');
     const radius = window.innerWidth < 400 ? 120 : 160;
     
     items.forEach(item => {
@@ -2074,12 +2164,18 @@ function updateGalaxyPositions() {
         const scale = (z + radius + 100) / (radius * 2 + 100);
         item.style.transform = `translate3d(${x}px, 0px, ${z}px) scale(${scale})`;
         item.style.zIndex = Math.round(z + radius);
-        item.style.opacity = scale > 0.5 ? 1 : scale;
+        // Assombrit les planètes qui passent derrière le soleil
+        item.style.filter = scale < 0.8 ? `brightness(${scale})` : 'brightness(1)';
     });
 }
 
+function addPhotoToPlanet(index) {
+    currentPlanetIndex = index; // On mémorise quelle planète est ciblée
+    document.getElementById('galaxyInput').click();
+}
+
 function animateGalaxy() {
-    if(!isDraggingGalaxy && galaxyImages.length > 0) {
+    if(!isDraggingGalaxy) {
         baseRotation -= 0.3; 
         updateGalaxyPositions();
     }
