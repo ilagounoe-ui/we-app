@@ -139,16 +139,14 @@
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        /* DESIGN PRINCIPAL RÉPARÉ (SCROLL PARFAIT) */
         .main-header { 
             padding: 50px 20px 15px; 
-            background: rgba(11, 9, 20, 0.6); 
+            background: rgba(11, 9, 20, 0.85); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
+            position: fixed; 
+            top: 0; left: 0; right: 0; 
+            z-index: 1000; 
             border-bottom: 1px solid var(--glass-border); 
-            will-change: transform; 
         }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
@@ -158,8 +156,8 @@
 
         .view { 
             display: none; 
-            padding: 20px; 
-            height: calc(100vh - 180px); 
+            height: 100vh; 
+            padding: 150px 20px 120px 20px; 
             overflow-y: auto; 
             scroll-behavior: smooth; 
         }
@@ -178,7 +176,6 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* FENÊTRES DE CHAT (BLINDÉES CONTRE LE CLAVIER) */
         #chatBox, #coconBox { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
@@ -207,7 +204,7 @@
             border: 1px solid rgba(255, 75, 110, 0.4); 
             color: #ffe6eb;
         }
-
+        
         .chat-head { 
             position: absolute; top: 0; left: 0; width: 100%; height: 90px;
             padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; 
@@ -259,28 +256,67 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* NOUVEAU LECTEUR AUDIO STYLE WHATSAPP */
-        .wa-audio {
-            display: flex; align-items: center; gap: 12px;
-            background: rgba(0,0,0,0.2); padding: 8px 15px;
-            border-radius: 30px; min-width: 180px; margin-top: 5px;
+        /* --- LECTEUR AUDIO STYLE WHATSAPP --- */
+        .custom-audio-player {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(0,0,0,0.15); padding: 8px 12px;
+            border-radius: 20px; width: 220px;
             border: 1px solid rgba(255,255,255,0.1);
+            margin-top: 5px;
         }
-        .wa-play {
-            width: 36px; height: 36px; border-radius: 50%;
+        .m-me .custom-audio-player {
+            background: rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .audio-play-btn {
+            width: 35px; height: 35px; border-radius: 50%;
             background: var(--accent); color: #000;
             display: flex; align-items: center; justify-content: center;
-            font-size: 16px; padding-left: 3px; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: 0.2s;
+            font-size: 16px; cursor: pointer; flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .wa-play:active { transform: scale(0.9); }
-        .wa-wave {
-            flex: 1; height: 18px;
-            background: repeating-linear-gradient(90deg, rgba(255,255,255,0.8) 0px, rgba(255,255,255,0.8) 2px, transparent 2px, transparent 5px);
-            opacity: 0.7; border-radius: 10px;
+        .m-me .audio-play-btn {
+            background: #fff; color: #000;
         }
-        .m-me .wa-play { background: #000; color: var(--accent); }
-        .m-me .wa-wave { background: repeating-linear-gradient(90deg, #000 0px, #000 2px, transparent 2px, transparent 5px); }
+        .audio-progress-container {
+            flex: 1; height: 4px; background: rgba(255,255,255,0.2);
+            border-radius: 2px; position: relative; overflow: hidden;
+        }
+        .audio-progress-bar {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: var(--accent); width: 0%;
+        }
+        .m-me .audio-progress-bar { background: #fff; }
+        
+        /* MINIATURES MULTIMÉDIA */
+        .media-thumbnail {
+            width: 100%; border-radius: 12px; margin-top: 5px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover;
+            cursor: pointer;
+        }
+        .video-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 40px; background: rgba(0,0,0,0.6);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; pointer-events: none; backdrop-filter: blur(5px);
+        }
+
+        /* --- LIGHTBOX (Media Viewer) --- */
+        #mediaViewerOverlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        #mediaViewerOverlay.show { opacity: 1; display: flex; }
+        #mediaViewerOverlay .close-btn {
+            position: absolute; top: 40px; left: 20px; width: 40px; height: 40px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(10px);
+        }
+        #mediaViewerContent {
+            max-width: 100vw; max-height: 100vh; object-fit: contain;
+        }
         
         .chat-input-wrapper {
             flex: 1;
@@ -343,6 +379,13 @@
 <body onclick="unlockAudio()">
 
 <div id="toastAlert" class="toast"></div>
+
+<div id="mediaViewerOverlay">
+    <div class="close-btn" onclick="closeMediaViewer()">
+        <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </div>
+    <div id="mediaViewerContainer" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"></div>
+</div>
 
 <div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); flex-direction: column; align-items: center; text-align: center;">
     <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 15px;">
@@ -558,7 +601,7 @@
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
                 
                 <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -595,7 +638,7 @@
     <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
                 
                 <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -669,6 +712,7 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
+// --- LE JUKEBOX OFFICIEL EN DUR ---
 const defaultPlaylist = [
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
@@ -692,6 +736,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
 });
 
+// --- VARIABLES GLOBALES ---
 let user = null;
 let stateStack = [];
 let activeId = null;
@@ -708,6 +753,7 @@ let audioUnlocked = false;
 
 const sounds = { pop: "" };
 
+// BIBLIOTHÈQUE DES MOTS DOUX 
 const moodLibrary = {
     "Heureux": [
         "Ton bonheur est ma plus belle réussite. ✨",
@@ -790,6 +836,7 @@ const i18n = {
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code", set_lang: "Universe Language", set_date: "Our Beginning", set_wall: "Customize Universe", set_note: "Send a sweet note", set_blocked: "Blocked contacts", set_leave: "Leave Universe" }
 };
 
+// --- INITIALISATION FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
     authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -1068,6 +1115,7 @@ function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
 window.onpopstate = () => {
     const last = stateStack.pop();
     if(last === 'modal') document.getElementById('customModal').style.display = 'none';
+    else if(last === 'mediaViewer') closeMediaViewer(true);
     else if(last === 'chatBox' || last === 'coconBox') closeChat();
 };
 function triggerBack() { history.back(); }
@@ -1217,6 +1265,26 @@ window.playCustomAudio = function(url, btnElement) {
     };
 };
 
+// LOGIQUE POUR LE MEDIA VIEWER (PHOTOS & VIDÉOS)
+function openMediaViewer(url, type) {
+    const container = document.getElementById('mediaViewerContainer');
+    container.innerHTML = "";
+    if(type === 'img') {
+        container.innerHTML = `<img src="${url}" id="mediaViewerContent">`;
+    } else {
+        container.innerHTML = `<video src="${url}" controls autoplay id="mediaViewerContent"></video>`;
+    }
+    document.getElementById('mediaViewerOverlay').classList.add('show');
+    pushState('mediaViewer');
+}
+
+function closeMediaViewer(fromHistory = false) {
+    document.getElementById('mediaViewerOverlay').classList.remove('show');
+    const container = document.getElementById('mediaViewerContainer');
+    container.innerHTML = ""; // Coupe la vidéo si elle jouait
+    if(!fromHistory) triggerBack();
+}
+
 function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return ""; 
 
@@ -1264,16 +1332,24 @@ function getMsgHTML(docId, m, path, target) {
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     
     if(m.type === 'img') {
-        content = `<img src="${m.txt}" style="width:100%; border-radius:12px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.3);" onclick="viewPhoto('${m.txt}')">`;
+        content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
     }
     if(m.type === 'video') {
-        content = `<video controls preload="metadata" src="${m.txt}" style="width:100%; max-height:250px; background:#000; border-radius:12px; margin-top:5px; box-shadow:0 4px 10px rgba(0,0,0,0.3); outline:none;"></video>`;
+        // Optimisation Cloudinary pour la miniature
+        let posterUrl = m.txt.replace('/upload/', '/upload/q_auto,f_auto,so_0/');
+        if(!posterUrl.includes('cloudinary')) posterUrl = "";
+        
+        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();">
+            <video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video>
+            <div class="video-overlay">▶</div>
+        </div>`;
     }
     if(m.type === 'audio') {
-        // DESIGN WHATSAPP AUDIO
-        content = `<div class="wa-audio" onclick="playCustomAudio('${m.txt}', this.querySelector('.wa-play')); event.stopPropagation();">
-            <div class="wa-play">▶</div>
-            <div class="wa-wave"></div>
+        content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();">
+            <div class="audio-play-btn">▶</div>
+            <div class="audio-progress-container">
+                <div class="audio-progress-bar" style="width: 100%;"></div>
+            </div>
         </div>`;
     }
     
@@ -1286,7 +1362,7 @@ function getMsgHTML(docId, m, path, target) {
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
-    area.innerHTML = ""; // Force le vidage de la zone pour éviter les doublons au premier chargement
+    area.innerHTML = ""; // Évite les doublons visuels au chargement
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
@@ -1311,7 +1387,7 @@ function syncMessages(path, target, areaId) {
 }
 
 function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
-    if(type === 'audio') return; // On désactive l'option clic sur audio pour ne pas gêner le bouton play
+    if(type === 'audio') return; 
     const decodedTxt = decodeURIComponent(escTxt);
     let html = "";
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
@@ -1349,13 +1425,13 @@ function editMsg(id, old, path, target) {
 }
 
 function sendMsg(mode) {
-    if (window.isSendingMsg) return; // BLOQUE LES DOUBLONS
+    if (window.isSendingMsg) return; 
     
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
     const text = inp.value.trim();
     if(!text) return;
     
-    window.isSendingMsg = true; // Verrou activé
+    window.isSendingMsg = true;
     
     if(mode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
@@ -1380,7 +1456,7 @@ function sendMsg(mode) {
         }).then(() => {
             inp.value = "";
             inp.focus(); 
-            setTimeout(() => { window.isSendingMsg = false; }, 800); // Verrou relâché après 800ms
+            setTimeout(() => { window.isSendingMsg = false; }, 500); 
         });
         
         if(mode === 'msgs') {
@@ -1417,7 +1493,7 @@ function openContactOptions() {
         const u = doc.data();
         const pfpUrl = u && u.pfp ? u.pfp : null;
         let html = `
-            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `viewPhoto('${pfpUrl}')` : `showToast('Aucune photo')`}">
+            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `openMediaViewer('${pfpUrl}', 'img')` : `showToast('Aucune photo')`}">
                 <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Voir la photo
             </button>
             <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">
@@ -1539,18 +1615,20 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// 🎙️ NOUVEAU DESIGN D'ENREGISTREMENT
+// 🎙️ ENREGISTREMENT VOCAL SÉCURISÉ ET INDICATEUR
 async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: { echoCancellation: true, noiseSuppression: true } 
+        });
         mediaRecorder = new MediaRecorder(stream);
         mediaRecorder.ondataavailable = event => { 
             if (event.data.size > 0) audioChunks.push(event.data); 
         };
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' }); 
+            const audioBlob = new Blob(audioChunks); 
             audioChunks = [];
             uploadToFirebase(audioBlob, 'audio', mode);
         };
@@ -1558,7 +1636,6 @@ async function startRecording(e, mode) {
         mediaRecorder.start(); 
         isRecording = true;
         
-        // Bloque le texte et affiche l'enregistrement
         const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         inputField.dataset.origPlaceholder = inputField.placeholder;
         inputField.placeholder = "🔴 Enregistrement...";
@@ -1578,7 +1655,6 @@ function stopRecording(e) {
         mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
         isRecording = false;
         
-        // Débloque le texte
         ['mIn', 'coIn'].forEach(id => {
             const inputField = document.getElementById(id);
             if (inputField && inputField.disabled) {
@@ -1650,7 +1726,12 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
         const data = await response.json();
         
         if(data.secure_url) {
-            const secureUrl = data.secure_url;
+            let secureUrl = data.secure_url;
+            
+            // Optimisation de la vidéo via Cloudinary (q_auto) pour réduire la lenteur
+            if(typeParam === 'video') {
+                secureUrl = secureUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
+            }
             
             if (targetPath === 'pfp') {
                 await fs.collection('users').doc(user.id).set({ pfp: secureUrl }, { merge: true });
@@ -1699,6 +1780,7 @@ function openModal(t, b, a) {
     }
 }
 
+// --- CONNEXION SÉCURISÉE AVEC FIREBASE AUTH ---
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
