@@ -141,12 +141,13 @@
 
         .main-header { 
             padding: 50px 20px 15px; 
-            background: rgba(11, 9, 20, 0.85); 
+            background: rgba(11, 9, 20, 0.6); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
-            position: fixed; 
-            top: 0; left: 0; right: 0; 
-            z-index: 1000; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
             border-bottom: 1px solid var(--glass-border); 
+            will-change: transform; 
         }
         
         .tabs { display: flex; gap: 10px; margin-top: 20px; }
@@ -156,8 +157,8 @@
 
         .view { 
             display: none; 
-            height: 100vh; 
-            padding: 150px 20px 120px 20px; 
+            padding: 20px; 
+            height: calc(100vh - 180px); 
             overflow-y: auto; 
             scroll-behavior: smooth; 
         }
@@ -176,11 +177,11 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
+        /* FENÊTRES DE CHAT FIXÉES EN ABSOLU POUR NE PAS SE FAIRE ÉCRASER PAR LE CLAVIER */
         #chatBox, #coconBox { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
-            overflow: hidden; 
         }
 
         @keyframes coconPulseBg {
@@ -203,6 +204,12 @@
             background: rgba(255, 75, 110, 0.1); 
             border: 1px solid rgba(255, 75, 110, 0.4); 
             color: #ffe6eb;
+        }
+
+        @keyframes universDust {
+            0% { opacity: 0; transform: scale(0.5) translate(0, 0); }
+            20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
+            100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
         }
         
         .chat-head { 
@@ -256,7 +263,7 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* --- LECTEUR AUDIO STYLE WHATSAPP --- */
+        /* LECTEUR AUDIO STYLE WHATSAPP */
         .custom-audio-player {
             display: flex; align-items: center; gap: 10px;
             background: rgba(0,0,0,0.15); padding: 8px 12px;
@@ -301,7 +308,7 @@
             color: white; pointer-events: none; backdrop-filter: blur(5px);
         }
 
-        /* --- LIGHTBOX (Media Viewer) --- */
+        /* LIGHTBOX (Media Viewer) */
         #mediaViewerOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -437,7 +444,7 @@
     </div>
 </div>
 
-<div id="mainApp" style="display:none; height: 100%; overflow: hidden; width: 100%;">
+<div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
@@ -601,7 +608,7 @@
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') sendMsg('msgs')" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
                 
                 <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -638,7 +645,7 @@
     <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') sendMsg('cocon')" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
                 
                 <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
@@ -712,7 +719,6 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
-// --- LE JUKEBOX OFFICIEL EN DUR ---
 const defaultPlaylist = [
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
@@ -736,7 +742,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
 });
 
-// --- VARIABLES GLOBALES ---
 let user = null;
 let stateStack = [];
 let activeId = null;
@@ -753,7 +758,6 @@ let audioUnlocked = false;
 
 const sounds = { pop: "" };
 
-// BIBLIOTHÈQUE DES MOTS DOUX 
 const moodLibrary = {
     "Heureux": [
         "Ton bonheur est ma plus belle réussite. ✨",
@@ -836,7 +840,6 @@ const i18n = {
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code", set_lang: "Universe Language", set_date: "Our Beginning", set_wall: "Customize Universe", set_note: "Send a sweet note", set_blocked: "Blocked contacts", set_leave: "Leave Universe" }
 };
 
-// --- INITIALISATION FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyBtx8uE9hkBB86uA9p4gCCP3OHx3jdmfAs",
     authDomain: "notre-univers-d71a3.firebaseapp.com",
@@ -1272,7 +1275,7 @@ function openMediaViewer(url, type) {
     if(type === 'img') {
         container.innerHTML = `<img src="${url}" id="mediaViewerContent">`;
     } else {
-        container.innerHTML = `<video src="${url}" controls autoplay id="mediaViewerContent"></video>`;
+        container.innerHTML = `<video src="${url}" controls autoplay playsinline id="mediaViewerContent"></video>`;
     }
     document.getElementById('mediaViewerOverlay').classList.add('show');
     pushState('mediaViewer');
@@ -1281,7 +1284,7 @@ function openMediaViewer(url, type) {
 function closeMediaViewer(fromHistory = false) {
     document.getElementById('mediaViewerOverlay').classList.remove('show');
     const container = document.getElementById('mediaViewerContainer');
-    container.innerHTML = ""; // Coupe la vidéo si elle jouait
+    container.innerHTML = ""; 
     if(!fromHistory) triggerBack();
 }
 
@@ -1335,10 +1338,8 @@ function getMsgHTML(docId, m, path, target) {
         content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
     }
     if(m.type === 'video') {
-        // Optimisation Cloudinary pour la miniature
         let posterUrl = m.txt.replace('/upload/', '/upload/q_auto,f_auto,so_0/');
         if(!posterUrl.includes('cloudinary')) posterUrl = "";
-        
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();">
             <video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video>
             <div class="video-overlay">▶</div>
@@ -1362,7 +1363,7 @@ function getMsgHTML(docId, m, path, target) {
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
-    area.innerHTML = ""; // Évite les doublons visuels au chargement
+    area.innerHTML = ""; 
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
@@ -1615,7 +1616,6 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// 🎙️ ENREGISTREMENT VOCAL SÉCURISÉ ET INDICATEUR
 async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
@@ -1707,7 +1707,6 @@ function processMediaUpload(e, targetMode) {
     }
 }
 
-// ORGANISATION SÉCURISÉE DES MÉDIAS VIA CLOUDINARY
 async function uploadToFirebase(fileData, typeParam, targetPath) {
     const CLOUD_NAME = "dgiy2zapd"; 
     const UPLOAD_PRESET = "evyegpfe"; 
@@ -1728,7 +1727,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
         if(data.secure_url) {
             let secureUrl = data.secure_url;
             
-            // Optimisation de la vidéo via Cloudinary (q_auto) pour réduire la lenteur
             if(typeParam === 'video') {
                 secureUrl = secureUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
             }
@@ -1780,7 +1778,6 @@ function openModal(t, b, a) {
     }
 }
 
-// --- CONNEXION SÉCURISÉE AVEC FIREBASE AUTH ---
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
