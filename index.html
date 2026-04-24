@@ -372,7 +372,7 @@
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
 
-        /* CSS DE LA GALAXIE SECRÈTE */
+        /* CSS DE LA GALAXIE SECRÈTE (VUE 2D ORBITALE) */
         #galaxyBox {
             display: none; position: fixed; inset: 0; background: #000; z-index: 100000; overflow: hidden;
             background-image: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
@@ -413,24 +413,35 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Structure des planètes */
+        /* Structure des planètes (Vue 2D) */
         .planet-wrapper {
-            position: absolute; top: -35px; left: -35px; 
+            position: absolute; 
+            top: -35px; left: -35px; 
             width: 70px; height: 70px; 
             cursor: pointer; 
-            transform-style: preserve-3d;
-            transition: transform 0.2s;
         }
-        .planet-wrapper:active { transform: scale(0.9); }
 
         .planet-sphere {
             width: 100%; height: 100%; 
             border-radius: 50%; 
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.6), 0 0 15px rgba(255,255,255,0.2); 
+            box-shadow: 0 0 15px rgba(255,255,255,0.3); 
             background-size: cover; 
             background-position: center; 
             display: flex; align-items: center; justify-content: center; 
-            border: 2px solid rgba(255,255,255,0.3);
+            border: 2px solid rgba(255,255,255,0.6);
+            animation: popInPlanet 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform: scale(0);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .planet-wrapper:active .planet-sphere { 
+            transform: scale(0.85) !important; 
+            box-shadow: 0 0 30px rgba(255, 75, 110, 0.8);
+        }
+
+        @keyframes popInPlanet {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
         }
 
         .planet-plus {
@@ -453,7 +464,7 @@
 </div>
 
 <div id="galaxyBox">
-    <audio id="galaxyAudio" loop src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
+    <audio id="galaxyAudio" loop preload="auto" src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
 
     <div class="stars-bg"></div>
 
@@ -465,11 +476,11 @@
     
     <input type="file" id="galaxyInput" hidden accept="image/*" onchange="processMediaUpload(event, 'galaxy')" onclick="this.value=null">
 
-    <div id="galaxyUniverse" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; perspective: 1000px; z-index: 5;">
-        <div id="galaxyCenter" style="position:relative; width:0; height:0; transform-style:preserve-3d;">
+    <div id="galaxyUniverse" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index: 5;">
+        <div id="galaxyCenter" style="position:relative; width:0; height:0;">
             <div class="galaxy-sun"></div>
-            <div id="galaxyOrbit" style="position:absolute; top:0; left:0; transform-style:preserve-3d;">
-                </div>
+            <div id="galaxyOrbit" style="position:absolute; top:0; left:0;">
+            </div>
         </div>
     </div>
 </div>
@@ -2087,9 +2098,26 @@ function openGalaxy() {
     syncGalaxy();
     animateGalaxy();
     
-    // Lancement de la musique des vagues
+    // 1. Déclenche l'explosion d'étoiles au centre
+    centerExplosion();
+    
+    // 2. Lancement robuste de la musique
     const audio = document.getElementById('galaxyAudio');
-    if(audio) audio.play().catch(e => console.log("Lecture audio bloquée par le navigateur", e));
+    if(audio) {
+        audio.currentTime = 0;
+        let playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log("Autoplay bloqué par le navigateur. Attente d'interaction.");
+                // Si bloqué, on force la lecture au tout premier toucher/clic n'importe où sur l'écran
+                document.getElementById('galaxyBox').addEventListener('pointerdown', function forceAudio() {
+                    audio.play();
+                    this.removeEventListener('pointerdown', forceAudio);
+                }, { once: true });
+            });
+        }
+    }
 }
 
 function closeGalaxy(fromHistory = false) {
@@ -2133,16 +2161,17 @@ function renderGalaxy() {
         
         const sphere = document.createElement('div');
         sphere.className = 'planet-sphere';
+        sphere.style.animationDelay = `${i * 0.1}s`; // Effet d'apparition en cascade
         
         if(pData && pData.url) {
             // Planète avec photo
             sphere.style.backgroundImage = `url('${pData.url.replace('/upload/', '/upload/c_fill,w_150,h_150,q_auto/')}')`;
-            sphere.onclick = (e) => { e.stopPropagation(); explodeAndView(pData.url, e.clientX, e.clientY); };
+            wrapper.onclick = (e) => { e.stopPropagation(); explodeAndView(pData.url, e.clientX, e.clientY); };
         } else {
             // Planète vide avec la couleur et le signe +
             sphere.style.background = planetColors[i];
             sphere.innerHTML = `<div class="planet-plus">+</div>`;
-            sphere.onclick = (e) => { e.stopPropagation(); addPhotoToPlanet(i); };
+            wrapper.onclick = (e) => { e.stopPropagation(); addPhotoToPlanet(i); };
         }
         
         wrapper.appendChild(sphere);
@@ -2151,21 +2180,20 @@ function renderGalaxy() {
     updateGalaxyPositions();
 }
 
+// Transformation 2D parfaite comme sur la vidéo
 function updateGalaxyPositions() {
     const items = document.querySelectorAll('.planet-wrapper');
-    const radius = window.innerWidth < 400 ? 120 : 160;
+    const radius = window.innerWidth < 400 ? 110 : 150; // Rayon du cercle parfait
     
     items.forEach(item => {
         const angle = parseFloat(item.dataset.angle) + baseRotation;
         const rad = angle * Math.PI / 180;
-        const x = Math.cos(rad) * radius;
-        const z = Math.sin(rad) * radius;
         
-        const scale = (z + radius + 100) / (radius * 2 + 100);
-        item.style.transform = `translate3d(${x}px, 0px, ${z}px) scale(${scale})`;
-        item.style.zIndex = Math.round(z + radius);
-        // Assombrit les planètes qui passent derrière le soleil
-        item.style.filter = scale < 0.8 ? `brightness(${scale})` : 'brightness(1)';
+        // Mode 2D : utilisation de X et Y
+        const x = Math.cos(rad) * radius;
+        const y = Math.sin(rad) * radius;
+        
+        item.style.transform = `translate(${x}px, ${y}px)`;
     });
 }
 
@@ -2176,7 +2204,7 @@ function addPhotoToPlanet(index) {
 
 function animateGalaxy() {
     if(!isDraggingGalaxy) {
-        baseRotation -= 0.3; 
+        baseRotation -= 0.3; // Vitesse de rotation
         updateGalaxyPositions();
     }
     autoRotateReq = requestAnimationFrame(animateGalaxy);
@@ -2240,6 +2268,38 @@ function explodeAndView(url, x, y) {
         fw.remove();
         openMediaViewer(url, 'img');
     }, 500);
+}
+
+// Fonction pour recréer l'explosion du début de la vidéo
+function centerExplosion() {
+    const center = document.getElementById('galaxyCenter');
+    if(!center) return;
+
+    for(let i=0; i<60; i++) {
+        const p = document.createElement('div');
+        p.style.position = 'absolute';
+        p.style.width = '3px';
+        p.style.height = '3px';
+        // Étincelles blanches et dorées
+        p.style.background = Math.random() > 0.5 ? '#fff' : '#ffdf00'; 
+        p.style.borderRadius = '50%';
+        p.style.boxShadow = `0 0 8px ${p.style.background}`;
+        p.style.left = '0';
+        p.style.top = '0';
+        
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 30 + Math.random() * 250;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+        
+        p.animate([
+            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+            { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+        ], { duration: 1000 + Math.random()*800, easing: 'cubic-bezier(0, .9, .57, 1)' });
+        
+        center.appendChild(p);
+        setTimeout(() => p.remove(), 2000);
+    }
 }
 </script>
 
