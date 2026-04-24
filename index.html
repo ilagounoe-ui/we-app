@@ -108,8 +108,7 @@
             margin: 0 0 20px 0;
             text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2);
             cursor: pointer;
-            user-select: none;
-            -webkit-user-select: none;
+            padding: 10px;
         }
 
         .time-box {
@@ -142,6 +141,7 @@
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
+        /* L'EN-TÊTE PRINCIPALE ET SON SCROLL RÉPARÉS */
         .main-header { 
             padding: 50px 20px 15px; 
             background: rgba(11, 9, 20, 0.6); 
@@ -180,6 +180,7 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
+        /* FENÊTRES DE CHAT (BLINDÉES CONTRE LE CLAVIER) */
         #chatBox, #coconBox { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
@@ -207,6 +208,12 @@
             background: rgba(255, 75, 110, 0.1); 
             border: 1px solid rgba(255, 75, 110, 0.4); 
             color: #ffe6eb;
+        }
+
+        @keyframes universDust {
+            0% { opacity: 0; transform: scale(0.5) translate(0, 0); }
+            20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
+            100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
         }
         
         .chat-head { 
@@ -260,6 +267,7 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
+        /* LECTEUR AUDIO STYLE WHATSAPP */
         .custom-audio-player {
             display: flex; align-items: center; gap: 10px;
             background: rgba(0,0,0,0.15); padding: 8px 12px;
@@ -289,6 +297,7 @@
         }
         .m-me .audio-progress-bar { background: #fff; }
         
+        /* MINIATURES MULTIMÉDIA */
         .media-thumbnail {
             width: 100%; border-radius: 12px; margin-top: 5px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover;
@@ -301,6 +310,7 @@
             color: white; pointer-events: none; backdrop-filter: blur(5px);
         }
 
+        /* LIGHTBOX (Media Viewer) */
         #mediaViewerOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -316,26 +326,36 @@
         #mediaViewerContent {
             max-width: 100vw; max-height: 100vh; object-fit: contain;
         }
+
+        /* CSS DE LA GALAXIE SECRÈTE */
+        #galaxyBox {
+            display: none; position: fixed; inset: 0; background: #000; z-index: 100000; overflow: hidden;
+            background-image: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
+        }
+        .galaxy-sun {
+            position: absolute; top: -40px; left: -40px; width: 80px; height: 80px;
+            background: radial-gradient(circle, #fff, #ffdf00, transparent);
+            border-radius: 50%; box-shadow: 0 0 40px #ffdf00, 0 0 80px #ffdf00;
+            animation: sun-pulse 3s infinite alternate;
+        }
+        @keyframes sun-pulse { 0% { transform: scale(1); opacity:0.8;} 100% { transform: scale(1.1); opacity:1;} }
+        .galaxy-item {
+            position: absolute; top: -35px; left: -35px; width: 70px; height: 70px;
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.6);
+            object-fit: cover; box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .galaxy-item:active { transform: scale(0.9); }
         
         .chat-input-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 2px 5px 2px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px; padding: 2px 5px 2px 15px; border: 1px solid rgba(255, 255, 255, 0.1);
             min-width: 0; 
         }
 
         .chat-input-field {
-            flex: 1; 
-            background: transparent; border: none; 
-            padding: 12px 0; color: white; font-size: 15px; 
-            font-family: 'Poppins', sans-serif;
-            outline: none;
-            min-width: 0; 
-            width: 100%;
+            flex: 1; background: transparent; border: none; padding: 12px 0; color: white; font-size: 15px; 
+            font-family: 'Poppins', sans-serif; outline: none; min-width: 0; width: 100%;
         }
         
         .btn-attachment {
@@ -373,26 +393,6 @@
 
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-
-        /* --- NOUVEAU CSS POUR LA GALAXIE SECRÈTE --- */
-        #galaxyBox {
-            display: none; position: fixed; inset: 0; background: #000; z-index: 100000; overflow: hidden;
-            background-image: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
-        }
-        .galaxy-sun {
-            position: absolute; top: -40px; left: -40px; width: 80px; height: 80px;
-            background: radial-gradient(circle, #fff, #ffdf00, transparent);
-            border-radius: 50%; box-shadow: 0 0 40px #ffdf00, 0 0 80px #ffdf00;
-            animation: sun-pulse 3s infinite alternate;
-        }
-        @keyframes sun-pulse { 0% { transform: scale(1); opacity:0.8;} 100% { transform: scale(1.1); opacity:1;} }
-        .galaxy-item {
-            position: absolute; top: -35px; left: -35px; width: 70px; height: 70px;
-            border-radius: 50%; border: 2px solid rgba(255,255,255,0.6);
-            object-fit: cover; box-shadow: 0 0 15px rgba(255,255,255,0.4);
-            cursor: pointer; transition: transform 0.2s;
-        }
-        .galaxy-item:active { transform: scale(0.9); }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -423,7 +423,7 @@
         <div id="galaxyCenter" style="position:relative; width:0; height:0; transform-style:preserve-3d;">
             <div class="galaxy-sun"></div>
             <div id="galaxyOrbit" style="position:absolute; top:0; left:0; transform-style:preserve-3d;">
-                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -440,7 +440,9 @@
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow);">L'Univers te parle... 💖</div>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
+        L'Univers te parle... 💖
+    </div>
     <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
@@ -513,11 +515,11 @@
             <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
                 <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;">
                     <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"></path>
                 </svg>
             </div>
 
-            <h3 class="eternity-title" id="eternityTitle" onclick="onEternityClick()">Notre Éternité</h3>
+            <h3 class="eternity-title" id="eternityTitle" onclick="onEternityClick()" style="padding: 10px;">Notre Éternité</h3>
             
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
                 <div class="time-box">
@@ -1268,7 +1270,6 @@ function revealCapsule(docId, path) {
     }, 500);
 }
 
-// LECTEUR AUDIO STYLE WHATSAPP
 let currentCustomAudio = null;
 let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
@@ -1300,7 +1301,6 @@ window.playCustomAudio = function(url, btnElement) {
     };
 };
 
-// MEDIA VIEWER (PHOTOS & VIDÉOS)
 function openMediaViewer(url, type) {
     const container = document.getElementById('mediaViewerContainer');
     container.innerHTML = "";
@@ -1772,7 +1772,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
             } else if (targetPath === 'galaxy') {
-                // ENREGISTREMENT DE LA PHOTO DANS LA GALAXIE
                 await fs.collection('cocon').doc(user.code).collection('galaxy').add({
                     url: secureUrl,
                     t: firebase.firestore.FieldValue.serverTimestamp()
@@ -2006,14 +2005,15 @@ function onEternityClick() {
         eternityClickCount = 0;
         promptGalaxyAccess();
     } else {
-        eternityClickTimer = setTimeout(() => { eternityClickCount = 0; }, 800);
+        eternityClickTimer = setTimeout(() => { eternityClickCount = 0; }, 1500);
     }
 }
 
 function promptGalaxyAccess() {
     openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
-            triggerBack();
+            document.getElementById('customModal').style.display = 'none';
+            stateStack = stateStack.filter(s => s !== 'modal');
             openGalaxy();
         } else {
             showToast("Accès refusé !");
@@ -2063,7 +2063,7 @@ function renderGalaxy() {
     galaxyImages.forEach((img, i) => {
         const angle = angleStep * i;
         const el = document.createElement('img');
-        el.src = img.url;
+        el.src = img.url.replace('/upload/', '/upload/c_fill,w_150,h_150,q_auto/'); 
         el.className = 'galaxy-item';
         el.dataset.angle = angle;
         el.onclick = (e) => { e.stopPropagation(); explodeAndView(img.url, e.clientX, e.clientY); };
@@ -2091,28 +2091,32 @@ function updateGalaxyPositions() {
 
 function animateGalaxy() {
     if(!isDraggingGalaxy && galaxyImages.length > 0) {
-        baseRotation -= 0.5; 
+        baseRotation -= 0.3; 
         updateGalaxyPositions();
     }
     autoRotateReq = requestAnimationFrame(animateGalaxy);
 }
 
-const uni = document.getElementById('galaxyUniverse');
-uni.addEventListener('touchstart', e => {
-    isDraggingGalaxy = true;
-    startX = e.touches[0].clientX;
-    lastX = startX;
-});
-uni.addEventListener('touchmove', e => {
-    if(!isDraggingGalaxy) return;
-    const currentX = e.touches[0].clientX;
-    const delta = currentX - lastX;
-    baseRotation += delta * 0.8; 
-    lastX = currentX;
-    updateGalaxyPositions();
-});
-uni.addEventListener('touchend', e => {
-    isDraggingGalaxy = false;
+window.addEventListener('DOMContentLoaded', () => {
+    const uni = document.getElementById('galaxyUniverse');
+    if(uni) {
+        uni.addEventListener('touchstart', e => {
+            isDraggingGalaxy = true;
+            startX = e.touches[0].clientX;
+            lastX = startX;
+        });
+        uni.addEventListener('touchmove', e => {
+            if(!isDraggingGalaxy) return;
+            const currentX = e.touches[0].clientX;
+            const delta = currentX - lastX;
+            baseRotation += delta * 0.8; 
+            lastX = currentX;
+            updateGalaxyPositions();
+        });
+        uni.addEventListener('touchend', e => {
+            isDraggingGalaxy = false;
+        });
+    }
 });
 
 function explodeAndView(url, x, y) {
@@ -2144,6 +2148,8 @@ function explodeAndView(url, x, y) {
         
         fw.appendChild(p);
     }
+
+    if (navigator.vibrate) navigator.vibrate(100);
 
     setTimeout(() => {
         fw.remove();
