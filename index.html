@@ -107,6 +107,9 @@
             font-size: 26px;
             margin: 0 0 20px 0;
             text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2);
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .time-box {
@@ -177,11 +180,11 @@
 
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-        /* FENÊTRES DE CHAT FIXÉES EN ABSOLU POUR NE PAS SE FAIRE ÉCRASER PAR LE CLAVIER */
         #chatBox, #coconBox { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: var(--bg); z-index: 9999; display: none; 
             background-size: cover; background-position: center; 
+            overflow: hidden; 
         }
 
         @keyframes coconPulseBg {
@@ -204,12 +207,6 @@
             background: rgba(255, 75, 110, 0.1); 
             border: 1px solid rgba(255, 75, 110, 0.4); 
             color: #ffe6eb;
-        }
-
-        @keyframes universDust {
-            0% { opacity: 0; transform: scale(0.5) translate(0, 0); }
-            20% { opacity: 1; transform: scale(1.2) translate(0, -15px); }
-            100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); }
         }
         
         .chat-head { 
@@ -263,7 +260,6 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* LECTEUR AUDIO STYLE WHATSAPP */
         .custom-audio-player {
             display: flex; align-items: center; gap: 10px;
             background: rgba(0,0,0,0.15); padding: 8px 12px;
@@ -282,9 +278,7 @@
             font-size: 16px; cursor: pointer; flex-shrink: 0;
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
-        .m-me .audio-play-btn {
-            background: #fff; color: #000;
-        }
+        .m-me .audio-play-btn { background: #fff; color: #000; }
         .audio-progress-container {
             flex: 1; height: 4px; background: rgba(255,255,255,0.2);
             border-radius: 2px; position: relative; overflow: hidden;
@@ -295,7 +289,6 @@
         }
         .m-me .audio-progress-bar { background: #fff; }
         
-        /* MINIATURES MULTIMÉDIA */
         .media-thumbnail {
             width: 100%; border-radius: 12px; margin-top: 5px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover;
@@ -308,7 +301,6 @@
             color: white; pointer-events: none; backdrop-filter: blur(5px);
         }
 
-        /* LIGHTBOX (Media Viewer) */
         #mediaViewerOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000;
             display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -381,6 +373,26 @@
 
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+        /* --- NOUVEAU CSS POUR LA GALAXIE SECRÈTE --- */
+        #galaxyBox {
+            display: none; position: fixed; inset: 0; background: #000; z-index: 100000; overflow: hidden;
+            background-image: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%);
+        }
+        .galaxy-sun {
+            position: absolute; top: -40px; left: -40px; width: 80px; height: 80px;
+            background: radial-gradient(circle, #fff, #ffdf00, transparent);
+            border-radius: 50%; box-shadow: 0 0 40px #ffdf00, 0 0 80px #ffdf00;
+            animation: sun-pulse 3s infinite alternate;
+        }
+        @keyframes sun-pulse { 0% { transform: scale(1); opacity:0.8;} 100% { transform: scale(1.1); opacity:1;} }
+        .galaxy-item {
+            position: absolute; top: -35px; left: -35px; width: 70px; height: 70px;
+            border-radius: 50%; border: 2px solid rgba(255,255,255,0.6);
+            object-fit: cover; box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .galaxy-item:active { transform: scale(0.9); }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -392,6 +404,28 @@
         <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </div>
     <div id="mediaViewerContainer" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"></div>
+</div>
+
+<div id="galaxyBox">
+    <div style="position:absolute; top:40px; left:20px; z-index:10;" onclick="closeGalaxy()">
+        <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; backdrop-filter:blur(5px);">
+            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </div>
+    </div>
+    <div style="position:absolute; top:40px; right:20px; z-index:10;" onclick="document.getElementById('galaxyInput').click()">
+        <div style="background:rgba(208, 168, 255, 0.2); padding:10px; border-radius:50%; backdrop-filter:blur(5px); border: 1px solid var(--accent);">
+            <svg class="svg-icon-lg" style="color:var(--accent);"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
+    </div>
+    <input type="file" id="galaxyInput" hidden accept="image/*" onchange="processMediaUpload(event, 'galaxy')" onclick="this.value=null">
+
+    <div id="galaxyUniverse" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; perspective: 1000px;">
+        <div id="galaxyCenter" style="position:relative; width:0; height:0; transform-style:preserve-3d;">
+            <div class="galaxy-sun"></div>
+            <div id="galaxyOrbit" style="position:absolute; top:0; left:0; transform-style:preserve-3d;">
+                </div>
+        </div>
+    </div>
 </div>
 
 <div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); flex-direction: column; align-items: center; text-align: center;">
@@ -483,7 +517,7 @@
                 </svg>
             </div>
 
-            <h3 class="eternity-title">Notre Éternité</h3>
+            <h3 class="eternity-title" id="eternityTitle" onclick="onEternityClick()">Notre Éternité</h3>
             
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
                 <div class="time-box">
@@ -660,9 +694,6 @@
         </div>
     </div>
 </div>
-
-<input type="file" id="imgIn" hidden accept="image/*,video/*" onchange="processMediaUpload(event, currentMediaMode)" onclick="this.value=null">
-<input type="file" id="camIn" hidden accept="image/*" capture="environment" onchange="processMediaUpload(event, currentMediaMode)" onclick="this.value=null">
 
 <script>
 window.sharedPlaylist = [];
@@ -1119,6 +1150,7 @@ window.onpopstate = () => {
     const last = stateStack.pop();
     if(last === 'modal') document.getElementById('customModal').style.display = 'none';
     else if(last === 'mediaViewer') closeMediaViewer(true);
+    else if(last === 'galaxy') closeGalaxy(true);
     else if(last === 'chatBox' || last === 'coconBox') closeChat();
 };
 function triggerBack() { history.back(); }
@@ -1236,7 +1268,7 @@ function revealCapsule(docId, path) {
     }, 500);
 }
 
-// LOGIQUE POUR LE LECTEUR AUDIO WHATSAPP-LIKE
+// LECTEUR AUDIO STYLE WHATSAPP
 let currentCustomAudio = null;
 let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
@@ -1268,7 +1300,7 @@ window.playCustomAudio = function(url, btnElement) {
     };
 };
 
-// LOGIQUE POUR LE MEDIA VIEWER (PHOTOS & VIDÉOS)
+// MEDIA VIEWER (PHOTOS & VIDÉOS)
 function openMediaViewer(url, type) {
     const container = document.getElementById('mediaViewerContainer');
     container.innerHTML = "";
@@ -1739,6 +1771,13 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
             } else if (targetPath === 'wall') {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
+            } else if (targetPath === 'galaxy') {
+                // ENREGISTREMENT DE LA PHOTO DANS LA GALAXIE
+                await fs.collection('cocon').doc(user.code).collection('galaxy').add({
+                    url: secureUrl,
+                    t: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast("Étoile ajoutée à la galaxie ! ✨");
             } else {
                 const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
                 const docTarget = targetPath === 'msgs' ? activeId : user.code;
@@ -1955,6 +1994,161 @@ function updateTimeCounter() {
     updateDate(); 
     if(timeCounterInterval) clearInterval(timeCounterInterval);
     timeCounterInterval = setInterval(updateDate, 1000); 
+}
+
+/* --- LOGIQUE DE LA GALAXIE SECRÈTE --- */
+let eternityClickCount = 0;
+let eternityClickTimer = null;
+function onEternityClick() {
+    eternityClickCount++;
+    clearTimeout(eternityClickTimer);
+    if(eternityClickCount >= 3) {
+        eternityClickCount = 0;
+        promptGalaxyAccess();
+    } else {
+        eternityClickTimer = setTimeout(() => { eternityClickCount = 0; }, 800);
+    }
+}
+
+function promptGalaxyAccess() {
+    openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
+        if (val === user.code) {
+            triggerBack();
+            openGalaxy();
+        } else {
+            showToast("Accès refusé !");
+        }
+    });
+}
+
+function openGalaxy() {
+    document.getElementById('galaxyBox').style.display = 'block';
+    pushState('galaxy');
+    syncGalaxy();
+    animateGalaxy();
+}
+
+function closeGalaxy(fromHistory = false) {
+    document.getElementById('galaxyBox').style.display = 'none';
+    if(autoRotateReq) cancelAnimationFrame(autoRotateReq);
+    if(!fromHistory) triggerBack();
+}
+
+let galaxyImages = [];
+let baseRotation = 0;
+let isDraggingGalaxy = false;
+let startX = 0;
+let lastX = 0;
+let autoRotateReq;
+let unsubGalaxy = null;
+
+function syncGalaxy() {
+    if(unsubGalaxy) unsubGalaxy();
+    unsubGalaxy = fs.collection('cocon').doc(user.code).collection('galaxy').orderBy('t', 'asc').onSnapshot(snap => {
+        galaxyImages = [];
+        snap.forEach(doc => {
+            galaxyImages.push({ id: doc.id, url: doc.data().url });
+        });
+        renderGalaxy();
+    });
+}
+
+function renderGalaxy() {
+    const orbit = document.getElementById('galaxyOrbit');
+    orbit.innerHTML = "";
+    if (galaxyImages.length === 0) return;
+    
+    const angleStep = 360 / galaxyImages.length;
+
+    galaxyImages.forEach((img, i) => {
+        const angle = angleStep * i;
+        const el = document.createElement('img');
+        el.src = img.url;
+        el.className = 'galaxy-item';
+        el.dataset.angle = angle;
+        el.onclick = (e) => { e.stopPropagation(); explodeAndView(img.url, e.clientX, e.clientY); };
+        orbit.appendChild(el);
+    });
+    updateGalaxyPositions();
+}
+
+function updateGalaxyPositions() {
+    const items = document.querySelectorAll('.galaxy-item');
+    const radius = window.innerWidth < 400 ? 120 : 160;
+    
+    items.forEach(item => {
+        const angle = parseFloat(item.dataset.angle) + baseRotation;
+        const rad = angle * Math.PI / 180;
+        const x = Math.cos(rad) * radius;
+        const z = Math.sin(rad) * radius;
+        
+        const scale = (z + radius + 100) / (radius * 2 + 100);
+        item.style.transform = `translate3d(${x}px, 0px, ${z}px) scale(${scale})`;
+        item.style.zIndex = Math.round(z + radius);
+        item.style.opacity = scale > 0.5 ? 1 : scale;
+    });
+}
+
+function animateGalaxy() {
+    if(!isDraggingGalaxy && galaxyImages.length > 0) {
+        baseRotation -= 0.5; 
+        updateGalaxyPositions();
+    }
+    autoRotateReq = requestAnimationFrame(animateGalaxy);
+}
+
+const uni = document.getElementById('galaxyUniverse');
+uni.addEventListener('touchstart', e => {
+    isDraggingGalaxy = true;
+    startX = e.touches[0].clientX;
+    lastX = startX;
+});
+uni.addEventListener('touchmove', e => {
+    if(!isDraggingGalaxy) return;
+    const currentX = e.touches[0].clientX;
+    const delta = currentX - lastX;
+    baseRotation += delta * 0.8; 
+    lastX = currentX;
+    updateGalaxyPositions();
+});
+uni.addEventListener('touchend', e => {
+    isDraggingGalaxy = false;
+});
+
+function explodeAndView(url, x, y) {
+    const fw = document.createElement('div');
+    fw.style.position = 'fixed';
+    fw.style.left = x + 'px';
+    fw.style.top = y + 'px';
+    fw.style.zIndex = 100001;
+    document.body.appendChild(fw);
+
+    for(let i=0; i<40; i++) {
+        const p = document.createElement('div');
+        p.style.position = 'absolute';
+        p.style.width = '6px';
+        p.style.height = '6px';
+        p.style.background = `hsl(${Math.random()*360}, 100%, 60%)`;
+        p.style.borderRadius = '50%';
+        p.style.boxShadow = `0 0 6px ${p.style.background}`;
+        
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 50 + Math.random() * 120;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+        
+        p.animate([
+            { transform: 'translate(0,0) scale(1)', opacity: 1 },
+            { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+        ], { duration: 600 + Math.random()*400, easing: 'cubic-bezier(0, .9, .57, 1)' });
+        
+        fw.appendChild(p);
+    }
+
+    setTimeout(() => {
+        fw.remove();
+        openMediaViewer(url, 'img');
+    }, 500);
 }
 </script>
 
