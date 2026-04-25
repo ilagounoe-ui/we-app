@@ -554,6 +554,10 @@
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="processMediaUpload(event, 'wall')" onclick="this.value=null">
         
+        <input type="file" id="imgIn" hidden accept="image/*,video/*">
+        <input type="file" id="camIn" hidden accept="image/*" capture="environment">
+        <input type="file" id="audioChatIn" hidden accept="audio/*">
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
             <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
                 <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
@@ -1213,11 +1217,24 @@ function addFriend() {
         if(!tel) return;
         const id = "u_" + tel.replace(/\D/g,'');
         if(id === user.id) return showToast("C'est vous !");
+        
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
-                fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
-                triggerBack(); showToast("Contact ajouté"); 
-            } else showToast("Inconnu");
+                const batch = fs.batch();
+                
+                batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
+                batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
+                
+                batch.commit().then(() => {
+                    triggerBack(); 
+                    showToast("Contact ajouté pour vous deux !"); 
+                }).catch(err => {
+                    console.error("Erreur d'ajout :", err);
+                    showToast("Erreur d'ajout (Règles Firestore)");
+                });
+            } else {
+                showToast("Inconnu");
+            }
         });
     });
 }
@@ -1740,7 +1757,11 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     const UPLOAD_PRESET = "evyegpfe"; 
 
     const formData = new FormData();
-    formData.append('file', fileData);
+    if (fileData instanceof File) {
+        formData.append('file', fileData);
+    } else {
+        formData.append('file', fileData, 'image.jpg'); 
+    }
     formData.append('upload_preset', UPLOAD_PRESET);
 
     let resourceType = 'image';
