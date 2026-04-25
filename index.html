@@ -2296,11 +2296,10 @@ function syncGalaxy() {
     systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
 
     // Interaction tactile / souris optimisée
-    let lastTap = 0;
-    let tapTimeout;
+    let pointerDownPos = new THREE.Vector2();
 
+    // Au survol (surtout pour l'ordinateur)
     renderer.domElement.addEventListener('pointermove', (event) => {
-        isDragging = true;
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -2308,38 +2307,42 @@ function syncGalaxy() {
         document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
     });
 
-    renderer.domElement.addEventListener('pointerdown', () => { isDragging = false; });
+    // Quand on pose le doigt / clique
+    renderer.domElement.addEventListener('pointerdown', (event) => {
+        pointerDownPos.set(event.clientX, event.clientY);
+    });
 
+    // Quand on relève le doigt / relâche le clic
     renderer.domElement.addEventListener('pointerup', (event) => {
-        if (isDragging) return; 
+        // On calcule la distance parcourue par le doigt
+        const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
         
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTap;
-        
+        // Si le doigt a glissé de plus de 5 pixels (rotation de la caméra), on ignore le clic
+        if (distance > 5) return; 
+
+        // CRUCIAL sur mobile : on force la mise à jour de la position au moment précis du tap
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
         raycaster.setFromCamera(mouse, camera);
         const intersects = raycaster.intersectObjects(clickablePlanets);
         
-        if (tapLength < 350 && tapLength > 0) {
-            // C'est un DOUBLE TAP (Double Clic) - Annule le clic simple
-            clearTimeout(tapTimeout); 
-            if (intersects.length > 0) {
-                const mesh = intersects[0].object;
-                window.currentPlanetIndex = mesh.userData.planetIndex;
+        if (intersects.length > 0) {
+            const clickedPlanet = intersects[0].object;
+            
+            // Si la planète est DÉJÀ ciblée (2ème clic) -> Ouverture Galerie !
+            if (followedPlanet === clickedPlanet) {
+                window.currentPlanetIndex = clickedPlanet.userData.planetIndex;
                 document.getElementById('galaxyInput').click(); 
             } else {
-                followedPlanet = null;
-                focusTarget.set(0, 0, 0);
+                // Sinon (1er clic) -> On verrouille la caméra sur la planète
+                followedPlanet = clickedPlanet;
             }
-            event.preventDefault();
         } else {
-            // Clic simple - on met un petit délai au cas où ce soit le début d'un double tap
-            tapTimeout = setTimeout(() => {
-                if (intersects.length > 0) {
-                    followedPlanet = intersects[0].object;
-                }
-            }, 350); 
+            // Clic dans le vide : on libère la caméra pour voir toute la galaxie
+            followedPlanet = null;
+            focusTarget.set(0, 0, 0);
         }
-        lastTap = currentTime;
     });
 
     window.addEventListener('resize', () => {
