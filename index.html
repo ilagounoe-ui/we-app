@@ -1755,30 +1755,27 @@ function processMediaUpload(e, targetMode) {
 async function uploadToFirebase(fileData, typeParam, targetPath) {
     const CLOUD_NAME = "dgiy2zapd"; 
     const UPLOAD_PRESET = "evyegpfe"; 
-
     const formData = new FormData();
-    if (fileData instanceof File) {
-        formData.append('file', fileData);
-    } else {
-        formData.append('file', fileData, 'image.jpg'); 
+
+    // 1. Forcer la conversion absolue en vrai Fichier
+    let finalFile = fileData;
+    if (!(fileData instanceof File)) {
+        finalFile = new File([fileData], 'univers_media.jpg', { type: fileData.type || 'image/jpeg' });
     }
+    formData.append('file', finalFile);
     formData.append('upload_preset', UPLOAD_PRESET);
 
-    let resourceType = 'image';
-    if(typeParam === 'video' || typeParam === 'audio') resourceType = 'video';
-
+    let resourceType = (typeParam === 'video' || typeParam === 'audio') ? 'video' : 'image';
     const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`;
 
     try {
         const response = await fetch(url, { method: 'POST', body: formData });
+        if (!response.ok) throw new Error("Rejet Cloudinary");
         const data = await response.json();
         
         if(data.secure_url) {
             let secureUrl = data.secure_url;
-            
-            if(typeParam === 'video') {
-                secureUrl = secureUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
-            }
+            if(typeParam === 'video') secureUrl = secureUrl.replace('/upload/', '/upload/q_auto,vc_auto/');
             
             if (targetPath === 'pfp') {
                 await fs.collection('users').doc(user.id).set({ pfp: secureUrl }, { merge: true });
@@ -1789,11 +1786,16 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
             } else if (targetPath === 'galaxy') {
-                await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({
-                    url: secureUrl,
-                    t: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                showToast("Planète illuminée ! ✨");
+                try {
+                    await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({
+                        url: secureUrl,
+                        t: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    showToast("Planète illuminée ! ✨");
+                } catch (fsErr) {
+                    console.error("Firestore Error:", fsErr);
+                    showToast("Bloqué par Firestore (Vérifiez les règles de la db !)");
+                }
             } else {
                 const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
                 const docTarget = targetPath === 'msgs' ? activeId : user.code;
@@ -1810,10 +1812,10 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 }
             }
         } else {
-            showToast("Erreur lors de l'envoi du fichier");
+            showToast("Erreur lors de l'envoi");
         }
     } catch (err) {
-        console.error("Erreur Cloudinary:", err);
+        console.error("Erreur:", err);
         showToast("Échec de l'envoi du média ❌");
     }
 }
@@ -2321,7 +2323,9 @@ function syncGalaxy() {
             // C'est un DOUBLE TAP (Double Clic) - Annule le clic simple
             clearTimeout(tapTimeout); 
             if (intersects.length > 0) {
-                followedPlanet = intersects[0].object;
+                const mesh = intersects[0].object;
+                window.currentPlanetIndex = mesh.userData.planetIndex;
+                document.getElementById('galaxyInput').click(); 
             } else {
                 followedPlanet = null;
                 focusTarget.set(0, 0, 0);
@@ -2331,9 +2335,7 @@ function syncGalaxy() {
             // Clic simple - on met un petit délai au cas où ce soit le début d'un double tap
             tapTimeout = setTimeout(() => {
                 if (intersects.length > 0) {
-                    const mesh = intersects[0].object;
-                    window.currentPlanetIndex = mesh.userData.planetIndex;
-                    document.getElementById('galaxyInput').click(); 
+                    followedPlanet = intersects[0].object;
                 }
             }, 350); 
         }
@@ -2374,11 +2376,14 @@ function syncGalaxy() {
     };
 
     window.updateGalaxyTextures = function(dataDict) {
+        const loader = new THREE.TextureLoader();
+        loader.setCrossOrigin('anonymous'); // CRUCIAL : Autorise les images externes (Cloudinary)
+        
         clickablePlanets.forEach(planet => {
             const idx = planet.userData.planetIndex;
             if (dataDict[idx] && dataDict[idx].url && planet.userData.currentUrl !== dataDict[idx].url) {
                 planet.userData.currentUrl = dataDict[idx].url;
-                new THREE.TextureLoader().load(dataDict[idx].url, (texture) => {
+                loader.load(dataDict[idx].url, (texture) => {
                     texture.colorSpace = THREE.SRGBColorSpace;
                     planet.material.map = texture;
                     planet.material.emissiveMap = texture; 
