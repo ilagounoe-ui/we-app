@@ -695,7 +695,6 @@
         </div>
     </div>
 </div>
-
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
@@ -1222,6 +1221,7 @@ function addFriend() {
             if(doc.exists) { 
                 const batch = fs.batch();
                 
+                // Ajout croisé : chez toi ET chez l'autre
                 batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 
@@ -1340,7 +1340,14 @@ function getMsgHTML(docId, m, path, target) {
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
+        
+        // 1. Marque le message comme "vu"
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
+        
+        // 2. CORRECTION BADGE : Remet le compteur de notifications à 0 instantanément
+        if (path === 'msgs' && currentPeerId) {
+            fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
+        }
     }
     
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
@@ -2235,8 +2242,8 @@ function syncGalaxy() {
             const scale = 1 + Math.sin(time) * 0.02;
             this.sun.scale.set(scale, scale, scale);
             this.planets.forEach(p => {
-                p.angle += p.speed * 0.05; // ⬅️ Vitesse réduite au maximum pour la contemplation
-                p.mesh.rotation.y += p.rotationSpeed * 0.5; // Rotation sur elle-même réduite aussi
+                p.angle += p.speed * 0.05; 
+                p.mesh.rotation.y += p.rotationSpeed * 0.5; 
                 let x = Math.cos(p.angle) * p.distance;
                 let z = Math.sin(p.angle) * p.distance;
                 let y = 0;
@@ -2300,6 +2307,7 @@ function syncGalaxy() {
 
     // Au survol (surtout pour l'ordinateur)
     renderer.domElement.addEventListener('pointermove', (event) => {
+        isDragging = true;
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
@@ -2309,11 +2317,14 @@ function syncGalaxy() {
 
     // Quand on pose le doigt / clique
     renderer.domElement.addEventListener('pointerdown', (event) => {
+        isDragging = false;
         pointerDownPos.set(event.clientX, event.clientY);
     });
 
     // Quand on relève le doigt / relâche le clic
     renderer.domElement.addEventListener('pointerup', (event) => {
+        if (isDragging) return;
+        
         // On calcule la distance parcourue par le doigt
         const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
         
@@ -2408,6 +2419,5 @@ function syncGalaxy() {
     });
   }
 </script>
-
 </body>
 </html>
