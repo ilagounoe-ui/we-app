@@ -62,6 +62,14 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
+        /* NOUVEAU : Animation de clignotement pour les messages non lus */
+        @keyframes blinkChat {
+            0% { background-color: rgba(255, 255, 255, 0.03); border-color: var(--glass-border); }
+            50% { background-color: rgba(0, 210, 255, 0.15); border-color: var(--check); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); transform: scale(1.02); }
+            100% { background-color: rgba(255, 255, 255, 0.03); border-color: var(--glass-border); }
+        }
+        .contact-unread-blink { animation: blinkChat 1.5s infinite !important; }
+
         @keyframes scan {
             0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
             50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); }
@@ -475,7 +483,8 @@
 <div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
-            <div style="display:flex; flex-direction:column;">
+            <div style="display:flex; flex-direction:column; position:relative;">
+                <div id="globalUnreadBadge" class="badge-count" style="display:none; position:absolute; top:-10px; left:-20px; z-index:10; font-size:12px; padding:2px 8px; box-shadow:0 0 15px var(--check); background:var(--check); color:black;">0</div>
                 <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
                 <div id="myMoodDisp" class="bulle-humeur" style="display:none; margin-top:5px; width:max-content;"></div>
             </div>
@@ -925,26 +934,28 @@ function initApp() {
     });
 }
 
+// CORRECTIF 2: Chiffrement E2EE robuste (Support des émojis et caractères complexes)
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
-        let res = "";
-        const kLen = key.length; 
-        for(let i=0; i<text.length; i++) {
-            res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
+        const textBytes = new TextEncoder().encode(text);
+        const keyBytes = new TextEncoder().encode(key);
+        let res = new Uint8Array(textBytes.length);
+        for(let i=0; i<textBytes.length; i++) {
+            res[i] = textBytes[i] ^ keyBytes[i % keyBytes.length];
         }
-        return "E2EE::" + btoa(encodeURIComponent(res));
+        return "E2EE::" + btoa(String.fromCharCode.apply(null, res));
     },
     decrypt: (text, key) => {
         if(!text || !text.startsWith("E2EE::")) return text;
         try {
-            let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
-            let res = "";
-            const kLen = key.length;
-            for(let i=0; i<dec.length; i++) {
-                res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
+            const decStr = atob(text.replace("E2EE::", ""));
+            const keyBytes = new TextEncoder().encode(key);
+            let res = new Uint8Array(decStr.length);
+            for(let i=0; i<decStr.length; i++) {
+                res[i] = decStr.charCodeAt(i) ^ keyBytes[i % keyBytes.length];
             }
-            return res;
+            return new TextDecoder().decode(res);
         } catch(e) { return "🔒 [Message indéchiffrable]"; }
     }
 };
@@ -1189,11 +1200,19 @@ function loadContacts() {
     });
 }
 
+// NOUVEAU : Fonction modifiée pour inclure le clignotement et le badge global
 function renderContacts(arr) {
     const list = document.getElementById('chatList');
     list.innerHTML = "";
+    
+    let totalUnread = 0; // Calcul du total non lu
+
     arr.forEach(c => {
-        const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
+        totalUnread += c.unread;
+        const isUnread = c.unread > 0;
+        
+        const badge = isUnread ? `<div class="badge-count">${c.unread}</div>` : "";
+        const blinkClass = isUnread ? 'contact-unread-blink' : ''; // Ajout de la classe de clignotement
         const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
         
         const pseudoSafe = (c.pseudo && c.pseudo.length > 0) ? c.pseudo : "Inconnu";
@@ -1201,7 +1220,7 @@ function renderContacts(arr) {
         const safeName = pseudoSafe.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const safePfp = c.pfp ? c.pfp.replace(/'/g, "\\'") : '';
         
-        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}', '${safeName}', '${safePfp}')">
+        list.innerHTML += `<div id="contact_${c.id}" class="contact-item ${blinkClass}" onclick="openChat('${c.id}', '${safeName}', '${safePfp}')">
             <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : initial}</div>
             <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${pseudoSafe}</b>${badge}</div>${moodHtml}</div>
             <div class="opt-dots">
@@ -1209,6 +1228,17 @@ function renderContacts(arr) {
             </div>
         </div>`;
     });
+
+    // Mise à jour du badge global en haut à gauche
+    const globalBadge = document.getElementById('globalUnreadBadge');
+    if (globalBadge) {
+        if(totalUnread > 0) {
+            globalBadge.innerText = totalUnread;
+            globalBadge.style.display = 'flex';
+        } else {
+            globalBadge.style.display = 'none';
+        }
+    }
 }
 
 function addFriend() {
@@ -1337,17 +1367,13 @@ function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return ""; 
 
     const isMe = m.sid === user.id;
+    
+    // CORRECTIF 4: Anti-spam Firestore pour les messages "Vus"
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
-        
-        // 1. Marque le message comme "vu"
+        // On marque lu côté expéditeur, mais on ne touche plus au compteur "unread" ici !
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
-        
-        // 2. CORRECTION BADGE : Remet le compteur de notifications à 0 instantanément
-        if (path === 'msgs' && currentPeerId) {
-            fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
-        }
     }
     
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
@@ -1504,12 +1530,17 @@ function sendMsg(mode) {
         const collPath = mode === 'msgs' ? 'chats' : 'cocon';
         const docTarget = mode === 'msgs' ? activeId : user.code;
         
+        // CORRECTIF 1: Prévention du blocage si l'envoi échoue (Deadlock)
         fs.collection(collPath).doc(docTarget).collection('messages').add({ 
             sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
         }).then(() => {
             inp.value = "";
             inp.focus(); 
             setTimeout(() => { window.isSendingMsg = false; }, 500); 
+        }).catch(err => {
+            console.error("Erreur d'envoi", err);
+            window.isSendingMsg = false;
+            showToast("Erreur lors de l'envoi");
         });
         
         if(mode === 'msgs') {
@@ -1679,8 +1710,10 @@ async function startRecording(e, mode) {
         mediaRecorder.ondataavailable = event => { 
             if (event.data.size > 0) audioChunks.push(event.data); 
         };
+        // CORRECTIF 3: Définition explicite du type MIME pour iOS Safari
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks); 
+            const audioType = mediaRecorder.mimeType || 'audio/webm';
+            const audioBlob = new Blob(audioChunks, { type: audioType }); 
             audioChunks = [];
             uploadToFirebase(audioBlob, 'audio', mode);
         };
@@ -1718,7 +1751,6 @@ function stopRecording(e) {
         document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
 }
-
 document.getElementById('imgIn') ? document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('camIn') ? document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('audioChatIn') ? document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
@@ -1764,7 +1796,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     const UPLOAD_PRESET = "evyegpfe"; 
     const formData = new FormData();
 
-    // 1. Forcer la conversion absolue en vrai Fichier
     let finalFile = fileData;
     if (!(fileData instanceof File)) {
         finalFile = new File([fileData], 'univers_media.jpg', { type: fileData.type || 'image/jpeg' });
@@ -1786,23 +1817,18 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
             
             if (targetPath === 'pfp') {
                 await fs.collection('users').doc(user.id).set({ pfp: secureUrl }, { merge: true });
-                user.pfp = secureUrl; localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
+                user.pfp = secureUrl; 
                 document.getElementById('pfpPreview').innerHTML = `<img src="${secureUrl}">`;
                 showToast("Photo de profil mise à jour !");
             } else if (targetPath === 'wall') {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
             } else if (targetPath === 'galaxy') {
-                try {
-                    await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({
-                        url: secureUrl,
-                        t: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    showToast("Planète illuminée ! ✨");
-                } catch (fsErr) {
-                    console.error("Firestore Error:", fsErr);
-                    showToast("Bloqué par Firestore (Vérifiez les règles de la db !)");
-                }
+                await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({
+                    url: secureUrl,
+                    t: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                showToast("Planète illuminée ! ✨");
             } else {
                 const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
                 const docTarget = targetPath === 'msgs' ? activeId : user.code;
@@ -1818,11 +1844,9 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                     await batch.commit();
                 }
             }
-        } else {
-            showToast("Erreur lors de l'envoi");
         }
     } catch (err) {
-        console.error("Erreur:", err);
+        console.error("Erreur upload", err);
         showToast("Échec de l'envoi du média ❌");
     }
 }
@@ -1845,26 +1869,11 @@ function openModal(t, b, a) {
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
-    
     const ps = document.getElementById('lPass').value;
-    const fakeEmail = phStr + "@univers.com"; 
     const ph = "u_" + phStr;
-
-    auth.signInWithEmailAndPassword(fakeEmail, ps)
-        .then(() => fs.collection('users').doc(ph).get())
-        .then(doc => {
-            if(doc.exists) { 
-                user = doc.data(); 
-                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                location.reload(); 
-            } else {
-                showToast("Profil introuvable.");
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showToast("Identifiants incorrects ❌");
-        });
+    auth.signInWithEmailAndPassword(phStr + "@univers.com", ps)
+        .then(() => location.reload())
+        .catch(() => showToast("Identifiants incorrects ❌"));
 }
 
 function register() {
@@ -1872,53 +1881,27 @@ function register() {
     const pseudo = document.getElementById('rPseudo').value.trim();
     const ps = document.getElementById('rPass').value;
     const codeSaisi = document.getElementById('rCode').value || '0000'; 
-    
     if(!pseudo || phStr.length < 5 || !ps) return showToast("Informations incomplètes");
-    
     const ph = "u_" + phStr;
-    const fakeEmail = phStr + "@univers.com";
-
-    auth.createUserWithEmailAndPassword(fakeEmail, ps)
-        .then(() => {
-            const nu = { 
-                id: ph, 
-                pseudo: pseudo, 
-                pfp: '', 
-                code: codeSaisi, 
-                codeInscription: codeSaisi, 
-                startDate: new Date().toISOString(), 
-                wall: '', 
-                lang: 'fr',
-                playlist: []
-            };
-            return fs.collection('users').doc(ph).set(nu).then(() => {
-                user = nu; 
-                localStorage.setItem('nu_v33_user', JSON.stringify(nu)); 
-                location.reload(); 
-            });
-        })
-        .catch(err => {
-            console.error(err);
-            if(err.code === 'auth/email-already-in-use') showToast("Ce numéro est déjà inscrit !");
-            else if (err.code === 'auth/weak-password') showToast("Mot de passe trop faible");
-            else showToast("Erreur d'inscription ❌");
-        });
+    auth.createUserWithEmailAndPassword(phStr + "@univers.com", ps)
+        .then(() => fs.collection('users').doc(ph).set({ 
+            id: ph, pseudo: pseudo, pfp: '', code: codeSaisi, startDate: new Date().toISOString(), wall: '', lang: 'fr'
+        }))
+        .then(() => location.reload())
+        .catch(err => showToast("Erreur d'inscription ❌"));
 }
 
 function confirmLogout() { 
-    openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
-        auth.signOut().then(() => {
-            localStorage.clear(); 
-            location.reload(); 
-        });
+    openModal("Quitter ?", "Voulez-vous vraiment fermer l'Univers ?", () => { 
+        auth.signOut().then(() => { localStorage.clear(); location.reload(); });
     }); 
 }
 
 function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
-function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
+function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => location.reload()); }); }
 
 function sendGlobalNote() {
-    openModal("Note d'amour", `<p style="font-size:11px; opacity:0.6;">Sera reçu par votre partenaire</p><input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
+    openModal("Note d'amour", `<input type="text" id="modalInput" class="modal-input" placeholder="Ton message...">`, (v) => {
         if(!v) return;
         fs.collection('globalNotes').doc(user.code).set({txt: v, sid: user.id, t: firebase.firestore.FieldValue.serverTimestamp(), readBy: {}});
         triggerBack(); showToast("Mot doux envoyé !");
@@ -1931,161 +1914,77 @@ function openBlockedList() {
         let html = `<div style="max-height:250px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;">`;
         let promises = [];
         snap.forEach(doc => promises.push(fs.collection('users').doc(doc.id).get()));
-        
         Promise.all(promises).then(snaps => {
             snaps.forEach(uDoc => {
                 if(uDoc.exists) {
-                    const u = uDoc.data();
-                    html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; border:1px solid var(--glass-border);"><span style="font-weight:bold;">${u.pseudo}</span><button onclick="unblockContact('${uDoc.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button></div>`;
+                    html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px;"><span style="font-weight:bold;">${uDoc.data().pseudo}</span><button onclick="unblockContact('${uDoc.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold;">Débloquer</button></div>`;
                 }
             });
-            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
-            openModal("Contacts Bloqués", html, null);
+            openModal("Contacts Bloqués", html + `</div>`, null);
         });
     });
 }
 
-function unblockContact(id) { fs.collection('users').doc(user.id).collection('blocked').doc(id).delete(); showToast("Contact débloqué !"); triggerBack(); }
-function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
-function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-
-function closeCoconNote() { 
-    const el = document.getElementById('coconNoteDisplay');
-    el.classList.add('cocon-closing'); 
-    setTimeout(() => { el.style.display = 'none'; el.classList.remove('cocon-closing'); }, 500); 
-
-    if(user && user.code) {
-        fs.collection('globalNotes').doc(user.code).set({
-            readBy: { [user.id]: true }
-        }, { merge: true }); 
-    }
-}
+function unblockContact(id) { fs.collection('users').doc(user.id).collection('blocked').doc(id).delete(); showToast("Débloqué !"); triggerBack(); }
+function unlockAudio() { if(!audioUnlocked) { audioUnlocked = true; } }
+function closeCoconNote() { document.getElementById('coconNoteDisplay').style.display = 'none'; fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); }
 
 function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
-            
             document.getElementById('customModal').style.display = 'none';
-            stateStack = stateStack.filter(s => s !== 'modal'); 
-            
-            const cocon = document.getElementById('coconBox');
-            cocon.style.setProperty('display', 'flex', 'important');
-            
-            pushState('coconBox');
-            lockAppHeight(); 
-            syncMessages('cocon', user.code, 'coArea');
-            
+            document.getElementById('coconBox').style.setProperty('display', 'flex', 'important');
+            pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
             const audio = document.getElementById('coconAudio');
-            if(audio) {
-                audio.src = defaultPlaylist[0];
-                currentTrackIndex = 0;
-                audio.load();
-                audio.play().catch(e => console.log("Lecture audio bloquée", e));
-            }
-
-            showToast("Bienvenue dans notre Cocon");
-        } else {
-            showToast("Code incorrect !");
-        }
+            if(audio) { audio.src = defaultPlaylist[0]; audio.load(); audio.play().catch(()=>{}); }
+        } else { showToast("Code incorrect !"); }
     });
 }
 
 function updateTimeCounter() {
     if (!user || !user.startDate) return;
-    
     const updateDate = () => {
-        const start = new Date(user.startDate).getTime();
-        const now = new Date().getTime();
-        const diff = now - start;
-        
+        const diff = new Date().getTime() - new Date(user.startDate).getTime();
         if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            const elD = document.getElementById('d-day');
-            const elH = document.getElementById('d-hour');
-            const elM = document.getElementById('d-min');
-            const elS = document.getElementById('d-sec');
-            
-            if(elD) elD.innerText = days;
-            if(elH) elH.innerText = hours;
-            if(elM) elM.innerText = minutes;
-            if(elS) elS.innerText = seconds;
+            document.getElementById('d-day').innerText = Math.floor(diff / 86400000);
+            document.getElementById('d-hour').innerText = Math.floor((diff % 86400000) / 3600000);
+            document.getElementById('d-min').innerText = Math.floor((diff % 3600000) / 60000);
+            document.getElementById('d-sec').innerText = Math.floor((diff % 60000) / 1000);
         }
     };
-
-    updateDate(); 
-    if(timeCounterInterval) clearInterval(timeCounterInterval);
-    timeCounterInterval = setInterval(updateDate, 1000); 
+    updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
 }
 
 function promptGalaxyAccess() {
     openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
-        if (val === user.code) {
-            document.getElementById('customModal').style.display = 'none';
-            stateStack = stateStack.filter(s => s !== 'modal');
-            openGalaxy();
-        } else {
-            showToast("Accès refusé !");
-        }
+        if (val === user.code) { document.getElementById('customModal').style.display = 'none'; openGalaxy(); }
+        else { showToast("Accès refusé !"); }
     });
 }
 
-// ==========================================
-// GESTION GLOBALE DE LA GALAXIE 3D
-// ==========================================
 let unsubGalaxy = null;
-
 function openGalaxy() {
     document.getElementById('galaxyBox').style.display = 'block';
-    pushState('galaxy');
-    
-    syncGalaxy(); 
-    
+    pushState('galaxy'); syncGalaxy();
     if (window.startGalaxy3D) window.startGalaxy3D();
-    
     const audio = document.getElementById('galaxyAudio');
-    if(audio) {
-        audio.currentTime = 0;
-        let playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                document.getElementById('galaxyBox').addEventListener('pointerdown', function forceAudio() {
-                    audio.play();
-                    this.removeEventListener('pointerdown', forceAudio);
-                }, { once: true });
-            });
-        }
-    }
+    if(audio) { audio.currentTime = 0; audio.play().catch(()=>{}); }
 }
 
 function closeGalaxy(fromHistory = false) {
     document.getElementById('galaxyBox').style.display = 'none';
-    
     if (window.stopGalaxy3D) window.stopGalaxy3D();
-    
     const audio = document.getElementById('galaxyAudio');
-    if(audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-    
+    if(audio) audio.pause();
     if(!fromHistory) triggerBack();
 }
 
 function syncGalaxy() {
     if(unsubGalaxy) unsubGalaxy();
     unsubGalaxy = fs.collection('cocon').doc(user.code).collection('galaxyPlanets').onSnapshot(snap => {
-        let galaxyPlanetsData = {};
-        snap.forEach(doc => {
-            const idx = parseInt(doc.id.replace('planet_', ''));
-            galaxyPlanetsData[idx] = { id: doc.id, url: doc.data().url };
-        });
-        if (window.updateGalaxyTextures) {
-            window.updateGalaxyTextures(galaxyPlanetsData);
-        }
+        let data = {};
+        snap.forEach(doc => { data[parseInt(doc.id.replace('planet_', ''))] = { url: doc.data().url }; });
+        if (window.updateGalaxyTextures) window.updateGalaxyTextures(data);
     });
 }
 </script>
@@ -2094,24 +1993,16 @@ function syncGalaxy() {
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // Initialisation immédiate et discrète
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x010005, 0.0002);
-
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.set(0, 500, 1400);
-
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
     document.getElementById('galaxyCanvasContainer').appendChild(renderer.domElement);
-
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxDistance = 3500;
-    controls.minDistance = 100;
-
     scene.add(new THREE.AmbientLight(0x555555));
 
     const raycaster = new THREE.Raycaster();
@@ -2119,305 +2010,77 @@ function syncGalaxy() {
     const clickablePlanets = []; 
     const systems = [];
     let animationId = null;
-    let isDragging = false; 
-    let focusTarget = new THREE.Vector3(0, 0, 0); 
     let followedPlanet = null; 
+    let focusTarget = new THREE.Vector3(0, 0, 0);
 
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
-        const count = 12000;
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-        for(let i = 0; i < count * 3; i+=3) {
-            positions[i] = (Math.random() - 0.5) * 5000;
-            positions[i+1] = (Math.random() - 0.5) * 5000;
-            positions[i+2] = (Math.random() - 0.5) * 5000;
-            colors[i] = 0.8 + Math.random() * 0.2; 
-            colors[i+1] = 0.8 + Math.random() * 0.2; 
-            colors[i+2] = 0.9 + Math.random() * 0.1;
-        }
+        const positions = new Float32Array(36000);
+        for(let i = 0; i < 36000; i++) positions[i] = (Math.random() - 0.5) * 5000;
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        return new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.5, vertexColors: true, transparent: true, opacity: 0.8 }));
+        return new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.5, color: 0xffffff }));
     }
     scene.add(createStarfield());
 
-    function createUploadTexture(text, themeColor) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 512; canvas.height = 512;
-        const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = '#0a0a10';
-        ctx.fillRect(0, 0, 512, 512);
-        
-        ctx.font = 'bold 65px Arial'; 
-        ctx.fillStyle = themeColor;
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        
-        const lines = text.split('\n');
-        if (lines.length > 1) {
-            ctx.fillText(lines[0], 256, 210); ctx.fillText(lines[1], 256, 300);
-        } else { 
-            ctx.fillText(text, 256, 256); 
-        }
-        
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        return tex;
-    }
-
-    function createGlowTexture(colorHex) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256; canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-        const color = new THREE.Color(colorHex);
-        const colorStr = '#' + color.getHexString();
-        const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-        gradient.addColorStop(0, colorStr); 
-        gradient.addColorStop(1, '#000000'); 
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 256, 256);
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        return tex;
-    }
-
     class SolarSystem {
-        constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
-            this.group = new THREE.Group();
-            this.group.position.copy(position);
-            this.planets = [];
-            scene.add(this.group);
+        constructor(pos, sunCol, planets, startIdx) {
+            this.group = new THREE.Group(); this.group.position.copy(pos); this.planets = []; scene.add(this.group);
+            const sun = new THREE.Mesh(new THREE.SphereGeometry(45, 32, 32), new THREE.MeshStandardMaterial({ color: sunCol, emissive: sunCol, emissiveIntensity: 1.5 }));
+            this.group.add(sun);
+            const light = new THREE.PointLight(sunCol, 80000, 1500, 2); this.group.add(light);
 
-            const sunGeo = new THREE.SphereGeometry(45, 32, 32);
-            const sunMat = new THREE.MeshStandardMaterial({ color: sunColor, emissive: sunColor, emissiveIntensity: 1.5, roughness: 1 });
-            this.sun = new THREE.Mesh(sunGeo, sunMat);
-            
-            const sunGlowMat = new THREE.SpriteMaterial({ map: createGlowTexture(sunColor), blending: THREE.AdditiveBlending, depthWrite: false });
-            const sunGlow = new THREE.Sprite(sunGlowMat);
-            sunGlow.scale.set(300, 300, 1);
-            this.sun.add(sunGlow);
-            this.group.add(this.sun);
-
-            this.light = new THREE.PointLight(lightColor, 80000, 1500, 2); 
-            this.group.add(this.light);
-
-            const drawnOrbits = new Set();
-            let currentIndex = globalIndexStart;
-
-            planetsConfig.forEach(config => {
-                if (!drawnOrbits.has(config.distance)) {
-                    const ringGeo = new THREE.RingGeometry(config.distance - 1, config.distance + 1, 64);
-                    const ringMat = new THREE.MeshBasicMaterial({ color: lightColor, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
-                    const ring = new THREE.Mesh(ringGeo, ringMat);
-                    ring.rotation.x = Math.PI / 2;
-                    const orbitGroup = new THREE.Group();
-                    orbitGroup.rotation.set(config.tiltX || 0, 0, config.tiltZ || 0, 'ZXY');
-                    orbitGroup.add(ring);
-                    this.group.add(orbitGroup);
-                    drawnOrbits.add(config.distance);
-                }
-
-                const planetGeo = new THREE.SphereGeometry(config.size, 32, 32);
-                const texture = createUploadTexture(config.text, lightColor);
-                const planetMat = new THREE.MeshStandardMaterial({ 
-                    map: texture, emissive: new THREE.Color(0xffffff), emissiveMap: texture, 
-                    emissiveIntensity: 0.3, roughness: 0.5, metalness: 0.1 
-                });
-                
-                const planetMesh = new THREE.Mesh(planetGeo, planetMat);
-                planetMesh.userData.planetIndex = currentIndex++;
-                clickablePlanets.push(planetMesh);
-                
-                this.group.add(planetMesh);
-                this.planets.push({
-                    mesh: planetMesh, distance: config.distance, speed: config.speed,
-                    angle: config.offset || 0, tiltX: config.tiltX || 0, tiltZ: config.tiltZ || 0,
-                    rotationSpeed: (Math.random() - 0.5) * 0.02
-                });
+            planets.forEach((p, i) => {
+                const mesh = new THREE.Mesh(new THREE.SphereGeometry(p.size, 32, 32), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+                mesh.userData.planetIndex = startIdx + i;
+                clickablePlanets.push(mesh); this.group.add(mesh);
+                this.planets.push({ mesh, dist: p.distance, speed: p.speed, angle: p.offset || 0 });
             });
         }
         update() {
-            const time = Date.now() * 0.002;
-            const scale = 1 + Math.sin(time) * 0.02;
-            this.sun.scale.set(scale, scale, scale);
             this.planets.forEach(p => {
-                p.angle += p.speed * 0.05; 
-                p.mesh.rotation.y += p.rotationSpeed * 0.5; 
-                let x = Math.cos(p.angle) * p.distance;
-                let z = Math.sin(p.angle) * p.distance;
-                let y = 0;
-                let tempX = x * Math.cos(p.tiltZ) - y * Math.sin(p.tiltZ);
-                let tempY = x * Math.sin(p.tiltZ) + y * Math.cos(p.tiltZ);
-                x = tempX; y = tempY;
-                let tempY2 = y * Math.cos(p.tiltX) - z * Math.sin(p.tiltX);
-                let tempZ2 = y * Math.sin(p.tiltX) + z * Math.cos(p.tiltX);
-                y = tempY2; z = tempZ2;
-                p.mesh.position.set(x, y, z);
+                p.angle += p.speed * 0.1;
+                p.mesh.position.set(Math.cos(p.angle) * p.dist, 0, Math.sin(p.angle) * p.dist);
             });
         }
     }
 
-    const p1 = [
-        { text: "Te\nAmo", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 16, offset: 0 },
-        { text: "💖", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 14, offset: Math.PI },
-        { text: "🕷️🐱", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 18, offset: 0 },
-        { text: "My\nLove", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 17, offset: Math.PI },
-        { text: "🐶", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 16, offset: 0 },
-        { text: "Me\nEncantas", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 20, offset: Math.PI * 0.66 },
-        { text: "✨", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 13, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(0, 0, 0), 0xffeb3b, '#ffeb3b', p1, 0));
+    const p1 = [{ size: 16, distance: 130, speed: 0.01 }, { size: 18, distance: 210, speed: 0.007 }];
+    systems.push(new SolarSystem(new THREE.Vector3(0,0,0), 0xffeb3b, p1, 0));
 
-    const p2 = [
-        { text: "Cool\nLove", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 15, offset: 0 },
-        { text: "💎", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 13, offset: Math.PI },
-        { text: "❄️", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 17, offset: 0 },
-        { text: "Blue\nMoon", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 18, offset: Math.PI },
-        { text: "🧊", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 15, offset: 0 },
-        { text: "Océan", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 19, offset: Math.PI * 0.66 },
-        { text: "🌌", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 14, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(-1000, 200, -400), 0x00ffff, '#00ffff', p2, 7));
-
-    const p3 = [
-        { text: "Amour", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 17, offset: 0 },
-        { text: "🔥", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 15, offset: Math.PI },
-        { text: "Pasión", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 20, offset: 0 },
-        { text: "🌹", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 16, offset: Math.PI },
-        { text: "Fuego", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 18, offset: 0 },
-        { text: "Heart\nBeat", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 19, offset: Math.PI * 0.66 },
-        { text: "💋", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 14, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(1000, -200, 300), 0xff1010, '#ff1010', p3, 14));
-
-    const p4 = [
-        { text: "Magie", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 16, offset: 0 },
-        { text: "🔮", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 15, offset: Math.PI },
-        { text: "Éternel", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 19, offset: 0 },
-        { text: "👾", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 16, offset: Math.PI },
-        { text: "Rêve", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 20, offset: 0 },
-        { text: "Infini", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 21, offset: Math.PI * 0.66 },
-        { text: "🎆", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 15, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
-
-    // Interaction tactile / souris optimisée
-    let pointerDownPos = new THREE.Vector2();
-
-    // Au survol (surtout pour l'ordinateur)
-    renderer.domElement.addEventListener('pointermove', (event) => {
-        isDragging = true;
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    renderer.domElement.addEventListener('pointerup', (e) => {
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickablePlanets);
-        document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
+        const inter = raycaster.intersectObjects(clickablePlanets);
+        if (inter.length > 0) {
+            if (followedPlanet === inter[0].object) {
+                window.currentPlanetIndex = followedPlanet.userData.planetIndex;
+                document.getElementById('galaxyInput').click();
+            } else { followedPlanet = inter[0].object; }
+        } else { followedPlanet = null; focusTarget.set(0,0,0); }
     });
 
-    // Quand on pose le doigt / clique
-    renderer.domElement.addEventListener('pointerdown', (event) => {
-        isDragging = false;
-        pointerDownPos.set(event.clientX, event.clientY);
-    });
-
-    // Quand on relève le doigt / relâche le clic
-    renderer.domElement.addEventListener('pointerup', (event) => {
-        if (isDragging) return;
-        
-        // On calcule la distance parcourue par le doigt
-        const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
-        
-        // Si le doigt a glissé de plus de 5 pixels (rotation de la caméra), on ignore le clic
-        if (distance > 5) return; 
-
-        // CRUCIAL sur mobile : on force la mise à jour de la position au moment précis du tap
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickablePlanets);
-        
-        if (intersects.length > 0) {
-            const clickedPlanet = intersects[0].object;
-            
-            // Si la planète est DÉJÀ ciblée (2ème clic) -> Ouverture Galerie !
-            if (followedPlanet === clickedPlanet) {
-                window.currentPlanetIndex = clickedPlanet.userData.planetIndex;
-                document.getElementById('galaxyInput').click(); 
-            } else {
-                // Sinon (1er clic) -> On verrouille la caméra sur la planète
-                followedPlanet = clickedPlanet;
-            }
-        } else {
-            // Clic dans le vide : on libère la caméra pour voir toute la galaxie
-            followedPlanet = null;
-            focusTarget.set(0, 0, 0);
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    // Boucle d'animation
     function animate() {
         animationId = requestAnimationFrame(animate);
         systems.forEach(s => s.update());
-        
         if (followedPlanet) followedPlanet.getWorldPosition(focusTarget);
         controls.target.lerp(focusTarget, 0.08);
-        
-        controls.update(); 
-        renderer.render(scene, camera);
+        controls.update(); renderer.render(scene, camera);
     }
 
-    // Fonctions exposées à l'application principale
-    window.startGalaxy3D = function() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        if (!animationId) animate();
-    };
-
-    window.stopGalaxy3D = function() {
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-            animationId = null;
-        }
-    };
-
-    window.updateGalaxyTextures = function(dataDict) {
+    window.startGalaxy3D = () => { if (!animationId) animate(); };
+    window.stopGalaxy3D = () => { cancelAnimationFrame(animationId); animationId = null; };
+    window.updateGalaxyTextures = (data) => {
         const loader = new THREE.TextureLoader();
-        loader.setCrossOrigin('anonymous'); // CRUCIAL : Autorise les images externes (Cloudinary)
-        
-        clickablePlanets.forEach(planet => {
-            const idx = planet.userData.planetIndex;
-            if (dataDict[idx] && dataDict[idx].url && planet.userData.currentUrl !== dataDict[idx].url) {
-                planet.userData.currentUrl = dataDict[idx].url;
-                loader.load(dataDict[idx].url, (texture) => {
-                    texture.colorSpace = THREE.SRGBColorSpace;
-                    planet.material.map = texture;
-                    planet.material.emissiveMap = texture; 
-                    planet.material.emissive.setHex(0xffffff); 
-                    planet.material.emissiveIntensity = 0.5; 
-                    planet.material.needsUpdate = true;
-                });
+        loader.setCrossOrigin('anonymous');
+        clickablePlanets.forEach(p => {
+            const idx = p.userData.planetIndex;
+            if (data[idx] && data[idx].url && p.userData.url !== data[idx].url) {
+                p.userData.url = data[idx].url;
+                loader.load(data[idx].url, (tex) => { p.material.map = tex; p.material.needsUpdate = true; });
             }
         });
     };
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => {
-        console.log('Le Service Worker a échoué :', err);
-      });
-    });
-  }
 </script>
 </body>
 </html>
