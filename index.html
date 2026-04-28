@@ -1544,13 +1544,16 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     if(type === 'audio') return; 
     const decodedTxt = decodeURIComponent(escTxt);
     
-    // NOUVEAU : Barre de réactions en haut du menu
-    let html = `<div style="display:flex; justify-content:center; gap:5px; margin-bottom: 20px; background:rgba(0,0,0,0.3); border-radius:30px; padding:5px; border:1px solid var(--glass-border);">
+    // NOUVEAU : Barre de réactions avec le champ de saisie libre (➕)
+    let html = `<div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom: 20px; background:rgba(0,0,0,0.3); border-radius:30px; padding:5px 15px; border:1px solid var(--glass-border);">
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '❤️', '${path}', '${target}')">❤️</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🥺', '${path}', '${target}')">🥺</button>
-        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '✨', '${path}', '${target}')">✨</button>
-        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🔥', '${path}', '${target}')">🔥</button>
+        <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
+        <input type="text" 
+               style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" 
+               placeholder="➕" 
+               oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
     </div>`;
 
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
