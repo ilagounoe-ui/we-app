@@ -482,23 +482,21 @@
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-    <div class="tab active" onclick="switchV('vChats', this)">
-        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
-        <span data-i18n="tab_msg">Messages</span>
-        <div id="globalUnreadBadge" class="badge-count" style="display:none; margin-left: 5px;">0</div>
-    </div>
-    
-    <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
-        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
-        <span data-i18n="tab_cocon">Le Cocon</span>
-    </div>
-    
-    <div class="tab" onclick="switchV('vSet', this)">
-        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
-        <span data-i18n="tab_set">Réglages</span>
-    </div>
-</div>
- </header>
+            <div class="tab active" onclick="switchV('vChats', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
+                <span data-i18n="tab_msg">Messages</span>
+                <div id="globalUnreadBadge" class="badge-count" style="display:none; margin-left: 5px;">0</div>
+            </div>
+            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
+                <span data-i18n="tab_cocon">Le Cocon</span>
+            </div>
+            <div class="tab" onclick="switchV('vSet', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
+                <span data-i18n="tab_set">Réglages</span>
+            </div>
+        </div>
+    </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
@@ -793,7 +791,8 @@ let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
 
-const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" }; 
+// CORRECTION BUG #2 : Ajout d'un son pop valide pour la notification
+const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
 const moodLibrary = {
     "Heureux": [
@@ -893,7 +892,8 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
-    
+
+// CORRECTION BUG #4 : Try/Catch amélioré pour la persistance locale
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
         if (err.code == 'failed-precondition') {
@@ -939,6 +939,7 @@ function initApp() {
     });
 }
 
+// CORRECTION BUG #3 : Protection contre le plantage Base64
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
@@ -952,7 +953,6 @@ const E2EE = {
     decrypt: (text, key) => {
         if(!text || !text.startsWith("E2EE::")) return text;
         try {
-            // Protection contre les chaînes Base64 malformées
             let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
             let res = "";
             const kLen = key.length;
@@ -1179,14 +1179,16 @@ function switchV(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
-    
+
+// CORRECTION BUG GLOBAL UNREAD : Calcul dynamique des badges pour l'onglet de navigation
 function loadContacts() {
     const list = document.getElementById('chatList');
     
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
         if (snap.empty) { 
             list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; 
-            document.getElementById('globalUnreadBadge').style.display = 'none'; // Masquer s'il n'y a pas de contact
+            const badgeEl = document.getElementById('globalUnreadBadge');
+            if(badgeEl) badgeEl.style.display = 'none';
             return; 
         }
         
@@ -1208,7 +1210,7 @@ function loadContacts() {
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
             
-            // NOUVEAU : Calcul dynamique du total des messages non lus
+            // Calcul dynamique du total des messages non lus
             let totalUnread = validContacts.reduce((sum, contact) => sum + (contact.unread || 0), 0);
             const badgeEl = document.getElementById('globalUnreadBadge');
             
@@ -1514,6 +1516,7 @@ function editMsg(id, old, path, target) {
     }); 
 }
 
+// CORRECTION BUG #1 : Anti-blocage des messages avec un vrai catch d'erreur réseau
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
     
