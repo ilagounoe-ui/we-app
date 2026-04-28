@@ -62,14 +62,6 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* NOUVEAU : Animation de clignotement pour les messages non lus */
-        @keyframes blinkChat {
-            0% { background-color: rgba(255, 255, 255, 0.03); border-color: var(--glass-border); }
-            50% { background-color: rgba(0, 210, 255, 0.15); border-color: var(--check); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); transform: scale(1.02); }
-            100% { background-color: rgba(255, 255, 255, 0.03); border-color: var(--glass-border); }
-        }
-        .contact-unread-blink { animation: blinkChat 1.5s infinite !important; }
-
         @keyframes scan {
             0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
             50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); }
@@ -483,8 +475,7 @@
 <div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
-            <div style="display:flex; flex-direction:column; position:relative;">
-                <div id="globalUnreadBadge" class="badge-count" style="display:none; position:absolute; top:-10px; left:-20px; z-index:10; font-size:12px; padding:2px 8px; box-shadow:0 0 15px var(--check); background:var(--check); color:black;">0</div>
+            <div style="display:flex; flex-direction:column;">
                 <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
                 <div id="myMoodDisp" class="bulle-humeur" style="display:none; margin-top:5px; width:max-content;"></div>
             </div>
@@ -799,19 +790,82 @@ let audioUnlocked = false;
 const sounds = { pop: "" };
 
 const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !", "Ton sourire est le soleil de mon univers. ☀️", "Gardons cette énergie, tu es incroyable quand tu rayonnes.", "Rien ne me rend plus joyeux que de te savoir épanouie."],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.", "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️", "Prends le temps qu'il faut, je ne bouge pas d'ici.", "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴", "Ferme les yeux, laisse-toi porter par ma douceur.", "Tu as le droit de ne rien faire, je veille sur tout le reste.", "Un gros câlin virtuel pour te redonner de la force. 🫂", "Dors bien, je serai ton premier message au réveil."],
-    "Amoureux": ["Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨", "Chaque battement de mon cœur porte ton nom.", "Je t'aime plus qu'hier et bien moins que demain.", "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️", "Mon endroit préféré au monde ? Partout où tu es."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !", "Je crois en toi plus que n'importe qui d'autre.", "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.", "Une étape à la fois, je marche juste derrière toi."],
-    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.", "Ferme les yeux, imagine mes bras autour de toi... je suis là.", "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️", "Mon esprit ne te quitte pas d'une semelle aujourd'hui."],
-    "Stressée par les cours": ["Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚", "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.", "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨", "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.", "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."],
-    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front... 😘", "Je t'envoie un million de bisous à travers l'univers.", "Imagine mes lèvres sur tes joues. Je suis là.", "Un petit bisou volé pour te faire sourire. 💋", "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."],
-    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂", "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.", "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️", "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.", "Un long câlin silencieux, pour apaiser toutes tes tempêtes."]
+    "Heureux": [
+        "Ton bonheur est ma plus belle réussite. ✨",
+        "C'est une journée magnifique pour s'aimer encore plus !",
+        "Ton sourire est le soleil de mon univers. ☀️",
+        "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
+        "Rien ne me rend plus joyeux que de te savoir épanouie."
+    ],
+    "Triste": [
+        "N'oublie jamais que je suis ton port d'attache. ⚓",
+        "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.",
+        "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️",
+        "Prends le temps qu'il faut, je ne bouge pas d'ici.",
+        "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"
+    ],
+    "Fatigué": [
+        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴",
+        "Ferme les yeux, laisse-toi porter par ma douceur.",
+        "Tu as le droit de ne rien faire, je veille sur tout le reste.",
+        "Un gros câlin virtuel pour te redonner de la force. 🫂",
+        "Dors bien, je serai ton premier message au réveil."
+    ],
+    "Amoureux": [
+        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨",
+        "Chaque battement de mon cœur porte ton nom.",
+        "Je t'aime plus qu'hier et bien moins que demain.",
+        "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
+        "Mon endroit préféré au monde ? Partout où tu es."
+    ],
+    "Besoin de force": [
+        "Tu es bien plus forte que tu ne le penses. 💪",
+        "Respire un grand coup, tu vas tout déchirer !",
+        "Je crois en toi plus que n'importe qui d'autre.",
+        "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.",
+        "Une étape à la fois, je marche juste derrière toi."
+    ],
+    "Seule": [
+        "Regarde le ciel, on regarde la même lune. 🌙",
+        "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.",
+        "Ferme les yeux, imagine mes bras autour de toi... je suis là.",
+        "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️",
+        "Mon esprit ne te quitte pas d'une semelle aujourd'hui."
+    ],
+    "Stressée par les cours": [
+        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
+        "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
+        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
+        "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
+        "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."
+    ],
+    "Besoin d'un bisou": [
+        "Un doux baiser déposé tendrement sur ton front... 😘",
+        "Je t'envoie un million de bisous à travers l'univers.",
+        "Imagine mes lèvres sur tes joues. Je suis là.",
+        "Un petit bisou volé pour te faire sourire. 💋",
+        "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."
+    ],
+    "Besoin d'un câlin": [
+        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂",
+        "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.",
+        "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️",
+        "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.",
+        "Un long câlin silencieux, pour apaiser toutes tes tempêtes."
+    ]
 };
 
-const humeursCocon = [{label: "🥰 Amoureux"}, {label: "✨ Heureux"}, {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, {label: "❌ Retirer l'humeur"}];
-const allLanguages = [{code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}];
+const humeursCocon = [
+    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, 
+    {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, 
+    {label: "❌ Retirer l'humeur"}
+];
+
+const allLanguages = [
+    {code: 'fr', name: 'Français', flag: '🇫🇷'},
+    {code: 'en', name: 'English', flag: '🇬🇧'}
+];
+
 const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon", set_lang: "Langue de l'Univers", set_date: "Date de notre début", set_wall: "Personnaliser l'Univers", set_note: "Envoyer un mot doux", set_blocked: "Contacts bloqués", set_leave: "Quitter l'Univers" },
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code", set_lang: "Universe Language", set_date: "Our Beginning", set_wall: "Customize Universe", set_note: "Send a sweet note", set_blocked: "Blocked contacts", set_leave: "Leave Universe" }
@@ -826,15 +880,21 @@ const firebaseConfig = {
     appId: "1:909531230264:web:8ea1c08b60058117eff6cd"
 };
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig); 
+if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+}
 
 const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
 
-try { fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err)); } catch(e) {}
+try {
+    fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err));
+} catch(e) {}
 
-window.addEventListener('DOMContentLoaded', () => initApp());
+window.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
 
 function initApp() {
     auth.onAuthStateChanged(firebaseUser => {
@@ -852,6 +912,7 @@ function initApp() {
                 }
                 document.getElementById('splash').style.display = 'none';
             }).catch(err => {
+                console.error("Erreur critique Firestore :", err);
                 showToast("Accès à la base de données bloqué.");
                 document.getElementById('authLayer').style.display = 'flex';
                 document.getElementById('splash').style.display = 'none';
@@ -864,24 +925,26 @@ function initApp() {
     });
 }
 
-// CORRECTIF 2: Chiffrement E2EE robuste
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
-        const textBytes = new TextEncoder().encode(text);
-        const keyBytes = new TextEncoder().encode(key);
-        let res = new Uint8Array(textBytes.length);
-        for(let i=0; i<textBytes.length; i++) res[i] = textBytes[i] ^ keyBytes[i % keyBytes.length];
-        return "E2EE::" + btoa(String.fromCharCode.apply(null, res));
+        let res = "";
+        const kLen = key.length; 
+        for(let i=0; i<text.length; i++) {
+            res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
+        }
+        return "E2EE::" + btoa(encodeURIComponent(res));
     },
     decrypt: (text, key) => {
         if(!text || !text.startsWith("E2EE::")) return text;
         try {
-            const decStr = atob(text.replace("E2EE::", ""));
-            const keyBytes = new TextEncoder().encode(key);
-            let res = new Uint8Array(decStr.length);
-            for(let i=0; i<decStr.length; i++) res[i] = decStr.charCodeAt(i) ^ keyBytes[i % keyBytes.length];
-            return new TextDecoder().decode(res);
+            let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
+            let res = "";
+            const kLen = key.length;
+            for(let i=0; i<dec.length; i++) {
+                res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
+            }
+            return res;
         } catch(e) { return "🔒 [Message indéchiffrable]"; }
     }
 };
@@ -890,12 +953,17 @@ function showToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
     if(!t.classList.contains('show')) t.classList.add('show');
+    
     if(toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+    toastTimeout = setTimeout(() => {
+        t.classList.remove('show');
+    }, 2500);
 }
 
 function compressImage(file, maxWidth, callback) {
-    if (!file.type.startsWith('image/')) return callback(file);
+    if (!file.type.startsWith('image/')) {
+        callback(file); return;
+    }
     const img = new Image();
     img.src = URL.createObjectURL(file);
     img.onload = () => {
@@ -907,7 +975,10 @@ function compressImage(file, maxWidth, callback) {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => callback(blob), 'image/jpeg', 0.7); 
+        
+        canvas.toBlob((blob) => {
+            callback(blob);
+        }, 'image/jpeg', 0.7); 
     };
     img.onerror = () => callback(file);
 }
@@ -916,20 +987,27 @@ function openMoodSelector() {
     const box = document.getElementById('moodOptions');
     const widgetText = document.getElementById('widgetText');
     if(!box || !widgetText) return;
-    box.innerHTML = ""; widgetText.innerText = "Comment te sens-tu ?";
+    
+    box.innerHTML = "";
+    widgetText.innerText = "Comment te sens-tu ?";
+    
     Object.keys(moodLibrary).forEach(m => { 
         const btn = document.createElement('button');
-        btn.className = "option-btn"; btn.style.justifyContent = "center";
-        btn.innerText = m; btn.onclick = () => showMoodMessage(m);
+        btn.className = "option-btn";
+        btn.style.justifyContent = "center";
+        btn.innerText = m;
+        btn.onclick = () => showMoodMessage(m);
         box.appendChild(btn);
     });
+    
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
 function showMoodMessage(mood) {
     const choices = moodLibrary[mood];
     if(!choices) return;
-    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+    const randomMsg = choices[Math.floor(Math.random() * choices.length)];
+    document.getElementById('widgetText').innerText = randomMsg;
 }
 
 function setupApp() {
@@ -959,13 +1037,18 @@ function setupApp() {
     fs.collection('globalNotes').doc(user.code).onSnapshot(doc => {
         const note = doc.data();
         if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-            if (navigator.vibrate) navigator.vibrate(200);
+            if (navigator.vibrate) { navigator.vibrate(200); }
+            
             document.getElementById('coconTabBtn').classList.add('cocon-notify');
             if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+            
             document.getElementById('coconNoteText').innerText = note.txt;
             const el = document.getElementById('coconNoteDisplay');
-            el.className = 'notif-cocon-turquoise cocon-with-dust'; el.style.display = 'flex';
-            setTimeout(() => el.classList.remove('cocon-with-dust'), 1500);
+            
+            el.className = 'notif-cocon-turquoise cocon-with-dust';
+            el.style.display = 'flex';
+            
+            setTimeout(() => { el.classList.remove('cocon-with-dust'); }, 1500);
         }
     });
 }
@@ -982,8 +1065,11 @@ function choisirHumeurCocon() {
 
 function setHumeur(label) {
     fs.collection('users').doc(user.id).set({ humeur: label }, { merge: true }).then(() => {
-        user.humeur = label; localStorage.setItem('nu_v33_user', JSON.stringify(user));
-        triggerBack(); showToast(label ? "Humeur mise à jour !" : "Humeur retirée.");
+        user.humeur = label;
+        localStorage.setItem('nu_v33_user', JSON.stringify(user));
+        triggerBack();
+        if(label) showToast("Humeur mise à jour !");
+        else showToast("Humeur retirée.");
     });
 }
 
@@ -997,14 +1083,16 @@ function applyTranslations(code) {
 
 function openLangMenu() {
     let html = `<input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);"><div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
-    html += generateLangListHTML(allLanguages) + `</div>`;
+    html += generateLangListHTML(allLanguages);
+    html += `</div>`;
     openModal("Langue", html, null);
 }
 
 function generateLangListHTML(list) { return list.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span></button>`).join(''); }
 function filterLangs() {
     const q = document.getElementById('langSearch').value.toLowerCase();
-    document.getElementById('langList').innerHTML = generateLangListHTML(allLanguages.filter(l => l.name.toLowerCase().includes(q)));
+    const filtered = allLanguages.filter(l => l.name.toLowerCase().includes(q));
+    document.getElementById('langList').innerHTML = generateLangListHTML(filtered);
 }
 
 function setAppLang(code) {
@@ -1025,7 +1113,9 @@ function openDateEdit() {
         <p style="font-size:11px; opacity:0.6; margin-top:15px;">Utilisez le pavé numérique du téléphone</p>
     `;
     openModal("Notre début", html, () => {
-        const j = document.getElementById('dDay').value.padStart(2, '0'), m = document.getElementById('dMonth').value.padStart(2, '0'), a = document.getElementById('dYear').value;
+        const j = document.getElementById('dDay').value.padStart(2, '0');
+        const m = document.getElementById('dMonth').value.padStart(2, '0');
+        const a = document.getElementById('dYear').value;
         if(j !== "00" && m !== "00" && a.length === 4) {
             const isoDate = `${a}-${m}-${j}T00:00:00`;
             fs.collection('users').doc(user.id).set({startDate: isoDate}, { merge: true }).then(() => { 
@@ -1074,58 +1164,77 @@ function switchV(id, el) {
 
 function loadContacts() {
     const list = document.getElementById('chatList');
+    
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
         if (snap.empty) { list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; return; }
         let promises = [];
         snap.forEach(contactDoc => {
-            const peerId = contactDoc.id; const contactMeta = contactDoc.data();
-            promises.push(fs.collection('users').doc(peerId).get().then(us => us.exists ? { id: peerId, pseudo: us.data().pseudo, pfp: us.data().pfp, humeur: us.data().humeur, lastMsgAt: contactMeta.lastMsgAt || 0, unread: contactMeta.unread || 0 } : null));
+            const peerId = contactDoc.id;
+            const contactMeta = contactDoc.data();
+            
+            let p = fs.collection('users').doc(peerId).get().then(us => {
+                if(us.exists) {
+                    const u = us.data();
+                    return { id: peerId, pseudo: u.pseudo, pfp: u.pfp, humeur: u.humeur, lastMsgAt: contactMeta.lastMsgAt || 0, unread: contactMeta.unread || 0 };
+                }
+                return null;
+            });
+            promises.push(p);
         });
-        Promise.all(promises).then(results => renderContacts(results.filter(c => c !== null)));
+
+        Promise.all(promises).then(results => {
+            let validContacts = results.filter(c => c !== null);
+            renderContacts(validContacts);
+        });
     });
 }
 
-// INTEGRE LE CLIGNOTEMENT ET LE BADGE GLOBAL
 function renderContacts(arr) {
     const list = document.getElementById('chatList');
     list.innerHTML = "";
-    let totalUnread = 0; 
     arr.forEach(c => {
-        totalUnread += c.unread;
-        const isUnread = c.unread > 0;
-        const badge = isUnread ? `<div class="badge-count">${c.unread}</div>` : "";
-        const blinkClass = isUnread ? 'contact-unread-blink' : ''; 
+        const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
         const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
+        
         const pseudoSafe = (c.pseudo && c.pseudo.length > 0) ? c.pseudo : "Inconnu";
         const initial = pseudoSafe.charAt(0).toUpperCase();
         const safeName = pseudoSafe.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         const safePfp = c.pfp ? c.pfp.replace(/'/g, "\\'") : '';
         
-        list.innerHTML += `<div id="contact_${c.id}" class="contact-item ${blinkClass}" onclick="openChat('${c.id}', '${safeName}', '${safePfp}')">
+        list.innerHTML += `<div id="contact_${c.id}" class="contact-item" onclick="openChat('${c.id}', '${safeName}', '${safePfp}')">
             <div class="pfp">${c.pfp ? `<img src="${c.pfp}">` : initial}</div>
             <div style="flex:1"><div style="display:flex; align-items:center;"><b style="text-shadow:0 1px 3px rgba(0,0,0,0.5);">${pseudoSafe}</b>${badge}</div>${moodHtml}</div>
-            <div class="opt-dots"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+            <div class="opt-dots">
+                <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
         </div>`;
     });
-
-    const globalBadge = document.getElementById('globalUnreadBadge');
-    if (globalBadge) {
-        if(totalUnread > 0) { globalBadge.innerText = totalUnread; globalBadge.style.display = 'flex'; } 
-        else { globalBadge.style.display = 'none'; }
-    }
 }
 
 function addFriend() {
     openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
-        if(!tel) return; const id = "u_" + tel.replace(/\D/g,'');
+        if(!tel) return;
+        const id = "u_" + tel.replace(/\D/g,'');
         if(id === user.id) return showToast("C'est vous !");
+        
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
                 const batch = fs.batch();
+                
+                // Ajout croisé : chez toi ET chez l'autre
                 batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
-                batch.commit().then(() => { triggerBack(); showToast("Contact ajouté pour vous deux !"); });
-            } else showToast("Inconnu");
+                
+                batch.commit().then(() => {
+                    triggerBack(); 
+                    showToast("Contact ajouté pour vous deux !"); 
+                }).catch(err => {
+                    console.error("Erreur d'ajout :", err);
+                    showToast("Erreur d'ajout (Règles Firestore)");
+                });
+            } else {
+                showToast("Inconnu");
+            }
         });
     });
 }
@@ -1134,24 +1243,38 @@ function openChat(id, name, pfp) {
     currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
     document.getElementById('cHeadPfp').innerHTML = pfp ? `<img src="${pfp}">` : name.charAt(0).toUpperCase();
+    
     fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ unread: 0 }, { merge: true });
+
     document.getElementById('mArea').innerHTML = "";
     document.getElementById('chatBox').style.display = 'flex';
-    lockAppHeight(); pushState('chatBox'); watchStatus(id); syncMessages('msgs', activeId, 'mArea');
+    lockAppHeight(); 
+    pushState('chatBox');
+    
+    watchStatus(id);
+    syncMessages('msgs', activeId, 'mArea');
 }
 
 function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
+    
     const audio = document.getElementById('coconAudio');
-    if(audio && !audio.paused) { audio.pause(); audio.currentTime = 0; }
+    if(audio && !audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+    }
+    
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
 }
 
 function revealCapsule(docId, path) {
     const inner = document.getElementById('capsule_inner_' + docId);
-    if(inner) inner.classList.add('capsule-anim');
+    if(inner) {
+        inner.classList.add('capsule-anim');
+    }
+    
     setTimeout(() => {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
@@ -1159,28 +1282,54 @@ function revealCapsule(docId, path) {
     }, 500);
 }
 
-let currentCustomAudio = null; let currentPlayBtn = null;
+// LECTEUR AUDIO
+let currentCustomAudio = null;
+let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
     if (currentCustomAudio && currentCustomAudio.src === url) {
-        if (currentCustomAudio.paused) { currentCustomAudio.play(); btnElement.innerHTML = "⏸"; } 
-        else { currentCustomAudio.pause(); btnElement.innerHTML = "▶"; }
+        if (currentCustomAudio.paused) { 
+            currentCustomAudio.play(); 
+            btnElement.innerHTML = "⏸"; 
+        } else { 
+            currentCustomAudio.pause(); 
+            btnElement.innerHTML = "▶"; 
+        }
         return;
     }
-    if (currentCustomAudio) { currentCustomAudio.pause(); if(currentPlayBtn) currentPlayBtn.innerHTML = "▶"; }
-    currentCustomAudio = new Audio(url); currentPlayBtn = btnElement; btnElement.innerHTML = "⏳";
-    currentCustomAudio.play().then(() => btnElement.innerHTML = "⏸").catch(() => { btnElement.innerHTML = "▶"; showToast("Erreur audio"); });
-    currentCustomAudio.onended = () => btnElement.innerHTML = "▶";
+    if (currentCustomAudio) { 
+        currentCustomAudio.pause(); 
+        if(currentPlayBtn) currentPlayBtn.innerHTML = "▶"; 
+    }
+    currentCustomAudio = new Audio(url);
+    currentPlayBtn = btnElement;
+    btnElement.innerHTML = "⏳";
+    currentCustomAudio.play().then(() => { 
+        btnElement.innerHTML = "⏸"; 
+    }).catch(() => { 
+        btnElement.innerHTML = "▶"; 
+        showToast("Erreur audio"); 
+    });
+    currentCustomAudio.onended = () => { 
+        btnElement.innerHTML = "▶"; 
+    };
 };
 
 function openMediaViewer(url, type) {
     const container = document.getElementById('mediaViewerContainer');
-    container.innerHTML = type === 'img' ? `<img src="${url}" id="mediaViewerContent">` : `<video src="${url}" controls autoplay playsinline id="mediaViewerContent"></video>`;
-    document.getElementById('mediaViewerOverlay').classList.add('show'); pushState('mediaViewer');
+    container.innerHTML = "";
+    if(type === 'img') {
+        container.innerHTML = `<img src="${url}" id="mediaViewerContent">`;
+    } else {
+        container.innerHTML = `<video src="${url}" controls autoplay playsinline id="mediaViewerContent"></video>`;
+    }
+    document.getElementById('mediaViewerOverlay').classList.add('show');
+    pushState('mediaViewer');
 }
 
 function closeMediaViewer(fromHistory = false) {
     document.getElementById('mediaViewerOverlay').classList.remove('show');
-    document.getElementById('mediaViewerContainer').innerHTML = ""; 
+    const container = document.getElementById('mediaViewerContainer');
+    container.innerHTML = ""; 
     if(!fromHistory) triggerBack();
 }
 
@@ -1188,12 +1337,17 @@ function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return ""; 
 
     const isMe = m.sid === user.id;
-    
-    // CORRECTIF 4: Anti-spam Firestore pour les messages "Vus" (on ne touche plus au compteur unread)
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
+        
+        // 1. Marque le message comme "vu"
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
+        
+        // 2. CORRECTION BADGE : Remet le compteur de notifications à 0 instantanément
+        if (path === 'msgs' && currentPeerId) {
+            fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
+        }
     }
     
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
@@ -1202,24 +1356,55 @@ function getMsgHTML(docId, m, path, target) {
     if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
 
     if (m.unlockAt && !m.opened) {
-        if (m.unlockAt > Date.now()) {
+        const now = Date.now();
+        if (m.unlockAt > now) {
             const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}"><div style="text-align:center; opacity:0.8;"><div style="margin-bottom:5px; display:flex; justify-content:center;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><div style="font-size:12px; font-weight:bold;">Capsule temporelle</div><div style="font-size:10px;">S'ouvrira le ${unlockDate}</div></div></div>`;
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
+                        <div style="text-align:center; opacity:0.8;">
+                            <div style="margin-bottom:5px; display:flex; justify-content:center;">
+                                <svg class="svg-icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
+                            <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
+                        </div>
+                    </div>`;
         } else {
-            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')"><div id="capsule_inner_${docId}" style="text-align:center;"><div style="display:flex; justify-content:center; margin-bottom:5px;"><svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></div><div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div><div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir</div></div></div>`;
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')">
+                        <div id="capsule_inner_${docId}" style="text-align:center;">
+                            <div style="display:flex; justify-content:center; margin-bottom:5px;">
+                                <svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                            </div>
+                            <div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div>
+                            <div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir</div>
+                        </div>
+                    </div>`;
         }
     }
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
+    
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     
-    if(m.type === 'img') content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
+    if(m.type === 'img') {
+        content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
+    }
     if(m.type === 'video') {
         let posterUrl = m.txt.replace('/upload/', '/upload/q_auto,f_auto,so_0/');
-        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
+        if(!posterUrl.includes('cloudinary')) posterUrl = "";
+        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();">
+            <video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video>
+            <div class="video-overlay">▶</div>
+        </div>`;
     }
-    if(m.type === 'audio') content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();"><div class="audio-play-btn">▶</div><div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div></div>`;
+    if(m.type === 'audio') {
+        content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();">
+            <div class="audio-play-btn">▶</div>
+            <div class="audio-progress-container">
+                <div class="audio-progress-bar" style="width: 100%;"></div>
+            </div>
+        </div>`;
+    }
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
@@ -1229,7 +1414,8 @@ function getMsgHTML(docId, m, path, target) {
 
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
-    const area = document.getElementById(areaId); area.innerHTML = ""; 
+    const area = document.getElementById(areaId);
+    area.innerHTML = ""; 
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
@@ -1255,7 +1441,8 @@ function syncMessages(path, target, areaId) {
 
 function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     if(type === 'audio') return; 
-    const decodedTxt = decodeURIComponent(escTxt); let html = "";
+    const decodedTxt = decodeURIComponent(escTxt);
+    let html = "";
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
         const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier</button>`;
@@ -1266,28 +1453,33 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
 }
 
 function delMsgForMe(id, path, target) { 
+    const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
-    fs.collection(path === 'msgs' ? 'chats' : 'cocon').doc(docTarget).collection('messages').doc(id).update({ [`deletedFor.${user.id}`]: true });
+    fs.collection(collPath).doc(docTarget).collection('messages').doc(id).update({ [`deletedFor.${user.id}`]: true });
     triggerBack(); 
 }
 
 function delMsgForAll(id, path, target) {
+    const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
-    fs.collection(path === 'msgs' ? 'chats' : 'cocon').doc(docTarget).collection('messages').doc(id).update({ deletedForEveryone: true, txt: "", type: "text" });
+    fs.collection(collPath).doc(docTarget).collection('messages').doc(id).update({ deletedForEveryone: true, txt: "", type: "text" });
     triggerBack();
 }
 
 function editMsg(id, old, path, target) { 
     openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => { 
         const cryptoKey = path === 'msgs' ? activeId : user.code;
+        const encryptedText = E2EE.encrypt(val, cryptoKey);
+        const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? target : user.code;
-        fs.collection(path === 'msgs' ? 'chats' : 'cocon').doc(docTarget).collection('messages').doc(id).update({txt: E2EE.encrypt(val, cryptoKey), edited: true}); 
+        fs.collection(collPath).doc(docTarget).collection('messages').doc(id).update({txt: encryptedText, edited: true}); 
         triggerBack(); triggerBack(); 
     }); 
 }
 
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
+    
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
     const text = inp.value.trim();
     if(!text) return;
@@ -1296,31 +1488,39 @@ function sendMsg(mode) {
     
     if(mode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
-            if(doc.exists) { showToast("Impossible, contact bloqué."); window.isSendingMsg = false; return; }
+            if(doc.exists) { 
+                showToast("Impossible, contact bloqué."); 
+                window.isSendingMsg = false;
+                return; 
+            }
             proceedSend();
         });
-    } else proceedSend();
+    } else { proceedSend(); }
     
     function proceedSend() {
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
+        const encryptedText = E2EE.encrypt(text, cryptoKey);
+        
         const collPath = mode === 'msgs' ? 'chats' : 'cocon';
         const docTarget = mode === 'msgs' ? activeId : user.code;
         
-        // CORRECTIF 1: Prévention du blocage si l'envoi échoue
         fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-            sid: user.id, txt: E2EE.encrypt(text, cryptoKey), t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
+            sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
         }).then(() => {
-            inp.value = ""; inp.focus(); 
-            setTimeout(() => window.isSendingMsg = false, 500); 
-        }).catch(err => {
-            window.isSendingMsg = false; showToast("Erreur lors de l'envoi");
+            inp.value = "";
+            inp.focus(); 
+            setTimeout(() => { window.isSendingMsg = false; }, 500); 
         });
         
         if(mode === 'msgs') {
             db.ref('typing/'+activeId+'/'+user.id).set(false); 
+            
             const batch = fs.batch();
-            batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-            batch.set(fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
+            const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
+            batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+            
+            const peerContactRef = fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id);
+            batch.set(peerContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
             batch.commit();
         }
     }
@@ -1334,19 +1534,31 @@ function watchStatus(id) {
         if(p && p.status === 'online') el.innerHTML = `<span style="color:var(--online); text-shadow:0 0 5px rgba(37,211,102,0.5);">● en ligne</span>`;
         else if(p && p.last) {
             const d = new Date(p.last), n = new Date();
-            el.innerText = ((d.getDate() === n.getDate() && d.getMonth() === n.getMonth()) ? "vu aujourd'hui à " : "vu le " + d.toLocaleDateString() + " à ") + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            const isT = d.getDate() === n.getDate() && d.getMonth() === n.getMonth();
+            el.innerText = (isT ? "vu aujourd'hui à " : "vu le " + d.toLocaleDateString() + " à ") + d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
         } else el.innerText = "hors-ligne";
     });
-    db.ref('typing/'+activeId+'/'+id).on('value', s => document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none');
+    db.ref('typing/'+activeId+'/'+id).on('value', s => { document.getElementById('typingDisp').style.display = s.val() ? 'block' : 'none'; });
 }
 
 function openContactOptions() {
     fs.collection('users').doc(currentPeerId).get().then(doc => {
-        const pfpUrl = doc.data()?.pfp;
-        let html = `<button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `openMediaViewer('${pfpUrl}', 'img')` : `showToast('Aucune photo')`}"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Voir la photo</button>
-        <button class="option-btn" style="justify-content:center;" onclick="clearConversation()"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg> Vider la conversation</button>
-        <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> Bloquer le contact</button>
-        <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer le contact</button>`;
+        const u = doc.data();
+        const pfpUrl = u && u.pfp ? u.pfp : null;
+        let html = `
+            <button class="option-btn" style="justify-content:center;" onclick="${pfpUrl ? `openMediaViewer('${pfpUrl}', 'img')` : `showToast('Aucune photo')`}">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Voir la photo
+            </button>
+            <button class="option-btn" style="justify-content:center;" onclick="clearConversation()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg> Vider la conversation
+            </button>
+            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="blockContact()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg> Bloquer le contact
+            </button>
+            <button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="confirmDeleteContact()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer le contact
+            </button>
+        `;
         openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon-lg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='1'></circle><circle cx='12' cy='5' r='1'></circle><circle cx='12' cy='19' r='1'></circle></svg> Options</div>", html, null);
     });
 }
@@ -1354,7 +1566,8 @@ function openContactOptions() {
 function clearConversation() {
     openModal("Vider ?", "<p style='font-size:14px; opacity:0.8;'>Les messages seront masqués de votre côté.</p>", () => {
         fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).update({ clearedAt: Date.now() });
-        document.getElementById('mArea').innerHTML = ""; chatClearedAt = Date.now();
+        document.getElementById('mArea').innerHTML = "";
+        chatClearedAt = Date.now();
         triggerBack(); triggerBack(); showToast("Conversation vidée");
     });
 }
@@ -1397,31 +1610,61 @@ function openMediaMenu(mode) {
     currentMediaMode = mode;
     openModal("Joindre", `
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('imgIn').click(), 300);"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Galerie</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('camIn').click(), 300);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Photo</button>
-            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('audioChatIn').click(), 300);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Audio</button>
-            <button class="option-btn" style="justify-content:center; margin:0; border-color:var(--accent); color:var(--accent);" onclick="triggerBack(); setTimeout(() => openCapsuleCreator(), 300);"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Capsule</button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('imgIn').click(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Galerie
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('camIn').click(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> Photo
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0;" onclick="triggerBack(); setTimeout(() => document.getElementById('audioChatIn').click(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg> Audio
+            </button>
+            <button class="option-btn" style="justify-content:center; margin:0; border-color:var(--accent); color:var(--accent);" onclick="triggerBack(); setTimeout(() => openCapsuleCreator(), 300);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Capsule
+            </button>
         </div>
     `, null);
 }
 
 function openCapsuleCreator() {
-    openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule</div>", `<p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand la capsule pourra-t-elle s'ouvrir ?</p><input type="datetime-local" id="capsuleDate" class="modal-input" style="color-scheme: dark; padding: 12px; font-size:14px;"><textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none; font-family: 'Poppins', sans-serif;" placeholder="Ton message secret..."></textarea>`, () => {
-        const dateVal = document.getElementById('capsuleDate').value, textVal = document.getElementById('capsuleText').value.trim();
+    const html = `
+        <p style="font-size:12px; opacity:0.7; margin-bottom:10px;">Quand la capsule pourra-t-elle s'ouvrir ?</p>
+        <input type="datetime-local" id="capsuleDate" class="modal-input" style="color-scheme: dark; padding: 12px; font-size:14px;">
+        <textarea id="capsuleText" class="modal-input" style="height:100px; text-align:left; resize:none; font-family: 'Poppins', sans-serif;" placeholder="Ton message secret..."></textarea>
+    `;
+    
+    openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule</div>", html, () => {
+        const dateVal = document.getElementById('capsuleDate').value;
+        const textVal = document.getElementById('capsuleText').value.trim();
+        
         if(!dateVal || !textVal) return showToast("Données incomplètes");
+        
         const unlockTimestamp = new Date(dateVal).getTime();
         if(unlockTimestamp <= Date.now()) return showToast("Choisis une date future !");
-        sendCapsule(textVal, unlockTimestamp); triggerBack(); 
+        
+        sendCapsule(textVal, unlockTimestamp);
+        triggerBack(); 
     });
 }
 
 function sendCapsule(text, unlockTimestamp) {
-    const cryptoKey = currentMediaMode === 'msgs' ? activeId : user.code;
-    const collPath = currentMediaMode === 'msgs' ? 'chats' : 'cocon';
-    const docTarget = currentMediaMode === 'msgs' ? activeId : user.code;
+    const mode = currentMediaMode; 
+    const cryptoKey = mode === 'msgs' ? activeId : user.code;
+    const encryptedText = E2EE.encrypt(text, cryptoKey);
+    
+    const collPath = mode === 'msgs' ? 'chats' : 'cocon';
+    const docTarget = mode === 'msgs' ? activeId : user.code;
+    
     fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-        sid: user.id, txt: E2EE.encrypt(text, cryptoKey), t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', unlockAt: unlockTimestamp, opened: false, seen: false 
+        sid: user.id, 
+        txt: encryptedText, 
+        t: firebase.firestore.FieldValue.serverTimestamp(), 
+        type: 'text', 
+        unlockAt: unlockTimestamp, 
+        opened: false, 
+        seen: false 
     });
+    
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
@@ -1429,40 +1672,53 @@ async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: { echoCancellation: true, noiseSuppression: true } 
+        });
         mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
-        
-        // CORRECTIF 3: Définition explicite du type MIME pour iOS Safari
+        mediaRecorder.ondataavailable = event => { 
+            if (event.data.size > 0) audioChunks.push(event.data); 
+        };
         mediaRecorder.onstop = () => {
-            const audioType = mediaRecorder.mimeType || 'audio/webm';
-            const audioBlob = new Blob(audioChunks, { type: audioType }); 
+            const audioBlob = new Blob(audioChunks); 
             audioChunks = [];
             uploadToFirebase(audioBlob, 'audio', mode);
         };
-        audioChunks = []; mediaRecorder.start(); isRecording = true;
+        audioChunks = []; 
+        mediaRecorder.start(); 
+        isRecording = true;
         
         const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         inputField.dataset.origPlaceholder = inputField.placeholder;
-        inputField.placeholder = "🔴 Enregistrement..."; inputField.disabled = true;
+        inputField.placeholder = "🔴 Enregistrement...";
+        inputField.disabled = true;
+        
         e.currentTarget.classList.add('recording');
         if('vibrate' in navigator) navigator.vibrate(50);
-    } catch (err) { console.warn("Délai ou refus micro:", err); }
+    } catch (err) { 
+        console.warn("Délai ou refus micro:", err);
+    }
 }
 
 function stopRecording(e) {
     e.preventDefault();
     if(isRecording && mediaRecorder) {
-        mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(track => track.stop()); isRecording = false;
+        mediaRecorder.stop(); 
+        mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
+        isRecording = false;
+        
         ['mIn', 'coIn'].forEach(id => {
             const inputField = document.getElementById(id);
-            if (inputField && inputField.disabled) { inputField.disabled = false; inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; }
+            if (inputField && inputField.disabled) {
+                inputField.disabled = false;
+                inputField.placeholder = inputField.dataset.origPlaceholder || "Message";
+            }
         });
+        
         document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
 }
-</script>
-<script>
+
 document.getElementById('imgIn') ? document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('camIn') ? document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('audioChatIn') ? document.getElementById('audioChatIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
