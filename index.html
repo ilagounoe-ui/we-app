@@ -1996,10 +1996,28 @@ function register() {
 
 function confirmLogout() { 
     openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
-        auth.signOut().then(() => {
-            localStorage.clear(); 
-            location.reload(); 
-        });
+        if (user && user.id) {
+            // 1. On force le statut hors-ligne AVANT de perdre les droits
+            db.ref('presence/' + user.id).set({ 
+                status: 'offline', 
+                last: firebase.database.ServerValue.TIMESTAMP 
+            }).then(() => {
+                // 2. Une fois enregistré, on déconnecte proprement
+                auth.signOut().then(() => {
+                    localStorage.clear(); 
+                    location.reload(); 
+                });
+            }).catch(err => {
+                console.error("Erreur de déconnexion présence:", err);
+                // On déconnecte quand même en cas de fail
+                auth.signOut().then(() => { localStorage.clear(); location.reload(); });
+            });
+        } else {
+            auth.signOut().then(() => {
+                localStorage.clear(); 
+                location.reload(); 
+            });
+        }
     }); 
 }
 
