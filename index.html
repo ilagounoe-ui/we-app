@@ -482,17 +482,23 @@
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)" data-i18n="tab_msg">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Messages
-            </div>
-            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)" data-i18n="tab_cocon">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> Le Cocon
-            </div>
-            <div class="tab" onclick="switchV('vSet', this)" data-i18n="tab_set">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Réglages
-            </div>
-        </div>
-    </header>
+    <div class="tab active" onclick="switchV('vChats', this)">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
+        <span data-i18n="tab_msg">Messages</span>
+        <div id="globalUnreadBadge" class="badge-count" style="display:none; margin-left: 5px;">0</div>
+    </div>
+    
+    <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
+        <span data-i18n="tab_cocon">Le Cocon</span>
+    </div>
+    
+    <div class="tab" onclick="switchV('vSet', this)">
+        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
+        <span data-i18n="tab_set">Réglages</span>
+    </div>
+</div>
+ </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
@@ -787,7 +793,7 @@ let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
 
-const sounds = { pop: "" };
+const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" }; 
 
 const moodLibrary = {
     "Heureux": [
@@ -887,10 +893,18 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
-
+    
 try {
-    fs.enablePersistence({synchronizeTabs:true}).catch(err => console.warn("Persistence hors ligne:", err));
-} catch(e) {}
+    fs.enablePersistence({synchronizeTabs:true}).catch(err => {
+        if (err.code == 'failed-precondition') {
+            console.warn("Persistance échouée : plusieurs onglets ouverts.");
+        } else if (err.code == 'unimplemented') {
+            console.warn("Le navigateur ne supporte pas la persistance hors ligne.");
+        }
+    });
+} catch(e) {
+    console.warn("Erreur d'initialisation de la persistance :", e);
+}
 
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -938,6 +952,7 @@ const E2EE = {
     decrypt: (text, key) => {
         if(!text || !text.startsWith("E2EE::")) return text;
         try {
+            // Protection contre les chaînes Base64 malformées
             let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
             let res = "";
             const kLen = key.length;
@@ -945,7 +960,10 @@ const E2EE = {
                 res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
             }
             return res;
-        } catch(e) { return "🔒 [Message indéchiffrable]"; }
+        } catch(e) { 
+            console.warn("Erreur de déchiffrement E2EE ignorée pour un message.");
+            return "🔒 [Message indéchiffrable ou corrompu]"; 
+        }
     }
 };
 
@@ -1161,12 +1179,17 @@ function switchV(id, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
-
+    
 function loadContacts() {
     const list = document.getElementById('chatList');
     
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
-        if (snap.empty) { list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; return; }
+        if (snap.empty) { 
+            list.innerHTML = "<p style='text-align:center; opacity:0.5; margin-top:50px;'>Aucun contact.</p>"; 
+            document.getElementById('globalUnreadBadge').style.display = 'none'; // Masquer s'il n'y a pas de contact
+            return; 
+        }
+        
         let promises = [];
         snap.forEach(contactDoc => {
             const peerId = contactDoc.id;
@@ -1184,6 +1207,20 @@ function loadContacts() {
 
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
+            
+            // NOUVEAU : Calcul dynamique du total des messages non lus
+            let totalUnread = validContacts.reduce((sum, contact) => sum + (contact.unread || 0), 0);
+            const badgeEl = document.getElementById('globalUnreadBadge');
+            
+            if(badgeEl) {
+                if(totalUnread > 0) {
+                    badgeEl.innerText = totalUnread;
+                    badgeEl.style.display = 'flex';
+                } else {
+                    badgeEl.style.display = 'none';
+                }
+            }
+            
             renderContacts(validContacts);
         });
     });
@@ -1494,6 +1531,10 @@ function sendMsg(mode) {
                 return; 
             }
             proceedSend();
+        }).catch(err => {
+            console.error("Erreur de vérification blocage:", err);
+            window.isSendingMsg = false;
+            showToast("Erreur réseau.");
         });
     } else { proceedSend(); }
     
@@ -1510,10 +1551,14 @@ function sendMsg(mode) {
             inp.value = "";
             inp.focus(); 
             setTimeout(() => { window.isSendingMsg = false; }, 500); 
+        }).catch(err => {
+            console.error("Erreur d'envoi du message:", err);
+            window.isSendingMsg = false; // DÉBLOCAGE VITAL ICI
+            showToast("Échec de l'envoi du message.");
         });
         
         if(mode === 'msgs') {
-            db.ref('typing/'+activeId+'/'+user.id).set(false); 
+            db.ref('typing/'+activeId+'/'+user.id).set(false).catch(()=>{}); 
             
             const batch = fs.batch();
             const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
@@ -1521,7 +1566,7 @@ function sendMsg(mode) {
             
             const peerContactRef = fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id);
             batch.set(peerContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
-            batch.commit();
+            batch.commit().catch(err => console.error("Erreur de mise à jour des contacts:", err));
         }
     }
 }
