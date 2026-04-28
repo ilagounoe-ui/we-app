@@ -159,8 +159,27 @@
             will-change: transform; 
         }
         
-        .tabs { display: flex; gap: 10px; margin-top: 20px; }
-        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 20px; font-size: 13px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; display: flex; align-items: center; justify-content: center; gap: 8px;}
+        .tabs { display: flex; gap: 8px; margin-top: 20px; }
+        
+        .tab { 
+            flex: 1; 
+            padding: 10px 4px; 
+            text-align: center; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            background: var(--card); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border: 1px solid var(--glass-border); 
+            cursor: pointer; 
+            will-change: transform; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
@@ -184,7 +203,7 @@
 
         .bulle-humeur { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; transition: all 0.3s ease; }
 
-        .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: 10px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
+        .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
         /* FENÊTRES DE CHAT */
         #chatBox, #coconBox { 
@@ -485,7 +504,7 @@
             <div class="tab active" onclick="switchV('vChats', this)">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
                 <span data-i18n="tab_msg">Messages</span>
-                <div id="globalUnreadBadge" class="badge-count" style="display:none; margin-left: 5px;">0</div>
+                <div id="globalUnreadBadge" class="badge-count" style="display:none;">0</div>
             </div>
             <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
@@ -1143,11 +1162,25 @@ function openDateEdit() {
     });
 }
 
+// CORRECTION BUG PRÉSENCE : Mise en ligne correcte avec visibilité
 function updatePresence() {
     const statusRef = db.ref('presence/' + user.id);
+    
+    // 1. Écoute classique via Websocket
     db.ref('.info/connected').on('value', snap => {
         if (snap.val() === true) {
             statusRef.onDisconnect().set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
+            if (document.visibilityState === 'visible') {
+                statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
+            }
+        }
+    });
+
+    // 2. Écoute du changement d'onglet/mise en veille
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            statusRef.set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
+        } else {
             statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
         }
     });
@@ -1260,7 +1293,6 @@ function addFriend() {
             if(doc.exists) { 
                 const batch = fs.batch();
                 
-                // Ajout croisé : chez toi ET chez l'autre
                 batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 
@@ -1285,13 +1317,19 @@ function openChat(id, name, pfp) {
     
     fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ unread: 0 }, { merge: true });
 
-    document.getElementById('mArea').innerHTML = "";
-    document.getElementById('chatBox').style.display = 'flex';
-    lockAppHeight(); 
-    pushState('chatBox');
-    
-    watchStatus(id);
-    syncMessages('msgs', activeId, 'mArea');
+    // CORRECTION VIDER LA CONVERSATION : On récupère l'heure où on a effacé la conversation
+    fs.collection('users').doc(user.id).collection('contacts').doc(id).get().then(doc => {
+        if(doc.exists && doc.data().clearedAt) chatClearedAt = doc.data().clearedAt;
+        else chatClearedAt = 0;
+        
+        document.getElementById('mArea').innerHTML = "";
+        document.getElementById('chatBox').style.display = 'flex';
+        lockAppHeight(); 
+        pushState('chatBox');
+        
+        watchStatus(id);
+        syncMessages('msgs', activeId, 'mArea');
+    });
 }
 
 function closeChat() {
@@ -1375,21 +1413,23 @@ function closeMediaViewer(fromHistory = false) {
 function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return ""; 
 
+    const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
+    
+    // CORRECTION VIDER LA CONVERSATION : on masque l'historique antérieur
+    if (path === 'msgs' && chatClearedAt && ts.getTime() <= chatClearedAt) return "";
+
     const isMe = m.sid === user.id;
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
         
-        // 1. Marque le message comme "vu"
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
         
-        // 2. CORRECTION BADGE : Remet le compteur de notifications à 0 instantanément
         if (path === 'msgs' && currentPeerId) {
             fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
         }
     }
     
-    const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
     const time = ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
     if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
@@ -1613,9 +1653,10 @@ function openContactOptions() {
 
 function clearConversation() {
     openModal("Vider ?", "<p style='font-size:14px; opacity:0.8;'>Les messages seront masqués de votre côté.</p>", () => {
-        fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).update({ clearedAt: Date.now() });
+        const now = Date.now();
+        fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).update({ clearedAt: now });
         document.getElementById('mArea').innerHTML = "";
-        chatClearedAt = Date.now();
+        chatClearedAt = now;
         triggerBack(); triggerBack(); showToast("Conversation vidée");
     });
 }
