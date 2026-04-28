@@ -1512,7 +1512,7 @@ function getMsgHTML(docId, m, path, target) {
     }
 
     return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div>${reactionsHtml}</div>`;
-    
+    }
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
