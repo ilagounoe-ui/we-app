@@ -398,7 +398,22 @@
 
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-
+        /* REACTIONS MESSAGES */
+        .msg-reactions { 
+            position: absolute; bottom: -12px; right: 15px; 
+            background: var(--card); border: 1px solid var(--glass-border); 
+            border-radius: 12px; padding: 2px 6px; font-size: 13px; 
+            display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
+            z-index: 2; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
+        }
+        .m-they .msg-reactions { right: auto; left: 15px; }
+        .reaction-btn { 
+            background: transparent; border: none; font-size: 24px; 
+            cursor: pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            padding: 8px; border-radius: 50%;
+        }
+        .reaction-btn:active { transform: scale(1.4); background: rgba(255,255,255,0.1); }
+        
         /* CSS GALAXIE 3D */
         #galaxyBox {
             display: none; 
@@ -1485,12 +1500,19 @@ function getMsgHTML(docId, m, path, target) {
         </div>`;
     }
     
-    const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
+        const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
 
-    return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div></div>`;
-}
+    // NOUVEAU : Récupération et affichage des réactions
+    let reactionsHtml = "";
+    if (m.reactions && Object.keys(m.reactions).length > 0) {
+        // On récupère toutes les réactions et on les colle
+        const emojis = Object.values(m.reactions).join('');
+        reactionsHtml = `<div class="msg-reactions">${emojis}</div>`;
+    }
 
+    return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div>${reactionsHtml}</div>`;
+    
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
@@ -1521,7 +1543,16 @@ function syncMessages(path, target, areaId) {
 function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     if(type === 'audio') return; 
     const decodedTxt = decodeURIComponent(escTxt);
-    let html = "";
+    
+    // NOUVEAU : Barre de réactions en haut du menu
+    let html = `<div style="display:flex; justify-content:center; gap:5px; margin-bottom: 20px; background:rgba(0,0,0,0.3); border-radius:30px; padding:5px; border:1px solid var(--glass-border);">
+        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '❤️', '${path}', '${target}')">❤️</button>
+        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
+        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🥺', '${path}', '${target}')">🥺</button>
+        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '✨', '${path}', '${target}')">✨</button>
+        <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🔥', '${path}', '${target}')">🔥</button>
+    </div>`;
+
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
         const safetxt = decodedTxt.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         html += `<button class="option-btn" style="justify-content:center;" onclick="editMsg('${msgId}', '${safetxt}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg> Modifier</button>`;
@@ -1529,6 +1560,23 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     html += `<button class="option-btn" style="justify-content:center;" onclick="delMsgForMe('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Supprimer pour moi</button>`;
     if(isMe) html += `<button class="option-btn" style="color:var(--love); justify-content:center; border-color:rgba(255,75,110,0.3);" onclick="delMsgForAll('${msgId}', '${path}', '${target}')"><svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg> Supprimer pour tous</button>`;
     openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon-lg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='1'></circle><circle cx='12' cy='5' r='1'></circle><circle cx='12' cy='19' r='1'></circle></svg> Options</div>", html, null);
+}
+
+// NOUVELLE FONCTION : Sauvegarde de la réaction dans Firebase
+function reactToMsg(msgId, emoji, path, target) {
+    const collPath = path === 'msgs' ? 'chats' : 'cocon';
+    const docTarget = path === 'msgs' ? target : user.code;
+    
+    // Ajoute ou met à jour la réaction de cet utilisateur pour ce message précis
+    fs.collection(collPath).doc(docTarget).collection('messages').doc(msgId).update({ 
+        [`reactions.${user.id}`]: emoji 
+    }).then(() => {
+        triggerBack(); // Ferme le modal
+        if ('vibrate' in navigator) navigator.vibrate(20); // Petit retour haptique
+    }).catch(err => {
+        console.error("Erreur réaction:", err);
+        showToast("Erreur de connexion");
+    });
 }
 
 function delMsgForMe(id, path, target) { 
