@@ -398,6 +398,7 @@
 
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+        
         /* REACTIONS MESSAGES */
         .msg-reactions { 
             position: absolute; bottom: -12px; right: 15px; 
@@ -426,6 +427,24 @@
             position: absolute;
             inset: 0;
             outline: none;
+        }
+
+        /* --- NOUVEAU CSS POUR NEEDYOU (ANIMATION WARP SPEED) --- */
+        @keyframes warpSpeed {
+            0% { transform: scale(1) translateZ(0); opacity: 0.5; }
+            100% { transform: scale(3) translateZ(0); opacity: 1; }
+        }
+
+        .warp-active {
+            animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+            filter: blur(1px);
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px white;
         }
     </style>
 </head>
@@ -580,6 +599,11 @@
         <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur
         </button>
+        
+        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)
+        </button>
+
         <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Rejoindre notre Galaxie
         </button>
@@ -731,6 +755,49 @@
                 <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
         </div>
+    </div>
+</div>
+
+<div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
+    
+    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
+
+    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10;">
+        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; backdrop-filter:blur(5px); cursor: pointer;">
+            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </div>
+    </div>
+
+    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:10px; text-align:center;">Needyou</h2>
+    <p style="opacity:0.7; font-size:13px; text-align:center; margin-bottom:30px;">Laisse l'Univers écrire pour toi...</p>
+
+    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+        
+        <label style="font-size:12px; opacity:0.8; margin-left:10px; text-transform:uppercase;">Ton Humeur actuelle</label>
+        <input type="text" id="aiMood" class="modal-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-top:5px; margin-bottom:20px;">
+
+        <label style="font-size:12px; opacity:0.8; margin-left:10px; text-transform:uppercase;">Style du poème</label>
+        <select id="aiStyle" class="modal-input" style="appearance:none; margin-top:5px; margin-bottom:25px; outline:none;">
+            <option value="Doux et Romantique">Doux & Romantique</option>
+            <option value="Épique et Spatial">Épique & Spatial</option>
+            <option value="Mélancolique">Mélancolique</option>
+            <option value="Haïku Court">Haïku (Court et Poétique)</option>
+        </select>
+
+        <button onclick="generatePoem()" style="width:100%; padding:15px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            Invoquer l'IA ✨
+        </button>
+    </div>
+
+    <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
+        <div id="aiGeneratingText" style="font-family:'Pacifico'; font-size:22px; color:var(--love); animation: pulse 1.5s infinite; text-shadow: 0 0 15px var(--love-glow);">Connexion aux astres...</div>
+        
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
+            </div>
+
+        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
+            Copier pour le Cocon
+        </button>
     </div>
 </div>
 <script>
@@ -927,7 +994,6 @@ const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
 
-// CORRECTION BUG #4 : Try/Catch amélioré pour la persistance locale
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
         if (err.code == 'failed-precondition') {
@@ -973,7 +1039,6 @@ function initApp() {
     });
 }
 
-// CORRECTION BUG #3 : Protection contre le plantage Base64
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
@@ -1177,11 +1242,9 @@ function openDateEdit() {
     });
 }
 
-// CORRECTION BUG PRÉSENCE : Mise en ligne correcte avec visibilité
 function updatePresence() {
     const statusRef = db.ref('presence/' + user.id);
     
-    // 1. Écoute classique via Websocket
     db.ref('.info/connected').on('value', snap => {
         if (snap.val() === true) {
             statusRef.onDisconnect().set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
@@ -1191,7 +1254,6 @@ function updatePresence() {
         }
     });
 
-    // 2. Écoute du changement d'onglet/mise en veille
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             statusRef.set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
@@ -1212,13 +1274,16 @@ function unlockSecureSettings() {
 }
 
 function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
-window.onpopstate = () => {
+
+window.onpopstate = (e) => {
     const last = stateStack.pop();
     if(last === 'modal') document.getElementById('customModal').style.display = 'none';
     else if(last === 'mediaViewer') closeMediaViewer(true);
     else if(last === 'galaxy') closeGalaxy(true);
+    else if(last === 'needyou') closeNeedyou(true);
     else if(last === 'chatBox' || last === 'coconBox') closeChat();
 };
+
 function triggerBack() { history.back(); }
 
 function switchV(id, el) {
@@ -1228,7 +1293,7 @@ function switchV(id, el) {
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
 
-// CORRECTION BUG GLOBAL UNREAD : Calcul dynamique des badges pour l'onglet de navigation
+// CORRECTION BUG BADGE SÉCURISÉE
 function loadContacts() {
     const list = document.getElementById('chatList');
     
@@ -1258,16 +1323,22 @@ function loadContacts() {
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
             
-            // Calcul dynamique du total des messages non lus
-            let totalUnread = validContacts.reduce((sum, contact) => sum + (contact.unread || 0), 0);
+            // Sécurisation du calcul du badge
+            let totalUnread = validContacts.reduce((sum, contact) => {
+                let unreadCount = Number(contact.unread); // Force le format nombre
+                return sum + (isNaN(unreadCount) ? 0 : unreadCount);
+            }, 0);
+            
             const badgeEl = document.getElementById('globalUnreadBadge');
             
             if(badgeEl) {
                 if(totalUnread > 0) {
-                    badgeEl.innerText = totalUnread;
+                    badgeEl.innerText = totalUnread > 99 ? '99+' : totalUnread; // Limite visuelle
                     badgeEl.style.display = 'flex';
+                    badgeEl.style.animation = 'pulse 1s ease'; // Petit effet
                 } else {
                     badgeEl.style.display = 'none';
+                    badgeEl.innerText = '0';
                 }
             }
             
@@ -1332,7 +1403,6 @@ function openChat(id, name, pfp) {
     
     fs.collection('users').doc(user.id).collection('contacts').doc(id).set({ unread: 0 }, { merge: true });
 
-    // CORRECTION VIDER LA CONVERSATION : On récupère l'heure où on a effacé la conversation
     fs.collection('users').doc(user.id).collection('contacts').doc(id).get().then(doc => {
         if(doc.exists && doc.data().clearedAt) chatClearedAt = doc.data().clearedAt;
         else chatClearedAt = 0;
@@ -1430,7 +1500,6 @@ function getMsgHTML(docId, m, path, target) {
 
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
     
-    // CORRECTION VIDER LA CONVERSATION : on masque l'historique antérieur
     if (path === 'msgs' && chatClearedAt && ts.getTime() <= chatClearedAt) return "";
 
     const isMe = m.sid === user.id;
@@ -1503,16 +1572,15 @@ function getMsgHTML(docId, m, path, target) {
         const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
 
-    // NOUVEAU : Récupération et affichage des réactions
     let reactionsHtml = "";
     if (m.reactions && Object.keys(m.reactions).length > 0) {
-        // On récupère toutes les réactions et on les colle
         const emojis = Object.values(m.reactions).join('');
         reactionsHtml = `<div class="msg-reactions">${emojis}</div>`;
     }
 
     return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" ${clickEvent}>${content}<div class="msg-meta"><span>${time}</span>${isMe ? `<span style="color:${m.seen ? 'var(--check)' : 'inherit'}">✓✓</span>` : ''}</div>${reactionsHtml}</div>`;
-    }
+}
+
 function syncMessages(path, target, areaId) {
     if(unsubMsgs) unsubMsgs(); 
     const area = document.getElementById(areaId);
@@ -1544,7 +1612,6 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     if(type === 'audio') return; 
     const decodedTxt = decodeURIComponent(escTxt);
     
-    // NOUVEAU : Barre de réactions avec le champ de saisie libre (➕)
     let html = `<div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom: 20px; background:rgba(0,0,0,0.3); border-radius:30px; padding:5px 15px; border:1px solid var(--glass-border);">
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '❤️', '${path}', '${target}')">❤️</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
@@ -1565,17 +1632,15 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
     openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon-lg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='1'></circle><circle cx='12' cy='5' r='1'></circle><circle cx='12' cy='19' r='1'></circle></svg> Options</div>", html, null);
 }
 
-// NOUVELLE FONCTION : Sauvegarde de la réaction dans Firebase
 function reactToMsg(msgId, emoji, path, target) {
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
-    // Ajoute ou met à jour la réaction de cet utilisateur pour ce message précis
     fs.collection(collPath).doc(docTarget).collection('messages').doc(msgId).update({ 
         [`reactions.${user.id}`]: emoji 
     }).then(() => {
-        triggerBack(); // Ferme le modal
-        if ('vibrate' in navigator) navigator.vibrate(20); // Petit retour haptique
+        triggerBack(); 
+        if ('vibrate' in navigator) navigator.vibrate(20); 
     }).catch(err => {
         console.error("Erreur réaction:", err);
         showToast("Erreur de connexion");
@@ -1607,7 +1672,6 @@ function editMsg(id, old, path, target) {
     }); 
 }
 
-// CORRECTION BUG #1 : Anti-blocage des messages avec un vrai catch d'erreur réseau
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
     
@@ -1647,7 +1711,7 @@ function sendMsg(mode) {
             setTimeout(() => { window.isSendingMsg = false; }, 500); 
         }).catch(err => {
             console.error("Erreur d'envoi du message:", err);
-            window.isSendingMsg = false; // DÉBLOCAGE VITAL ICI
+            window.isSendingMsg = false;
             showToast("Échec de l'envoi du message.");
         });
         
@@ -1904,7 +1968,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     const UPLOAD_PRESET = "evyegpfe"; 
     const formData = new FormData();
 
-    // 1. Forcer la conversion absolue en vrai Fichier
     let finalFile = fileData;
     if (!(fileData instanceof File)) {
         finalFile = new File([fileData], 'univers_media.jpg', { type: fileData.type || 'image/jpeg' });
@@ -2048,19 +2111,16 @@ function register() {
 function confirmLogout() { 
     openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
         if (user && user.id) {
-            // 1. On force le statut hors-ligne AVANT de perdre les droits
             db.ref('presence/' + user.id).set({ 
                 status: 'offline', 
                 last: firebase.database.ServerValue.TIMESTAMP 
             }).then(() => {
-                // 2. Une fois enregistré, on déconnecte proprement
                 auth.signOut().then(() => {
                     localStorage.clear(); 
                     location.reload(); 
                 });
             }).catch(err => {
                 console.error("Erreur de déconnexion présence:", err);
-                // On déconnecte quand même en cas de fail
                 auth.signOut().then(() => { localStorage.clear(); location.reload(); });
             });
         } else {
@@ -2246,13 +2306,135 @@ function syncGalaxy() {
         }
     });
 }
+
+// ==========================================
+// --- LOGIQUE NEEDYOU (Générateur IA) ---
+// ==========================================
+
+function openNeedyou() {
+    document.getElementById('needyouBox').style.display = 'flex';
+    pushState('needyou');
+    
+    document.getElementById('needyouForm').style.display = 'block';
+    document.getElementById('needyouResultBlock').style.display = 'none';
+    document.getElementById('aiPoemOutput').style.display = 'none';
+    document.getElementById('aiCopyBtn').style.display = 'none';
+    document.getElementById('aiGeneratingText').style.display = 'block';
+
+    generateStars(); 
+}
+
+function closeNeedyou(fromHistory = false) {
+    document.getElementById('needyouBox').style.display = 'none';
+    const starsContainer = document.getElementById('stars-container');
+    starsContainer.innerHTML = ''; 
+    starsContainer.classList.remove('warp-active');
+    
+    if(!fromHistory) triggerBack();
+}
+
+function generateStars() {
+    const container = document.getElementById('stars-container');
+    container.innerHTML = '';
+    for (let i = 0; i < 100; i++) {
+        let star = document.createElement('div');
+        star.className = 'star';
+        let size = Math.random() * 3 + 1;
+        star.style.width = size + 'px';
+        star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.opacity = Math.random();
+        const colors = ['#ffffff', '#d0a8ff', '#00d2ff'];
+        star.style.background = colors[Math.floor(Math.random() * colors.length)];
+        container.appendChild(star);
+    }
+}
+
+// Lancement de l'animation et appel de la VRAIE IA
+async function generatePoem() {
+    const humeur = document.getElementById('aiMood').value || "Neutre";
+    const style = document.getElementById('aiStyle').value;
+
+    // 1. Interface de chargement et démarrage de l'animation
+    document.getElementById('needyouForm').style.display = 'none';
+    document.getElementById('needyouResultBlock').style.display = 'block';
+    document.getElementById('stars-container').classList.add('warp-active');
+    
+    const loadingText = document.getElementById('aiGeneratingText');
+    loadingText.innerText = "Connexion aux astres...";
+    loadingText.style.display = 'block';
+
+    // 2. Ta clé secrète
+    const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
+    
+    // L'adresse du cerveau de l'IA (Modèle Gemini 1.5 Flash, ultra rapide)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+    // 3. Le "Prompt" caché : on donne ses directives à l'IA
+    const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
+    L'utilisateur se sent actuellement : ${humeur}. 
+    Il souhaite un poème dans ce style : ${style}. 
+    Écris un poème de 2 à 3 strophes maximum. Le ton doit être touchant et très immersif. 
+    Ne mets pas de titre, ne dis pas bonjour, donne UNIQUEMENT le poème. 
+    IMPORTANT : Utilise la balise HTML <br> pour faire tes retours à la ligne, pas de \\n.`;
+
+    try {
+        // 4. On envoie la requête à travers l'univers
+        const reponse = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptSecret }] }],
+                generationConfig: { 
+                    temperature: 0.9 // Température haute = 100% de créativité à chaque fois !
+                }
+            })
+        });
+
+        if (!reponse.ok) throw new Error("Les astres ne répondent pas.");
+
+        // 5. On récupère et décortique la réponse
+        const data = await reponse.json();
+        let poemText = data.candidates[0].content.parts[0].text;
+
+        // Arrêt de l'animation
+        document.getElementById('stars-container').classList.remove('warp-active');
+        loadingText.style.display = 'none';
+        
+        // Affichage du chef-d'œuvre
+        const poemOutput = document.getElementById('aiPoemOutput');
+        poemOutput.style.display = 'block';
+        poemOutput.innerHTML = poemText;
+
+        document.getElementById('aiCopyBtn').style.display = 'block';
+
+    } catch (erreur) {
+        console.error("Erreur IA:", erreur);
+        document.getElementById('stars-container').classList.remove('warp-active');
+        loadingText.innerText = "Interférence spatiale... Réessaie 🌠";
+        
+        // On permet à l'utilisateur de retenter
+        setTimeout(() => {
+            document.getElementById('needyouResultBlock').style.display = 'none';
+            document.getElementById('needyouForm').style.display = 'block';
+        }, 3000);
+    }
+}
+
+function copyPoem() {
+    const text = document.getElementById('aiPoemOutput').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Poème copié ! Prêt à être envoyé 💌");
+        closeNeedyou();
+    });
+}
 </script>
 
 <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // Initialisation immédiate et discrète
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x010005, 0.0002);
 
@@ -2460,10 +2642,8 @@ function syncGalaxy() {
     ];
     systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
 
-    // Interaction tactile / souris optimisée
     let pointerDownPos = new THREE.Vector2();
 
-    // Au survol (surtout pour l'ordinateur)
     renderer.domElement.addEventListener('pointermove', (event) => {
         isDragging = true;
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -2473,23 +2653,18 @@ function syncGalaxy() {
         document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
     });
 
-    // Quand on pose le doigt / clique
     renderer.domElement.addEventListener('pointerdown', (event) => {
         isDragging = false;
         pointerDownPos.set(event.clientX, event.clientY);
     });
 
-    // Quand on relève le doigt / relâche le clic
     renderer.domElement.addEventListener('pointerup', (event) => {
         if (isDragging) return;
         
-        // On calcule la distance parcourue par le doigt
         const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
         
-        // Si le doigt a glissé de plus de 5 pixels (rotation de la caméra), on ignore le clic
         if (distance > 5) return; 
 
-        // CRUCIAL sur mobile : on force la mise à jour de la position au moment précis du tap
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -2499,16 +2674,13 @@ function syncGalaxy() {
         if (intersects.length > 0) {
             const clickedPlanet = intersects[0].object;
             
-            // Si la planète est DÉJÀ ciblée (2ème clic) -> Ouverture Galerie !
             if (followedPlanet === clickedPlanet) {
                 window.currentPlanetIndex = clickedPlanet.userData.planetIndex;
                 document.getElementById('galaxyInput').click(); 
             } else {
-                // Sinon (1er clic) -> On verrouille la caméra sur la planète
                 followedPlanet = clickedPlanet;
             }
         } else {
-            // Clic dans le vide : on libère la caméra pour voir toute la galaxie
             followedPlanet = null;
             focusTarget.set(0, 0, 0);
         }
@@ -2520,7 +2692,6 @@ function syncGalaxy() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Boucle d'animation
     function animate() {
         animationId = requestAnimationFrame(animate);
         systems.forEach(s => s.update());
@@ -2532,7 +2703,6 @@ function syncGalaxy() {
         renderer.render(scene, camera);
     }
 
-    // Fonctions exposées à l'application principale
     window.startGalaxy3D = function() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -2549,7 +2719,7 @@ function syncGalaxy() {
 
     window.updateGalaxyTextures = function(dataDict) {
         const loader = new THREE.TextureLoader();
-        loader.setCrossOrigin('anonymous'); // CRUCIAL : Autorise les images externes (Cloudinary)
+        loader.setCrossOrigin('anonymous');
         
         clickablePlanets.forEach(planet => {
             const idx = planet.userData.planetIndex;
