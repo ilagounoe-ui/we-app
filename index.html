@@ -698,6 +698,7 @@
         </button>
     </div>
 </div>
+                                        
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
@@ -1348,7 +1349,6 @@ function getMsgHTML(docId, m, path, target) {
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     
-    // CORRECTION : L'audio ne bloque plus le clic pour afficher le menu "Supprimer"
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">▶</div>
@@ -2012,14 +2012,16 @@ function copyPoem() {
 </script>
 
 <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
     let unsubGalaxy = null;
     window.currentCardIndex = null;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x010005, 0.0003);
+    
+    // NOUVEAU : Nébuleuse rose/mauve
+    scene.fog = new THREE.FogExp2(0x1a0510, 0.0004);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
     camera.position.set(0, 300, 1000);
@@ -2042,6 +2044,7 @@ function copyPoem() {
     let animationId = null;
     let isDragging = false; 
 
+    // NOUVEAU : Étoiles magiques colorées
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
         const count = 8000;
@@ -2051,9 +2054,10 @@ function copyPoem() {
             positions[i] = (Math.random() - 0.5) * 4000;
             positions[i+1] = (Math.random() - 0.5) * 4000;
             positions[i+2] = (Math.random() - 0.5) * 4000;
-            colors[i] = 0.8 + Math.random() * 0.2; 
-            colors[i+1] = 0.8 + Math.random() * 0.2; 
-            colors[i+2] = 0.9 + Math.random() * 0.1;
+            
+            colors[i] = 0.9 + Math.random() * 0.1; // Beaucoup de rouge
+            colors[i+1] = 0.4 + Math.random() * 0.4; // Rose/Mauve
+            colors[i+2] = 0.6 + Math.random() * 0.4; // Bleu/Violet
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
@@ -2061,12 +2065,32 @@ function copyPoem() {
     }
     scene.add(createStarfield());
 
+    // NOUVEAU : Fonction de dessin d'un carré arrondi (pour les cartes)
+    function drawRoundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    // NOUVEAU : Texture du "+" avec fond pastel transparent
     function createPlusTexture() {
         const canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 256;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, 256, 256);
+        ctx.clearRect(0, 0, 256, 256);
+        
+        ctx.fillStyle = 'rgba(255, 75, 110, 0.15)'; 
+        drawRoundRect(ctx, 10, 10, 236, 236, 20);
+        
         ctx.fillStyle = '#ff4b6e'; 
         ctx.font = 'bold 120px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -2077,6 +2101,20 @@ function copyPoem() {
         return tex;
     }
 
+    // NOUVEAU : Masque d'arrondi parfait pour les photos Cloudinary
+    function createRoundedAlphaMap() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0,0,256,256);
+        ctx.fillStyle = '#ffffff';
+        drawRoundRect(ctx, 5, 5, 246, 246, 20); // Les bords arrondis blancs laissent passer l'image
+        return new THREE.CanvasTexture(canvas);
+    }
+    const cardAlphaMap = createRoundedAlphaMap();
+
+    // Motifs de planètes
     function createTextPatternTexture(text, themeColor) {
         const canvas = document.createElement('canvas');
         canvas.width = 512; canvas.height = 512;
@@ -2129,17 +2167,21 @@ function copyPoem() {
     class SolarSystem {
         constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
             this.group = new THREE.Group();
+            this.baseY = position.y; // Pour l'animation de flottaison
+            this.offset = Math.random() * 100;
             this.group.position.copy(position);
             this.planets = [];
             scene.add(this.group);
 
-            const sunGeo = new THREE.SphereGeometry(45, 32, 32);
+            // Soleil Central
+            const sunGeo = new THREE.SphereGeometry(45, 64, 64);
             const sunMat = new THREE.MeshStandardMaterial({ color: sunColor, emissive: sunColor, emissiveIntensity: 1.5, roughness: 1 });
             this.sun = new THREE.Mesh(sunGeo, sunMat);
             
+            // Halo lumineux ultra doux
             const sunGlowMat = new THREE.SpriteMaterial({ map: createGlowTexture(sunColor), blending: THREE.AdditiveBlending, depthWrite: false });
             const sunGlow = new THREE.Sprite(sunGlowMat);
-            sunGlow.scale.set(300, 300, 1);
+            sunGlow.scale.set(350, 350, 1);
             this.sun.add(sunGlow);
             this.group.add(this.sun);
 
@@ -2147,7 +2189,6 @@ function copyPoem() {
             this.group.add(this.light);
 
             const drawnOrbits = new Set();
-            let currentIndex = globalIndexStart;
 
             planetsConfig.forEach(config => {
                 if (!drawnOrbits.has(config.distance)) {
@@ -2162,11 +2203,15 @@ function copyPoem() {
                     drawnOrbits.add(config.distance);
                 }
 
-                const planetGeo = new THREE.SphereGeometry(config.size, 32, 32);
+                // CORRECTION : Planètes bien rondes avec ombrage 3D réaliste
+                const planetGeo = new THREE.SphereGeometry(config.size, 64, 64);
                 const texture = createTextPatternTexture(config.text, lightColor);
                 const planetMat = new THREE.MeshStandardMaterial({ 
-                    map: texture, emissive: new THREE.Color(0xffffff), emissiveMap: texture, 
-                    emissiveIntensity: 0.2, roughness: 0.5, metalness: 0.1 
+                    map: texture, 
+                    roughness: 0.6, 
+                    metalness: 0.2, 
+                    emissive: new THREE.Color(lightColor), 
+                    emissiveIntensity: 0.05 
                 });
                 
                 const planetMesh = new THREE.Mesh(planetGeo, planetMat);
@@ -2180,9 +2225,14 @@ function copyPoem() {
             });
         }
         update() {
-            const time = Date.now() * 0.002;
-            const scale = 1 + Math.sin(time) * 0.02;
+            const time = Date.now() * 0.001;
+            
+            // Animation Mignonne : Le système respire (flotte de haut en bas)
+            this.group.position.y = this.baseY + Math.sin(time + this.offset) * 15;
+            
+            const scale = 1 + Math.sin(time * 2) * 0.02;
             this.sun.scale.set(scale, scale, scale);
+            
             this.planets.forEach(p => {
                 p.angle += p.speed * 0.05; 
                 p.mesh.rotation.y += p.rotationSpeed * 0.5; 
@@ -2246,7 +2296,7 @@ function copyPoem() {
     ];
     systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
 
-    // --- L'ANNEAU D'ASTÉROIDES PHOTOS (DÉSORDRE HARMONIEUX) ---
+    // --- L'ANNEAU D'ASTÉROIDES PHOTOS (CARTES ARRONDIES MAGIQUES) ---
     const photoCloudGroup = new THREE.Group();
     scene.add(photoCloudGroup);
     
@@ -2255,13 +2305,18 @@ function copyPoem() {
     const defaultTex = createPlusTexture();
 
     for(let i = 0; i < totalCards; i++) {
-        const cardMat = new THREE.MeshBasicMaterial({ map: defaultTex, side: THREE.DoubleSide, transparent: true });
+        // CORRECTION MIGNONNE : Ajout du alphaMap pour que la photo ou le carré ait des bords arrondis parfaits
+        const cardMat = new THREE.MeshBasicMaterial({ 
+            map: defaultTex, 
+            alphaMap: cardAlphaMap, 
+            transparent: true, 
+            side: THREE.DoubleSide 
+        });
         const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
-        // Structure en anneau avec un peu d'épaisseur et de variation (désordre)
         const angle = (i / totalCards) * Math.PI * 2;
-        const radius = 450 + (Math.random() - 0.5) * 150; // Profondeur
-        const yOffset = (Math.random() - 0.5) * 120; // Hauteur
+        const radius = 450 + (Math.random() - 0.5) * 150; 
+        const yOffset = (Math.random() - 0.5) * 120; 
         
         cardMesh.position.set(Math.cos(angle) * radius, yOffset, Math.sin(angle) * radius);
         
@@ -2319,10 +2374,8 @@ function copyPoem() {
         animationId = requestAnimationFrame(animate);
         systems.forEach(s => s.update());
         
-        // L'anneau de photos tourne doucement
         photoCloudGroup.rotation.y -= 0.001;
 
-        // Les photos regardent toujours la caméra
         clickableCards.forEach(card => {
             card.quaternion.copy(camera.quaternion);
         });
@@ -2398,3 +2451,5 @@ function copyPoem() {
 </script>
 </body>
 </html>
+                                                });
+        
