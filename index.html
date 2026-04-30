@@ -2237,7 +2237,7 @@ function generateStars() {
     }
 }
 
-// Lancement de l'animation et appel de la VRAIE IA avec gestion d'erreurs
+// Lancement de l'animation et appel de la VRAIE IA avec le modèle universel
 async function generatePoem() {
     const humeur = document.getElementById('aiMood').value || "Neutre";
     
@@ -2257,8 +2257,8 @@ async function generatePoem() {
     document.getElementById('aiCopyBtn').style.display = 'none';
 
     const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
-    // CORRECTION DU BUG ICI : Changement du nom du modèle vers gemini-1.5-flash-latest
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
+    // CORRECTION ICI : Changement pour gemini-pro (modèle stable)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
     L'utilisateur se sent actuellement : ${humeur}. 
