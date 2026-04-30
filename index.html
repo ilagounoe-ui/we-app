@@ -62,6 +62,166 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
+        /* --- NOUVEAU DESIGN DE CONNEXION (LAMPE INTERACTIVE) --- */
+        #authLayer {
+            transition: background-color 0.5s ease;
+        }
+        
+        #authLayer.lamp-on {
+            background-color: #120e1c !important; /* Léger éclaircissement du fond */
+        }
+
+        .lamp-glow-bg {
+            position: absolute; 
+            width: 500px; 
+            height: 500px; 
+            background: radial-gradient(circle, rgba(255, 235, 100, 0.1) 0%, transparent 60%); 
+            top: -50px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            opacity: 0; 
+            transition: opacity 0.5s ease; 
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .lamp-on .lamp-glow-bg { opacity: 1; }
+
+        .lamp-container {
+            position: relative;
+            width: 100px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            margin-bottom: 5px;
+        }
+        .lamp-head {
+            width: 60px;
+            height: 30px;
+            background: #2a2a35;
+            border-radius: 30px 30px 5px 5px;
+            position: relative;
+            z-index: 2;
+            border-bottom: 2px solid #1a1a25;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.1);
+        }
+        .lamp-bulb {
+            width: 40px;
+            height: 15px;
+            background: #111;
+            border-radius: 0 0 20px 20px;
+            position: relative;
+            top: -2px;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        .lamp-body {
+            width: 6px;
+            height: 50px;
+            background: #333;
+            margin-top: -5px;
+        }
+        .lamp-base {
+            width: 70px;
+            height: 8px;
+            background: #2a2a35;
+            border-radius: 10px 10px 0 0;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+        }
+        .lamp-string {
+            position: absolute;
+            width: 2px;
+            height: 40px;
+            background: rgba(255,255,255,0.3);
+            top: 35px;
+            right: 25px;
+            transform-origin: top;
+            transition: transform 0.2s;
+        }
+        .lamp-string-ball {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: absolute;
+            bottom: -5px;
+            left: -4px;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* Animations de la lampe */
+        @keyframes pullString {
+            0% { transform: scaleY(1); }
+            50% { transform: scaleY(1.5); }
+            100% { transform: scaleY(1); }
+        }
+        .lamp-container:active .lamp-string { animation: pullString 0.3s ease; }
+        
+        .lamp-on .lamp-bulb {
+            background: #ffeb3b;
+            box-shadow: 0 10px 30px rgba(255, 235, 59, 0.8), 0 20px 60px rgba(255, 235, 59, 0.5);
+        }
+
+        /* Formulaire caché dans le noir */
+        #authFormWrapper {
+            width: 100%;
+            background: rgba(20, 15, 30, 0.4);
+            padding: 30px;
+            border-radius: 35px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0.2;
+            transform: translateY(15px);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Formulaire révélé par la lumière */
+        .lamp-on #authFormWrapper {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            border-color: rgba(208, 168, 255, 0.3);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(208, 168, 255, 0.05);
+            background: rgba(26, 26, 46, 0.85);
+        }
+
+        .auth-input-modern {
+            width: 100%;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 18px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: 0.3s;
+            margin-bottom: 15px;
+        }
+        .auth-input-modern:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+            background: rgba(0,0,0,0.6);
+        }
+        .auth-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            display: block;
+            text-align: left;
+            margin-left: 5px;
+        }
+        /* --- FIN DESIGN CONNEXION --- */
+
         @keyframes scan {
             0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); }
             50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); }
@@ -292,82 +452,27 @@
         
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* LECTEUR AUDIO */
-        .custom-audio-player {
-            display: flex; align-items: center; gap: 10px;
-            background: rgba(0,0,0,0.15); padding: 8px 12px;
-            border-radius: 20px; width: 220px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-top: 5px;
-        }
-        .m-me .custom-audio-player {
-            background: rgba(0,0,0,0.3);
-            border-color: rgba(255,255,255,0.2);
-        }
-        .audio-play-btn {
-            width: 35px; height: 35px; border-radius: 50%;
-            background: var(--accent); color: #000;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px; cursor: pointer; flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
+        /* LECTEUR AUDIO & MEDIAS OMIT POUR LA CLARTE */
+        .custom-audio-player { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 20px; width: 220px; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px; }
+        .m-me .custom-audio-player { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); }
+        .audio-play-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         .m-me .audio-play-btn { background: #fff; color: #000; }
-        .audio-progress-container {
-            flex: 1; height: 4px; background: rgba(255,255,255,0.2);
-            border-radius: 2px; position: relative; overflow: hidden;
-        }
-        .audio-progress-bar {
-            position: absolute; top: 0; left: 0; height: 100%;
-            background: var(--accent); width: 0%;
-        }
+        .audio-progress-container { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative; overflow: hidden; }
+        .audio-progress-bar { position: absolute; top: 0; left: 0; height: 100%; background: var(--accent); width: 0%; }
         .m-me .audio-progress-bar { background: #fff; }
         
-        /* MINIATURES */
-        .media-thumbnail {
-            width: 100%; border-radius: 12px; margin-top: 5px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover;
-            cursor: pointer;
-        }
-        .video-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 40px; height: 40px; background: rgba(0,0,0,0.6);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: white; pointer-events: none; backdrop-filter: blur(5px);
-        }
+        .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover; cursor: pointer; }
+        .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; backdrop-filter: blur(5px); }
 
-        /* LIGHTBOX */
-        #mediaViewerOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
-        }
+        #mediaViewerOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
         #mediaViewerOverlay.show { opacity: 1; display: flex; }
-        #mediaViewerOverlay .close-btn {
-            position: absolute; top: 40px; left: 20px; width: 40px; height: 40px;
-            background: rgba(255,255,255,0.1); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(10px);
-        }
-        #mediaViewerContent {
-            max-width: 100vw; max-height: 100vh; object-fit: contain;
-        }
+        #mediaViewerOverlay .close-btn { position: absolute; top: 40px; left: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(10px); }
+        #mediaViewerContent { max-width: 100vw; max-height: 100vh; object-fit: contain; }
         
-        .chat-input-wrapper {
-            flex: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.1);
-            border-radius: 25px; padding: 2px 5px 2px 15px; border: 1px solid rgba(255, 255, 255, 0.1);
-            min-width: 0; 
-        }
-
-        .chat-input-field {
-            flex: 1; background: transparent; border: none; padding: 12px 0; color: white; font-size: 15px; 
-            font-family: 'Poppins', sans-serif; outline: none; min-width: 0; width: 100%;
-        }
+        .chat-input-wrapper { flex: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 2px 5px 2px 15px; border: 1px solid rgba(255, 255, 255, 0.1); min-width: 0; }
+        .chat-input-field { flex: 1; background: transparent; border: none; padding: 12px 0; color: white; font-size: 15px; font-family: 'Poppins', sans-serif; outline: none; min-width: 0; width: 100%; }
         
-        .btn-attachment {
-            background: transparent; border: none; color: var(--text-sub);
-            padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; transition: color 0.2s;
-        }
+        .btn-attachment { background: transparent; border: none; color: var(--text-sub); padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.2s; }
         .btn-attachment:hover { color: white; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
@@ -400,51 +505,69 @@
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         
         /* REACTIONS MESSAGES */
-        .msg-reactions { 
-            position: absolute; bottom: -12px; right: 15px; 
-            background: var(--card); border: 1px solid var(--glass-border); 
-            border-radius: 12px; padding: 2px 6px; font-size: 13px; 
-            display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
-            z-index: 2; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); 
-        }
+        .msg-reactions { position: absolute; bottom: -12px; right: 15px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 12px; padding: 2px 6px; font-size: 13px; display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 2; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
         .m-they .msg-reactions { right: auto; left: 15px; }
-        .reaction-btn { 
-            background: transparent; border: none; font-size: 24px; 
-            cursor: pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            padding: 8px; border-radius: 50%;
-        }
+        .reaction-btn { background: transparent; border: none; font-size: 24px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 8px; border-radius: 50%; }
         .reaction-btn:active { transform: scale(1.4); background: rgba(255,255,255,0.1); }
         
         /* CSS GALAXIE 3D */
-        #galaxyBox {
-            display: none; 
-            position: fixed; inset: 0; 
-            background: #010005; 
-            z-index: 100000; 
-            overflow: hidden;
-        }
-        #galaxyCanvasContainer {
-            position: absolute;
-            inset: 0;
-            outline: none;
-        }
+        #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
+        #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
         /* --- NOUVEAU CSS POUR NEEDYOU (ANIMATION WARP SPEED) --- */
         @keyframes warpSpeed {
             0% { transform: scale(1) translateZ(0); opacity: 0.5; }
             100% { transform: scale(3) translateZ(0); opacity: 1; }
         }
+        .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
+        .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
 
-        .warp-active {
-            animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
-            filter: blur(1px);
+        /* --- NOUVEAU MENU RADIO NEEDYOU (POUR REMPLACER LE <SELECT> ANDROID) --- */
+        .custom-radio-label {
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
         }
-
-        .star {
-            position: absolute;
-            background: white;
+        .custom-radio-label:active { transform: scale(0.97); }
+        .custom-radio-label input { display: none; }
+        .radio-box {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            box-shadow: 0 0 5px white;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        /* Style quand c'est sélectionné */
+        .custom-radio-label:has(input:checked) {
+            border-color: var(--accent);
+            background: rgba(208, 168, 255, 0.1);
+            color: white;
+            font-weight: bold;
+            box-shadow: inset 0 0 15px rgba(208, 168, 255, 0.05);
+        }
+        .custom-radio-label:has(input:checked) .radio-box {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+        .custom-radio-label:has(input:checked) .radio-box::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 5px var(--accent);
         }
     </style>
 </head>
@@ -504,27 +627,49 @@
     </div>
 </div>
 
-<div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:none; align-items:center; justify-content:center; background:var(--bg);">
-    <div style="background:rgba(26,26,46,0.6); padding:40px 30px; border-radius:45px; width:100%; max-width:360px; text-align:center; border:1px solid var(--glass-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-        <div id="loginUI">
-            <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Bienvenue</h2>
-            <input type="tel" inputmode="tel" enterkeyhint="next" class="modal-input" placeholder="Numéro de téléphone" id="lPhone">
-            <input type="password" enterkeyhint="done" class="modal-input" placeholder="Mot de passe" id="lPass" onkeydown="if(event.key === 'Enter') login()">
-            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="login()">ENTRER DANS L'UNIVERS</button>
-            <p onclick="toggleAuth(false)" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; transition:0.2s;" onmousedown="this.style.opacity='1'">Nouveau ici ? Créer un compte</p>
+<div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg); overflow:hidden;">
+    
+    <div class="lamp-glow-bg"></div>
+
+    <p style="font-family:'Pacifico'; color:rgba(255,255,255,0.4); font-size:18px; margin-bottom: 20px; text-align:center;">Notre Univers</p>
+    
+    <div class="lamp-container" onclick="document.getElementById('authLayer').classList.toggle('lamp-on');">
+        <div class="lamp-head"></div>
+        <div class="lamp-bulb" id="lampBulb"></div>
+        <div class="lamp-body"></div>
+        <div class="lamp-base"></div>
+        <div class="lamp-string">
+            <div class="lamp-string-ball"></div>
         </div>
+    </div>
+    
+    <p style="font-size: 10px; color: var(--accent); margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; opacity:0.7;">Tirer le fil</p>
+
+    <div id="authFormWrapper">
+        <div id="loginUI">
+            <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:26px; text-align:center; margin-top:0; margin-bottom: 20px; text-shadow: 0 0 10px var(--accent-glow);">Bienvenue</h2>
+            
+            <label class="auth-label">Numéro Univers</label>
+            <input type="tel" inputmode="tel" enterkeyhint="next" class="auth-input-modern" placeholder="Ton numéro" id="lPhone">
+            
+            <label class="auth-label" style="margin-top:5px;">Mot de passe</label>
+            <input type="password" enterkeyhint="done" class="auth-input-modern" placeholder="••••••••" id="lPass" onkeydown="if(event.key === 'Enter') login()">
+            
+            <button class="auth-btn" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--accent); color:black; font-weight:bold; font-size:15px; box-shadow:0 5px 15px var(--accent-glow); margin-top:10px; cursor:pointer;" onclick="login()">Se connecter</button>
+            <p onclick="toggleAuth(false)" style="margin-top:20px; text-align:center; font-size:12px; color:var(--accent); cursor:pointer; opacity:0.8;">Pas de compte ? Créer un profil</p>
+        </div>
+        
         <div id="regUI" style="display:none;">
-            <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:28px; text-shadow: 0 4px 15px var(--accent-glow);">Nouveau Profil</h2>
-            <input type="text" enterkeyhint="next" class="modal-input" placeholder="Pseudo / Surnom" id="rPseudo">
-            <input type="tel" inputmode="tel" enterkeyhint="next" class="modal-input" placeholder="Numéro" id="rPhone">
-            <input type="password" enterkeyhint="next" class="modal-input" placeholder="Mot de passe" id="rPass">
-            <input type="text" enterkeyhint="done" class="modal-input" placeholder="Code d'inscription / Cocon" id="rCode" onkeydown="if(event.key === 'Enter') register()">
-            <button class="option-btn" style="background:var(--accent); color:black; justify-content:center; border:none; box-shadow: 0 8px 25px var(--accent-glow);" onclick="register()">CRÉER MON UNIVERS</button>
-            <p onclick="toggleAuth(true)" style="margin-top:25px; font-size:13px; opacity:0.6; cursor:pointer; transition:0.2s;" onmousedown="this.style.opacity='1'">Déjà inscrit ? Connexion</p>
+            <h2 style="font-family:'Pacifico'; color:var(--accent); font-size:24px; text-align:center; margin-top:0; margin-bottom: 15px; text-shadow: 0 0 10px var(--accent-glow);">Nouveau Profil</h2>
+            <input type="text" enterkeyhint="next" class="auth-input-modern" placeholder="Pseudo" id="rPseudo" style="margin-bottom:10px; padding:12px;">
+            <input type="tel" inputmode="tel" enterkeyhint="next" class="auth-input-modern" placeholder="Numéro" id="rPhone" style="margin-bottom:10px; padding:12px;">
+            <input type="password" enterkeyhint="next" class="auth-input-modern" placeholder="Mot de passe" id="rPass" style="margin-bottom:10px; padding:12px;">
+            <input type="text" enterkeyhint="done" class="auth-input-modern" placeholder="Code secret Cocon" id="rCode" style="margin-bottom:10px; padding:12px;" onkeydown="if(event.key === 'Enter') register()">
+            <button class="auth-btn" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--accent); color:black; font-weight:bold; font-size:15px; box-shadow:0 5px 15px var(--accent-glow); margin-top:5px; cursor:pointer;" onclick="register()">Créer mon univers</button>
+            <p onclick="toggleAuth(true)" style="margin-top:20px; text-align:center; font-size:12px; color:var(--accent); cursor:pointer; opacity:0.8;">Déjà inscrit ? Connexion</p>
         </div>
     </div>
 </div>
-
 <div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -773,26 +918,41 @@
 
     <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
         
-        <label style="font-size:12px; opacity:0.8; margin-left:10px; text-transform:uppercase;">Ton Humeur actuelle</label>
-        <input type="text" id="aiMood" class="modal-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-top:5px; margin-bottom:20px;">
+        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px;">Ton Humeur actuelle</label>
+        <input type="text" id="aiMood" class="auth-input-modern" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-bottom:25px;">
 
-        <label style="font-size:12px; opacity:0.8; margin-left:10px; text-transform:uppercase;">Style du poème</label>
-        <select id="aiStyle" class="modal-input" style="appearance:none; margin-top:5px; margin-bottom:25px; outline:none;">
-            <option value="Doux et Romantique">Doux & Romantique</option>
-            <option value="Épique et Spatial">Épique & Spatial</option>
-            <option value="Mélancolique">Mélancolique</option>
-            <option value="Haïku Court">Haïku (Court et Poétique)</option>
-        </select>
+        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Style du poème</label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleDoux" value="Doux et Romantique" checked>
+            <div class="radio-box"></div> Doux & Romantique
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleEpique" value="Épique et Spatial">
+            <div class="radio-box"></div> Épique & Spatial
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleMelancolique" value="Mélancolique">
+            <div class="radio-box"></div> Mélancolique
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleHaiku" value="Haïku Court">
+            <div class="radio-box"></div> Haïku (Court et Poétique)
+        </label>
 
-        <button onclick="generatePoem()" style="width:100%; padding:15px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-            Invoquer l'IA ✨
+        <button onclick="generatePoem()" style="width:100%; padding:16px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s; margin-top: 15px; display:flex; align-items:center; justify-content:center; gap:8px;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Murmurer aux étoiles
         </button>
     </div>
 
     <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
-        <div id="aiGeneratingText" style="font-family:'Pacifico'; font-size:22px; color:var(--love); animation: pulse 1.5s infinite; text-shadow: 0 0 15px var(--love-glow);">Connexion aux astres...</div>
+        <div id="aiGeneratingText" style="font-family:'Pacifico'; font-size:22px; color:var(--love); text-shadow: 0 0 15px var(--love-glow);">Connexion aux astres...</div>
         
-        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.4); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
             </div>
 
         <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
@@ -892,73 +1052,18 @@ let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
 
-// CORRECTION BUG #2 : Ajout d'un son pop valide pour la notification
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
 const moodLibrary = {
-    "Heureux": [
-        "Ton bonheur est ma plus belle réussite. ✨",
-        "C'est une journée magnifique pour s'aimer encore plus !",
-        "Ton sourire est le soleil de mon univers. ☀️",
-        "Gardons cette énergie, tu es incroyable quand tu rayonnes.",
-        "Rien ne me rend plus joyeux que de te savoir épanouie."
-    ],
-    "Triste": [
-        "N'oublie jamais que je suis ton port d'attache. ⚓",
-        "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.",
-        "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️",
-        "Prends le temps qu'il faut, je ne bouge pas d'ici.",
-        "Même dans le noir, notre lien brille. Courage ma princesse. 🌹"
-    ],
-    "Fatigué": [
-        "Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴",
-        "Ferme les yeux, laisse-toi porter par ma douceur.",
-        "Tu as le droit de ne rien faire, je veille sur tout le reste.",
-        "Un gros câlin virtuel pour te redonner de la force. 🫂",
-        "Dors bien, je serai ton premier message au réveil."
-    ],
-    "Amoureux": [
-        "Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨",
-        "Chaque battement de mon cœur porte ton nom.",
-        "Je t'aime plus qu'hier et bien moins que demain.",
-        "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️",
-        "Mon endroit préféré au monde ? Partout où tu es."
-    ],
-    "Besoin de force": [
-        "Tu es bien plus forte que tu ne le penses. 💪",
-        "Respire un grand coup, tu vas tout déchirer !",
-        "Je crois en toi plus que n'importe qui d'autre.",
-        "Regarde tout ce que tu as déjà accompli. Je suis fier de toi.",
-        "Une étape à la fois, je marche juste derrière toi."
-    ],
-    "Seule": [
-        "Regarde le ciel, on regarde la même lune. 🌙",
-        "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.",
-        "Ferme les yeux, imagine mes bras autour de toi... je suis là.",
-        "Tu n'es jamais seule, je suis ta sentinelle personnelle. 🛡️",
-        "Mon esprit ne te quitte pas d'une semelle aujourd'hui."
-    ],
-    "Stressée par les cours": [
-        "Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚",
-        "Tu as le droit de trouver ça dur. Prends une pause, je suis fier de toi.",
-        "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨",
-        "Je sais que tu donnes ton maximum. N'oublie pas de prendre soin de toi aussi.",
-        "Même les génies ont besoin de repos. Ferme les cahiers et viens te détendre."
-    ],
-    "Besoin d'un bisou": [
-        "Un doux baiser déposé tendrement sur ton front... 😘",
-        "Je t'envoie un million de bisous à travers l'univers.",
-        "Imagine mes lèvres sur tes joues. Je suis là.",
-        "Un petit bisou volé pour te faire sourire. 💋",
-        "Si je pouvais traverser l'écran, je t'embrasserais tout de suite."
-    ],
-    "Besoin d'un câlin": [
-        "Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂",
-        "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.",
-        "Ferme les yeux. Imagine que je te serre très fort contre moi. ❤️",
-        "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens.",
-        "Un long câlin silencieux, pour apaiser toutes tes tempêtes."
-    ]
+    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !", "Ton sourire est le soleil de mon univers. ☀️"],
+    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Après la pluie vient toujours le beau temps, et je serai là pour le voir avec toi.", "Tes larmes sont mes larmes. Je suis là, tout près de toi. ❤️"],
+    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde pour aujourd'hui. 😴", "Ferme les yeux, laisse-toi porter par ma douceur.", "Tu as le droit de ne rien faire, je veille sur tout le reste."],
+    "Amoureux": ["Tu es ma galaxie toute entière, et je suis perdu dans tes étoiles. ✨", "Chaque battement de mon cœur porte ton nom.", "Tu es la plus belle chose qui soit arrivée dans mon Univers. ♾️"],
+    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !", "Je crois en toi plus que n'importe qui d'autre."],
+    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis peut-être loin des yeux, mais je suis ancré dans ton cœur.", "Ferme les yeux, imagine mes bras autour de toi... je suis là."],
+    "Stressée par les cours": ["Respire un grand coup. Une mauvaise note ne définit pas qui tu es. 📚", "N'oublie pas : ce n'est qu'une étape. Ton avenir s'annonce brillant quoi qu'il arrive. ✨"],
+    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front... 😘", "Je t'envoie un million de bisous à travers l'univers.", "Un petit bisou volé pour te faire sourire. 💋"],
+    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur te rassurer. 🫂", "Un câlin d'ours, juste pour toi, pour que tu te sentes en sécurité.", "Je suis ta forteresse. Rien ne peut t'atteindre quand je te tiens."]
 };
 
 const humeursCocon = [
@@ -967,10 +1072,7 @@ const humeursCocon = [
     {label: "❌ Retirer l'humeur"}
 ];
 
-const allLanguages = [
-    {code: 'fr', name: 'Français', flag: '🇫🇷'},
-    {code: 'en', name: 'English', flag: '🇬🇧'}
-];
+const allLanguages = [{code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}];
 
 const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon", set_lang: "Langue de l'Univers", set_date: "Date de notre début", set_wall: "Personnaliser l'Univers", set_note: "Envoyer un mot doux", set_blocked: "Contacts bloqués", set_leave: "Quitter l'Univers" },
@@ -996,19 +1098,12 @@ const fs = firebase.firestore();
 
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
-        if (err.code == 'failed-precondition') {
-            console.warn("Persistance échouée : plusieurs onglets ouverts.");
-        } else if (err.code == 'unimplemented') {
-            console.warn("Le navigateur ne supporte pas la persistance hors ligne.");
-        }
+        if (err.code == 'failed-precondition') console.warn("Persistance échouée : plusieurs onglets ouverts.");
+        else if (err.code == 'unimplemented') console.warn("Le navigateur ne supporte pas la persistance hors ligne.");
     });
-} catch(e) {
-    console.warn("Erreur d'initialisation de la persistance :", e);
-}
+} catch(e) { console.warn("Erreur d'initialisation de la persistance :", e); }
 
-window.addEventListener('DOMContentLoaded', () => {
-    initApp();
-});
+window.addEventListener('DOMContentLoaded', () => { initApp(); });
 
 function initApp() {
     auth.onAuthStateChanged(firebaseUser => {
@@ -1044,9 +1139,7 @@ const E2EE = {
         if(!text) return "";
         let res = "";
         const kLen = key.length; 
-        for(let i=0; i<text.length; i++) {
-            res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
-        }
+        for(let i=0; i<text.length; i++) res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
         return "E2EE::" + btoa(encodeURIComponent(res));
     },
     decrypt: (text, key) => {
@@ -1055,13 +1148,10 @@ const E2EE = {
             let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
             let res = "";
             const kLen = key.length;
-            for(let i=0; i<dec.length; i++) {
-                res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
-            }
+            for(let i=0; i<dec.length; i++) res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
             return res;
         } catch(e) { 
-            console.warn("Erreur de déchiffrement E2EE ignorée pour un message.");
-            return "🔒 [Message indéchiffrable ou corrompu]"; 
+            return "🔒 [Message indéchiffrable]"; 
         }
     }
 };
@@ -1070,17 +1160,12 @@ function showToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
     if(!t.classList.contains('show')) t.classList.add('show');
-    
     if(toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => {
-        t.classList.remove('show');
-    }, 2500);
+    toastTimeout = setTimeout(() => { t.classList.remove('show'); }, 2500);
 }
 
 function compressImage(file, maxWidth, callback) {
-    if (!file.type.startsWith('image/')) {
-        callback(file); return;
-    }
+    if (!file.type.startsWith('image/')) { callback(file); return; }
     const img = new Image();
     img.src = URL.createObjectURL(file);
     img.onload = () => {
@@ -1092,10 +1177,7 @@ function compressImage(file, maxWidth, callback) {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        canvas.toBlob((blob) => {
-            callback(blob);
-        }, 'image/jpeg', 0.7); 
+        canvas.toBlob((blob) => { callback(blob); }, 'image/jpeg', 0.7); 
     };
     img.onerror = () => callback(file);
 }
@@ -1116,15 +1198,13 @@ function openMoodSelector() {
         btn.onclick = () => showMoodMessage(m);
         box.appendChild(btn);
     });
-    
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
 function showMoodMessage(mood) {
     const choices = moodLibrary[mood];
     if(!choices) return;
-    const randomMsg = choices[Math.floor(Math.random() * choices.length)];
-    document.getElementById('widgetText').innerText = randomMsg;
+    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
 function setupApp() {
@@ -1155,16 +1235,13 @@ function setupApp() {
         const note = doc.data();
         if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
             if (navigator.vibrate) { navigator.vibrate(200); }
-            
             document.getElementById('coconTabBtn').classList.add('cocon-notify');
             if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
             
             document.getElementById('coconNoteText').innerText = note.txt;
             const el = document.getElementById('coconNoteDisplay');
-            
             el.className = 'notif-cocon-turquoise cocon-with-dust';
             el.style.display = 'flex';
-            
             setTimeout(() => { el.classList.remove('cocon-with-dust'); }, 1500);
         }
     });
@@ -1244,22 +1321,16 @@ function openDateEdit() {
 
 function updatePresence() {
     const statusRef = db.ref('presence/' + user.id);
-    
     db.ref('.info/connected').on('value', snap => {
         if (snap.val() === true) {
             statusRef.onDisconnect().set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
-            if (document.visibilityState === 'visible') {
-                statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
-            }
+            if (document.visibilityState === 'visible') statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
         }
     });
 
     document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            statusRef.set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
-        } else {
-            statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
-        }
+        if (document.visibilityState === 'hidden') statusRef.set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP });
+        else statusRef.set({ status: 'online', last: firebase.database.ServerValue.TIMESTAMP });
     });
 }
 
@@ -1293,7 +1364,6 @@ function switchV(id, el) {
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
 
-// CORRECTION BUG BADGE SÉCURISÉE
 function loadContacts() {
     const list = document.getElementById('chatList');
     
@@ -1323,19 +1393,17 @@ function loadContacts() {
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
             
-            // Sécurisation du calcul du badge
             let totalUnread = validContacts.reduce((sum, contact) => {
-                let unreadCount = Number(contact.unread); // Force le format nombre
+                let unreadCount = Number(contact.unread);
                 return sum + (isNaN(unreadCount) ? 0 : unreadCount);
             }, 0);
             
             const badgeEl = document.getElementById('globalUnreadBadge');
-            
             if(badgeEl) {
                 if(totalUnread > 0) {
-                    badgeEl.innerText = totalUnread > 99 ? '99+' : totalUnread; // Limite visuelle
+                    badgeEl.innerText = totalUnread > 99 ? '99+' : totalUnread;
                     badgeEl.style.display = 'flex';
-                    badgeEl.style.animation = 'pulse 1s ease'; // Petit effet
+                    badgeEl.style.animation = 'pulse 1s ease';
                 } else {
                     badgeEl.style.display = 'none';
                     badgeEl.innerText = '0';
@@ -1353,7 +1421,6 @@ function renderContacts(arr) {
     arr.forEach(c => {
         const badge = c.unread > 0 ? `<div class="badge-count">${c.unread}</div>` : "";
         const moodHtml = c.humeur ? `<span style="font-size:10px; color:var(--accent); font-weight:600;">${c.humeur}</span>` : `<small style="opacity:0.6">Discuter</small>`;
-        
         const pseudoSafe = (c.pseudo && c.pseudo.length > 0) ? c.pseudo : "Inconnu";
         const initial = pseudoSafe.charAt(0).toUpperCase();
         const safeName = pseudoSafe.replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -1378,17 +1445,11 @@ function addFriend() {
         fs.collection('users').doc(id).get().then(doc => {
             if(doc.exists) { 
                 const batch = fs.batch();
-                
                 batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 
-                batch.commit().then(() => {
-                    triggerBack(); 
-                    showToast("Contact ajouté pour vous deux !"); 
-                }).catch(err => {
-                    console.error("Erreur d'ajout :", err);
-                    showToast("Erreur d'ajout (Règles Firestore)");
-                });
+                batch.commit().then(() => { triggerBack(); showToast("Contact ajouté pour vous deux !"); })
+                .catch(err => { console.error("Erreur d'ajout :", err); showToast("Erreur d'ajout (Règles Firestore)"); });
             } else {
                 showToast("Inconnu");
             }
@@ -1422,10 +1483,7 @@ function closeChat() {
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
     
     const audio = document.getElementById('coconAudio');
-    if(audio && !audio.paused) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
+    if(audio && !audio.paused) { audio.pause(); audio.currentTime = 0; }
     
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
@@ -1433,9 +1491,7 @@ function closeChat() {
 
 function revealCapsule(docId, path) {
     const inner = document.getElementById('capsule_inner_' + docId);
-    if(inner) {
-        inner.classList.add('capsule-anim');
-    }
+    if(inner) inner.classList.add('capsule-anim');
     
     setTimeout(() => {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
@@ -1444,46 +1500,27 @@ function revealCapsule(docId, path) {
     }, 500);
 }
 
-// LECTEUR AUDIO
 let currentCustomAudio = null;
 let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
     if (currentCustomAudio && currentCustomAudio.src === url) {
-        if (currentCustomAudio.paused) { 
-            currentCustomAudio.play(); 
-            btnElement.innerHTML = "⏸"; 
-        } else { 
-            currentCustomAudio.pause(); 
-            btnElement.innerHTML = "▶"; 
-        }
+        if (currentCustomAudio.paused) { currentCustomAudio.play(); btnElement.innerHTML = "⏸"; } 
+        else { currentCustomAudio.pause(); btnElement.innerHTML = "▶"; }
         return;
     }
-    if (currentCustomAudio) { 
-        currentCustomAudio.pause(); 
-        if(currentPlayBtn) currentPlayBtn.innerHTML = "▶"; 
-    }
+    if (currentCustomAudio) { currentCustomAudio.pause(); if(currentPlayBtn) currentPlayBtn.innerHTML = "▶"; }
     currentCustomAudio = new Audio(url);
     currentPlayBtn = btnElement;
     btnElement.innerHTML = "⏳";
-    currentCustomAudio.play().then(() => { 
-        btnElement.innerHTML = "⏸"; 
-    }).catch(() => { 
-        btnElement.innerHTML = "▶"; 
-        showToast("Erreur audio"); 
-    });
-    currentCustomAudio.onended = () => { 
-        btnElement.innerHTML = "▶"; 
-    };
+    currentCustomAudio.play().then(() => { btnElement.innerHTML = "⏸"; }).catch(() => { btnElement.innerHTML = "▶"; showToast("Erreur audio"); });
+    currentCustomAudio.onended = () => { btnElement.innerHTML = "▶"; };
 };
 
 function openMediaViewer(url, type) {
     const container = document.getElementById('mediaViewerContainer');
     container.innerHTML = "";
-    if(type === 'img') {
-        container.innerHTML = `<img src="${url}" id="mediaViewerContent">`;
-    } else {
-        container.innerHTML = `<video src="${url}" controls autoplay playsinline id="mediaViewerContent"></video>`;
-    }
+    if(type === 'img') container.innerHTML = `<img src="${url}" id="mediaViewerContent">`;
+    else container.innerHTML = `<video src="${url}" controls autoplay playsinline id="mediaViewerContent"></video>`;
     document.getElementById('mediaViewerOverlay').classList.add('show');
     pushState('mediaViewer');
 }
@@ -1497,21 +1534,15 @@ function closeMediaViewer(fromHistory = false) {
 
 function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return ""; 
-
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
-    
     if (path === 'msgs' && chatClearedAt && ts.getTime() <= chatClearedAt) return "";
 
     const isMe = m.sid === user.id;
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
-        
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true });
-        
-        if (path === 'msgs' && currentPeerId) {
-            fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
-        }
+        if (path === 'msgs' && currentPeerId) fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true });
     }
     
     const time = ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
@@ -1546,12 +1577,9 @@ function getMsgHTML(docId, m, path, target) {
 
     const cryptoKey = path === 'msgs' ? activeId : user.code;
     const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt; 
-    
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     
-    if(m.type === 'img') {
-        content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
-    }
+    if(m.type === 'img') content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
     if(m.type === 'video') {
         let posterUrl = m.txt.replace('/upload/', '/upload/q_auto,f_auto,so_0/');
         if(!posterUrl.includes('cloudinary')) posterUrl = "";
@@ -1563,13 +1591,11 @@ function getMsgHTML(docId, m, path, target) {
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();">
             <div class="audio-play-btn">▶</div>
-            <div class="audio-progress-container">
-                <div class="audio-progress-bar" style="width: 100%;"></div>
-            </div>
+            <div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div>
         </div>`;
     }
     
-        const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
+    const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
     const clickEvent = `onclick="msgOptions('${docId}', ${ts.getTime()}, '${escTxt}', '${path}', '${target}', '${m.type}', ${isMe})"`;
 
     let reactionsHtml = "";
@@ -1617,10 +1643,7 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🥺', '${path}', '${target}')">🥺</button>
         <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
-        <input type="text" 
-               style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" 
-               placeholder="➕" 
-               oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
+        <input type="text" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" placeholder="➕" oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
     </div>`;
 
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
@@ -1635,16 +1658,9 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
 function reactToMsg(msgId, emoji, path, target) {
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
-    
-    fs.collection(collPath).doc(docTarget).collection('messages').doc(msgId).update({ 
-        [`reactions.${user.id}`]: emoji 
-    }).then(() => {
-        triggerBack(); 
-        if ('vibrate' in navigator) navigator.vibrate(20); 
-    }).catch(err => {
-        console.error("Erreur réaction:", err);
-        showToast("Erreur de connexion");
-    });
+    fs.collection(collPath).doc(docTarget).collection('messages').doc(msgId).update({ [`reactions.${user.id}`]: emoji })
+    .then(() => { triggerBack(); if ('vibrate' in navigator) navigator.vibrate(20); })
+    .catch(err => { console.error("Erreur réaction:", err); showToast("Erreur de connexion"); });
 }
 
 function delMsgForMe(id, path, target) { 
@@ -1674,7 +1690,6 @@ function editMsg(id, old, path, target) {
 
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
-    
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
     const text = inp.value.trim();
     if(!text) return;
@@ -1683,45 +1698,28 @@ function sendMsg(mode) {
     
     if(mode === 'msgs') {
         fs.collection('users').doc(user.id).collection('blocked').doc(currentPeerId).get().then(doc => {
-            if(doc.exists) { 
-                showToast("Impossible, contact bloqué."); 
-                window.isSendingMsg = false;
-                return; 
-            }
+            if(doc.exists) { showToast("Impossible, contact bloqué."); window.isSendingMsg = false; return; }
             proceedSend();
-        }).catch(err => {
-            console.error("Erreur de vérification blocage:", err);
-            window.isSendingMsg = false;
-            showToast("Erreur réseau.");
-        });
+        }).catch(err => { console.error("Erreur de vérification blocage:", err); window.isSendingMsg = false; showToast("Erreur réseau."); });
     } else { proceedSend(); }
     
     function proceedSend() {
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
         const encryptedText = E2EE.encrypt(text, cryptoKey);
-        
         const collPath = mode === 'msgs' ? 'chats' : 'cocon';
         const docTarget = mode === 'msgs' ? activeId : user.code;
         
         fs.collection(collPath).doc(docTarget).collection('messages').add({ 
             sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), type: 'text', seen: false 
         }).then(() => {
-            inp.value = "";
-            inp.focus(); 
-            setTimeout(() => { window.isSendingMsg = false; }, 500); 
-        }).catch(err => {
-            console.error("Erreur d'envoi du message:", err);
-            window.isSendingMsg = false;
-            showToast("Échec de l'envoi du message.");
-        });
+            inp.value = ""; inp.focus(); setTimeout(() => { window.isSendingMsg = false; }, 500); 
+        }).catch(err => { console.error("Erreur d'envoi:", err); window.isSendingMsg = false; showToast("Échec de l'envoi du message."); });
         
         if(mode === 'msgs') {
             db.ref('typing/'+activeId+'/'+user.id).set(false).catch(()=>{}); 
-            
             const batch = fs.batch();
             const myContactRef = fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId);
             batch.set(myContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-            
             const peerContactRef = fs.collection('users').doc(currentPeerId).collection('contacts').doc(user.id);
             batch.set(peerContactRef, { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: firebase.firestore.FieldValue.increment(1) }, { merge: true });
             batch.commit().catch(err => console.error("Erreur de mise à jour des contacts:", err));
@@ -1771,8 +1769,7 @@ function clearConversation() {
         const now = Date.now();
         fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).update({ clearedAt: now });
         document.getElementById('mArea').innerHTML = "";
-        chatClearedAt = now;
-        triggerBack(); triggerBack(); showToast("Conversation vidée");
+        chatClearedAt = now; triggerBack(); triggerBack(); showToast("Conversation vidée");
     });
 }
 
@@ -1840,9 +1837,7 @@ function openCapsuleCreator() {
     openModal("<div style='display:flex;align-items:center;gap:8px;justify-content:center;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule</div>", html, () => {
         const dateVal = document.getElementById('capsuleDate').value;
         const textVal = document.getElementById('capsuleText').value.trim();
-        
         if(!dateVal || !textVal) return showToast("Données incomplètes");
-        
         const unlockTimestamp = new Date(dateVal).getTime();
         if(unlockTimestamp <= Date.now()) return showToast("Choisis une date future !");
         
@@ -1855,20 +1850,13 @@ function sendCapsule(text, unlockTimestamp) {
     const mode = currentMediaMode; 
     const cryptoKey = mode === 'msgs' ? activeId : user.code;
     const encryptedText = E2EE.encrypt(text, cryptoKey);
-    
     const collPath = mode === 'msgs' ? 'chats' : 'cocon';
     const docTarget = mode === 'msgs' ? activeId : user.code;
     
     fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-        sid: user.id, 
-        txt: encryptedText, 
-        t: firebase.firestore.FieldValue.serverTimestamp(), 
-        type: 'text', 
-        unlockAt: unlockTimestamp, 
-        opened: false, 
-        seen: false 
+        sid: user.id, txt: encryptedText, t: firebase.firestore.FieldValue.serverTimestamp(), 
+        type: 'text', unlockAt: unlockTimestamp, opened: false, seen: false 
     });
-    
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
@@ -1876,49 +1864,30 @@ async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            audio: { echoCancellation: true, noiseSuppression: true } 
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = event => { 
-            if (event.data.size > 0) audioChunks.push(event.data); 
-        };
+        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
         mediaRecorder.onstop = () => {
             const audioBlob = new Blob(audioChunks); 
-            audioChunks = [];
-            uploadToFirebase(audioBlob, 'audio', mode);
+            audioChunks = []; uploadToFirebase(audioBlob, 'audio', mode);
         };
-        audioChunks = []; 
-        mediaRecorder.start(); 
-        isRecording = true;
-        
+        audioChunks = []; mediaRecorder.start(); isRecording = true;
         const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         inputField.dataset.origPlaceholder = inputField.placeholder;
-        inputField.placeholder = "🔴 Enregistrement...";
-        inputField.disabled = true;
-        
+        inputField.placeholder = "🔴 Enregistrement..."; inputField.disabled = true;
         e.currentTarget.classList.add('recording');
         if('vibrate' in navigator) navigator.vibrate(50);
-    } catch (err) { 
-        console.warn("Délai ou refus micro:", err);
-    }
+    } catch (err) { console.warn("Délai ou refus micro:", err); }
 }
 
 function stopRecording(e) {
     e.preventDefault();
     if(isRecording && mediaRecorder) {
-        mediaRecorder.stop(); 
-        mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
-        isRecording = false;
-        
+        mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(track => track.stop()); isRecording = false;
         ['mIn', 'coIn'].forEach(id => {
             const inputField = document.getElementById(id);
-            if (inputField && inputField.disabled) {
-                inputField.disabled = false;
-                inputField.placeholder = inputField.dataset.origPlaceholder || "Message";
-            }
+            if (inputField && inputField.disabled) { inputField.disabled = false; inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; }
         });
-        
         document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
 }
@@ -1932,11 +1901,7 @@ document.getElementById('wallInput').onchange = (e) => processMediaUpload(e, 'wa
 function processMediaUpload(e, targetMode) {
     const file = e.target.files[0]; 
     if(!file) return;
-    
-    if(file.size > 15 * 1024 * 1024) {
-        showToast("Fichier trop lourd (Max 15 Mo)");
-        return;
-    }
+    if(file.size > 15 * 1024 * 1024) { showToast("Fichier trop lourd (Max 15 Mo)"); return; }
 
     let fileType = 'img';
     if(file.type.startsWith('video/')) fileType = 'video';
@@ -1947,19 +1912,12 @@ function processMediaUpload(e, targetMode) {
             if(doc.exists) { showToast("Impossible, contact bloqué."); return; }
             handleUpload();
         }).catch(() => handleUpload()); 
-    } else {
-        handleUpload();
-    }
+    } else { handleUpload(); }
 
     function handleUpload() {
         showToast("Envoi en cours...");
-        if (fileType === 'img') {
-            compressImage(file, 800, (data) => {
-                uploadToFirebase(data, 'img', targetMode);
-            });
-        } else {
-            uploadToFirebase(file, fileType, targetMode);
-        }
+        if (fileType === 'img') compressImage(file, 800, (data) => { uploadToFirebase(data, 'img', targetMode); });
+        else uploadToFirebase(file, fileType, targetMode);
     }
 }
 
@@ -1969,9 +1927,7 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     const formData = new FormData();
 
     let finalFile = fileData;
-    if (!(fileData instanceof File)) {
-        finalFile = new File([fileData], 'univers_media.jpg', { type: fileData.type || 'image/jpeg' });
-    }
+    if (!(fileData instanceof File)) finalFile = new File([fileData], 'univers_media.jpg', { type: fileData.type || 'image/jpeg' });
     formData.append('file', finalFile);
     formData.append('upload_preset', UPLOAD_PRESET);
 
@@ -1997,22 +1953,14 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 applyTheme(secureUrl);
             } else if (targetPath === 'galaxy') {
                 try {
-                    await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({
-                        url: secureUrl,
-                        t: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    await fs.collection('cocon').doc(user.code).collection('galaxyPlanets').doc('planet_' + window.currentPlanetIndex).set({ url: secureUrl, t: firebase.firestore.FieldValue.serverTimestamp() });
                     showToast("Planète illuminée ! ✨");
-                } catch (fsErr) {
-                    console.error("Firestore Error:", fsErr);
-                    showToast("Bloqué par Firestore (Vérifiez les règles de la db !)");
-                }
+                } catch (fsErr) { console.error("Firestore Error:", fsErr); showToast("Bloqué par Firestore (Vérifiez les règles de la db !)"); }
             } else {
                 const collPath = targetPath === 'msgs' ? 'chats' : 'cocon';
                 const docTarget = targetPath === 'msgs' ? activeId : user.code;
                 
-                await fs.collection(collPath).doc(docTarget).collection('messages').add({ 
-                    sid: user.id, txt: secureUrl, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false 
-                });
+                await fs.collection(collPath).doc(docTarget).collection('messages').add({ sid: user.id, txt: secureUrl, t: firebase.firestore.FieldValue.serverTimestamp(), type: typeParam, seen: false });
                 
                 if(targetPath === 'msgs') {
                     const batch = fs.batch();
@@ -2021,13 +1969,8 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                     await batch.commit();
                 }
             }
-        } else {
-            showToast("Erreur lors de l'envoi");
-        }
-    } catch (err) {
-        console.error("Erreur:", err);
-        showToast("Échec de l'envoi du média ❌");
-    }
+        } else showToast("Erreur lors de l'envoi");
+    } catch (err) { console.error("Erreur:", err); showToast("Échec de l'envoi du média ❌"); }
 }
 
 function openModal(t, b, a) {
@@ -2036,13 +1979,8 @@ function openModal(t, b, a) {
     document.getElementById('customModal').style.display = 'flex'; pushState('modal');
     if(a) { 
         document.getElementById('modalActions').style.display = 'flex'; 
-        document.getElementById('modalConfirmBtn').onclick = () => {
-            const val = document.getElementById('modalInput')?.value || null;
-            a(val);
-        };
-    } else {
-        document.getElementById('modalActions').style.display = 'none';
-    }
+        document.getElementById('modalConfirmBtn').onclick = () => { const val = document.getElementById('modalInput')?.value || null; a(val); };
+    } else document.getElementById('modalActions').style.display = 'none';
 }
 
 function login() {
@@ -2056,18 +1994,10 @@ function login() {
     auth.signInWithEmailAndPassword(fakeEmail, ps)
         .then(() => fs.collection('users').doc(ph).get())
         .then(doc => {
-            if(doc.exists) { 
-                user = doc.data(); 
-                localStorage.setItem('nu_v33_user', JSON.stringify(user)); 
-                location.reload(); 
-            } else {
-                showToast("Profil introuvable.");
-            }
+            if(doc.exists) { user = doc.data(); localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); } 
+            else showToast("Profil introuvable.");
         })
-        .catch(err => {
-            console.error(err);
-            showToast("Identifiants incorrects ❌");
-        });
+        .catch(err => { console.error(err); showToast("Identifiants incorrects ❌"); });
 }
 
 function register() {
@@ -2083,22 +2013,8 @@ function register() {
 
     auth.createUserWithEmailAndPassword(fakeEmail, ps)
         .then(() => {
-            const nu = { 
-                id: ph, 
-                pseudo: pseudo, 
-                pfp: '', 
-                code: codeSaisi, 
-                codeInscription: codeSaisi, 
-                startDate: new Date().toISOString(), 
-                wall: '', 
-                lang: 'fr',
-                playlist: []
-            };
-            return fs.collection('users').doc(ph).set(nu).then(() => {
-                user = nu; 
-                localStorage.setItem('nu_v33_user', JSON.stringify(nu)); 
-                location.reload(); 
-            });
+            const nu = { id: ph, pseudo: pseudo, pfp: '', code: codeSaisi, codeInscription: codeSaisi, startDate: new Date().toISOString(), wall: '', lang: 'fr', playlist: [] };
+            return fs.collection('users').doc(ph).set(nu).then(() => { user = nu; localStorage.setItem('nu_v33_user', JSON.stringify(nu)); location.reload(); });
         })
         .catch(err => {
             console.error(err);
@@ -2111,24 +2027,10 @@ function register() {
 function confirmLogout() { 
     openModal("Quitter ?", `<p style='font-size:14px;'>Voulez-vous vraiment fermer l'Univers ?</p>`, () => { 
         if (user && user.id) {
-            db.ref('presence/' + user.id).set({ 
-                status: 'offline', 
-                last: firebase.database.ServerValue.TIMESTAMP 
-            }).then(() => {
-                auth.signOut().then(() => {
-                    localStorage.clear(); 
-                    location.reload(); 
-                });
-            }).catch(err => {
-                console.error("Erreur de déconnexion présence:", err);
+            db.ref('presence/' + user.id).set({ status: 'offline', last: firebase.database.ServerValue.TIMESTAMP }).then(() => {
                 auth.signOut().then(() => { localStorage.clear(); location.reload(); });
-            });
-        } else {
-            auth.signOut().then(() => {
-                localStorage.clear(); 
-                location.reload(); 
-            });
-        }
+            }).catch(err => { console.error("Erreur de déconnexion présence:", err); auth.signOut().then(() => { localStorage.clear(); location.reload(); }); });
+        } else auth.signOut().then(() => { localStorage.clear(); location.reload(); });
     }); 
 }
 
@@ -2171,83 +2073,48 @@ function closeCoconNote() {
     const el = document.getElementById('coconNoteDisplay');
     el.classList.add('cocon-closing'); 
     setTimeout(() => { el.style.display = 'none'; el.classList.remove('cocon-closing'); }, 500); 
-
-    if(user && user.code) {
-        fs.collection('globalNotes').doc(user.code).set({
-            readBy: { [user.id]: true }
-        }, { merge: true }); 
-    }
+    if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); 
 }
 
 function askCoconCode() {
     openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
         if (val === user.code) {
-            
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
-            
             const cocon = document.getElementById('coconBox');
             cocon.style.setProperty('display', 'flex', 'important');
-            
-            pushState('coconBox');
-            lockAppHeight(); 
-            syncMessages('cocon', user.code, 'coArea');
-            
+            pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
             const audio = document.getElementById('coconAudio');
-            if(audio) {
-                audio.src = defaultPlaylist[0];
-                currentTrackIndex = 0;
-                audio.load();
-                audio.play().catch(e => console.log("Lecture audio bloquée", e));
-            }
-
+            if(audio) { audio.src = defaultPlaylist[0]; currentTrackIndex = 0; audio.load(); audio.play().catch(e => console.log("Lecture audio bloquée", e)); }
             showToast("Bienvenue dans notre Cocon");
-        } else {
-            showToast("Code incorrect !");
-        }
+        } else showToast("Code incorrect !");
     });
 }
 
 function updateTimeCounter() {
     if (!user || !user.startDate) return;
-    
     const updateDate = () => {
-        const start = new Date(user.startDate).getTime();
-        const now = new Date().getTime();
-        const diff = now - start;
-        
+        const start = new Date(user.startDate).getTime(); const now = new Date().getTime(); const diff = now - start;
         if (diff > 0) {
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
             
-            const elD = document.getElementById('d-day');
-            const elH = document.getElementById('d-hour');
-            const elM = document.getElementById('d-min');
-            const elS = document.getElementById('d-sec');
+            const elD = document.getElementById('d-day'); const elH = document.getElementById('d-hour');
+            const elM = document.getElementById('d-min'); const elS = document.getElementById('d-sec');
             
-            if(elD) elD.innerText = days;
-            if(elH) elH.innerText = hours;
-            if(elM) elM.innerText = minutes;
-            if(elS) elS.innerText = seconds;
+            if(elD) elD.innerText = days; if(elH) elH.innerText = hours;
+            if(elM) elM.innerText = minutes; if(elS) elS.innerText = seconds;
         }
     };
-
-    updateDate(); 
-    if(timeCounterInterval) clearInterval(timeCounterInterval);
-    timeCounterInterval = setInterval(updateDate, 1000); 
+    updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
 }
 
 function promptGalaxyAccess() {
     openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
-        if (val === user.code) {
-            document.getElementById('customModal').style.display = 'none';
-            stateStack = stateStack.filter(s => s !== 'modal');
-            openGalaxy();
-        } else {
-            showToast("Accès refusé !");
-        }
+        if (val === user.code) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); openGalaxy(); } 
+        else showToast("Accès refusé !");
     });
 }
 
@@ -2258,38 +2125,20 @@ let unsubGalaxy = null;
 
 function openGalaxy() {
     document.getElementById('galaxyBox').style.display = 'block';
-    pushState('galaxy');
-    
-    syncGalaxy(); 
-    
+    pushState('galaxy'); syncGalaxy(); 
     if (window.startGalaxy3D) window.startGalaxy3D();
-    
     const audio = document.getElementById('galaxyAudio');
     if(audio) {
-        audio.currentTime = 0;
-        let playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                document.getElementById('galaxyBox').addEventListener('pointerdown', function forceAudio() {
-                    audio.play();
-                    this.removeEventListener('pointerdown', forceAudio);
-                }, { once: true });
-            });
-        }
+        audio.currentTime = 0; let playPromise = audio.play();
+        if (playPromise !== undefined) playPromise.catch(error => { document.getElementById('galaxyBox').addEventListener('pointerdown', function forceAudio() { audio.play(); this.removeEventListener('pointerdown', forceAudio); }, { once: true }); });
     }
 }
 
 function closeGalaxy(fromHistory = false) {
     document.getElementById('galaxyBox').style.display = 'none';
-    
     if (window.stopGalaxy3D) window.stopGalaxy3D();
-    
     const audio = document.getElementById('galaxyAudio');
-    if(audio) {
-        audio.pause();
-        audio.currentTime = 0;
-    }
-    
+    if(audio) { audio.pause(); audio.currentTime = 0; }
     if(!fromHistory) triggerBack();
 }
 
@@ -2297,39 +2146,30 @@ function syncGalaxy() {
     if(unsubGalaxy) unsubGalaxy();
     unsubGalaxy = fs.collection('cocon').doc(user.code).collection('galaxyPlanets').onSnapshot(snap => {
         let galaxyPlanetsData = {};
-        snap.forEach(doc => {
-            const idx = parseInt(doc.id.replace('planet_', ''));
-            galaxyPlanetsData[idx] = { id: doc.id, url: doc.data().url };
-        });
-        if (window.updateGalaxyTextures) {
-            window.updateGalaxyTextures(galaxyPlanetsData);
-        }
+        snap.forEach(doc => { const idx = parseInt(doc.id.replace('planet_', '')); galaxyPlanetsData[idx] = { id: doc.id, url: doc.data().url }; });
+        if (window.updateGalaxyTextures) window.updateGalaxyTextures(galaxyPlanetsData);
     });
 }
 
 // ==========================================
-// --- LOGIQUE NEEDYOU (Générateur IA) ---
+// --- LOGIQUE NEEDYOU (Générateur IA API) ---
 // ==========================================
 
 function openNeedyou() {
     document.getElementById('needyouBox').style.display = 'flex';
     pushState('needyou');
-    
     document.getElementById('needyouForm').style.display = 'block';
     document.getElementById('needyouResultBlock').style.display = 'none';
     document.getElementById('aiPoemOutput').style.display = 'none';
     document.getElementById('aiCopyBtn').style.display = 'none';
     document.getElementById('aiGeneratingText').style.display = 'block';
-
     generateStars(); 
 }
 
 function closeNeedyou(fromHistory = false) {
     document.getElementById('needyouBox').style.display = 'none';
     const starsContainer = document.getElementById('stars-container');
-    starsContainer.innerHTML = ''; 
-    starsContainer.classList.remove('warp-active');
-    
+    starsContainer.innerHTML = ''; starsContainer.classList.remove('warp-active');
     if(!fromHistory) triggerBack();
 }
 
@@ -2340,10 +2180,8 @@ function generateStars() {
         let star = document.createElement('div');
         star.className = 'star';
         let size = Math.random() * 3 + 1;
-        star.style.width = size + 'px';
-        star.style.height = size + 'px';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
+        star.style.width = size + 'px'; star.style.height = size + 'px';
+        star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
         star.style.opacity = Math.random();
         const colors = ['#ffffff', '#d0a8ff', '#00d2ff'];
         star.style.background = colors[Math.floor(Math.random() * colors.length)];
@@ -2351,27 +2189,29 @@ function generateStars() {
     }
 }
 
-// Lancement de l'animation et appel de la VRAIE IA
+// Lancement de l'animation et appel de la VRAIE IA avec gestion d'erreurs
 async function generatePoem() {
     const humeur = document.getElementById('aiMood').value || "Neutre";
-    const style = document.getElementById('aiStyle').value;
+    
+    // Récupère la valeur du bouton radio qui est coché
+    const styleEl = document.querySelector('input[name="aiStyle"]:checked');
+    const style = styleEl ? styleEl.value : "Doux et Romantique";
 
-    // 1. Interface de chargement et démarrage de l'animation
     document.getElementById('needyouForm').style.display = 'none';
     document.getElementById('needyouResultBlock').style.display = 'block';
     document.getElementById('stars-container').classList.add('warp-active');
     
     const loadingText = document.getElementById('aiGeneratingText');
+    loadingText.style.animation = 'pulse 1.5s infinite'; // On relance le clignotement pour le chargement
     loadingText.innerText = "Connexion aux astres...";
     loadingText.style.display = 'block';
-
-    // 2. Ta clé secrète
-    const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
     
-    // L'adresse du cerveau de l'IA (Modèle Gemini 1.5 Flash, ultra rapide)
+    document.getElementById('aiPoemOutput').style.display = 'none';
+    document.getElementById('aiCopyBtn').style.display = 'none';
+
+    const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-    // 3. Le "Prompt" caché : on donne ses directives à l'IA
     const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
     L'utilisateur se sent actuellement : ${humeur}. 
     Il souhaite un poème dans ce style : ${style}. 
@@ -2380,29 +2220,27 @@ async function generatePoem() {
     IMPORTANT : Utilise la balise HTML <br> pour faire tes retours à la ligne, pas de \\n.`;
 
     try {
-        // 4. On envoie la requête à travers l'univers
         const reponse = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: promptSecret }] }],
-                generationConfig: { 
-                    temperature: 0.9 // Température haute = 100% de créativité à chaque fois !
-                }
+                generationConfig: { temperature: 0.9 }
             })
         });
 
-        if (!reponse.ok) throw new Error("Les astres ne répondent pas.");
+        if (!reponse.ok) {
+            const errorDetails = await reponse.text();
+            console.error("Détails du crash API :", errorDetails);
+            throw new Error("Erreur de connexion API");
+        }
 
-        // 5. On récupère et décortique la réponse
         const data = await reponse.json();
         let poemText = data.candidates[0].content.parts[0].text;
 
-        // Arrêt de l'animation
         document.getElementById('stars-container').classList.remove('warp-active');
         loadingText.style.display = 'none';
         
-        // Affichage du chef-d'œuvre
         const poemOutput = document.getElementById('aiPoemOutput');
         poemOutput.style.display = 'block';
         poemOutput.innerHTML = poemText;
@@ -2412,13 +2250,15 @@ async function generatePoem() {
     } catch (erreur) {
         console.error("Erreur IA:", erreur);
         document.getElementById('stars-container').classList.remove('warp-active');
-        loadingText.innerText = "Interférence spatiale... Réessaie 🌠";
         
-        // On permet à l'utilisateur de retenter
+        // CORRECTION DU BUG : On tue l'animation clignotante !
+        loadingText.style.animation = 'none'; 
+        loadingText.innerText = "Interférence spatiale... 🌠\n(Vérifie ton VPN ou ta connexion)";
+        
         setTimeout(() => {
             document.getElementById('needyouResultBlock').style.display = 'none';
             document.getElementById('needyouForm').style.display = 'block';
-        }, 3000);
+        }, 4000);
     }
 }
 
