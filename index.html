@@ -1099,6 +1099,7 @@ let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
+let isLoginMode = true; // Pour le switch Toaster
 
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
@@ -2031,6 +2032,35 @@ function openModal(t, b, a) {
     } else document.getElementById('modalActions').style.display = 'none';
 }
 
+// Fonction Modifiée pour le Switch (Toaster)
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    const thumb = document.getElementById('toasterThumb');
+    const loginUI = document.getElementById('loginUI');
+    const regUI = document.getElementById('regUI');
+    const authTitle = document.getElementById('authTitle');
+    
+    if(thumb && authTitle) {
+        if(isLoginMode) {
+            thumb.style.transform = 'translateX(0)';
+            loginUI.style.display = 'block';
+            regUI.style.display = 'none';
+            authTitle.innerText = "Connexion";
+        } else {
+            thumb.style.transform = 'translateX(100%)';
+            loginUI.style.display = 'none';
+            regUI.style.display = 'block';
+            authTitle.innerText = "Nouveau Profil";
+        }
+    }
+}
+
+// L'ancienne fonction adaptée pour marcher avec les textes cliquables
+function toggleAuth(isL) {
+    if(isLoginMode === isL) return;
+    toggleAuthMode();
+}
+
 function login() {
     const phStr = document.getElementById('lPhone').value.replace(/\D/g,'');
     if(!phStr) return showToast("Numéro invalide");
@@ -2082,7 +2112,6 @@ function confirmLogout() {
     }); 
 }
 
-function toggleAuth(isL) { document.getElementById('loginUI').style.display = isL ? 'block' : 'none'; document.getElementById('regUI').style.display = isL ? 'none' : 'block'; }
 function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
 
 function sendGlobalNote() {
@@ -2237,7 +2266,7 @@ function generateStars() {
     }
 }
 
-// Lancement de l'animation et appel de la VRAIE IA avec le modèle universel
+// Lancement de l'animation et appel de la VRAIE IA avec le modèle universel gemini-pro
 async function generatePoem() {
     const humeur = document.getElementById('aiMood').value || "Neutre";
     
@@ -2257,7 +2286,7 @@ async function generatePoem() {
     document.getElementById('aiCopyBtn').style.display = 'none';
 
     const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
-    // CORRECTION ICI : Changement pour gemini-pro (modèle stable)
+    // Changement CRUCIAL : on utilise "gemini-pro"
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
 
     const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
