@@ -2335,15 +2335,85 @@ async function generatePoem() {
         if (!reponseReussie) {
             throw new Error(derniereErreur);
         }
+// Lancement de l'animation et appel IA avec RECHERCHE AUTO DU MODÈLE 🕵️‍♂️
+async function generatePoem() {
+    const humeur = document.getElementById('aiMood').value || "Neutre";
+    const styleEl = document.querySelector('input[name="aiStyle"]:checked');
+    const style = styleEl ? styleEl.value : "Doux et Romantique";
 
-        const data = await reponseReussie.json();
+    document.getElementById('needyouForm').style.display = 'none';
+    document.getElementById('needyouResultBlock').style.display = 'block';
+    document.getElementById('stars-container').classList.add('warp-active');
+    
+    const loadingText = document.getElementById('aiGeneratingText');
+    loadingText.style.animation = 'pulse 1.5s infinite'; 
+    loadingText.innerText = "Interrogation de l'Univers...";
+    loadingText.style.display = 'block';
+    
+    document.getElementById('aiPoemOutput').style.display = 'none';
+    document.getElementById('aiCopyBtn').style.display = 'none';
+
+    // TA NOUVELLE CLÉ
+    const API_KEY = "AIzaSyB2vdFe-5sQsqufmJsJ_VdZo7w6W5vnsSI"; 
+
+    try {
+        // 1. TECHNIQUE ULTIME : Demander à Google quels modèles on a le droit d'utiliser !
+        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+        const listReponse = await fetch(listUrl);
+        
+        if (!listReponse.ok) {
+            throw new Error("Google refuse de lister les modèles. (Vérifie ton VPN, mets-le sur France ou USA).");
+        }
+        
+        const listData = await listReponse.json();
+        let bonModele = "";
+        
+        // On cherche le premier modèle texte de la famille Gemini autorisé
+        for(let m of listData.models) {
+            if(m.name.includes("gemini") && m.supportedGenerationMethods.includes("generateContent")) {
+                bonModele = m.name; // Récupère le vrai nom secret autorisé (ex: "models/gemini-1.5-flash-001")
+                console.log("Modèle autorisé trouvé : " + bonModele);
+                break; // On a trouvé, on sort de la boucle !
+            }
+        }
+
+        if (!bonModele) {
+            throw new Error("Aucun modèle de poésie trouvé pour cette clé.");
+        }
+
+        loadingText.innerText = "Astres alignés ! Création en cours...";
+
+        // 2. ON UTILISE LE BON MODÈLE TROUVÉ
+        const url = `https://generativelanguage.googleapis.com/v1beta/${bonModele}:generateContent?key=${API_KEY}`;
+
+        const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
+        L'utilisateur se sent actuellement : ${humeur}. 
+        Il souhaite un poème dans ce style : ${style}. 
+        Écris un poème de 2 à 3 strophes maximum. Le ton doit être touchant et très immersif. 
+        Ne mets pas de titre, ne dis pas bonjour, donne UNIQUEMENT le poème. 
+        IMPORTANT : Utilise la balise HTML <br> pour faire tes retours à la ligne, pas de \\n.`;
+
+        const reponse = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptSecret }] }],
+                generationConfig: { temperature: 0.9 }
+            })
+        });
+
+        if (!reponse.ok) {
+            const errorData = await reponse.json();
+            throw new Error(errorData.error.message || `Erreur Génération Code ${reponse.status}`);
+        }
+
+        const data = await reponse.json();
         let poemText = data.candidates[0].content.parts[0].text;
 
-        // Arrêt de l'animation
+        // Arrêt de l'animation et affichage
         document.getElementById('stars-container').classList.remove('warp-active');
         loadingText.style.display = 'none';
         
-        // Affichage du poème
         const poemOutput = document.getElementById('aiPoemOutput');
         poemOutput.style.display = 'block';
         poemOutput.innerHTML = poemText;
@@ -2355,7 +2425,7 @@ async function generatePoem() {
         document.getElementById('stars-container').classList.remove('warp-active');
         loadingText.style.animation = 'none'; 
         
-        loadingText.innerHTML = `Interférence spatiale... 🌠<br><br><span style="font-size:12px; color:var(--love); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:block;">Détail final : ${erreur.message}</span>`;
+        loadingText.innerHTML = `Interférence spatiale... 🌠<br><br><span style="font-size:12px; color:var(--love); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:block; line-height:1.4;">Détail : ${erreur.message}</span>`;
         
         setTimeout(() => {
             document.getElementById('needyouResultBlock').style.display = 'none';
