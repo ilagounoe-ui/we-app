@@ -20,15 +20,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-
     <style>
         * { 
             -webkit-tap-highlight-color: transparent; 
@@ -40,7 +31,7 @@
             --accent: #d0a8ff; 
             --accent-glow: rgba(208, 168, 255, 0.4);
             --bg: #05040a; 
-            --card: rgba(255, 255, 255, 0.05); 
+            --card: rgba(30, 25, 45, 0.95); /* Remplacé le flou par une couleur pleine pour la VITESSE */
             --glass-border: rgba(255, 255, 255, 0.08); 
             --love: #ff4b6e; 
             --love-glow: rgba(255, 75, 110, 0.4);
@@ -50,7 +41,6 @@
             --gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             --bubble-me: linear-gradient(135deg, #d0a8ff 0%, #a66cfb 100%);
             --notif-vibrant: #00e5ff;
-            --notif-accent: #00897b;
             --notif-glow: rgba(0, 225, 255, 0.25);
         }
         
@@ -62,145 +52,90 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* LE HACK ANTI-GOOGLE GESTIONNAIRE DE MOTS DE PASSE */
+        /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte {
             -webkit-text-security: disc;
         }
+        
+        .pwd-wrapper {
+            position: relative;
+            width: 100%;
+        }
 
-        /* --- NOUVEAU DESIGN DE CONNEXION (TOASTER LOGIN) --- */
+        .pwd-eye {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 5px;
+            z-index: 5;
+            transition: 0.2s;
+        }
+
+        .pwd-eye:active {
+            color: var(--accent);
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        /* L'animation Poussière d'Étoile au clic de l'œil */
+        .stellar-dust-particle {
+            position: fixed;
+            width: 4px; height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100000;
+            box-shadow: 0 0 8px var(--accent), 0 0 12px white;
+            animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes dustAnim {
+            0% { transform: translate(0, 0) scale(1.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        /* --- TOASTER LOGIN --- */
         #authLayer {
             background: #080612;
             background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
             transition: background-color 0.8s ease;
         }
-
-        #authLayer.lamp-on {
-            background-color: #0f0b1a; 
-        }
-
-        .auth-container-flex {
-            display: flex; flex-direction: row; align-items: center; justify-content: center;
-            gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10;
-        }
-
-        @media (max-width: 768px) {
-            .auth-container-flex { flex-direction: column; gap: 20px; }
-        }
-
-        .lamp-glow-bg {
-            position: absolute; width: 600px; height: 600px; 
-            background: radial-gradient(circle, rgba(208, 168, 255, 0.15) 0%, transparent 50%); 
-            top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            opacity: 0; transition: opacity 0.8s ease; pointer-events: none; z-index: 1;
-        }
-        
+        #authLayer.lamp-on { background-color: #0f0b1a; }
+        .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
+        @media (max-width: 768px) { .auth-container-flex { flex-direction: column; gap: 20px; } }
+        .lamp-glow-bg { position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(208, 168, 255, 0.15) 0%, transparent 50%); top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.8s ease; pointer-events: none; z-index: 1; }
         .lamp-on .lamp-glow-bg { opacity: 1; }
-
         .lamp-wrapper { display: flex; flex-direction: column; align-items: center; }
-
-        .lamp-container {
-            position: relative; width: 120px; height: 140px;
-            display: flex; flex-direction: column; align-items: center;
-            cursor: pointer; z-index: 10;
-        }
-        
-        .lamp-head {
-            width: 80px; height: 40px; background: #1a1a24;
-            border-radius: 40px 40px 8px 8px; position: relative; z-index: 2;
-            border-bottom: 2px solid #0f0f15; box-shadow: inset 0 2px 10px rgba(255,255,255,0.05);
-            transition: background 0.3s;
-        }
+        .lamp-container { position: relative; width: 120px; height: 140px; display: flex; flex-direction: column; align-items: center; cursor: pointer; z-index: 10; }
+        .lamp-head { width: 80px; height: 40px; background: #1a1a24; border-radius: 40px 40px 8px 8px; position: relative; z-index: 2; border-bottom: 2px solid #0f0f15; box-shadow: inset 0 2px 10px rgba(255,255,255,0.05); transition: background 0.3s; }
         .lamp-on .lamp-head { background: #2a2a35; }
-
-        .lamp-bulb {
-            width: 50px; height: 15px; background: #0a0a0f;
-            border-radius: 0 0 25px 25px; position: relative; top: -2px; z-index: 1;
-            transition: all 0.4s ease;
-        }
-        
-        .lamp-on .lamp-bulb {
-            background: #fff;
-            box-shadow: 0 10px 40px rgba(208, 168, 255, 0.8), 0 20px 80px rgba(208, 168, 255, 0.4);
-        }
-
+        .lamp-bulb { width: 50px; height: 15px; background: #0a0a0f; border-radius: 0 0 25px 25px; position: relative; top: -2px; z-index: 1; transition: all 0.4s ease; }
+        .lamp-on .lamp-bulb { background: #fff; box-shadow: 0 10px 40px rgba(208, 168, 255, 0.8), 0 20px 80px rgba(208, 168, 255, 0.4); }
         .lamp-body { width: 6px; height: 70px; background: #15151e; margin-top: -5px; }
         .lamp-on .lamp-body { background: #252535; }
-
-        .lamp-base {
-            width: 90px; height: 10px; background: #1a1a24;
-            border-radius: 10px 10px 0 0; box-shadow: 0 5px 15px rgba(0,0,0,0.8);
-        }
-
-        .lamp-table {
-            width: 200px; height: 3px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            margin-top: 0; border-radius: 50%;
-        }
+        .lamp-base { width: 90px; height: 10px; background: #1a1a24; border-radius: 10px 10px 0 0; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .lamp-table { width: 200px; height: 3px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); margin-top: 0; border-radius: 50%; }
         .lamp-on .lamp-table { background: linear-gradient(90deg, transparent, rgba(208, 168, 255, 0.4), transparent); }
-
-        .lamp-string {
-            position: absolute; width: 2px; height: 50px; background: rgba(255,255,255,0.2);
-            top: 45px; right: 25px; transform-origin: top; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .lamp-string-ball {
-            width: 12px; height: 12px; background: #444; border-radius: 50%;
-            position: absolute; bottom: -6px; left: -5px; transition: 0.3s;
-        }
+        .lamp-string { position: absolute; width: 2px; height: 50px; background: rgba(255,255,255,0.2); top: 45px; right: 25px; transform-origin: top; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .lamp-string-ball { width: 12px; height: 12px; background: #444; border-radius: 50%; position: absolute; bottom: -6px; left: -5px; transition: 0.3s; }
         .lamp-on .lamp-string-ball { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-
         @keyframes pullString { 0% { transform: scaleY(1); } 50% { transform: scaleY(1.4); } 100% { transform: scaleY(1); } }
         .lamp-container:active .lamp-string { animation: pullString 0.3s ease; }
-
-        .pull-text {
-            font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase;
-            letter-spacing: 3px; margin-top: 15px; transition: opacity 0.3s;
-        }
+        .pull-text { font-size: 11px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 3px; margin-top: 15px; transition: opacity 0.3s; }
         .lamp-on .pull-text { opacity: 0; }
-
-        #authFormWrapper {
-            width: 100%; max-width: 360px; background: rgba(10, 8, 15, 0.5);
-            padding: 35px 30px; border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            opacity: 0.1; transform: scale(0.95) translateY(10px);
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
-        }
-
-        .lamp-on #authFormWrapper {
-            opacity: 1; transform: scale(1) translateY(0); pointer-events: auto;
-            border-color: rgba(208, 168, 255, 0.2);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(208, 168, 255, 0.05);
-            background: rgba(20, 15, 30, 0.7);
-        }
-
-        .toaster-input {
-            width: 100%; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(208, 168, 255, 0.2);
-            padding: 16px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none;
-            transition: 0.3s; font-family: 'Poppins', sans-serif; font-size: 14px;
-        }
-        .toaster-input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); background: rgba(0, 0, 0, 0.6); }
-
-        .toaster-btn {
-            width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent);
-            color: black; font-weight: bold; font-size: 15px; box-shadow: 0 5px 15px var(--accent-glow);
-            margin-top: 5px; cursor: pointer; transition: 0.3s;
-        }
+        
+        #authFormWrapper { width: 100%; max-width: 360px; background: rgba(10, 8, 15, 0.5); padding: 35px 30px; border-radius: 35px; border: 1px solid rgba(255, 255, 255, 0.02); opacity: 0.1; transform: scale(0.95) translateY(10px); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; }
+        .lamp-on #authFormWrapper { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; border-color: rgba(208, 168, 255, 0.2); box-shadow: 0 20px 50px rgba(0,0,0,0.6); background: rgba(20, 15, 30, 0.85); }
+        .toaster-input { width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.05); padding: 16px; border-radius: 12px; color: white; outline: none; transition: 0.3s; font-family: 'Poppins', sans-serif; font-size: 14px; margin-bottom:15px; }
+        .toaster-input:focus { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); background: rgba(0, 0, 0, 0.8); }
+        .toaster-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: var(--accent); color: black; font-weight: bold; font-size: 15px; box-shadow: 0 5px 15px var(--accent-glow); margin-top: 5px; cursor: pointer; transition: 0.3s; }
         .toaster-btn:active { transform: scale(0.96); }
-
-        .toaster-toggle-container {
-            display: flex; align-items: center; justify-content: space-between; width: 220px; height: 40px;
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(208, 168, 255, 0.2);
-            border-radius: 30px; padding: 4px; position: relative; margin-top: 30px; cursor: pointer; z-index: 10; margin-left: auto; margin-right: auto;
-        }
+        .toaster-toggle-container { display: flex; align-items: center; justify-content: space-between; width: 220px; height: 40px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(208, 168, 255, 0.2); border-radius: 30px; padding: 4px; position: relative; margin-top: 30px; cursor: pointer; z-index: 10; margin-left: auto; margin-right: auto; }
         .toaster-toggle-text { flex: 1; text-align: center; font-size: 12px; color: white; z-index: 2; pointer-events: none; font-weight: 600; }
-        .toaster-thumb {
-            position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px);
-            background: var(--accent); border-radius: 25px; z-index: 1;
-            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 0 10px var(--accent-glow);
-        }
+        .toaster-thumb { position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px); background: var(--accent); border-radius: 25px; z-index: 1; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 0 10px var(--accent-glow); }
 
         /* --- STYLES GÉNÉRAUX DE L'APP --- */
-        @keyframes scan { 0% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); } 50% { border-color: var(--love); box-shadow: 0 0 20px var(--love); } 100% { border-color: var(--accent); box-shadow: 0 0 5px var(--accent); } }
-        .unlocking { animation: scan 0.6s infinite !important; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
         .recording { animation: pulse 0.8s infinite; background: var(--love) !important; color: white !important; }
         @keyframes alertCocon { 0% { background: var(--card); } 50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 100% { background: var(--card); } }
@@ -212,65 +147,63 @@
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         
         .eternity-title { background: linear-gradient(90deg, #d0a8ff, #ff4b6e, #d0a8ff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: textShimmer 3s linear infinite; font-family: 'Pacifico', cursive; font-size: 26px; margin: 0 0 20px 0; text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2); padding: 10px; }
-        .time-box { background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 18px 5px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 15px rgba(255,255,255,0.02); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .time-box { background: rgba(30, 25, 45, 0.8); padding: 18px 5px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .time-val { font-size: 24px; font-weight: 600; color: white; text-shadow: 0 0 10px rgba(255,255,255,0.3); line-height: 1.1; }
         .time-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-sub); margin-top: 4px; }
-        .notif-cocon-turquoise { top: 20px; left: 5%; width: 90%; background: rgba(0, 77, 64, 0.85); border-radius: 35px; border: 1px solid var(--notif-vibrant); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px var(--notif-glow); padding: 20px; animation: springMsg 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
+        .notif-cocon-turquoise { top: 20px; left: 5%; width: 90%; background: rgba(0, 77, 64, 0.95); border-radius: 35px; border: 1px solid var(--notif-vibrant); box-shadow: 0 15px 35px rgba(0,0,0,0.6), 0 0 20px var(--notif-glow); padding: 20px; animation: springMsg 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; position: relative; overflow: hidden; }
 
         #splash { position: fixed; inset: 0; background: var(--bg); z-index: 100000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; }
         .loader { width: 50px; height: 50px; border: 4px solid var(--card); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        .main-header { padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); will-change: transform; }
+        .main-header { padding: 50px 20px 15px; background: rgba(11, 9, 20, 0.95); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--glass-border); }
         .tabs { display: flex; gap: 8px; margin-top: 20px; }
-        .tab { flex: 1; padding: 10px 4px; text-align: center; border-radius: 20px; font-size: 12px; background: var(--card); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid var(--glass-border); cursor: pointer; will-change: transform; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tab { flex: 1; padding: 10px 4px; text-align: center; border-radius: 20px; font-size: 12px; background: var(--card); transition: all 0.3s ease; border: 1px solid var(--glass-border); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tab.active { background: var(--accent); color: #000; font-weight: 600; transform: scale(1.05); border-color: transparent; box-shadow: 0 4px 15px var(--accent-glow); }
         .tab:active { transform: scale(0.95); }
 
         .view { display: none; padding: 20px; height: calc(100vh - 180px); overflow-y: auto; scroll-behavior: smooth; }
         .view.active { display: block; }
 
-        .contact-item { display: flex; align-items: center; padding: 15px; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 8px 32px rgba(0,0,0,0.1); will-change: transform, background-color; }
-        .contact-item:active { transform: scale(0.96); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+        .contact-item { display: flex; align-items: center; padding: 15px; background: var(--card); border-radius: 25px; margin-bottom: 15px; border: 1px solid var(--glass-border); transition: all 0.2s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .contact-item:active { transform: scale(0.96); background: rgba(255,255,255,0.08); }
         .pfp { width: 55px; height: 55px; border-radius: 50%; margin-right: 15px; background: #2a2a40; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); color: white;}
         .pfp img { width: 100%; height: 100%; object-fit: cover; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
 
-        .bulle-humeur { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; transition: all 0.3s ease; }
+        .bulle-humeur { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; }
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
         #chatBox, #coconBox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg); z-index: 9999; display: none; background-size: cover; background-position: center; overflow: hidden; }
-        @keyframes coconPulseBg { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #coconBox { background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914); background-size: 400% 400%; animation: coconPulseBg 15s ease infinite; }
+        #coconBox { background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914); }
         #coconBox .m-me { background: linear-gradient(135deg, #ff4b6e 0%, #ff7eb3 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4); }
         #coconBox .m-they { background: rgba(255, 75, 110, 0.1); border: 1px solid rgba(255, 75, 110, 0.4); color: #ffe6eb; }
 
-        @keyframes universDust { 0% { opacity: 0; transform: scale(0.5) translate(0, 0); } 20% { opacity: 1; transform: scale(1.2) translate(0, -15px); } 100% { opacity: 0; transform: scale(0.8) translate(0, -50px) rotate(20deg); } }
-        .chat-head { position: absolute; top: 0; left: 0; width: 100%; height: 90px; padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); z-index: 20; }
+        .chat-head { position: absolute; top: 0; left: 0; width: 100%; height: 90px; padding: 40px 15px 15px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border); z-index: 20; }
         .msg-area { position: absolute; top: 90px; bottom: 70px; left: 0; right: 0; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; -webkit-overflow-scrolling: touch; }
-        .chat-footer { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11,9,20,0.9); z-index: 20; }
+        .chat-footer { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11,9,20,0.95); z-index: 20; }
         .chat-bottom-bar { padding: 10px 15px 15px; display: flex; gap: 10px; align-items: flex-end; }
-        .typing-indicator { padding: 5px 25px 2px; font-size: 11px; color: var(--accent); font-style: italic; text-shadow: 0 1px 3px rgba(0,0,0,0.5); position: absolute; top: -20px; left: 0; }
-        .bubble { padding: 12px 18px; border-radius: 20px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.4; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer; animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; will-change: transform, opacity; }
+        .typing-indicator { padding: 5px 25px 2px; font-size: 11px; color: var(--accent); font-style: italic; position: absolute; top: -20px; left: 0; }
+        .bubble { padding: 12px 18px; border-radius: 20px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.4; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer; animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .bubble:active { transform: scale(0.96); }
         .m-me { align-self: flex-end; background: var(--bubble-me); color: #000; border-bottom-right-radius: 4px; border-color: rgba(255,255,255,0.3); }
-        .m-they { align-self: flex-start; background: rgba(255, 255, 255, 0.08); border-bottom-left-radius: 4px; }
+        .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        .custom-audio-player { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.15); padding: 8px 12px; border-radius: 20px; width: 220px; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px; }
+        .custom-audio-player { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 20px; width: 220px; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px; }
         .m-me .custom-audio-player { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.2); }
-        .audio-play-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
+        .audio-play-btn { width: 35px; height: 35px; border-radius: 50%; background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; flex-shrink: 0; }
         .m-me .audio-play-btn { background: #fff; color: #000; }
         .audio-progress-container { flex: 1; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; position: relative; overflow: hidden; }
         .audio-progress-bar { position: absolute; top: 0; left: 0; height: 100%; background: var(--accent); width: 0%; }
         .m-me .audio-progress-bar { background: #fff; }
         
-        .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); object-fit: cover; cursor: pointer; }
-        .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; backdrop-filter: blur(5px); }
+        .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; object-fit: cover; cursor: pointer; }
+        .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; }
 
-        #mediaViewerOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        #mediaViewerOverlay { position: fixed; inset: 0; background: #000; z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
         #mediaViewerOverlay.show { opacity: 1; display: flex; }
-        #mediaViewerOverlay .close-btn { position: absolute; top: 40px; left: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; z-index: 10; backdrop-filter: blur(10px); }
+        #mediaViewerOverlay .close-btn { position: absolute; top: 40px; left: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; z-index: 10; }
         #mediaViewerContent { max-width: 100vw; max-height: 100vh; object-fit: contain; }
         
         .chat-input-wrapper { flex: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 2px 5px 2px 15px; border: 1px solid rgba(255, 255, 255, 0.1); min-width: 0; }
@@ -279,23 +212,22 @@
         .btn-attachment { background: transparent; border: none; color: var(--text-sub); padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.2s; }
         .btn-attachment:hover { color: white; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
-        .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
+        .modal-content { background: rgba(26, 26, 46, 0.95); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         
-        /* HACK DE SECURITE SUR LES INPUTS DES MODALES (POUR EVITER LES POP-UPS GOOGLE) */
-        .modal-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; font-family: 'Poppins', sans-serif;}
+        .modal-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; font-family: 'Poppins', sans-serif;}
         .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
         
-        .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left; transition: all 0.2s; }
         .option-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
         
         .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 600; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 999999; box-shadow: 0 10px 30px var(--accent-glow); text-align: center; width: max-content; max-width: 90%; will-change: bottom; }
         .toast.show { bottom: 50px; }
 
-        #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
+        #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.95); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; padding-bottom: 20px; }
         
-        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; will-change: transform; }
+        .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
         .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
@@ -308,19 +240,16 @@
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         
-        .msg-reactions { position: absolute; bottom: -12px; right: 15px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 12px; padding: 2px 6px; font-size: 13px; display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 2; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .msg-reactions { position: absolute; bottom: -12px; right: 15px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 12px; padding: 2px 6px; font-size: 13px; display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 2; }
         .m-they .msg-reactions { right: auto; left: 15px; }
-        .reaction-btn { background: transparent; border: none; font-size: 24px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); padding: 8px; border-radius: 50%; }
+        .reaction-btn { background: transparent; border: none; font-size: 24px; cursor: pointer; transition: transform 0.2s; padding: 8px; border-radius: 50%; }
         .reaction-btn:active { transform: scale(1.4); background: rgba(255,255,255,0.1); }
         
         #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
         #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
-        /* --- CSS NEEDYOU --- */
-        @keyframes warpSpeed {
-            0% { transform: scale(1) translateZ(0); opacity: 0.5; }
-            100% { transform: scale(3) translateZ(0); opacity: 1; }
-        }
+        /* --- CSS NEEDYOU (LOCAL) --- */
+        @keyframes warpSpeed { 0% { transform: scale(1) translateZ(0); opacity: 0.5; } 100% { transform: scale(3) translateZ(0); opacity: 1; } }
         .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
         .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
 
@@ -332,28 +261,15 @@
         .custom-radio-label:has(input:checked) .radio-box { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         .custom-radio-label:has(input:checked) .radio-box::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 5px var(--accent); }
 
-        /* --- NOUVELLE ANIMATION IA (ORBE MAGIQUE) --- */
         .ai-magic-orb {
-            width: 70px; height: 70px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent), var(--love));
-            margin: 0 auto 20px auto; position: relative;
-            animation: floatOrb 3s ease-in-out infinite;
-            box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
+            width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--love));
+            margin: 0 auto 20px auto; position: relative; animation: floatOrb 3s ease-in-out infinite; box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
         }
         .ai-magic-orb::after {
-            content: '✨'; font-size: 30px; position: absolute;
-            top: 50%; left: 50%; transform: translate(-50%, -50%);
-            animation: spinStar 4s linear infinite;
+            content: '✨'; font-size: 30px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: spinStar 4s linear infinite;
         }
-        @keyframes floatOrb {
-            0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); }
-            50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); }
-        }
-        @keyframes spinStar {
-            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
-            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
-            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
-        }
+        @keyframes floatOrb { 0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); } 50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); } }
+        @keyframes spinStar { 0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); } 50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); } 100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); } }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -371,7 +287,7 @@
     <audio id="galaxyAudio" loop preload="auto" src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
 
     <div style="position:absolute; top:40px; left:20px; z-index:105;" onclick="closeGalaxy()">
-        <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; backdrop-filter:blur(5px); cursor: pointer;">
+        <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
             <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </div>
     </div>
@@ -381,7 +297,7 @@
     <div id="galaxyCanvasContainer"></div>
 </div>
 
-<div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); flex-direction: column; align-items: center; text-align: center;">
+<div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; flex-direction: column; align-items: center; text-align: center;">
     <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 15px;">
         <svg style="width:32px; height:32px; fill:var(--notif-vibrant); animation:pulse 2s infinite;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
         <h2 style="font-family:'Pacifico'; font-size:22px; color:var(--notif-vibrant); margin:0; text-shadow: 0 2px 10px rgba(0,229,255,0.3);">Mot doux reçu...</h2>
@@ -396,7 +312,7 @@
     <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
         L'Univers te parle... 💖
     </div>
-    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
+    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
 </div>
@@ -435,18 +351,38 @@
         <div id="authFormWrapper">
             <div id="loginUI">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center; margin-top:0; margin-bottom: 20px;">Bienvenue</h2>
-                <input type="text" inputmode="tel" enterkeyhint="next" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
-                <input type="text" enterkeyhint="done" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="off" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
+                
+                <input type="text" inputmode="tel" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
+                
+                <div class="pwd-wrapper">
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
+                    <span class="pwd-eye" onclick="togglePwd('lPass', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
                 
                 <button class="toaster-btn" onclick="login()">Se connecter</button>
             </div>
             
             <div id="regUI" style="display:none;">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:22px; text-align:center; margin-top:0; margin-bottom: 15px;">Nouveau Profil</h2>
-                <input type="text" enterkeyhint="next" class="toaster-input" placeholder="Pseudo" id="rPseudo" autocomplete="off" spellcheck="false">
-                <input type="text" inputmode="tel" enterkeyhint="next" class="toaster-input" placeholder="Numéro" id="rPhone" autocomplete="off" spellcheck="false">
-                <input type="text" enterkeyhint="next" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass" autocomplete="off" spellcheck="false" autocorrect="off">
-                <input type="text" enterkeyhint="done" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode" autocomplete="off" spellcheck="false" onkeydown="if(event.key === 'Enter') register()">
+                <input type="text" class="toaster-input" placeholder="Pseudo" id="rPseudo" autocomplete="off" spellcheck="false">
+                <input type="text" inputmode="tel" class="toaster-input" placeholder="Numéro" id="rPhone" autocomplete="off" spellcheck="false">
+                
+                <div class="pwd-wrapper">
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass" autocomplete="new-password" spellcheck="false" autocorrect="off">
+                    <span class="pwd-eye" onclick="togglePwd('rPass', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                
+                <div class="pwd-wrapper">
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') register()">
+                    <span class="pwd-eye" onclick="togglePwd('rCode', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                
                 <button class="toaster-btn" onclick="register()">Créer mon univers</button>
             </div>
 
@@ -526,7 +462,7 @@
             </div>
         </div>
 
-        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); backdrop-filter:blur(10px); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
         </button>
         <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
@@ -557,9 +493,9 @@
         <input type="file" id="audioChatIn" hidden accept="audio/*">
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-            <div id="secureInfoBox" style="background:var(--card); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
-                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
-                    <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; background:rgba(0,0,0,0.5); border-radius:20px; border:1px solid var(--accent); display:flex; align-items:center; gap:8px;">
+            <div id="secureInfoBox" style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
+                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
+                    <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; border-radius:20px; border:1px solid var(--accent); display:flex; align-items:center; gap:8px;">
                         <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Appuyez pour voir les infos
                     </span>
                 </div>
@@ -658,7 +594,7 @@
 </div>
 
 <div id="coconBox">
-    <div class="chat-head" style="background:rgba(0,0,0,0.4); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
+    <div class="chat-head" style="background:rgba(0,0,0,0.85); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
         <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
             <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </span>
@@ -699,7 +635,7 @@
     <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
 
     <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10;">
-        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; backdrop-filter:blur(5px); cursor: pointer;">
+        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
             <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </div>
     </div>
@@ -707,10 +643,10 @@
     <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:10px; text-align:center;">Needyou</h2>
     <p style="opacity:0.7; font-size:13px; text-align:center; margin-bottom:30px;">Laisse l'Univers écrire pour toi...</p>
 
-    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
         
         <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px;">Ton Humeur actuelle</label>
-        <input type="text" id="aiMood" class="toaster-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-bottom:25px;">
+        <input type="text" id="aiMood" class="toaster-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-bottom:25px;" autocomplete="off" spellcheck="false">
 
         <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Style du poème</label>
         
@@ -746,7 +682,7 @@
             <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div>
         </div>
         
-        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
         </div>
 
         <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
@@ -757,11 +693,46 @@
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
-let isLoginMode = true; 
+let isLoginMode = true;
+
+// --- FONCTION DE L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
+function togglePwd(inputId, eyeIcon) {
+    const input = document.getElementById(inputId);
+    const isHidden = input.classList.contains('masquer-texte');
+    
+    // Génération de la poussière d'étoile
+    const rect = eyeIcon.getBoundingClientRect();
+    for(let i=0; i<8; i++) {
+        let dust = document.createElement('div');
+        dust.className = 'stellar-dust-particle';
+        dust.style.left = (rect.left + rect.width/2) + 'px';
+        dust.style.top = (rect.top + rect.height/2) + 'px';
+        
+        // Direction aléatoire pour l'explosion
+        let tx = (Math.random() - 0.5) * 80 + 'px';
+        let ty = (Math.random() - 0.5) * 80 + 'px';
+        dust.style.setProperty('--tx', tx);
+        dust.style.setProperty('--ty', ty);
+        
+        document.body.appendChild(dust);
+        setTimeout(() => dust.remove(), 700);
+    }
+
+    if(isHidden) {
+        // Afficher le mot de passe
+        input.classList.remove('masquer-texte');
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
+    } else {
+        // Masquer le mot de passe
+        input.classList.add('masquer-texte');
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    }
+}
 
 function lockAppHeight() {
     const trueHeight = window.innerHeight;
     document.body.style.height = trueHeight + 'px';
+    
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     
@@ -785,9 +756,7 @@ window.addEventListener('resize', lockAppHeight);
 
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', lockAppHeight);
-    window.visualViewport.addEventListener('scroll', () => {
-        window.scrollTo(0, 0);
-    });
+    window.visualViewport.addEventListener('scroll', () => window.scrollTo(0, 0));
 }
 
 document.getElementById('coArea').addEventListener('click', function(e) {
@@ -830,6 +799,7 @@ function nextCoconTrack() {
 window.addEventListener('DOMContentLoaded', () => {
     const audioEl = document.getElementById('coconAudio');
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
+    initApp();
 });
 
 let user = null;
@@ -896,8 +866,6 @@ try {
     });
 } catch(e) {}
 
-window.addEventListener('DOMContentLoaded', () => { initApp(); });
-
 function initApp() {
     auth.onAuthStateChanged(firebaseUser => {
         if (firebaseUser) {
@@ -948,30 +916,10 @@ const E2EE = {
     }
 };
 
-function showToast(msg) {
-    const t = document.getElementById('toastAlert');
-    t.innerHTML = msg; 
-    if(!t.classList.contains('show')) t.classList.add('show');
-    if(toastTimeout) clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => { t.classList.remove('show'); }, 2500);
-}
-
-function compressImage(file, maxWidth, callback) {
-    if (!file.type.startsWith('image/')) { callback(file); return; }
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-        URL.revokeObjectURL(img.src);
-        const canvas = document.createElement('canvas');
-        let scaleSize = maxWidth / img.width;
-        if(scaleSize > 1) scaleSize = 1;
-        canvas.width = img.width * scaleSize;
-        canvas.height = img.height * scaleSize;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => { callback(blob); }, 'image/jpeg', 0.7); 
-    };
-    img.onerror = () => callback(file);
+function showMoodMessage(mood) {
+    const choices = moodLibrary[mood];
+    if(!choices) return;
+    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
 function openMoodSelector() {
@@ -991,12 +939,6 @@ function openMoodSelector() {
         box.appendChild(btn);
     });
     document.getElementById('vWidgetFull').style.display = "flex";
-}
-
-function showMoodMessage(mood) {
-    const choices = moodLibrary[mood];
-    if(!choices) return;
-    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
 function setupApp() {
@@ -1032,9 +974,7 @@ function setupApp() {
             
             document.getElementById('coconNoteText').innerText = note.txt;
             const el = document.getElementById('coconNoteDisplay');
-            el.className = 'notif-cocon-turquoise cocon-with-dust';
             el.style.display = 'flex';
-            setTimeout(() => { el.classList.remove('cocon-with-dust'); }, 1500);
         }
     });
 }
@@ -1126,17 +1066,6 @@ function updatePresence() {
     });
 }
 
-// CORRECTION: Anti-popup mot de passe Google
-function unlockSecureSettings() {
-    openModal("Accès Sécurisé", `<input type="text" inputmode="tel" id="modalInput" class="modal-input masquer-texte" placeholder="Ton numéro..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
-        if(val && val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
-            document.getElementById('secureBlurOverlay').style.display = 'none';
-            document.getElementById('secureContent').classList.remove('secure-blur');
-            triggerBack(); 
-        } else showToast("Numéro incorrect !");
-    });
-}
-
 function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
 
 window.onpopstate = (e) => {
@@ -1209,11 +1138,7 @@ function loadContacts() {
 
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
-            
-            let totalUnread = validContacts.reduce((sum, contact) => {
-                let unreadCount = Number(contact.unread);
-                return sum + (isNaN(unreadCount) ? 0 : unreadCount);
-            }, 0);
+            let totalUnread = validContacts.reduce((sum, contact) => sum + (isNaN(Number(contact.unread)) ? 0 : Number(contact.unread)), 0);
             
             const badgeEl = document.getElementById('globalUnreadBadge');
             if(badgeEl) {
@@ -1223,10 +1148,8 @@ function loadContacts() {
                     badgeEl.style.animation = 'pulse 1s ease';
                 } else {
                     badgeEl.style.display = 'none';
-                    badgeEl.innerText = '0';
                 }
             }
-            
             renderContacts(validContacts);
         });
     });
@@ -1264,12 +1187,8 @@ function addFriend() {
                 const batch = fs.batch();
                 batch.set(fs.collection('users').doc(user.id).collection('contacts').doc(id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
                 batch.set(fs.collection('users').doc(id).collection('contacts').doc(user.id), { lastMsgAt: firebase.firestore.FieldValue.serverTimestamp(), unread: 0 }, { merge: true });
-                
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté pour vous deux !"); })
-                .catch(err => { console.error("Erreur d'ajout :", err); showToast("Erreur d'ajout (Règles Firestore)"); });
-            } else {
-                showToast("Inconnu");
-            }
+            } else showToast("Inconnu");
         });
     });
 }
@@ -1287,21 +1206,16 @@ function openChat(id, name, pfp) {
         
         document.getElementById('mArea').innerHTML = "";
         document.getElementById('chatBox').style.display = 'flex';
-        lockAppHeight(); 
-        pushState('chatBox');
-        
-        watchStatus(id);
-        syncMessages('msgs', activeId, 'mArea');
+        lockAppHeight(); pushState('chatBox');
+        watchStatus(id); syncMessages('msgs', activeId, 'mArea');
     });
 }
 
 function closeChat() {
     if(unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
     if(currentPeerId) { db.ref('presence/'+currentPeerId).off(); db.ref('typing/'+activeId+'/'+currentPeerId).off(); currentPeerId = null; }
-    
     const audio = document.getElementById('coconAudio');
     if(audio && !audio.paused) { audio.pause(); audio.currentTime = 0; }
-    
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
 }
@@ -1309,7 +1223,6 @@ function closeChat() {
 function revealCapsule(docId, path) {
     const inner = document.getElementById('capsule_inner_' + docId);
     if(inner) inner.classList.add('capsule-anim');
-    
     setTimeout(() => {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
@@ -1370,25 +1283,9 @@ function getMsgHTML(docId, m, path, target) {
         const now = Date.now();
         if (m.unlockAt > now) {
             const unlockDate = new Date(m.unlockAt).toLocaleString([], {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}">
-                        <div style="text-align:center; opacity:0.8;">
-                            <div style="margin-bottom:5px; display:flex; justify-content:center;">
-                                <svg class="svg-icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                            </div>
-                            <div style="font-size:12px; font-weight:bold;">Capsule temporelle</div>
-                            <div style="font-size:10px;">S'ouvrira le ${unlockDate}</div>
-                        </div>
-                    </div>`;
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}"><div style="text-align:center; opacity:0.8;"><div style="margin-bottom:5px; display:flex; justify-content:center;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg></div><div style="font-size:12px; font-weight:bold;">Capsule temporelle</div><div style="font-size:10px;">S'ouvrira le ${unlockDate}</div></div></div>`;
         } else {
-            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')">
-                        <div id="capsule_inner_${docId}" style="text-align:center;">
-                            <div style="display:flex; justify-content:center; margin-bottom:5px;">
-                                <svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
-                            </div>
-                            <div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div>
-                            <div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir</div>
-                        </div>
-                    </div>`;
+            return `<div id="msg_${docId}" class="bubble ${isMe ? 'm-me' : 'm-they'}" style="cursor:pointer; background:var(--card); border: 1px solid var(--accent);" onclick="revealCapsule('${docId}', '${path}')"><div id="capsule_inner_${docId}" style="text-align:center;"><div style="display:flex; justify-content:center; margin-bottom:5px;"><svg class="svg-icon-lg" style="stroke:var(--accent); animation: pulse 1.5s infinite;" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg></div><div style="font-size:12px; font-weight:bold; color:var(--accent);">Capsule prête !</div><div style="font-size:10px; opacity:0.8;">Appuie pour l'ouvrir</div></div></div>`;
         }
     }
 
@@ -1400,16 +1297,10 @@ function getMsgHTML(docId, m, path, target) {
     if(m.type === 'video') {
         let posterUrl = m.txt.replace('/upload/', '/upload/q_auto,f_auto,so_0/');
         if(!posterUrl.includes('cloudinary')) posterUrl = "";
-        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();">
-            <video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video>
-            <div class="video-overlay">▶</div>
-        </div>`;
+        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     if(m.type === 'audio') {
-        content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();">
-            <div class="audio-play-btn">▶</div>
-            <div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div>
-        </div>`;
+        content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();"><div class="audio-play-btn">▶</div><div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div></div>`;
     }
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
@@ -1889,14 +1780,21 @@ function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.po
 
 function closeCoconNote() { 
     const el = document.getElementById('coconNoteDisplay');
-    el.classList.add('cocon-closing'); 
-    setTimeout(() => { el.style.display = 'none'; el.classList.remove('cocon-closing'); }, 500); 
+    el.style.display = 'none'; 
     if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); 
 }
 
-// CORRECTION: Anti-popup mot de passe Google
+// CORRECTION: Système de l'œil pour le code Cocon
 function askCoconCode() {
-    openModal("Accès au Cocon", `<input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
+    let html = `
+    <div class="pwd-wrapper">
+        <input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">
+        <span class="pwd-eye" onclick="togglePwd('modalInput', this)">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </span>
+    </div>`;
+
+    openModal("Accès au Cocon", html, (val) => {
         if (val === user.code) {
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
@@ -1904,7 +1802,7 @@ function askCoconCode() {
             cocon.style.setProperty('display', 'flex', 'important');
             pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
             const audio = document.getElementById('coconAudio');
-            if(audio) { audio.src = defaultPlaylist[0]; currentTrackIndex = 0; audio.load(); audio.play().catch(e => console.log("Lecture audio bloquée", e)); }
+            if(audio) { audio.src = defaultPlaylist[0]; currentTrackIndex = 0; audio.load(); audio.play().catch(e => console.log("Lecture bloquée", e)); }
             showToast("Bienvenue dans notre Cocon");
         } else showToast("Code incorrect !");
     });
@@ -1930,9 +1828,17 @@ function updateTimeCounter() {
     updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
 }
 
-// CORRECTION: Sécurité pour l'ouverture de la Galaxie
+// CORRECTION: Sécurité pour la Galaxie et Œil magique
 function promptGalaxyAccess() {
-    openModal("Galaxie Secrète", `<input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
+    let html = `
+    <div class="pwd-wrapper">
+        <input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">
+        <span class="pwd-eye" onclick="togglePwd('modalInput', this)">
+            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </span>
+    </div>`;
+
+    openModal("Galaxie Secrète", html, (val) => {
         if (val === user.code) { 
             document.getElementById('customModal').style.display = 'none'; 
             stateStack = stateStack.filter(s => s !== 'modal'); 
@@ -2051,8 +1957,9 @@ function copyPoem() {
 </script>
 
 <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    // CORRECTION : Import direct pour éviter le bug d'importmap sur mobile Chrome
+    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
     let unsubGalaxy = null;
     window.currentCardIndex = null;
@@ -2083,7 +1990,7 @@ function copyPoem() {
 
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
-        const count = 15000;
+        const count = 8000; // Allégé pour la performance
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
         for(let i = 0; i < count * 3; i+=3) {
@@ -2096,7 +2003,7 @@ function copyPoem() {
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        return new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.2, vertexColors: true, transparent: true, opacity: 0.8 }));
+        return new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.5, vertexColors: true, transparent: true, opacity: 0.8 }));
     }
     scene.add(createStarfield());
 
@@ -2110,6 +2017,7 @@ function copyPoem() {
         ctx.font = 'bold 120px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText('+', 128, 135);
+        
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
@@ -2237,6 +2145,8 @@ function copyPoem() {
             });
         }
     }
+
+    const systems = [];
 
     const p1 = [
         { text: "Te\nAmo", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 16, offset: 0 },
@@ -2436,8 +2346,3 @@ function copyPoem() {
 </script>
 </body>
 </html>
-                
-        
-        
-                
-                
