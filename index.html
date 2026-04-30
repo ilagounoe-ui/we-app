@@ -2267,12 +2267,14 @@ function generateStars() {
 }
 
 // Lancement de l'animation et appel de la VRAIE IA avec le modèle universel gemini-pro
+// Lancement de l'animation et appel IA avec PLAN DE SECOURS AUTO 🛡️
 async function generatePoem() {
     const humeur = document.getElementById('aiMood').value || "Neutre";
     
     const styleEl = document.querySelector('input[name="aiStyle"]:checked');
     const style = styleEl ? styleEl.value : "Doux et Romantique";
 
+    // 1. Interface de chargement et démarrage de l'animation
     document.getElementById('needyouForm').style.display = 'none';
     document.getElementById('needyouResultBlock').style.display = 'block';
     document.getElementById('stars-container').classList.add('warp-active');
@@ -2285,9 +2287,8 @@ async function generatePoem() {
     document.getElementById('aiPoemOutput').style.display = 'none';
     document.getElementById('aiCopyBtn').style.display = 'none';
 
-    const API_KEY = "AIzaSyDNXsnUjRLjlbmNj68WnYLXVgcTEpGWXnk"; 
-    // Changement CRUCIAL : on utilise "gemini-pro"
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+    // TA NOUVELLE CLÉ TOUTE NEUVE
+    const API_KEY = "AIzaSyB2vdFe-5sQsqufmJsJ_VdZo7w6W5vnsSI"; 
 
     const promptSecret = `Tu es une IA poétique intégrée dans un espace privé appelé "Le Cocon". 
     L'utilisateur se sent actuellement : ${humeur}. 
@@ -2296,28 +2297,53 @@ async function generatePoem() {
     Ne mets pas de titre, ne dis pas bonjour, donne UNIQUEMENT le poème. 
     IMPORTANT : Utilise la balise HTML <br> pour faire tes retours à la ligne, pas de \\n.`;
 
-    try {
-        const reponse = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: promptSecret }] }],
-                generationConfig: { temperature: 0.9 }
-            })
-        });
+    const bodyData = JSON.stringify({
+        contents: [{ parts: [{ text: promptSecret }] }],
+        generationConfig: { temperature: 0.9 }
+    });
 
-        if (!reponse.ok) {
-            const errorData = await reponse.json();
-            console.error("Détails du crash API :", errorData);
-            throw new Error(errorData.error.message || `Erreur Code ${reponse.status}`);
+    // LE PLAN DE SECOURS : On liste tous les modèles possibles de Google
+    const modelesATester = ["gemini-1.5-flash", "gemini-1.0-pro", "gemini-pro"];
+    let reponseReussie = null;
+    let derniereErreur = "";
+
+    try {
+        // Le code essaie les modèles un par un
+        for (let modele of modelesATester) {
+            console.log("Tentative avec le modèle : " + modele + "...");
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${API_KEY}`;
+            
+            const reponse = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: bodyData
+            });
+
+            if (reponse.ok) {
+                reponseReussie = reponse; // Ça a marché !
+                console.log("Succès avec " + modele + " !");
+                break; // On arrête de chercher
+            } else {
+                const errorData = await reponse.json();
+                derniereErreur = errorData.error.message || `Erreur Code ${reponse.status}`;
+                console.warn("Échec avec " + modele + " : " + derniereErreur);
+                // La boucle continue automatiquement vers le prochain modèle
+            }
         }
 
-        const data = await reponse.json();
+        // Si AUCUN modèle n'a marché après avoir tout essayé
+        if (!reponseReussie) {
+            throw new Error(derniereErreur);
+        }
+
+        const data = await reponseReussie.json();
         let poemText = data.candidates[0].content.parts[0].text;
 
+        // Arrêt de l'animation
         document.getElementById('stars-container').classList.remove('warp-active');
         loadingText.style.display = 'none';
         
+        // Affichage du poème
         const poemOutput = document.getElementById('aiPoemOutput');
         poemOutput.style.display = 'block';
         poemOutput.innerHTML = poemText;
@@ -2325,16 +2351,16 @@ async function generatePoem() {
         document.getElementById('aiCopyBtn').style.display = 'block';
 
     } catch (erreur) {
-        console.error("Erreur IA:", erreur);
+        console.error("Erreur IA Globale:", erreur);
         document.getElementById('stars-container').classList.remove('warp-active');
         loadingText.style.animation = 'none'; 
         
-        loadingText.innerHTML = `Interférence spatiale... 🌠<br><br><span style="font-size:14px; color:var(--love); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:block;">Détail : ${erreur.message}</span>`;
+        loadingText.innerHTML = `Interférence spatiale... 🌠<br><br><span style="font-size:12px; color:var(--love); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:block;">Détail final : ${erreur.message}</span>`;
         
         setTimeout(() => {
             document.getElementById('needyouResultBlock').style.display = 'none';
             document.getElementById('needyouForm').style.display = 'block';
-        }, 7000); 
+        }, 8000); 
     }
 }
 
