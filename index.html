@@ -74,15 +74,8 @@
         }
 
         .auth-container-flex {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: center;
-            gap: 50px;
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-            z-index: 10;
+            display: flex; flex-direction: row; align-items: center; justify-content: center;
+            gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10;
         }
 
         @media (max-width: 768px) {
@@ -191,7 +184,7 @@
         .toaster-toggle-container {
             display: flex; align-items: center; justify-content: space-between; width: 220px; height: 40px;
             background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(208, 168, 255, 0.2);
-            border-radius: 30px; padding: 4px; position: relative; margin-top: 30px; cursor: pointer; z-index: 10;
+            border-radius: 30px; padding: 4px; position: relative; margin-top: 30px; cursor: pointer; z-index: 10; margin-left: auto; margin-right: auto;
         }
         .toaster-toggle-text { flex: 1; text-align: center; font-size: 12px; color: white; z-index: 2; pointer-events: none; font-weight: 600; }
         .toaster-thumb {
@@ -317,7 +310,7 @@
         #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
         #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
-        /* --- CSS NEEDYOU LOCAL --- */
+        /* --- CSS NEEDYOU (LOCAL) --- */
         @keyframes warpSpeed {
             0% { transform: scale(1) translateZ(0); opacity: 0.5; }
             100% { transform: scale(3) translateZ(0); opacity: 1; }
@@ -332,6 +325,29 @@
         .custom-radio-label:has(input:checked) { border-color: var(--accent); background: rgba(208, 168, 255, 0.1); color: white; font-weight: bold; box-shadow: inset 0 0 15px rgba(208, 168, 255, 0.05); }
         .custom-radio-label:has(input:checked) .radio-box { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         .custom-radio-label:has(input:checked) .radio-box::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 5px var(--accent); }
+
+        /* --- NOUVELLE ANIMATION IA (ORBE MAGIQUE) --- */
+        .ai-magic-orb {
+            width: 70px; height: 70px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--love));
+            margin: 0 auto 20px auto; position: relative;
+            animation: floatOrb 3s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
+        }
+        .ai-magic-orb::after {
+            content: '✨'; font-size: 30px; position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            animation: spinStar 4s linear infinite;
+        }
+        @keyframes floatOrb {
+            0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); }
+            50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); }
+        }
+        @keyframes spinStar {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); }
+            100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -723,16 +739,10 @@
     </div>
 
     <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
-        <div id="aiGeneratingText" style="font-family:'Pacifico'; font-size:22px; color:var(--love); text-shadow: 0 0 15px var(--love-glow);">L'Univers compose pour toi...</div>
-        
-        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
-            </div>
-
-        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
-            Copier pour le Cocon
-        </button>
-    </div>
-</div>
+        <div id="aiGeneratingBlock" style="text-align:center;">
+            <div class="ai-magic-orb"></div>
+            <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div>
+        </div>
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
@@ -776,7 +786,7 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     const rose = document.createElement('div');
     rose.innerHTML = Math.random() > 0.5 
         ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
+        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
     
     rose.style.position = 'fixed';
     rose.style.left = (e.clientX - 12) + 'px';
@@ -1138,7 +1148,7 @@ function switchV(id, el) {
     document.getElementById(id).classList.add('active'); el.classList.add('active');
 }
 
-// Fonction Modifiée pour le Switch (Toaster)
+// Fonction du Switch (Toaster)
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
     const thumb = document.getElementById('toasterThumb');
@@ -1156,6 +1166,11 @@ function toggleAuthMode() {
             regUI.style.display = 'block';
         }
     }
+}
+
+function toggleAuth(isL) {
+    if(isLoginMode === isL) return;
+    toggleAuthMode();
 }
 
 function loadContacts() {
@@ -1828,11 +1843,6 @@ function confirmLogout() {
     }); 
 }
 
-function toggleAuth(isL) { 
-    if(isLoginMode === isL) return;
-    toggleAuthMode();
-}
-
 function openEdit(f, d=false) { openModal("Modifier", `<input type="${d?'date':'text'}" id="modalInput" class="modal-input">`, (v) => { fs.collection('users').doc(user.id).set({[f]:v}, { merge: true }).then(() => { user[f]=v; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); }); }); }
 
 function sendGlobalNote() {
@@ -1950,7 +1960,7 @@ function syncGalaxy() {
 }
 
 // ==========================================
-// --- LOGIQUE NEEDYOU (Générateur Local !) ---
+// --- LOGIQUE NEEDYOU (IA INTERNE LOCALE) ---
 // ==========================================
 
 function openNeedyou() {
@@ -1960,7 +1970,7 @@ function openNeedyou() {
     document.getElementById('needyouResultBlock').style.display = 'none';
     document.getElementById('aiPoemOutput').style.display = 'none';
     document.getElementById('aiCopyBtn').style.display = 'none';
-    document.getElementById('aiGeneratingText').style.display = 'block';
+    document.getElementById('aiGeneratingBlock').style.display = 'block';
     generateStars(); 
 }
 
@@ -1987,65 +1997,83 @@ function generateStars() {
     }
 }
 
-// Lancement de l'animation et appel de NOTRE IA LOCALE INFAILLIBLE
+// Lancement de l'animation et appel de NOTRE PROPRE IA INTERNE 🧠✨
 function generatePoem() {
-    const humeur = document.getElementById('aiMood').value || "calme";
+    const humeurInput = document.getElementById('aiMood').value.trim() || "calme";
+    const humeur = humeurInput.toLowerCase();
+    
     const styleEl = document.querySelector('input[name="aiStyle"]:checked');
     const style = styleEl ? styleEl.value : "Doux et Romantique";
 
+    // 1. Démarrage de l'animation de l'Orbe Magique
     document.getElementById('needyouForm').style.display = 'none';
     document.getElementById('needyouResultBlock').style.display = 'block';
     document.getElementById('stars-container').classList.add('warp-active');
     
-    const loadingText = document.getElementById('aiGeneratingText');
-    loadingText.style.animation = 'pulse 1.5s infinite'; 
-    loadingText.innerText = "L'Univers compose pour toi...";
-    loadingText.style.display = 'block';
-    
+    document.getElementById('aiGeneratingBlock').style.display = 'block';
     document.getElementById('aiPoemOutput').style.display = 'none';
     document.getElementById('aiCopyBtn').style.display = 'none';
 
-    // Notre cerveau interne de poèmes
-    const dictionnaire = {
-        "Doux et Romantique": {
-            intro: ["Dans le silence de notre univers,", "Sous la lueur douce d'une étoile,", "Quand mon esprit se perd dans l'espace,"],
-            corps: ["je ressens cette émotion " + humeur.toLowerCase() + ".", "ton sourire illumine ma nuit.", "la douceur de ton âme m'enveloppe."],
-            conclusion: ["Et mon cœur bat au rythme du tien.", "Tu es ma galaxie préférée.", "Rien ne séparera jamais nos orbites."]
-        },
-        "Épique et Spatial": {
-            intro: ["À travers les nébuleuses en fusion,", "Bravant le froid des trous noirs,", "Sur le bord d'une planète inconnue,"],
-            corps: ["mon courage résonne, un peu " + humeur.toLowerCase() + ".", "je grave ton nom sur les comètes.", "l'infinité de l'espace nous appartient."],
-            conclusion: ["Nous conquerrons l'éternité ensemble.", "Même les astres s'inclinent devant nous.", "Notre lien défie les lois de la gravité."]
-        },
-        "Mélancolique": {
-            intro: ["La lune pleure des larmes d'argent,", "Le vide spatial me semble si lourd,", "Dans l'écho silencieux d'un astre mort,"],
-            corps: ["je me sens terriblement " + humeur.toLowerCase() + ".", "ton absence est un cratère en moi.", "les souvenirs flottent en apesanteur."],
-            conclusion: ["Reviens illuminer mon orbite.", "Je t'attendrai jusqu'à la fin des temps.", "Même dans le noir, je te cherche."]
-        },
-        "Haïku Court": {
-            intro: ["Étoile lointaine,", "Nuit " + humeur.toLowerCase() + " qui tombe,", "Souffle de l'espace,"],
-            corps: ["Brille dans mes yeux,", "Ton cœur près du mien,", "Lumière infinie,"],
-            conclusion: ["Je t'aime en silence.", "Beauté éternelle.", "Univers en paix."]
-        }
+    // 2. LA BASE DE DONNÉES INTELLIGENTE
+    let vocabs = {
+        noms: ["Ton sourire", "Ton regard", "La lumière", "L'étoile", "Cette galaxie", "Ton souffle", "Notre destin", "L'univers", "Le silence", "La nuit"],
+        verbesDoux: ["illumine", "traverse", "embrasse", "caresse", "apaise", "enveloppe", "berce", "réchauffe"],
+        verbesForts: ["enflamme", "chavire", "bouscule", "réveille", "transperce", "attire", "consume"],
+        adjectifs: ["infini", "éternel", "doux", "magique", "lointain", "céleste", "précieux", "absolu", "mystérieux"],
+        lieux: ["dans le vide de l'espace", "au creux de la nuit", "sous les nébuleuses", "par-delà les astres", "dans mon cœur", "sur notre planète"],
+        metaphores: ["comme une comète filante", "tel un soleil naissant", "comme un murmure stellaire", "plus brillant qu'une supernova", "comme une poussière d'étoile"]
     };
 
-    function piocher(tableau) {
-        return tableau[Math.floor(Math.random() * tableau.length)];
+    function melanger(array) {
+        return array.sort(() => 0.5 - Math.random());
     }
 
-    // Faux délai de 3 secondes pour l'effet Wow
+    const n = melanger(vocabs.noms);
+    const vD = melanger(vocabs.verbesDoux);
+    const vF = melanger(vocabs.verbesForts);
+    const adj = melanger(vocabs.adjectifs);
+    const lieu = melanger(vocabs.lieux);
+    const meta = melanger(vocabs.metaphores);
+
+    // 3. LE CONSTRUCTEUR DE POÈME
     setTimeout(() => {
-        const fragments = dictionnaire[style] || dictionnaire["Doux et Romantique"];
         let poemText = "";
-        
+
         if (style === "Haïku Court") {
-            poemText = `${piocher(fragments.intro)}<br>${piocher(fragments.corps)}<br>${piocher(fragments.conclusion)}`;
+            poemText = `
+                ${n[0]} ${adj[0]},<br>
+                Me rend si ${humeur}...<br>
+                ${n[1]} ${vD[0]}.
+            `;
+        } else if (style === "Épique et Spatial") {
+            poemText = `
+                ${lieu[0]}, je me sens ${humeur}.<br>
+                ${n[0]} ${vF[0]} mon âme, ${meta[0]}.<br><br>
+                Quand ${n[1]} ${vF[1]} notre destin,<br>
+                C'est un amour ${adj[0]} et ${adj[1]} qui s'éveille.<br>
+                Même ${lieu[1]}, je te trouverai.
+            `;
+        } else if (style === "Mélancolique") {
+            poemText = `
+                Le vide est grand, et je suis ${humeur}.<br>
+                ${n[0]} me manque ${lieu[0]}.<br><br>
+                Parfois, ${n[1]} ${vD[0]} mes pensées,<br>
+                Une illusion ${adj[0]}, ${meta[0]}.<br>
+                Reviens-moi.
+            `;
         } else {
-            poemText = `${piocher(fragments.intro)}<br>${piocher(fragments.corps)}<br><br>${piocher(fragments.intro)}<br>${piocher(fragments.conclusion)}`;
+            poemText = `
+                Aujourd'hui je suis ${humeur}, mais tu es là.<br>
+                ${n[0]} ${vD[0]} mes peurs, ${lieu[0]}.<br><br>
+                Tu es ${meta[0]}, un éclat ${adj[0]}.<br>
+                Tant que ${n[1]} ${vD[1]} notre monde,<br>
+                Tout sera toujours ${adj[1]}.
+            `;
         }
 
+        // 4. ARRÊT DE L'ANIMATION ET AFFICHAGE
         document.getElementById('stars-container').classList.remove('warp-active');
-        loadingText.style.display = 'none';
+        document.getElementById('aiGeneratingBlock').style.display = 'none';
         
         const poemOutput = document.getElementById('aiPoemOutput');
         poemOutput.style.display = 'block';
@@ -2053,7 +2081,7 @@ function generatePoem() {
 
         document.getElementById('aiCopyBtn').style.display = 'block';
 
-    }, 3000); 
+    }, 3500); 
 }
 
 function copyPoem() {
@@ -2383,3 +2411,13 @@ function copyPoem() {
 </script>
 </body>
 </html>
+
+        
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
+            </div>
+
+        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
+            Copier pour le Cocon
+        </button>
+    </div>
+</div>
