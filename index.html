@@ -757,12 +757,11 @@
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
-let isLoginMode = true; // Pour le switch Toaster
+let isLoginMode = true; 
 
 function lockAppHeight() {
     const trueHeight = window.innerHeight;
     document.body.style.height = trueHeight + 'px';
-    
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     
@@ -893,10 +892,9 @@ const fs = firebase.firestore();
 
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
-        if (err.code == 'failed-precondition') console.warn("Persistance échouée : plusieurs onglets ouverts.");
-        else if (err.code == 'unimplemented') console.warn("Le navigateur ne supporte pas la persistance hors ligne.");
+        if (err.code == 'failed-precondition') console.warn("Persistance échouée.");
     });
-} catch(e) { console.warn("Erreur d'initialisation de la persistance :", e); }
+} catch(e) {}
 
 window.addEventListener('DOMContentLoaded', () => { initApp(); });
 
@@ -916,7 +914,6 @@ function initApp() {
                 }
                 document.getElementById('splash').style.display = 'none';
             }).catch(err => {
-                console.error("Erreur critique Firestore :", err);
                 showToast("Accès à la base de données bloqué.");
                 document.getElementById('authLayer').style.display = 'flex';
                 document.getElementById('splash').style.display = 'none';
@@ -1129,8 +1126,9 @@ function updatePresence() {
     });
 }
 
+// CORRECTION: Anti-popup mot de passe Google
 function unlockSecureSettings() {
-    openModal("Accès Sécurisé", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="Ton numéro...">`, (val) => {
+    openModal("Accès Sécurisé", `<input type="text" inputmode="tel" id="modalInput" class="modal-input masquer-texte" placeholder="Ton numéro..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
         if(val && val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
             document.getElementById('secureBlurOverlay').style.display = 'none';
             document.getElementById('secureContent').classList.remove('secure-blur');
@@ -1771,7 +1769,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
                 await fs.collection('users').doc(user.id).set({ wall: secureUrl }, { merge: true });
                 applyTheme(secureUrl);
             } else if (targetPath === 'floatingPhoto') {
-                // MODIFICATION : Sauvegarde la photo pour les cartes flottantes
                 try {
                     await fs.collection('cocon').doc(user.code).collection('floatingPhotos').doc('card_' + window.currentCardIndex).set({ 
                         url: secureUrl, t: firebase.firestore.FieldValue.serverTimestamp() 
@@ -1897,8 +1894,9 @@ function closeCoconNote() {
     if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); 
 }
 
+// CORRECTION: Anti-popup mot de passe Google
 function askCoconCode() {
-    openModal("Accès au Cocon", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
+    openModal("Accès au Cocon", `<input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
         if (val === user.code) {
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
@@ -1932,9 +1930,19 @@ function updateTimeCounter() {
     updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
 }
 
+// CORRECTION: Sécurité pour l'ouverture de la Galaxie
 function promptGalaxyAccess() {
-    openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
-        if (val === user.code) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); window.openGalaxy(); } 
+    openModal("Galaxie Secrète", `<input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">`, (val) => {
+        if (val === user.code) { 
+            document.getElementById('customModal').style.display = 'none'; 
+            stateStack = stateStack.filter(s => s !== 'modal'); 
+            
+            if(typeof window.openGalaxy === 'function') {
+                window.openGalaxy();
+            } else {
+                showToast("La galaxie se charge, réessaie dans un instant ! ✨");
+            }
+        } 
         else showToast("Accès refusé !");
     });
 }
@@ -2073,7 +2081,6 @@ function copyPoem() {
     let animationId = null;
     let isDragging = false; 
 
-    // Les étoiles de fond
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
         const count = 15000;
@@ -2093,7 +2100,6 @@ function copyPoem() {
     }
     scene.add(createStarfield());
 
-    // La texture par défaut des cartes polaroid avec le "+"
     function createPlusTexture() {
         const canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 256;
@@ -2109,17 +2115,14 @@ function copyPoem() {
         return tex;
     }
 
-    // Fonction pour dessiner les planètes avec des textes ET des petits motifs mignons (des pois clairs)
     function createTextPatternTexture(text, themeColor) {
         const canvas = document.createElement('canvas');
         canvas.width = 512; canvas.height = 512;
         const ctx = canvas.getContext('2d');
         
-        // Couleur de fond
         ctx.fillStyle = themeColor;
         ctx.fillRect(0, 0, 512, 512);
         
-        // Motifs (petits cercles mignons aléatoires)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         for(let i=0; i<40; i++) {
             ctx.beginPath();
@@ -2127,7 +2130,6 @@ function copyPoem() {
             ctx.fill();
         }
         
-        // Le texte ou l'émoji par-dessus
         ctx.font = 'bold 80px Arial'; 
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -2162,7 +2164,6 @@ function copyPoem() {
         return tex;
     }
 
-    // --- LE RETOUR DE TES SYSTÈMES SOLAIRES ---
     class SolarSystem {
         constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
             this.group = new THREE.Group();
@@ -2289,12 +2290,10 @@ function copyPoem() {
     const totalCards = 40; 
     const defaultTex = createPlusTexture();
 
-    // Au lieu d'un cercle parfait, on les place dans une bulle chaotique et vaste
     for(let i = 0; i < totalCards; i++) {
         const cardMat = new THREE.MeshBasicMaterial({ map: defaultTex, side: THREE.DoubleSide, transparent: true });
         const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
-        // Coordonnées sphériques aléatoires (distance entre 500 et 1500 autour du centre)
         let radius = 500 + Math.random() * 1000;
         let theta = Math.random() * Math.PI * 2;
         let phi = Math.acos((Math.random() * 2) - 1);
@@ -2303,7 +2302,6 @@ function copyPoem() {
         cardMesh.position.y = radius * Math.sin(phi) * Math.sin(theta);
         cardMesh.position.z = radius * Math.cos(phi);
         
-        // On donne à chaque carte une petite "vitesse de dérive" unique
         cardMesh.userData = { 
             isPhotoCard: true, 
             cardIndex: i, 
@@ -2316,7 +2314,6 @@ function copyPoem() {
         clickableCards.push(cardMesh);
     }
 
-    // --- INTERACTIONS ---
     let pointerDownPos = new THREE.Vector2();
 
     renderer.domElement.addEventListener('pointermove', (event) => {
@@ -2346,7 +2343,6 @@ function copyPoem() {
         
         if (intersects.length > 0) {
             const clickedCard = intersects[0].object;
-            // On enregistre l'index et on ouvre le gestionnaire de fichiers
             window.currentCardIndex = clickedCard.userData.cardIndex;
             document.getElementById('floatingPhotoInput').click();
         }
@@ -2358,22 +2354,14 @@ function copyPoem() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // --- BOUCLE D'ANIMATION ---
     function animate() {
         animationId = requestAnimationFrame(animate);
-        
-        // Rotation des systèmes solaires
         systems.forEach(s => s.update());
-        
-        // Dérive lente du nuage de photos
         photoCloudGroup.rotation.y -= 0.0005;
 
-        // EFFET MAGIQUE : Les cartes dérivent un peu et regardent toujours la caméra !
         const time = Date.now() * 0.001;
         clickableCards.forEach((card, i) => {
-            // Petite dérive
             card.position.y += Math.sin(time + i) * 0.2;
-            // Elles font face à l'écran
             card.quaternion.copy(camera.quaternion);
         });
 
@@ -2381,7 +2369,6 @@ function copyPoem() {
         renderer.render(scene, camera);
     }
 
-    // --- EXPORT DES FONCTIONS ---
     window.startGalaxy3D = function() {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -2400,7 +2387,6 @@ function copyPoem() {
         document.getElementById('galaxyBox').style.display = 'block';
         pushState('galaxy'); 
         
-        // Synchronisation Firebase
         if(unsubGalaxy) unsubGalaxy();
         unsubGalaxy = fs.collection('cocon').doc(user.code).collection('floatingPhotos').onSnapshot(snap => {
             const loader = new THREE.TextureLoader();
@@ -2410,7 +2396,6 @@ function copyPoem() {
                 const idx = parseInt(doc.id.replace('card_', '')); 
                 const url = doc.data().url;
                 
-                // On met à jour la texture de la bonne carte
                 const targetCard = clickableCards.find(c => c.userData.cardIndex === idx);
                 if (targetCard && targetCard.userData.currentUrl !== url) {
                     targetCard.userData.currentUrl = url;
@@ -2451,3 +2436,8 @@ function copyPoem() {
 </script>
 </body>
 </html>
+                
+        
+        
+                
+                
