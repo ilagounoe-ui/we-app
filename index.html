@@ -2190,6 +2190,7 @@ function generateStars() {
 }
 
 // Lancement de l'animation et appel de la VRAIE IA avec gestion d'erreurs
+// Lancement de l'animation et appel de la VRAIE IA avec Diagnostic
 async function generatePoem() {
     const humeur = document.getElementById('aiMood').value || "Neutre";
     
@@ -2202,7 +2203,7 @@ async function generatePoem() {
     document.getElementById('stars-container').classList.add('warp-active');
     
     const loadingText = document.getElementById('aiGeneratingText');
-    loadingText.style.animation = 'pulse 1.5s infinite'; // On relance le clignotement pour le chargement
+    loadingText.style.animation = 'pulse 1.5s infinite'; 
     loadingText.innerText = "Connexion aux astres...";
     loadingText.style.display = 'block';
     
@@ -2229,10 +2230,12 @@ async function generatePoem() {
             })
         });
 
+        // DIAGNOSTIC : Si la réponse n'est pas bonne, on va lire l'erreur exacte
         if (!reponse.ok) {
-            const errorDetails = await reponse.text();
-            console.error("Détails du crash API :", errorDetails);
-            throw new Error("Erreur de connexion API");
+            const errorData = await reponse.json(); // On récupère le JSON de l'erreur
+            console.error("Détails du crash API :", errorData);
+            // On déclenche une erreur avec le vrai message de Google
+            throw new Error(errorData.error.message || `Erreur Code ${reponse.status}`);
         }
 
         const data = await reponse.json();
@@ -2250,15 +2253,15 @@ async function generatePoem() {
     } catch (erreur) {
         console.error("Erreur IA:", erreur);
         document.getElementById('stars-container').classList.remove('warp-active');
-        
-        // CORRECTION DU BUG : On tue l'animation clignotante !
         loadingText.style.animation = 'none'; 
-        loadingText.innerText = "Interférence spatiale... 🌠\n(Vérifie ton VPN ou ta connexion)";
+        
+        // AFFICHAGE DE L'ERREUR EXACTE EN ROUGE
+        loadingText.innerHTML = `Interférence spatiale... 🌠<br><br><span style="font-size:14px; color:var(--love); background:rgba(0,0,0,0.5); padding:10px; border-radius:10px; display:block;">Détail : ${erreur.message}</span>`;
         
         setTimeout(() => {
             document.getElementById('needyouResultBlock').style.display = 'none';
             document.getElementById('needyouForm').style.display = 'block';
-        }, 4000);
+        }, 7000); // J'ai mis 7 secondes pour te laisser le temps de lire l'erreur
     }
 }
 
