@@ -62,7 +62,12 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* --- DESIGN DE CONNEXION (TOASTER LOGIN) --- */
+        /* LE HACK ANTI-GOOGLE GESTIONNAIRE DE MOTS DE PASSE */
+        .masquer-texte {
+            -webkit-text-security: disc;
+        }
+
+        /* --- NOUVEAU DESIGN DE CONNEXION (TOASTER LOGIN) --- */
         #authLayer {
             background: #080612;
             background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
@@ -277,6 +282,7 @@
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.05); }
         
+        /* HACK DE SECURITE SUR LES INPUTS DES MODALES (POUR EVITER LES POP-UPS GOOGLE) */
         .modal-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; font-family: 'Poppins', sans-serif;}
         .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
         
@@ -310,7 +316,7 @@
         #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
         #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
-        /* --- CSS NEEDYOU (LOCAL) --- */
+        /* --- CSS NEEDYOU --- */
         @keyframes warpSpeed {
             0% { transform: scale(1) translateZ(0); opacity: 0.5; }
             100% { transform: scale(3) translateZ(0); opacity: 1; }
@@ -421,10 +427,7 @@
                 <div class="lamp-body"></div>
                 <div class="lamp-base"></div>
                 <div class="lamp-table"></div>
-                
-                <div class="lamp-string">
-                    <div class="lamp-string-ball"></div>
-                </div>
+                <div class="lamp-string"><div class="lamp-string-ball"></div></div>
             </div>
             <p class="pull-text">Tirer le fil</p>
         </div>
@@ -432,9 +435,8 @@
         <div id="authFormWrapper">
             <div id="loginUI">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center; margin-top:0; margin-bottom: 20px;">Bienvenue</h2>
-                
                 <input type="text" inputmode="tel" enterkeyhint="next" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
-                <input type="password" enterkeyhint="done" class="toaster-input" placeholder="Mot de passe" id="lPass" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
+                <input type="text" enterkeyhint="done" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="off" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
                 
                 <button class="toaster-btn" onclick="login()">Se connecter</button>
             </div>
@@ -443,8 +445,8 @@
                 <h2 style="font-family:'Pacifico'; color:white; font-size:22px; text-align:center; margin-top:0; margin-bottom: 15px;">Nouveau Profil</h2>
                 <input type="text" enterkeyhint="next" class="toaster-input" placeholder="Pseudo" id="rPseudo" autocomplete="off" spellcheck="false">
                 <input type="text" inputmode="tel" enterkeyhint="next" class="toaster-input" placeholder="Numéro" id="rPhone" autocomplete="off" spellcheck="false">
-                <input type="password" enterkeyhint="next" class="toaster-input" placeholder="Mot de passe" id="rPass" autocomplete="new-password" spellcheck="false" autocorrect="off">
-                <input type="text" enterkeyhint="done" class="toaster-input" placeholder="Code Cocon" id="rCode" autocomplete="off" spellcheck="false" onkeydown="if(event.key === 'Enter') register()">
+                <input type="text" enterkeyhint="next" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass" autocomplete="off" spellcheck="false" autocorrect="off">
+                <input type="text" enterkeyhint="done" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode" autocomplete="off" spellcheck="false" onkeydown="if(event.key === 'Enter') register()">
                 <button class="toaster-btn" onclick="register()">Créer mon univers</button>
             </div>
 
@@ -745,7 +747,7 @@
         </div>
         
         <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.6); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
-            </div>
+        </div>
 
         <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
             Copier pour le Cocon
@@ -1878,7 +1880,7 @@ function openBlockedList() {
                     html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; border:1px solid var(--glass-border);"><span style="font-weight:bold;">${u.pseudo}</span><button onclick="unblockContact('${uDoc.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button></div>`;
                 }
             });
-            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin:top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
+            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
             openModal("Contacts Bloqués", html, null);
         });
     });
@@ -1932,7 +1934,7 @@ function updateTimeCounter() {
 
 function promptGalaxyAccess() {
     openModal("Galaxie Secrète", `<input type="password" id="modalInput" class="modal-input" placeholder="Ton secret...">`, (val) => {
-        if (val === user.code) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); openGalaxy(); } 
+        if (val === user.code) { document.getElementById('customModal').style.display = 'none'; stateStack = stateStack.filter(s => s !== 'modal'); window.openGalaxy(); } 
         else showToast("Accès refusé !");
     });
 }
@@ -2107,56 +2109,210 @@ function copyPoem() {
         return tex;
     }
 
-    // --- LA PLANÈTE CENTRALE NÉON ---
-    const centralPlanetGroup = new THREE.Group();
-    scene.add(centralPlanetGroup);
+    // Fonction pour dessiner les planètes avec des textes ET des petits motifs mignons (des pois clairs)
+    function createTextPatternTexture(text, themeColor) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Couleur de fond
+        ctx.fillStyle = themeColor;
+        ctx.fillRect(0, 0, 512, 512);
+        
+        // Motifs (petits cercles mignons aléatoires)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        for(let i=0; i<40; i++) {
+            ctx.beginPath();
+            ctx.arc(Math.random()*512, Math.random()*512, Math.random()*15 + 5, 0, Math.PI*2);
+            ctx.fill();
+        }
+        
+        // Le texte ou l'émoji par-dessus
+        ctx.font = 'bold 80px Arial'; 
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 10;
+        
+        const lines = text.split('\n');
+        if (lines.length > 1) {
+            ctx.fillText(lines[0], 256, 200); ctx.fillText(lines[1], 256, 312);
+        } else { 
+            ctx.fillText(text, 256, 256); 
+        }
+        
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        return tex;
+    }
 
-    // Sphère avec Wireframe (Style Néon/Motif)
-    const planetGeo = new THREE.SphereGeometry(120, 32, 32);
-    const planetMat = new THREE.MeshStandardMaterial({ 
-        color: 0xff4b6e, emissive: 0xff4b6e, emissiveIntensity: 0.4, 
-        wireframe: true, wireframeLinewidth: 2 
-    });
-    const centralPlanet = new THREE.Mesh(planetGeo, planetMat);
-    centralPlanetGroup.add(centralPlanet);
-    
-    // Noyau brillant
-    const coreMat = new THREE.MeshBasicMaterial({ color: 0xffe6eb });
-    const core = new THREE.Mesh(new THREE.SphereGeometry(115, 32, 32), coreMat);
-    centralPlanetGroup.add(core);
+    function createGlowTexture(colorHex) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const color = new THREE.Color(colorHex);
+        const colorStr = '#' + color.getHexString();
+        const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+        gradient.addColorStop(0, colorStr); 
+        gradient.addColorStop(1, '#000000'); 
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 256, 256);
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        return tex;
+    }
 
-    // Lumière
-    const sunLight = new THREE.PointLight(0xff4b6e, 50000, 1500, 2);
-    centralPlanetGroup.add(sunLight);
+    // --- LE RETOUR DE TES SYSTÈMES SOLAIRES ---
+    class SolarSystem {
+        constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
+            this.group = new THREE.Group();
+            this.group.position.copy(position);
+            this.planets = [];
+            scene.add(this.group);
 
-    // --- L'ANNEAU DE PHOTOS FLOTTANTES ---
-    const photoOrbitGroup = new THREE.Group();
-    scene.add(photoOrbitGroup);
+            const sunGeo = new THREE.SphereGeometry(45, 32, 32);
+            const sunMat = new THREE.MeshStandardMaterial({ color: sunColor, emissive: sunColor, emissiveIntensity: 1.5, roughness: 1 });
+            this.sun = new THREE.Mesh(sunGeo, sunMat);
+            
+            const sunGlowMat = new THREE.SpriteMaterial({ map: createGlowTexture(sunColor), blending: THREE.AdditiveBlending, depthWrite: false });
+            const sunGlow = new THREE.Sprite(sunGlowMat);
+            sunGlow.scale.set(300, 300, 1);
+            this.sun.add(sunGlow);
+            this.group.add(this.sun);
+
+            this.light = new THREE.PointLight(lightColor, 80000, 1500, 2); 
+            this.group.add(this.light);
+
+            const drawnOrbits = new Set();
+            let currentIndex = globalIndexStart;
+
+            planetsConfig.forEach(config => {
+                if (!drawnOrbits.has(config.distance)) {
+                    const ringGeo = new THREE.RingGeometry(config.distance - 1, config.distance + 1, 64);
+                    const ringMat = new THREE.MeshBasicMaterial({ color: lightColor, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
+                    const ring = new THREE.Mesh(ringGeo, ringMat);
+                    ring.rotation.x = Math.PI / 2;
+                    const orbitGroup = new THREE.Group();
+                    orbitGroup.rotation.set(config.tiltX || 0, 0, config.tiltZ || 0, 'ZXY');
+                    orbitGroup.add(ring);
+                    this.group.add(orbitGroup);
+                    drawnOrbits.add(config.distance);
+                }
+
+                const planetGeo = new THREE.SphereGeometry(config.size, 32, 32);
+                const texture = createTextPatternTexture(config.text, lightColor);
+                const planetMat = new THREE.MeshStandardMaterial({ 
+                    map: texture, emissive: new THREE.Color(0xffffff), emissiveMap: texture, 
+                    emissiveIntensity: 0.2, roughness: 0.5, metalness: 0.1 
+                });
+                
+                const planetMesh = new THREE.Mesh(planetGeo, planetMat);
+                
+                this.group.add(planetMesh);
+                this.planets.push({
+                    mesh: planetMesh, distance: config.distance, speed: config.speed,
+                    angle: config.offset || 0, tiltX: config.tiltX || 0, tiltZ: config.tiltZ || 0,
+                    rotationSpeed: (Math.random() - 0.5) * 0.02
+                });
+            });
+        }
+        update() {
+            const time = Date.now() * 0.002;
+            const scale = 1 + Math.sin(time) * 0.02;
+            this.sun.scale.set(scale, scale, scale);
+            this.planets.forEach(p => {
+                p.angle += p.speed * 0.05; 
+                p.mesh.rotation.y += p.rotationSpeed * 0.5; 
+                let x = Math.cos(p.angle) * p.distance;
+                let z = Math.sin(p.angle) * p.distance;
+                let y = 0;
+                let tempX = x * Math.cos(p.tiltZ) - y * Math.sin(p.tiltZ);
+                let tempY = x * Math.sin(p.tiltZ) + y * Math.cos(p.tiltZ);
+                x = tempX; y = tempY;
+                let tempY2 = y * Math.cos(p.tiltX) - z * Math.sin(p.tiltX);
+                let tempZ2 = y * Math.sin(p.tiltX) + z * Math.cos(p.tiltX);
+                y = tempY2; z = tempZ2;
+                p.mesh.position.set(x, y, z);
+            });
+        }
+    }
+
+    const p1 = [
+        { text: "Te\nAmo", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 16, offset: 0 },
+        { text: "💖", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 14, offset: Math.PI },
+        { text: "🕷️🐱", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 18, offset: 0 },
+        { text: "My\nLove", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 17, offset: Math.PI },
+        { text: "🐶", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 16, offset: 0 },
+        { text: "Me\nEncantas", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 20, offset: Math.PI * 0.66 },
+        { text: "✨", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 13, offset: Math.PI * 1.33 }
+    ];
+    systems.push(new SolarSystem(new THREE.Vector3(0, 0, 0), 0xffeb3b, '#ffeb3b', p1, 0));
+
+    const p2 = [
+        { text: "Cool\nLove", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 15, offset: 0 },
+        { text: "💎", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 13, offset: Math.PI },
+        { text: "❄️", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 17, offset: 0 },
+        { text: "Blue\nMoon", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 18, offset: Math.PI },
+        { text: "🧊", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 15, offset: 0 },
+        { text: "Océan", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 19, offset: Math.PI * 0.66 },
+        { text: "🌌", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 14, offset: Math.PI * 1.33 }
+    ];
+    systems.push(new SolarSystem(new THREE.Vector3(-1000, 200, -400), 0x00ffff, '#00ffff', p2, 7));
+
+    const p3 = [
+        { text: "Amour", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 17, offset: 0 },
+        { text: "🔥", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 15, offset: Math.PI },
+        { text: "Pasión", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 20, offset: 0 },
+        { text: "🌹", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 16, offset: Math.PI },
+        { text: "Fuego", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 18, offset: 0 },
+        { text: "Heart\nBeat", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 19, offset: Math.PI * 0.66 },
+        { text: "💋", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 14, offset: Math.PI * 1.33 }
+    ];
+    systems.push(new SolarSystem(new THREE.Vector3(1000, -200, 300), 0xff1010, '#ff1010', p3, 14));
+
+    const p4 = [
+        { text: "Magie", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 16, offset: 0 },
+        { text: "🔮", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 15, offset: Math.PI },
+        { text: "Éternel", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 19, offset: 0 },
+        { text: "👾", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 16, offset: Math.PI },
+        { text: "Rêve", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 20, offset: 0 },
+        { text: "Infini", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 21, offset: Math.PI * 0.66 },
+        { text: "🎆", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 15, offset: Math.PI * 1.33 }
+    ];
+    systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
+
+    // --- LE CHAOS DES PHOTOS FLOTTANTES ---
+    const photoCloudGroup = new THREE.Group();
+    scene.add(photoCloudGroup);
     
     const clickableCards = [];
-    const totalCards = 30; // Nombre de photos autour de la planète
+    const totalCards = 40; 
     const defaultTex = createPlusTexture();
 
-    // On crée un anneau visuel subtil
-    const ringGeo = new THREE.RingGeometry(398, 400, 64);
-    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.2 });
-    const orbitRing = new THREE.Mesh(ringGeo, ringMat);
-    orbitRing.rotation.x = Math.PI / 2;
-    photoOrbitGroup.add(orbitRing);
-
-    // On place les 30 cartes
+    // Au lieu d'un cercle parfait, on les place dans une bulle chaotique et vaste
     for(let i = 0; i < totalCards; i++) {
-        const angle = (i / totalCards) * Math.PI * 2;
-        const distance = 400; // Rayon de l'orbite
-        const yOffset = (Math.random() - 0.5) * 40; // Légère variation de hauteur
+        const cardMat = new THREE.MeshBasicMaterial({ map: defaultTex, side: THREE.DoubleSide, transparent: true });
+        const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
-        const cardMat = new THREE.MeshBasicMaterial({ map: defaultTex, side: THREE.DoubleSide });
-        const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), cardMat);
+        // Coordonnées sphériques aléatoires (distance entre 500 et 1500 autour du centre)
+        let radius = 500 + Math.random() * 1000;
+        let theta = Math.random() * Math.PI * 2;
+        let phi = Math.acos((Math.random() * 2) - 1);
         
-        cardMesh.position.set(Math.cos(angle) * distance, yOffset, Math.sin(angle) * distance);
-        cardMesh.userData = { isPhotoCard: true, cardIndex: i, currentUrl: "" };
+        cardMesh.position.x = radius * Math.sin(phi) * Math.cos(theta);
+        cardMesh.position.y = radius * Math.sin(phi) * Math.sin(theta);
+        cardMesh.position.z = radius * Math.cos(phi);
         
-        photoOrbitGroup.add(cardMesh);
+        // On donne à chaque carte une petite "vitesse de dérive" unique
+        cardMesh.userData = { 
+            isPhotoCard: true, 
+            cardIndex: i, 
+            currentUrl: "",
+            driftX: (Math.random() - 0.5) * 0.5,
+            driftY: (Math.random() - 0.5) * 0.5
+        };
+        
+        photoCloudGroup.add(cardMesh);
         clickableCards.push(cardMesh);
     }
 
@@ -2206,15 +2362,18 @@ function copyPoem() {
     function animate() {
         animationId = requestAnimationFrame(animate);
         
-        // Rotation de la planète
-        centralPlanet.rotation.y += 0.005;
-        centralPlanet.rotation.x += 0.002;
+        // Rotation des systèmes solaires
+        systems.forEach(s => s.update());
         
-        // Rotation lente de tout l'anneau de photos
-        photoOrbitGroup.rotation.y -= 0.0015;
+        // Dérive lente du nuage de photos
+        photoCloudGroup.rotation.y -= 0.0005;
 
-        // EFFET MAGIQUE : Les cartes regardent toujours la caméra !
-        clickableCards.forEach(card => {
+        // EFFET MAGIQUE : Les cartes dérivent un peu et regardent toujours la caméra !
+        const time = Date.now() * 0.001;
+        clickableCards.forEach((card, i) => {
+            // Petite dérive
+            card.position.y += Math.sin(time + i) * 0.2;
+            // Elles font face à l'écran
             card.quaternion.copy(camera.quaternion);
         });
 
