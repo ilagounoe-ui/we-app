@@ -20,6 +20,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
     <style>
         * { 
             -webkit-tap-highlight-color: transparent; 
@@ -31,7 +40,7 @@
             --accent: #d0a8ff; 
             --accent-glow: rgba(208, 168, 255, 0.4);
             --bg: #05040a; 
-            --card: rgba(30, 25, 45, 0.95); /* Remplacé le flou par une couleur pleine pour la VITESSE */
+            --card: rgba(30, 25, 45, 0.95); 
             --glass-border: rgba(255, 255, 255, 0.08); 
             --love: #ff4b6e; 
             --love-glow: rgba(255, 75, 110, 0.4);
@@ -79,7 +88,6 @@
             transform: translateY(-50%) scale(0.9);
         }
 
-        /* L'animation Poussière d'Étoile au clic de l'œil */
         .stellar-dust-particle {
             position: fixed;
             width: 4px; height: 4px;
@@ -343,7 +351,10 @@
                 <div class="lamp-body"></div>
                 <div class="lamp-base"></div>
                 <div class="lamp-table"></div>
-                <div class="lamp-string"><div class="lamp-string-ball"></div></div>
+                
+                <div class="lamp-string">
+                    <div class="lamp-string-ball"></div>
+                </div>
             </div>
             <p class="pull-text">Tirer le fil</p>
         </div>
@@ -352,7 +363,7 @@
             <div id="loginUI">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center; margin-top:0; margin-bottom: 20px;">Bienvenue</h2>
                 
-                <input type="text" inputmode="tel" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
+                <input type="text" inputmode="tel" enterkeyhint="next" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
                 
                 <div class="pwd-wrapper">
                     <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
@@ -696,7 +707,7 @@ let toastTimeout = null;
 let isLoginMode = true;
 
 // --- FONCTION DE L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
-function togglePwd(inputId, eyeIcon) {
+window.togglePwd = function(inputId, eyeIcon) {
     const input = document.getElementById(inputId);
     const isHidden = input.classList.contains('masquer-texte');
     
@@ -708,7 +719,6 @@ function togglePwd(inputId, eyeIcon) {
         dust.style.left = (rect.left + rect.width/2) + 'px';
         dust.style.top = (rect.top + rect.height/2) + 'px';
         
-        // Direction aléatoire pour l'explosion
         let tx = (Math.random() - 0.5) * 80 + 'px';
         let ty = (Math.random() - 0.5) * 80 + 'px';
         dust.style.setProperty('--tx', tx);
@@ -719,11 +729,9 @@ function togglePwd(inputId, eyeIcon) {
     }
 
     if(isHidden) {
-        // Afficher le mot de passe
         input.classList.remove('masquer-texte');
         eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
     } else {
-        // Masquer le mot de passe
         input.classList.add('masquer-texte');
         eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
     }
@@ -732,7 +740,6 @@ function togglePwd(inputId, eyeIcon) {
 function lockAppHeight() {
     const trueHeight = window.innerHeight;
     document.body.style.height = trueHeight + 'px';
-    
     window.scrollTo(0, 0);
     document.body.scrollTop = 0;
     
@@ -916,10 +923,30 @@ const E2EE = {
     }
 };
 
-function showMoodMessage(mood) {
-    const choices = moodLibrary[mood];
-    if(!choices) return;
-    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
+function showToast(msg) {
+    const t = document.getElementById('toastAlert');
+    t.innerHTML = msg; 
+    if(!t.classList.contains('show')) t.classList.add('show');
+    if(toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => { t.classList.remove('show'); }, 2500);
+}
+
+function compressImage(file, maxWidth, callback) {
+    if (!file.type.startsWith('image/')) { callback(file); return; }
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+        URL.revokeObjectURL(img.src);
+        const canvas = document.createElement('canvas');
+        let scaleSize = maxWidth / img.width;
+        if(scaleSize > 1) scaleSize = 1;
+        canvas.width = img.width * scaleSize;
+        canvas.height = img.height * scaleSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => { callback(blob); }, 'image/jpeg', 0.7); 
+    };
+    img.onerror = () => callback(file);
 }
 
 function openMoodSelector() {
@@ -939,6 +966,12 @@ function openMoodSelector() {
         box.appendChild(btn);
     });
     document.getElementById('vWidgetFull').style.display = "flex";
+}
+
+function showMoodMessage(mood) {
+    const choices = moodLibrary[mood];
+    if(!choices) return;
+    document.getElementById('widgetText').innerText = choices[Math.floor(Math.random() * choices.length)];
 }
 
 function setupApp() {
@@ -1066,6 +1099,16 @@ function updatePresence() {
     });
 }
 
+function unlockSecureSettings() {
+    openModal("Accès Sécurisé", `<div class="pwd-wrapper"><input type="text" inputmode="tel" id="modalInput" class="modal-input masquer-texte" placeholder="Ton numéro..." autocomplete="off" spellcheck="false" autocorrect="off"><span class="pwd-eye" onclick="togglePwd('modalInput', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span></div>`, (val) => {
+        if(val && val.replace(/\D/g,'') === user.id.replace(/\D/g,'')) {
+            document.getElementById('secureBlurOverlay').style.display = 'none';
+            document.getElementById('secureContent').classList.remove('secure-blur');
+            triggerBack(); 
+        } else showToast("Numéro incorrect !");
+    });
+}
+
 function pushState(id) { stateStack.push(id); history.pushState({id}, ""); }
 
 window.onpopstate = (e) => {
@@ -1138,7 +1181,11 @@ function loadContacts() {
 
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
-            let totalUnread = validContacts.reduce((sum, contact) => sum + (isNaN(Number(contact.unread)) ? 0 : Number(contact.unread)), 0);
+            
+            let totalUnread = validContacts.reduce((sum, contact) => {
+                let unreadCount = Number(contact.unread);
+                return sum + (isNaN(unreadCount) ? 0 : unreadCount);
+            }, 0);
             
             const badgeEl = document.getElementById('globalUnreadBadge');
             if(badgeEl) {
@@ -1148,8 +1195,10 @@ function loadContacts() {
                     badgeEl.style.animation = 'pulse 1s ease';
                 } else {
                     badgeEl.style.display = 'none';
+                    badgeEl.innerText = '0';
                 }
             }
+            
             renderContacts(validContacts);
         });
     });
@@ -1299,8 +1348,13 @@ function getMsgHTML(docId, m, path, target) {
         if(!posterUrl.includes('cloudinary')) posterUrl = "";
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
+    
+    // CORRECTION : L'audio ne bloque plus le clic pour afficher le menu "Supprimer"
     if(m.type === 'audio') {
-        content = `<div class="custom-audio-player" onclick="playCustomAudio('${m.txt}', this.querySelector('.audio-play-btn')); event.stopPropagation();"><div class="audio-play-btn">▶</div><div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div></div>`;
+        content = `<div class="custom-audio-player">
+            <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">▶</div>
+            <div class="audio-progress-container"><div class="audio-progress-bar" style="width: 100%;"></div></div>
+        </div>`;
     }
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
@@ -1343,7 +1397,6 @@ function syncMessages(path, target, areaId) {
 }
 
 function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
-    if(type === 'audio') return; 
     const decodedTxt = decodeURIComponent(escTxt);
     
     let html = `<div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-bottom: 20px; background:rgba(0,0,0,0.3); border-radius:30px; padding:5px 15px; border:1px solid var(--glass-border);">
@@ -1689,7 +1742,11 @@ function openModal(t, b, a) {
     document.getElementById('customModal').style.display = 'flex'; pushState('modal');
     if(a) { 
         document.getElementById('modalActions').style.display = 'flex'; 
-        document.getElementById('modalConfirmBtn').onclick = () => { const val = document.getElementById('modalInput')?.value || null; a(val); };
+        document.getElementById('modalConfirmBtn').onclick = () => { 
+            // Support des champs multiples (mot de passe ou non)
+            const val = document.getElementById('modalInput')?.value || null; 
+            a(val); 
+        };
     } else document.getElementById('modalActions').style.display = 'none';
 }
 
@@ -1777,81 +1834,6 @@ function openBlockedList() {
 function unblockContact(id) { fs.collection('users').doc(user.id).collection('blocked').doc(id).delete(); showToast("Contact débloqué !"); triggerBack(); }
 function viewPhoto(url) { openModal("Photo", `<img src="${url}" style="width:100%; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`, null); }
 function unlockAudio() { if(!audioUnlocked) { if(sounds.pop) new Audio(sounds.pop).play().then(()=>audioUnlocked=true).catch(()=>{}); else audioUnlocked = true; } }
-
-function closeCoconNote() { 
-    const el = document.getElementById('coconNoteDisplay');
-    el.style.display = 'none'; 
-    if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); 
-}
-
-// CORRECTION: Système de l'œil pour le code Cocon
-function askCoconCode() {
-    let html = `
-    <div class="pwd-wrapper">
-        <input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">
-        <span class="pwd-eye" onclick="togglePwd('modalInput', this)">
-            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        </span>
-    </div>`;
-
-    openModal("Accès au Cocon", html, (val) => {
-        if (val === user.code) {
-            document.getElementById('customModal').style.display = 'none';
-            stateStack = stateStack.filter(s => s !== 'modal'); 
-            const cocon = document.getElementById('coconBox');
-            cocon.style.setProperty('display', 'flex', 'important');
-            pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
-            const audio = document.getElementById('coconAudio');
-            if(audio) { audio.src = defaultPlaylist[0]; currentTrackIndex = 0; audio.load(); audio.play().catch(e => console.log("Lecture bloquée", e)); }
-            showToast("Bienvenue dans notre Cocon");
-        } else showToast("Code incorrect !");
-    });
-}
-
-function updateTimeCounter() {
-    if (!user || !user.startDate) return;
-    const updateDate = () => {
-        const start = new Date(user.startDate).getTime(); const now = new Date().getTime(); const diff = now - start;
-        if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            const elD = document.getElementById('d-day'); const elH = document.getElementById('d-hour');
-            const elM = document.getElementById('d-min'); const elS = document.getElementById('d-sec');
-            
-            if(elD) elD.innerText = days; if(elH) elH.innerText = hours;
-            if(elM) elM.innerText = minutes; if(elS) elS.innerText = seconds;
-        }
-    };
-    updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
-}
-
-// CORRECTION: Sécurité pour la Galaxie et Œil magique
-function promptGalaxyAccess() {
-    let html = `
-    <div class="pwd-wrapper">
-        <input type="text" id="modalInput" class="modal-input masquer-texte" placeholder="Ton secret..." autocomplete="off" spellcheck="false" autocorrect="off">
-        <span class="pwd-eye" onclick="togglePwd('modalInput', this)">
-            <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-        </span>
-    </div>`;
-
-    openModal("Galaxie Secrète", html, (val) => {
-        if (val === user.code) { 
-            document.getElementById('customModal').style.display = 'none'; 
-            stateStack = stateStack.filter(s => s !== 'modal'); 
-            
-            if(typeof window.openGalaxy === 'function') {
-                window.openGalaxy();
-            } else {
-                showToast("La galaxie se charge, réessaie dans un instant ! ✨");
-            }
-        } 
-        else showToast("Accès refusé !");
-    });
-}
 
 // ==========================================
 // --- LOGIQUE NEEDYOU (GÉNÉRATEUR LOCAL) ---
@@ -1957,9 +1939,8 @@ function copyPoem() {
 </script>
 
 <script type="module">
-    // CORRECTION : Import direct pour éviter le bug d'importmap sur mobile Chrome
-    import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
     let unsubGalaxy = null;
     window.currentCardIndex = null;
@@ -1990,7 +1971,7 @@ function copyPoem() {
 
     function createStarfield() {
         const geometry = new THREE.BufferGeometry();
-        const count = 8000; // Allégé pour la performance
+        const count = 8000;
         const positions = new Float32Array(count * 3);
         const colors = new Float32Array(count * 3);
         for(let i = 0; i < count * 3; i+=3) {
@@ -2192,7 +2173,7 @@ function copyPoem() {
     ];
     systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
 
-    // --- LE CHAOS DES PHOTOS FLOTTANTES ---
+    // --- L'ANNEAU D'ASTÉROIDES PHOTOS (DÉSORDRE) ---
     const photoCloudGroup = new THREE.Group();
     scene.add(photoCloudGroup);
     
@@ -2204,20 +2185,17 @@ function copyPoem() {
         const cardMat = new THREE.MeshBasicMaterial({ map: defaultTex, side: THREE.DoubleSide, transparent: true });
         const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
-        let radius = 500 + Math.random() * 1000;
-        let theta = Math.random() * Math.PI * 2;
-        let phi = Math.acos((Math.random() * 2) - 1);
+        // Structure en anneau avec un peu d'épaisseur et de variation (désordre)
+        const angle = (i / totalCards) * Math.PI * 2;
+        const radius = 450 + (Math.random() - 0.5) * 150; // Profondeur
+        const yOffset = (Math.random() - 0.5) * 120; // Hauteur
         
-        cardMesh.position.x = radius * Math.sin(phi) * Math.cos(theta);
-        cardMesh.position.y = radius * Math.sin(phi) * Math.sin(theta);
-        cardMesh.position.z = radius * Math.cos(phi);
+        cardMesh.position.set(Math.cos(angle) * radius, yOffset, Math.sin(angle) * radius);
         
         cardMesh.userData = { 
             isPhotoCard: true, 
             cardIndex: i, 
-            currentUrl: "",
-            driftX: (Math.random() - 0.5) * 0.5,
-            driftY: (Math.random() - 0.5) * 0.5
+            currentUrl: ""
         };
         
         photoCloudGroup.add(cardMesh);
@@ -2267,11 +2245,12 @@ function copyPoem() {
     function animate() {
         animationId = requestAnimationFrame(animate);
         systems.forEach(s => s.update());
-        photoCloudGroup.rotation.y -= 0.0005;
+        
+        // L'anneau de photos tourne doucement
+        photoCloudGroup.rotation.y -= 0.001;
 
-        const time = Date.now() * 0.001;
-        clickableCards.forEach((card, i) => {
-            card.position.y += Math.sin(time + i) * 0.2;
+        // Les photos regardent toujours la caméra (comme dans la vidéo)
+        clickableCards.forEach(card => {
             card.quaternion.copy(camera.quaternion);
         });
 
