@@ -698,18 +698,15 @@
         </button>
     </div>
 </div>
-                                        
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
 let isLoginMode = true;
 
-// --- FONCTION DE L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
 window.togglePwd = function(inputId, eyeIcon) {
     const input = document.getElementById(inputId);
     const isHidden = input.classList.contains('masquer-texte');
     
-    // Génération de la poussière d'étoile
     const rect = eyeIcon.getBoundingClientRect();
     for(let i=0; i<8; i++) {
         let dust = document.createElement('div');
@@ -820,6 +817,10 @@ let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
+
+// Variables pour l'annulation de l'audio
+let cancelAudio = false;
+let recordStartX = 0;
 
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
@@ -1349,6 +1350,7 @@ function getMsgHTML(docId, m, path, target) {
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     
+    // CORRECTION : L'audio ne bloque plus le menu "Supprimer"
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">▶</div>
@@ -1620,33 +1622,79 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
+// CORRECTION DU MICRO: Glisser pour annuler
 async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
+    cancelAudio = false;
+    
+    if(e.type === 'touchstart') {
+        recordStartX = e.touches[0].clientX;
+    } else {
+        recordStartX = e.clientX;
+    }
+
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         mediaRecorder = new MediaRecorder(stream);
-        mediaRecorder.ondataavailable = event => { if (event.data.size > 0) audioChunks.push(event.data); };
+        mediaRecorder.ondataavailable = event => { if (event.data.size > 0 && !cancelAudio) audioChunks.push(event.data); };
         mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks); 
-            audioChunks = []; uploadToFirebase(audioBlob, 'audio', mode);
+            if (!cancelAudio && audioChunks.length > 0) {
+                const audioBlob = new Blob(audioChunks); 
+                uploadToFirebase(audioBlob, 'audio', mode);
+            } else {
+                showToast("Vocal annulé ❌");
+            }
+            audioChunks = [];
         };
         audioChunks = []; mediaRecorder.start(); isRecording = true;
         const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
         inputField.dataset.origPlaceholder = inputField.placeholder;
-        inputField.placeholder = "🔴 Enregistrement..."; inputField.disabled = true;
+        inputField.placeholder = "🔴 Glisse à gauche pour annuler..."; inputField.disabled = true;
         e.currentTarget.classList.add('recording');
+        
+        e.currentTarget.addEventListener('touchmove', handleRecordMove, {passive: false});
+        e.currentTarget.addEventListener('mousemove', handleRecordMove);
+        
         if('vibrate' in navigator) navigator.vibrate(50);
     } catch (err) { console.warn("Délai ou refus micro:", err); }
+}
+
+function handleRecordMove(e) {
+    if(!isRecording) return;
+    let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    if (recordStartX - currentX > 50) { 
+        cancelAudio = true;
+        const mode = e.currentTarget.closest('.chat-footer').id === 'chatFooter' ? 'msgs' : 'cocon';
+        const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        inputField.placeholder = "❌ Relâche pour annuler";
+        e.currentTarget.style.background = "var(--glass-border)"; 
+    } else {
+        cancelAudio = false;
+        const mode = e.currentTarget.closest('.chat-footer').id === 'chatFooter' ? 'msgs' : 'cocon';
+        const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        inputField.placeholder = "🔴 Glisse à gauche pour annuler...";
+        e.currentTarget.style.background = ""; 
+    }
 }
 
 function stopRecording(e) {
     e.preventDefault();
     if(isRecording && mediaRecorder) {
-        mediaRecorder.stop(); mediaRecorder.stream.getTracks().forEach(track => track.stop()); isRecording = false;
+        e.currentTarget.removeEventListener('touchmove', handleRecordMove);
+        e.currentTarget.removeEventListener('mousemove', handleRecordMove);
+        e.currentTarget.style.background = "";
+        
+        mediaRecorder.stop(); 
+        mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
+        isRecording = false;
+        
         ['mIn', 'coIn'].forEach(id => {
             const inputField = document.getElementById(id);
-            if (inputField && inputField.disabled) { inputField.disabled = false; inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; }
+            if (inputField && inputField.disabled) { 
+                inputField.disabled = false; 
+                inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; 
+            }
         });
         document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
@@ -1823,7 +1871,7 @@ function openBlockedList() {
                     html += `<div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; border-radius:15px; border:1px solid var(--glass-border);"><span style="font-weight:bold;">${u.pseudo}</span><button onclick="unblockContact('${uDoc.id}')" style="background:var(--accent); color:black; border:none; padding:8px 12px; border-radius:10px; font-weight:bold; cursor:pointer;">Débloquer</button></div>`;
                 }
             });
-            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin-top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
+            html += `</div><button class="option-btn" onclick="triggerBack()" style="justify-content:center; margin:top:15px; background:rgba(255,255,255,0.1);">Fermer</button>`;
             openModal("Contacts Bloqués", html, null);
         });
     });
@@ -1839,7 +1887,6 @@ function closeCoconNote() {
     if(user && user.code) fs.collection('globalNotes').doc(user.code).set({ readBy: { [user.id]: true } }, { merge: true }); 
 }
 
-// CORRECTION: Système de l'œil pour le code Cocon
 function askCoconCode() {
     let html = `
     <div class="pwd-wrapper">
@@ -1883,7 +1930,6 @@ function updateTimeCounter() {
     updateDate(); if(timeCounterInterval) clearInterval(timeCounterInterval); timeCounterInterval = setInterval(updateDate, 1000); 
 }
 
-// CORRECTION: Sécurité pour la Galaxie et Œil magique
 function promptGalaxyAccess() {
     let html = `
     <div class="pwd-wrapper">
@@ -1907,10 +1953,6 @@ function promptGalaxyAccess() {
         else showToast("Accès refusé !");
     });
 }
-
-// ==========================================
-// --- LOGIQUE NEEDYOU (GÉNÉRATEUR LOCAL) ---
-// ==========================================
 
 function openNeedyou() {
     document.getElementById('needyouBox').style.display = 'flex';
@@ -2020,7 +2062,7 @@ function copyPoem() {
 
     const scene = new THREE.Scene();
     
-    // NOUVEAU : Nébuleuse rose/mauve
+    // Nébuleuse pastel
     scene.fog = new THREE.FogExp2(0x1a0510, 0.0004);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
@@ -2044,8 +2086,19 @@ function copyPoem() {
     let animationId = null;
     let isDragging = false; 
 
-    // NOUVEAU : Étoiles magiques colorées
+    // Étoiles rondes et douces
     function createStarfield() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32; canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.5)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 32, 32);
+        const starMap = new THREE.CanvasTexture(canvas);
+
         const geometry = new THREE.BufferGeometry();
         const count = 8000;
         const positions = new Float32Array(count * 3);
@@ -2055,17 +2108,25 @@ function copyPoem() {
             positions[i+1] = (Math.random() - 0.5) * 4000;
             positions[i+2] = (Math.random() - 0.5) * 4000;
             
-            colors[i] = 0.9 + Math.random() * 0.1; // Beaucoup de rouge
-            colors[i+1] = 0.4 + Math.random() * 0.4; // Rose/Mauve
-            colors[i+2] = 0.6 + Math.random() * 0.4; // Bleu/Violet
+            colors[i] = 0.9 + Math.random() * 0.1; 
+            colors[i+1] = 0.7 + Math.random() * 0.3; 
+            colors[i+2] = 0.8 + Math.random() * 0.2; 
         }
         geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        return new THREE.Points(geometry, new THREE.PointsMaterial({ size: 1.5, vertexColors: true, transparent: true, opacity: 0.8 }));
+        
+        return new THREE.Points(geometry, new THREE.PointsMaterial({ 
+            size: 4,
+            vertexColors: true, 
+            map: starMap,
+            transparent: true, 
+            opacity: 0.8,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending 
+        }));
     }
     scene.add(createStarfield());
 
-    // NOUVEAU : Fonction de dessin d'un carré arrondi (pour les cartes)
     function drawRoundRect(ctx, x, y, w, h, r) {
         ctx.beginPath();
         ctx.moveTo(x + r, y);
@@ -2081,7 +2142,7 @@ function copyPoem() {
         ctx.fill();
     }
 
-    // NOUVEAU : Texture du "+" avec fond pastel transparent
+    // Le badge "Cœur Fée" pour remplacer le + moche
     function createPlusTexture() {
         const canvas = document.createElement('canvas');
         canvas.width = 256; canvas.height = 256;
@@ -2089,32 +2150,37 @@ function copyPoem() {
         ctx.clearRect(0, 0, 256, 256);
         
         ctx.fillStyle = 'rgba(255, 75, 110, 0.15)'; 
-        drawRoundRect(ctx, 10, 10, 236, 236, 20);
+        ctx.shadowColor = 'rgba(255, 75, 110, 0.4)';
+        ctx.shadowBlur = 15;
+        drawRoundRect(ctx, 10, 10, 236, 236, 25);
         
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'rgba(208, 168, 255, 0.8)';
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
         ctx.fillStyle = '#ff4b6e'; 
         ctx.font = 'bold 120px Arial';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('+', 128, 135);
+        ctx.fillText('+', 128, 125);
         
+        ctx.font = '30px Arial';
+        ctx.fillText('💖', 210, 210);
+
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
     }
 
-    // NOUVEAU : Masque d'arrondi parfait pour les photos Cloudinary
-    function createRoundedAlphaMap() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256; canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0,0,256,256);
-        ctx.fillStyle = '#ffffff';
-        drawRoundRect(ctx, 5, 5, 246, 246, 20); // Les bords arrondis blancs laissent passer l'image
-        return new THREE.CanvasTexture(canvas);
-    }
-    const cardAlphaMap = createRoundedAlphaMap();
+    const canvasMask = document.createElement('canvas');
+    canvasMask.width = 256; canvasMask.height = 256;
+    const ctxMask = canvasMask.getContext('2d');
+    ctxMask.fillStyle = '#000000';
+    ctxMask.fillRect(0,0,256,256);
+    ctxMask.fillStyle = '#ffffff';
+    drawRoundRect(ctxMask, 5, 5, 246, 246, 25); 
+    const cardAlphaMap = new THREE.CanvasTexture(canvasMask);
 
-    // Motifs de planètes
     function createTextPatternTexture(text, themeColor) {
         const canvas = document.createElement('canvas');
         canvas.width = 512; canvas.height = 512;
@@ -2124,10 +2190,10 @@ function copyPoem() {
         ctx.fillRect(0, 0, 512, 512);
         
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        for(let i=0; i<40; i++) {
-            ctx.beginPath();
-            ctx.arc(Math.random()*512, Math.random()*512, Math.random()*15 + 5, 0, Math.PI*2);
-            ctx.fill();
+        ctx.font = '20px Arial';
+        const motifs = ['⭐', '🌙', '☁️', '💖'];
+        for(let i=0; i<30; i++) {
+            ctx.fillText(motifs[Math.floor(Math.random() * motifs.length)], Math.random()*512, Math.random()*512);
         }
         
         ctx.font = 'bold 80px Arial'; 
@@ -2156,7 +2222,8 @@ function copyPoem() {
         const colorStr = '#' + color.getHexString();
         const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
         gradient.addColorStop(0, colorStr); 
-        gradient.addColorStop(1, '#000000'); 
+        gradient.addColorStop(0.3, colorStr); 
+        gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, 256, 256);
         const tex = new THREE.CanvasTexture(canvas);
@@ -2167,21 +2234,20 @@ function copyPoem() {
     class SolarSystem {
         constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
             this.group = new THREE.Group();
-            this.baseY = position.y; // Pour l'animation de flottaison
+            this.baseY = position.y; 
             this.offset = Math.random() * 100;
             this.group.position.copy(position);
             this.planets = [];
             scene.add(this.group);
 
-            // Soleil Central
             const sunGeo = new THREE.SphereGeometry(45, 64, 64);
             const sunMat = new THREE.MeshStandardMaterial({ color: sunColor, emissive: sunColor, emissiveIntensity: 1.5, roughness: 1 });
             this.sun = new THREE.Mesh(sunGeo, sunMat);
             
-            // Halo lumineux ultra doux
-            const sunGlowMat = new THREE.SpriteMaterial({ map: createGlowTexture(sunColor), blending: THREE.AdditiveBlending, depthWrite: false });
+            // Halo très doux
+            const sunGlowMat = new THREE.SpriteMaterial({ map: createGlowTexture(sunColor), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.6 });
             const sunGlow = new THREE.Sprite(sunGlowMat);
-            sunGlow.scale.set(350, 350, 1);
+            sunGlow.scale.set(380, 380, 1);
             this.sun.add(sunGlow);
             this.group.add(this.sun);
 
@@ -2189,6 +2255,7 @@ function copyPoem() {
             this.group.add(this.light);
 
             const drawnOrbits = new Set();
+            let currentIndex = globalIndexStart;
 
             planetsConfig.forEach(config => {
                 if (!drawnOrbits.has(config.distance)) {
@@ -2203,7 +2270,6 @@ function copyPoem() {
                     drawnOrbits.add(config.distance);
                 }
 
-                // CORRECTION : Planètes bien rondes avec ombrage 3D réaliste
                 const planetGeo = new THREE.SphereGeometry(config.size, 64, 64);
                 const texture = createTextPatternTexture(config.text, lightColor);
                 const planetMat = new THREE.MeshStandardMaterial({ 
@@ -2227,7 +2293,7 @@ function copyPoem() {
         update() {
             const time = Date.now() * 0.001;
             
-            // Animation Mignonne : Le système respire (flotte de haut en bas)
+            // Flottaison
             this.group.position.y = this.baseY + Math.sin(time + this.offset) * 15;
             
             const scale = 1 + Math.sin(time * 2) * 0.02;
@@ -2296,16 +2362,15 @@ function copyPoem() {
     ];
     systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
 
-    // --- L'ANNEAU D'ASTÉROIDES PHOTOS (CARTES ARRONDIES MAGIQUES) ---
+    // --- L'ANNEAU D'ASTÉROIDES PHOTOS ---
     const photoCloudGroup = new THREE.Group();
     scene.add(photoCloudGroup);
-    
+
     const clickableCards = [];
     const totalCards = 40; 
     const defaultTex = createPlusTexture();
 
     for(let i = 0; i < totalCards; i++) {
-        // CORRECTION MIGNONNE : Ajout du alphaMap pour que la photo ou le carré ait des bords arrondis parfaits
         const cardMat = new THREE.MeshBasicMaterial({ 
             map: defaultTex, 
             alphaMap: cardAlphaMap, 
@@ -2417,6 +2482,7 @@ function copyPoem() {
                     loader.load(url, (texture) => {
                         texture.colorSpace = THREE.SRGBColorSpace;
                         targetCard.material.map = texture;
+                        targetCard.material.alphaMap = cardAlphaMap;
                         targetCard.material.needsUpdate = true;
                     });
                 }
@@ -2451,5 +2517,6 @@ function copyPoem() {
 </script>
 </body>
 </html>
-                                                });
-        
+
+                                                                                                        
+    
