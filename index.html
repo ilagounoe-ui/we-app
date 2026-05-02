@@ -30,34 +30,20 @@
     </script>
 
     <style>
-        * { 
-            -webkit-tap-highlight-color: transparent; 
-            outline: none; 
-            box-sizing: border-box; 
-        }
+        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
         
         :root { 
-            --accent: #d0a8ff; 
-            --accent-glow: rgba(208, 168, 255, 0.4);
-            --bg: #05040a; 
-            --card: rgba(30, 25, 45, 0.95); 
-            --glass-border: rgba(255, 255, 255, 0.08); 
-            --love: #ff4b6e; 
-            --love-glow: rgba(255, 75, 110, 0.4);
-            --check: #00d2ff; 
-            --text-sub: #b3b3b3; 
-            --online: #25D366;
-            --gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --accent: #d0a8ff; --accent-glow: rgba(208, 168, 255, 0.4); --bg: #05040a; 
+            --card: rgba(30, 25, 45, 0.95); --glass-border: rgba(255, 255, 255, 0.08); 
+            --love: #ff4b6e; --love-glow: rgba(255, 75, 110, 0.4); --check: #00d2ff; 
+            --text-sub: #b3b3b3; --online: #25D366; 
             --bubble-me: linear-gradient(135deg, #d0a8ff 0%, #a66cfb 100%);
-            --notif-vibrant: #00e5ff;
-            --notif-glow: rgba(0, 225, 255, 0.25);
+            --notif-vibrant: #00e5ff; --notif-glow: rgba(0, 225, 255, 0.25);
         }
         
-        /* LE FIX ANTI-REBOND (Overscroll) */
         html, body { 
-            margin: 0; padding: 0; 
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden; overscroll-behavior: none;
+            margin: 0; padding: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden; overscroll-behavior: none; /* Anti-rebond d'écran (WhatsApp like) */
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
@@ -69,6 +55,7 @@
         .stellar-dust-particle { position: fixed; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 100000; box-shadow: 0 0 8px var(--accent), 0 0 12px white; animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
+        /* --- TOASTER LOGIN --- */
         #authLayer { background: #080612; background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%); transition: background-color 0.8s ease; }
         #authLayer.lamp-on { background-color: #0f0b1a; }
         .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
@@ -104,11 +91,11 @@
         .toaster-toggle-text { flex: 1; text-align: center; font-size: 12px; color: white; z-index: 2; pointer-events: none; font-weight: 600; }
         .toaster-thumb { position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px); background: var(--accent); border-radius: 25px; z-index: 1; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 0 10px var(--accent-glow); }
 
+        /* GLOBALS */
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
         .recording { background: var(--love) !important; color: white !important; transition: transform 0.1s ease; }
         @keyframes alertCocon { 0% { background: var(--card); } 50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 100% { background: var(--card); } }
         .cocon-notify { animation: alertCocon 1s infinite !important; border: 1px solid white !important; }
-        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         
@@ -136,10 +123,6 @@
         .pfp img { width: 100%; height: 100%; object-fit: cover; }
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
-
-        .bulle-humeur { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; }
-        .badge-count { background: var(--love); color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 0 10px var(--love-glow); }
-
 
         /* =========================================================
            L'EN-TÊTE FIXE RESTAURÉ (POSITION ABSOLUTE COMME AVANT)
@@ -179,7 +162,7 @@
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* --- DESIGN AUDIO (LECTURE) --- */
+        /* --- DESIGN AUDIO PRO (LECTURE) --- */
         .custom-audio-player { 
             display: flex; align-items: center; gap: 12px; 
             background: rgba(255, 255, 255, 0.1); padding: 10px 15px; 
@@ -213,8 +196,6 @@
             display: none; align-items: center; justify-content: space-between; padding: 0 15px;
             z-index: 10; box-shadow: 0 0 15px var(--love-glow); overflow: hidden;
         }
-        .is-recording .record-ui { display: flex; }
-        .is-recording .chat-input-wrapper { opacity: 0; pointer-events: none; }
         
         .record-text-container { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-left: 10px; overflow: hidden; }
         .record-slide-text { color: var(--text-sub); font-size: 14px; font-style: italic; white-space: nowrap; transition: color 0.2s; display: flex; align-items: center; gap: 8px; }
@@ -486,7 +467,7 @@
             
             <div class="chat-input-wrapper">
                 <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" data-mode="msgs" onmousedown="handleMicStart(event)" ontouchstart="handleMicStart(event)">
+                <button class="btn-attachment mic-btn" data-mode="msgs" onmousedown="startRecording(event, 'msgs')" ontouchstart="startRecording(event, 'msgs')">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
@@ -521,9 +502,10 @@
     
     <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
+            
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
                 <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" style="color:var(--love);" data-mode="cocon" onmousedown="handleMicStart(event)" ontouchstart="handleMicStart(event)">
+                <button class="btn-attachment mic-btn" style="color:var(--love);" data-mode="cocon" onmousedown="startRecording(event, 'cocon')" ontouchstart="startRecording(event, 'cocon')">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
@@ -544,36 +526,11 @@
         </div>
     </div>
 </div>
-
-<div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
-    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
-    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10;">
-        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;"><svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></div>
-    </div>
-    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:10px; text-align:center;">Needyou</h2>
-    <p style="opacity:0.7; font-size:13px; text-align:center; margin-bottom:30px;">Laisse l'Univers écrire pour toi...</p>
-    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px;">Ton Humeur actuelle</label>
-        <input type="text" id="aiMood" class="toaster-input" placeholder="Rêveur, Fatigué..." style="margin-bottom:25px;" autocomplete="off" spellcheck="false">
-        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Style du poème</label>
-        <label class="custom-radio-label"><input type="radio" name="aiStyle" id="styleDoux" value="Doux et Romantique" checked><div class="radio-box"></div> Doux & Romantique</label>
-        <label class="custom-radio-label"><input type="radio" name="aiStyle" id="styleEpique" value="Épique et Spatial"><div class="radio-box"></div> Épique & Spatial</label>
-        <label class="custom-radio-label"><input type="radio" name="aiStyle" id="styleMelancolique" value="Mélancolique"><div class="radio-box"></div> Mélancolique</label>
-        <label class="custom-radio-label"><input type="radio" name="aiStyle" id="styleHaiku" value="Haïku Court"><div class="radio-box"></div> Haïku (Court et Poétique)</label>
-        <button onclick="generatePoem()" style="width:100%; padding:16px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s; margin-top: 15px; display:flex; align-items:center; justify-content:center; gap:8px;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Murmurer aux étoiles</button>
-    </div>
-    <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
-        <div id="aiGeneratingBlock" style="text-align:center;"><div class="ai-magic-orb"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div></div>
-        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);"></div>
-        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">Copier pour le Cocon</button>
-    </div>
-</div>
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
 let isLoginMode = true;
 
-// --- L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
 window.togglePwd = function(inputId, eyeIcon) {
     const input = document.getElementById(inputId);
     const isHidden = input.classList.contains('masquer-texte');
@@ -603,7 +560,6 @@ window.togglePwd = function(inputId, eyeIcon) {
     }
 }
 
-// --- FIX WHATSAPP : SCROLL AUTOMATIQUE ---
 function lockAppHeight() {
     const mArea = document.getElementById('mArea');
     const coArea = document.getElementById('coArea');
@@ -678,9 +634,10 @@ let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
 
-// Variables Micro Swipe
+// VARIABLES MICRO (GLISSER POUR ANNULER PRO)
 let cancelAudio = false;
 let recordStartX = 0;
+let activeRecordMode = null;
 
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
@@ -697,12 +654,12 @@ const moodLibrary = {
 };
 
 const humeursCocon = [
-    {label: "Amoureux"}, {label: "Heureux"}, 
-    {label: "Tu me manques"}, {label: "Fatigué"}, 
-    {label: "Retirer l'humeur"}
+    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, 
+    {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, 
+    {label: "❌ Retirer l'humeur"}
 ];
 
-const allLanguages = [{code: 'fr', name: 'Français', flag: 'FR'}, {code: 'en', name: 'English', flag: 'EN'}];
+const allLanguages = [{code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}];
 
 const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
@@ -1025,7 +982,6 @@ function renderContacts(arr) {
     });
 }
 
-// CORRECTION BUG 1 : Bypasser le blocage Firestore avec un .catch() pour l'interface locale
 function addFriend() {
     openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
         if(!tel) return;
@@ -1047,7 +1003,6 @@ function addFriend() {
     });
 }
 
-// FIX WHATSAPP REBOND : Masquer l'écran principal quand on ouvre un chat
 function openChat(id, name, pfp) {
     currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
@@ -1059,7 +1014,7 @@ function openChat(id, name, pfp) {
         chatClearedAt = (doc.exists && doc.data().clearedAt) ? doc.data().clearedAt : 0;
         document.getElementById('mArea').innerHTML = "";
         
-        document.getElementById('mainApp').style.display = 'none'; // Masquer fond
+        document.getElementById('mainApp').style.display = 'none'; 
         document.getElementById('chatBox').style.display = 'flex';
         
         lockAppHeight(); pushState('chatBox');
@@ -1080,7 +1035,7 @@ function closeChat() {
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
     
-    document.getElementById('mainApp').style.display = 'block'; // Restaurer fond
+    document.getElementById('mainApp').style.display = 'block'; 
 }
 
 function revealCapsule(docId, path) {
@@ -1192,7 +1147,6 @@ function getMsgHTML(docId, m, path, target) {
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>`;
     }
     
-    // NOUVEAU DESIGN AUDIO
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">
@@ -1255,7 +1209,7 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🥺', '${path}', '${target}')">🥺</button>
         <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
-        <input type="text" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" placeholder="+" oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
+        <input type="text" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" placeholder="➕" oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
     </div>`;
 
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
@@ -1329,6 +1283,7 @@ function sendMsg(mode) {
         }).then(() => {
             inp.value = ""; inp.focus(); setTimeout(() => { window.isSendingMsg = false; }, 500); 
         }).catch(err => { 
+            console.error("Erreur d'envoi ignorée localement"); 
             window.isSendingMsg = false; 
             inp.value = ""; 
         });
@@ -1478,13 +1433,15 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// --- CORRECTION BUG 3 : GLISSER POUR ANNULER AUDIO PRO ---
+// --- FIX BUG 3 : GLISSER POUR ANNULER TOTALEMENT ROBUSTE ---
 window.handleMicStart = async function(e) {
     e.preventDefault(); 
     if(isRecording) return;
     cancelAudio = false;
     
     const mode = e.currentTarget.getAttribute('data-mode');
+    activeRecordMode = mode;
+    
     if(e.type === 'touchstart') {
         recordStartX = e.touches[0].clientX;
     } else {
@@ -1498,16 +1455,18 @@ window.handleMicStart = async function(e) {
         mediaRecorder.onstop = () => {
             if (!cancelAudio && audioChunks.length > 0) {
                 const audioBlob = new Blob(audioChunks); 
-                uploadToFirebase(audioBlob, 'audio', mode);
+                uploadToFirebase(audioBlob, 'audio', activeRecordMode);
             } else {
-                showToast("Vocal annulé");
+                showToast("Vocal annulé ❌");
             }
             audioChunks = [];
         };
         audioChunks = []; mediaRecorder.start(); isRecording = true;
         
-        // Cacher l'input textuel
-        document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn').parentElement.style.opacity = '0';
+        // Bloquer le clic sur la zone de saisie pour que le swipe marche
+        const inputWrapper = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn').parentElement;
+        inputWrapper.style.opacity = '0';
+        inputWrapper.style.pointerEvents = 'none'; // IMPORTANT
         
         // Afficher l'interface de record
         const recordUI = document.getElementById('recordUI_' + mode);
@@ -1518,21 +1477,20 @@ window.handleMicStart = async function(e) {
             recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler`;
         }
 
-        e.currentTarget.classList.add('recording');
-        e.currentTarget.addEventListener('touchmove', handleRecordMove, {passive: false});
-        e.currentTarget.addEventListener('mousemove', handleRecordMove);
-        e.currentTarget.addEventListener('touchend', stopRecording);
-        e.currentTarget.addEventListener('mouseup', stopRecording);
-        e.currentTarget.addEventListener('mouseleave', stopRecording);
+        // L'ÉCOUTE SE FAIT SUR LA PAGE ENTIÈRE
+        window.addEventListener('touchmove', handleRecordMove, {passive: false});
+        window.addEventListener('mousemove', handleRecordMove);
+        window.addEventListener('touchend', stopRecording);
+        window.addEventListener('mouseup', stopRecording);
         
         if('vibrate' in navigator) navigator.vibrate(50);
     } catch (err) { console.warn("Délai ou refus micro:", err); }
 };
 
-function handleRecordMove(e) {
+window.handleRecordMove = function(e) {
     if(!isRecording) return;
     let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const mode = e.currentTarget.getAttribute('data-mode');
+    const mode = activeRecordMode;
     const recordText = document.getElementById('recordText_' + mode);
 
     if (recordStartX - currentX > 50) { 
@@ -1541,41 +1499,37 @@ function handleRecordMove(e) {
             recordText.classList.add('cancel-ready');
             recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Relâchez pour annuler`;
         }
-        e.currentTarget.style.background = "var(--glass-border)"; 
     } else {
         cancelAudio = false;
         if(recordText) {
             recordText.classList.remove('cancel-ready');
             recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler`;
         }
-        e.currentTarget.style.background = ""; 
     }
-}
+};
 
-function stopRecording(e) {
-    e.preventDefault();
+window.stopRecording = function(e) {
     if(isRecording && mediaRecorder) {
-        e.currentTarget.removeEventListener('touchmove', handleRecordMove);
-        e.currentTarget.removeEventListener('mousemove', handleRecordMove);
-        e.currentTarget.removeEventListener('touchend', stopRecording);
-        e.currentTarget.removeEventListener('mouseup', stopRecording);
-        e.currentTarget.removeEventListener('mouseleave', stopRecording);
-        e.currentTarget.style.background = "";
+        window.removeEventListener('touchmove', handleRecordMove);
+        window.removeEventListener('mousemove', handleRecordMove);
+        window.removeEventListener('touchend', stopRecording);
+        window.removeEventListener('mouseup', stopRecording);
         
         mediaRecorder.stop(); 
         mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
         isRecording = false;
         
         // Restaurer l'affichage
-        document.querySelectorAll('.chat-input-wrapper').forEach(el => el.style.opacity = '1');
+        document.querySelectorAll('.chat-input-wrapper').forEach(el => {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto'; // IMPORTANT
+        });
         const uiMsgs = document.getElementById('recordUI_msgs');
         if(uiMsgs) uiMsgs.style.display = 'none';
         const uiCocon = document.getElementById('recordUI_cocon');
         if(uiCocon) uiCocon.style.display = 'none';
-
-        document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
-}
+};
 
 document.getElementById('imgIn') ? document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('camIn') ? document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
@@ -2392,3 +2346,4 @@ function copyPoem() {
 </script>
 </body>
 </html>
+
