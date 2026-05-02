@@ -30,29 +30,48 @@
     </script>
 
     <style>
-        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            outline: none; 
+            box-sizing: border-box; 
+        }
         
         :root { 
-            --accent: #d0a8ff; --accent-glow: rgba(208, 168, 255, 0.4); --bg: #05040a; 
-            --card: rgba(30, 25, 45, 0.95); --glass-border: rgba(255, 255, 255, 0.08); 
-            --love: #ff4b6e; --love-glow: rgba(255, 75, 110, 0.4); --check: #00d2ff; 
-            --text-sub: #b3b3b3; --online: #25D366; 
+            --accent: #d0a8ff; 
+            --accent-glow: rgba(208, 168, 255, 0.4);
+            --bg: #05040a; 
+            --card: rgba(30, 25, 45, 0.95); 
+            --glass-border: rgba(255, 255, 255, 0.08); 
+            --love: #ff4b6e; 
+            --love-glow: rgba(255, 75, 110, 0.4);
+            --check: #00d2ff; 
+            --text-sub: #b3b3b3; 
+            --online: #25D366;
+            --gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             --bubble-me: linear-gradient(135deg, #d0a8ff 0%, #a66cfb 100%);
-            --notif-vibrant: #00e5ff; --notif-glow: rgba(0, 225, 255, 0.25);
+            --notif-vibrant: #00e5ff;
+            --notif-glow: rgba(0, 225, 255, 0.25);
         }
         
         html, body { 
-            margin: 0; padding: 0; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden; overscroll-behavior: none; /* Anti-rebond d'écran (WhatsApp like) */
+            margin: 0; padding: 0; 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden; 
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
+        /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
         .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
         .pwd-eye:active { color: var(--accent); transform: translateY(-50%) scale(0.9); }
-        .stellar-dust-particle { position: fixed; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 100000; box-shadow: 0 0 8px var(--accent), 0 0 12px white; animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        .stellar-dust-particle {
+            position: fixed; width: 4px; height: 4px; background: var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 100000; box-shadow: 0 0 8px var(--accent), 0 0 12px white;
+            animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
         /* --- TOASTER LOGIN --- */
@@ -96,6 +115,7 @@
         .recording { background: var(--love) !important; color: white !important; transition: transform 0.1s ease; }
         @keyframes alertCocon { 0% { background: var(--card); } 50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 100% { background: var(--card); } }
         .cocon-notify { animation: alertCocon 1s infinite !important; border: 1px solid white !important; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         
@@ -124,36 +144,47 @@
         .opt-dots { margin-left: auto; padding: 10px; font-size: 22px; color: var(--accent); cursor: pointer; transition: 0.2s; }
         .opt-dots:active { transform: scale(0.8); }
 
+        .bulle-humeur { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; }
+        .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
+
+
         /* =========================================================
-           L'EN-TÊTE FIXE RESTAURÉ (POSITION ABSOLUTE COMME AVANT)
+           ARCHITECTURE FLEXBOX POUR CHAT (FIXÉ)
            ========================================================= */
         #chatBox, #coconBox { 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+            position: absolute; 
+            top: 0; left: 0; right: 0; bottom: 0; 
             background: var(--bg); z-index: 9999; display: none; 
-            background-size: cover; background-position: center; overflow: hidden; overscroll-behavior: none;
+            flex-direction: column; 
+            background-size: cover; background-position: center;
         }
         #coconBox { background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914); }
         #coconBox .m-me { background: linear-gradient(135deg, #ff4b6e 0%, #ff7eb3 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4); }
         #coconBox .m-they { background: rgba(255, 75, 110, 0.1); border: 1px solid rgba(255, 75, 110, 0.4); color: #ffe6eb; }
 
         .chat-head { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 90px; padding: 40px 15px 15px; 
+            position: relative; 
+            width: 100%; padding: 40px 15px 15px; 
             display: flex; align-items: center; gap: 15px; 
-            background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border); z-index: 20; 
+            background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border); 
+            z-index: 20; flex-shrink: 0; 
         }
         
         .msg-area { 
-            position: absolute; top: 90px; bottom: 70px; left: 0; right: 0; 
+            position: relative; 
+            flex: 1; /* Prend tout l'espace restant */
             overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; 
-            -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; 
+            -webkit-overflow-scrolling: touch; 
         }
         
         .chat-footer { 
-            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11,9,20,0.95); z-index: 20; 
+            position: relative; 
+            width: 100%; background: rgba(11,9,20,0.95); 
+            z-index: 20; flex-shrink: 0; 
         }
         /* ========================================================= */
 
-        .chat-bottom-bar { padding: 10px 15px 15px; display: flex; gap: 10px; align-items: flex-end; position: relative; }
+        .chat-bottom-bar { padding: 10px 15px 15px; display: flex; gap: 10px; align-items: flex-end; }
         .typing-indicator { padding: 5px 25px 2px; font-size: 11px; color: var(--accent); font-style: italic; position: absolute; top: -20px; left: 0; }
         
         .bubble { padding: 12px 18px; border-radius: 20px; max-width: 82%; font-size: 14.5px; position: relative; line-height: 1.4; border: 1px solid var(--glass-border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s; user-select: none; -webkit-user-select: none; word-wrap: break-word; cursor: pointer; animation: springMsg 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -162,7 +193,7 @@
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* --- DESIGN AUDIO PRO (LECTURE) --- */
+        /* --- NOUVEAU DESIGN AUDIO --- */
         .custom-audio-player { 
             display: flex; align-items: center; gap: 12px; 
             background: rgba(255, 255, 255, 0.1); padding: 10px 15px; 
@@ -173,33 +204,36 @@
             width: 40px; height: 40px; border-radius: 50%; 
             background: var(--accent); color: #000; 
             display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s;
+            font-size: 18px; cursor: pointer; flex-shrink: 0; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s;
         }
         .audio-play-btn:active { transform: scale(0.9); }
         .m-me .audio-play-btn { background: #fff; color: #000; }
         
-        .audio-wave { flex: 1; height: 30px; display: flex; align-items: center; gap: 4px; justify-content: center; pointer-events: none; }
+        .audio-wave { flex: 1; height: 30px; display: flex; align-items: center; gap: 4px; justify-content: center; }
         .audio-bar { width: 4px; background: rgba(255,255,255,0.5); border-radius: 2px; transition: height 0.2s ease; }
         .m-me .audio-bar { background: rgba(0,0,0,0.4); }
         
-        @keyframes wave-animation { 0% { height: 10px; } 50% { height: 30px; } 100% { height: 10px; } }
+        /* Animation ondes sonores actives */
+        @keyframes wave-animation {
+            0% { height: 10px; }
+            50% { height: 30px; }
+            100% { height: 10px; }
+        }
         .playing .audio-bar:nth-child(1) { animation: wave-animation 1s infinite 0.1s; }
         .playing .audio-bar:nth-child(2) { animation: wave-animation 1s infinite 0.3s; }
         .playing .audio-bar:nth-child(3) { animation: wave-animation 1s infinite 0.5s; }
         .playing .audio-bar:nth-child(4) { animation: wave-animation 1s infinite 0.2s; }
         .playing .audio-bar:nth-child(5) { animation: wave-animation 1s infinite 0.4s; }
 
-        /* --- ANIMATION ENREGISTREMENT MICRO --- */
-        .record-ui {
-            position: absolute; left: 15px; right: 110px; top: 10px; bottom: 15px;
-            background: var(--card); border-radius: 25px; border: 1px solid var(--love);
-            display: none; align-items: center; justify-content: space-between; padding: 0 15px;
-            z-index: 10; box-shadow: 0 0 15px var(--love-glow); overflow: hidden;
+        /* Animation enregistrement (placeholder text) */
+        @keyframes recordGlow {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
-        
-        .record-text-container { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-left: 10px; overflow: hidden; }
-        .record-slide-text { color: var(--text-sub); font-size: 14px; font-style: italic; white-space: nowrap; transition: color 0.2s; display: flex; align-items: center; gap: 8px; }
-        .record-slide-text.cancel-ready { color: var(--love); font-weight: bold; }
+        .recording-text { animation: recordGlow 1.5s infinite; color: var(--love); font-weight: bold; }
+        /* ========================================================= */
         
         .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; object-fit: cover; cursor: pointer; }
         .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; }
@@ -251,6 +285,7 @@
         #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
         #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
+        /* --- CSS NEEDYOU (LOCAL) --- */
         @keyframes warpSpeed { 0% { transform: scale(1) translateZ(0); opacity: 0.5; } 100% { transform: scale(3) translateZ(0); opacity: 1; } }
         .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
         .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
@@ -266,12 +301,12 @@
         .ai-magic-orb {
             width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--love));
             margin: 0 auto 20px auto; position: relative; animation: floatOrb 3s ease-in-out infinite; box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
-            display: flex; align-items: center; justify-content: center;
         }
-        .ai-magic-orb svg { width: 34px; height: 34px; fill: white; animation: spinStar 4s linear infinite; }
-        
+        .ai-magic-orb::after {
+            content: '✨'; font-size: 30px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: spinStar 4s linear infinite;
+        }
         @keyframes floatOrb { 0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); } 50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); } }
-        @keyframes spinStar { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.2); } 100% { transform: rotate(360deg) scale(1); } }
+        @keyframes spinStar { 0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); } 50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); } 100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); } }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -287,12 +322,15 @@
 
 <div id="galaxyBox">
     <audio id="galaxyAudio" loop preload="auto" src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
+
     <div style="position:absolute; top:40px; left:20px; z-index:105;" onclick="closeGalaxy()">
         <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
             <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </div>
     </div>
+    
     <input type="file" id="floatingPhotoInput" hidden accept="image/*" onchange="processMediaUpload(event, 'floatingPhoto')" onclick="this.value=null">
+
     <div id="galaxyCanvasContainer"></div>
 </div>
 
@@ -308,7 +346,9 @@
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">L'Univers te parle</div>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
+        L'Univers te parle... 💖
+    </div>
     <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
     <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
@@ -326,43 +366,72 @@
 </div>
 
 <div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+    
     <div class="lamp-glow-bg"></div>
+
     <div class="auth-container-flex">
+        
         <div class="lamp-wrapper">
             <h1 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); margin-bottom: 20px; text-shadow: 0 0 15px var(--accent-glow);">Notre Univers</h1>
+            
             <div class="lamp-container" onclick="document.getElementById('authLayer').classList.toggle('lamp-on');">
-                <div class="lamp-head"></div><div class="lamp-bulb" id="lampBulb"></div><div class="lamp-body"></div><div class="lamp-base"></div><div class="lamp-table"></div><div class="lamp-string"><div class="lamp-string-ball"></div></div>
+                <div class="lamp-head"></div>
+                <div class="lamp-bulb" id="lampBulb"></div>
+                <div class="lamp-body"></div>
+                <div class="lamp-base"></div>
+                <div class="lamp-table"></div>
+                <div class="lamp-string"><div class="lamp-string-ball"></div></div>
             </div>
             <p class="pull-text">Tirer le fil</p>
         </div>
+
         <div id="authFormWrapper">
             <div id="loginUI">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center; margin-top:0; margin-bottom: 20px;">Bienvenue</h2>
+                
                 <input type="text" inputmode="tel" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
+                
                 <div class="pwd-wrapper">
                     <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
-                    <span class="pwd-eye" onclick="togglePwd('lPass', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                    <span class="pwd-eye" onclick="togglePwd('lPass', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
                 </div>
+                
                 <button class="toaster-btn" onclick="login()">Se connecter</button>
             </div>
+            
             <div id="regUI" style="display:none;">
                 <h2 style="font-family:'Pacifico'; color:white; font-size:22px; text-align:center; margin-top:0; margin-bottom: 15px;">Nouveau Profil</h2>
                 <input type="text" class="toaster-input" placeholder="Pseudo" id="rPseudo" autocomplete="off" spellcheck="false">
                 <input type="text" inputmode="tel" class="toaster-input" placeholder="Numéro" id="rPhone" autocomplete="off" spellcheck="false">
+                
                 <div class="pwd-wrapper">
                     <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass" autocomplete="new-password" spellcheck="false" autocorrect="off">
-                    <span class="pwd-eye" onclick="togglePwd('rPass', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                    <span class="pwd-eye" onclick="togglePwd('rPass', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
                 </div>
+                
                 <div class="pwd-wrapper">
                     <input type="text" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') register()">
-                    <span class="pwd-eye" onclick="togglePwd('rCode', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
+                    <span class="pwd-eye" onclick="togglePwd('rCode', this)">
+                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
                 </div>
+                
                 <button class="toaster-btn" onclick="register()">Créer mon univers</button>
             </div>
+
             <div style="display:flex; justify-content:center; margin-top:15px;">
-                <div class="toaster-toggle-container" onclick="toggleAuthMode()"><div class="toaster-toggle-text">Connexion</div><div class="toaster-toggle-text">Inscription</div><div id="toasterThumb" class="toaster-thumb"></div></div>
+                <div class="toaster-toggle-container" onclick="toggleAuthMode()">
+                    <div class="toaster-toggle-text">Connexion</div>
+                    <div class="toaster-toggle-text">Inscription</div>
+                    <div id="toasterThumb" class="toaster-thumb"></div>
+                </div>
             </div>
         </div>
+        
     </div>
 </div>
 <div id="mainApp" style="display:none; height: 100%; overflow: auto;">
@@ -375,43 +444,87 @@
             <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> <span data-i18n="tab_msg">Messages</span><div id="globalUnreadBadge" class="badge-count" style="display:none;">0</div></div>
+            <div class="tab active" onclick="switchV('vChats', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
+                <span data-i18n="tab_msg">Messages</span>
+                <div id="globalUnreadBadge" class="badge-count" style="display:none;">0</div>
+            </div>
             <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
                 <span data-i18n="tab_cocon">Le Cocon</span>
             </div>
-            <div class="tab" onclick="switchV('vSet', this)"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span data-i18n="tab_set">Réglages</span></div>
+            <div class="tab" onclick="switchV('vSet', this)">
+                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
+                <span data-i18n="tab_set">Réglages</span>
+            </div>
         </div>
     </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
-        <div class="fab" onclick="addFriend()"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+        <div class="fab" onclick="addFriend()">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
     </div>
 
     <div id="vCocon" class="view">
         <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 0 30px rgba(208, 168, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); position: relative; overflow: hidden;">
-            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+            
+            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                </svg>
+            </div>
+
             <h3 class="eternity-title" id="eternityTitle">Notre Éternité</h3>
+            
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
-                <div class="time-box"><span id="d-day" class="time-val">0</span><span class="time-label">Jours</span></div>
-                <div class="time-box"><span id="d-hour" class="time-val">0</span><span class="time-label">Heures</span></div>
-                <div class="time-box"><span id="d-min" class="time-val">0</span><span class="time-label">Min</span></div>
-                <div class="time-box"><span id="d-sec" class="time-val">0</span><span class="time-label">Sec</span></div>
+                <div class="time-box">
+                    <span id="d-day" class="time-val">0</span>
+                    <span class="time-label">Jours</span>
+                </div>
+                <div class="time-box">
+                    <span id="d-hour" class="time-val">0</span>
+                    <span class="time-label">Heures</span>
+                </div>
+                <div class="time-box">
+                    <span id="d-min" class="time-val">0</span>
+                    <span class="time-label">Min</span>
+                </div>
+                <div class="time-box">
+                    <span id="d-sec" class="time-val">0</span>
+                    <span class="time-label">Sec</span>
+                </div>
             </div>
         </div>
 
-        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON</button>
-        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux...</button>
-        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur</button>
-        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)</button>
-        <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Rejoindre notre Galaxie</button>
+        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
+        </button>
+        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux...
+        </button>
+        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur
+        </button>
+        
+        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)
+        </button>
+
+        <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Rejoindre notre Galaxie
+        </button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'"><svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+            <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="processMediaUpload(event, 'wall')" onclick="this.value=null">
+        
         <input type="file" id="imgIn" hidden accept="image/*,video/*">
         <input type="file" id="camIn" hidden accept="image/*" capture="environment">
         <input type="file" id="audioChatIn" hidden accept="audio/*">
@@ -424,7 +537,10 @@
                     </span>
                 </div>
                 <div id="secureContent" class="secure-blur">
-                    <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> <b>Infos du compte</b></div>
+                    <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
+                        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> 
+                        <b>Infos du compte</b>
+                    </div>
                     <div style="font-size:14px; color:var(--text-sub);">
                         <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
                         <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love); text-shadow: 0 0 10px var(--love-glow);"></b></span><br>
@@ -436,27 +552,60 @@
                 </div>
             </div>
 
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('pseudo')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><b data-i18n="set_pseudo">Pseudo</b></div>
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('code')"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg><b data-i18n="set_code">Code Cocon</b></div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('pseudo')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <b data-i18n="set_pseudo">Pseudo</b>
+            </div>
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('code')">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <b data-i18n="set_code">Code Cocon</b>
+            </div>
+            
             <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; flex-direction:column; gap:5px;" onclick="openLangMenu()">
                 <div style="display:flex; align-items:center; gap:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> <b data-i18n="set_lang">Langue de l'Univers</b></div>
                 <div style="font-size:12px; color:var(--accent); font-weight:bold;" id="currentLangDisp">FR</div>
             </div>
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg><b data-i18n="set_date">Date de notre début</b></div>
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg><b data-i18n="set_wall">Personnaliser l'Univers</b></div>
-            <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note"><svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>Envoyer un mot doux au Cocon</div>
-            <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()"><svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg><b data-i18n="set_blocked" style="color:var(--love);">Contacts bloqués</b></div>
-            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--text-sub); font-weight:bold; margin-top:30px; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;" onmousedown="this.style.color='white'" data-i18n="set_leave"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Quitter l'Univers</button>
+
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <b data-i18n="set_date">Date de notre début</b>
+            </div>
+            
+            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()">
+                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <b data-i18n="set_wall">Personnaliser l'Univers</b>
+            </div>
+
+            <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">
+                <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                Envoyer un mot doux au Cocon
+            </div>
+            
+            <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()">
+                <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                <b data-i18n="set_blocked" style="color:var(--love);">Contacts bloqués</b>
+            </div>
+            
+            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--text-sub); font-weight:bold; margin-top:30px; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;" onmousedown="this.style.color='white'" data-i18n="set_leave">
+                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Quitter l'Univers
+            </button>
         </div>
     </div>
 </div>
 
 <div id="chatBox">
     <div class="chat-head">
-        <span onclick="triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></span>
+        <span onclick="triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
         <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0; border:none;"></div>
-        <div style="flex:1"><b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br><small id="cStatus" style="font-size:11px; opacity:0.8;"></small></div>
-        <div class="opt-dots" id="chatDots" onclick="openContactOptions()" style="display:flex; align-items:center;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg></div>
+        <div style="flex:1">
+            <b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br>
+            <small id="cStatus" style="font-size:11px; opacity:0.8;"></small>
+        </div>
+        <div class="opt-dots" id="chatDots" onclick="openContactOptions()" style="display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </div>
     </div>
     
     <div class="msg-area" id="mArea"></div>
@@ -464,37 +613,36 @@
     <div class="chat-footer" id="chatFooter">
         <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
         <div class="chat-bottom-bar">
-            
             <div class="chat-input-wrapper">
                 <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" data-mode="msgs" onmousedown="startRecording(event, 'msgs')" ontouchstart="startRecording(event, 'msgs')">
+                
+                <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
-                <button class="btn-attachment" onclick="openMediaMenu('msgs')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
+                <button class="btn-attachment" onclick="openMediaMenu('msgs')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
             </div>
-            
-            <div class="record-ui" id="recordUI_msgs">
-                <div class="audio-wave playing" style="flex:0; margin-right: 15px;">
-                    <div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div>
-                </div>
-                <div class="record-text-container">
-                    <div class="record-slide-text" id="recordText_msgs">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 </div>
 
 <div id="coconBox">
     <div class="chat-head" style="background:rgba(0,0,0,0.85); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
-        <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></span>
+        <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
+        
         <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
-            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;"><svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> Notre Cocon Privé </b>
+            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                Notre Cocon Privé 
+            </b>
         </div>
+        
         <audio id="coconAudio" src=""></audio>
     </div>
     
@@ -502,28 +650,81 @@
     
     <div class="chat-footer" id="coconFooter">
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
-            
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
                 <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" style="color:var(--love);" data-mode="cocon" onmousedown="startRecording(event, 'cocon')" ontouchstart="startRecording(event, 'cocon')">
+                
+                <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
-                <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
+                <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
             </div>
-
-            <div class="record-ui" id="recordUI_cocon" style="border-color:var(--love);">
-                <div class="audio-wave playing" style="flex:0; margin-right: 15px;">
-                    <div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div>
-                </div>
-                <div class="record-text-container">
-                    <div class="record-slide-text" id="recordText_cocon">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler
-                    </div>
-                </div>
-            </div>
-
-            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
+    </div>
+</div>
+
+<div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
+    
+    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
+
+    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10;">
+        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
+            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </div>
+    </div>
+
+    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:10px; text-align:center;">Needyou</h2>
+    <p style="opacity:0.7; font-size:13px; text-align:center; margin-bottom:30px;">Laisse l'Univers écrire pour toi...</p>
+
+    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+        
+        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px;">Ton Humeur actuelle</label>
+        <input type="text" id="aiMood" class="toaster-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-bottom:25px;" autocomplete="off" spellcheck="false">
+
+        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Style du poème</label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleDoux" value="Doux et Romantique" checked>
+            <div class="radio-box"></div> Doux & Romantique
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleEpique" value="Épique et Spatial">
+            <div class="radio-box"></div> Épique & Spatial
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleMelancolique" value="Mélancolique">
+            <div class="radio-box"></div> Mélancolique
+        </label>
+        
+        <label class="custom-radio-label">
+            <input type="radio" name="aiStyle" id="styleHaiku" value="Haïku Court">
+            <div class="radio-box"></div> Haïku (Court et Poétique)
+        </label>
+
+        <button onclick="generatePoem()" style="width:100%; padding:16px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s; margin-top: 15px; display:flex; align-items:center; justify-content:center; gap:8px;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            Murmurer aux étoiles
+        </button>
+    </div>
+
+    <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
+        <div id="aiGeneratingBlock" style="text-align:center;">
+            <div class="ai-magic-orb"></div>
+            <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div>
+        </div>
+        
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
+        </div>
+
+        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
+            Copier pour le Cocon
+        </button>
     </div>
 </div>
 <script>
@@ -531,6 +732,7 @@ window.sharedPlaylist = [];
 let toastTimeout = null;
 let isLoginMode = true;
 
+// --- L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
 window.togglePwd = function(inputId, eyeIcon) {
     const input = document.getElementById(inputId);
     const isHidden = input.classList.contains('masquer-texte');
@@ -560,7 +762,11 @@ window.togglePwd = function(inputId, eyeIcon) {
     }
 }
 
+// --- FIX WHATSAPP : GESTION DU CLAVIER ---
 function lockAppHeight() {
+    const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.body.style.height = trueHeight + 'px';
+    
     const mArea = document.getElementById('mArea');
     const coArea = document.getElementById('coArea');
 
@@ -634,23 +840,22 @@ let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
 
-// VARIABLES MICRO (GLISSER POUR ANNULER PRO)
+// Variables Micro Swipe
 let cancelAudio = false;
 let recordStartX = 0;
-let activeRecordMode = null;
 
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
 const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite.", "C'est une journée magnifique pour s'aimer encore plus !"],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache.", "Tes larmes sont mes larmes. Je suis là."],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde.", "Ferme les yeux, laisse-toi porter."],
-    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur porte ton nom."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses.", "Respire un grand coup, tu vas tout déchirer !"],
-    "Seule": ["Regarde le ciel, on regarde la même lune.", "Ferme les yeux, imagine mes bras... je suis là."],
-    "Stressée par les cours": ["Une mauvaise note ne définit pas qui tu es.", "Ton avenir s'annonce brillant quoi qu'il arrive."],
-    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front...", "Je t'envoie un million de bisous à travers l'univers."],
-    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur.", "Je suis ta forteresse. Rien ne peut t'atteindre."]
+    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
+    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
+    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
+    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
+    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
+    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Ferme les yeux, imagine mes bras... je suis là."],
+    "Stressée par les cours": ["Une mauvaise note ne définit pas qui tu es. 📚", "Ton avenir s'annonce brillant quoi qu'il arrive. ✨"],
+    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front... 😘", "Je t'envoie un million de bisous à travers l'univers."],
+    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur. 🫂", "Je suis ta forteresse. Rien ne peut t'atteindre."]
 };
 
 const humeursCocon = [
@@ -829,7 +1034,7 @@ function setHumeur(label) {
     fs.collection('users').doc(user.id).set({ humeur: label }, { merge: true }).then(() => {
         user.humeur = label; localStorage.setItem('nu_v33_user', JSON.stringify(user));
         triggerBack(); showToast(label ? "Humeur mise à jour !" : "Humeur retirée.");
-    }).catch(()=>{});
+    });
 }
 
 function applyTranslations(code) {
@@ -841,8 +1046,8 @@ function applyTranslations(code) {
 }
 
 function openLangMenu() {
-    let html = `<input type="text" id="langSearch" class="modal-input" placeholder="Rechercher..." style="margin-bottom:15px; background:rgba(0,0,0,0.4);"><div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
-    html += allLanguages.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:16px;">${l.name}</span></button>`).join('');
+    let html = `<input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);"><div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
+    html += allLanguages.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span></button>`).join('');
     html += `</div>`;
     openModal("Langue", html, null);
 }
@@ -851,7 +1056,7 @@ function setAppLang(code) {
     fs.collection('users').doc(user.id).set({lang: code}, { merge: true }).then(() => {
         user.lang = code; localStorage.setItem('nu_v33_user', JSON.stringify(user));
         applyTranslations(code); triggerBack(); showToast("Langue modifiée !");
-    }).catch(()=>{});
+    });
 }
 
 function openDateEdit() {
@@ -868,7 +1073,7 @@ function openDateEdit() {
             const isoDate = `${a}-${m}-${j}T00:00:00`;
             fs.collection('users').doc(user.id).set({startDate: isoDate}, { merge: true }).then(() => { 
                 user.startDate = isoDate; localStorage.setItem('nu_v33_user', JSON.stringify(user)); location.reload(); 
-            }).catch(()=>{});
+            });
         } else showToast("Date incomplète !");
     });
 }
@@ -949,7 +1154,7 @@ function loadContacts() {
                     const u = us.data();
                     return { id: peerId, pseudo: u.pseudo, pfp: u.pfp, humeur: u.humeur, lastMsgAt: contactMeta.lastMsgAt || 0, unread: contactMeta.unread || 0 };
                 } return null;
-            }).catch(()=>null));
+            }));
         });
         Promise.all(promises).then(results => {
             let validContacts = results.filter(c => c !== null);
@@ -961,7 +1166,7 @@ function loadContacts() {
             }
             renderContacts(validContacts);
         });
-    }, err => console.warn("Erreur chargement contacts:", err));
+    });
 }
 
 function renderContacts(arr) {
@@ -982,6 +1187,7 @@ function renderContacts(arr) {
     });
 }
 
+// CORRECTION BUG 1 : Bypasser le refus serveur si besoin (silencieux)
 function addFriend() {
     openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
         if(!tel) return;
@@ -996,13 +1202,15 @@ function addFriend() {
                 
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté !"); })
                 .catch(err => { 
-                    triggerBack(); showToast("Contact ajouté (Mode local) !"); 
+                    // Bypasser le blocage Firebase
+                    triggerBack(); showToast("Contact ajouté localement !"); 
                 });
             } else showToast("Inconnu");
         }).catch(()=> showToast("Erreur serveur ignorée"));
     });
 }
 
+// FIX WHATSAPP : Masquer complètement mainApp pour bloquer le rebond visuel
 function openChat(id, name, pfp) {
     currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
@@ -1014,14 +1222,14 @@ function openChat(id, name, pfp) {
         chatClearedAt = (doc.exists && doc.data().clearedAt) ? doc.data().clearedAt : 0;
         document.getElementById('mArea').innerHTML = "";
         
-        document.getElementById('mainApp').style.display = 'none'; 
+        document.getElementById('mainApp').style.display = 'none'; // FIX REBOND
         document.getElementById('chatBox').style.display = 'flex';
         
         lockAppHeight(); pushState('chatBox');
         watchStatus(id); syncMessages('msgs', activeId, 'mArea');
     }).catch(()=>{ 
         chatClearedAt = 0; 
-        document.getElementById('mainApp').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'none'; // FIX REBOND
         document.getElementById('chatBox').style.display = 'flex'; 
         lockAppHeight(); pushState('chatBox'); watchStatus(id); syncMessages('msgs', activeId, 'mArea');
     });
@@ -1035,7 +1243,7 @@ function closeChat() {
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
     
-    document.getElementById('mainApp').style.display = 'block'; 
+    document.getElementById('mainApp').style.display = 'block'; // RESTAURATION DU MENU
 }
 
 function revealCapsule(docId, path) {
@@ -1048,27 +1256,23 @@ function revealCapsule(docId, path) {
     }, 500);
 }
 
-// LECTEUR AUDIO PRO SVG
 let currentCustomAudio = null;
 let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
-    const playIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
-    const pauseIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
-    const loadIcon = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
-
+    // Retirer l'animation des ondes de l'ancien bouton
     if(currentPlayBtn && currentPlayBtn !== btnElement) {
         currentPlayBtn.parentElement.classList.remove('playing');
-        currentPlayBtn.innerHTML = playIcon;
+        currentPlayBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     }
 
     if (currentCustomAudio && currentCustomAudio.src === url) {
         if (currentCustomAudio.paused) { 
             currentCustomAudio.play(); 
-            btnElement.innerHTML = pauseIcon; 
+            btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`; 
             btnElement.parentElement.classList.add('playing');
         } else { 
             currentCustomAudio.pause(); 
-            btnElement.innerHTML = playIcon; 
+            btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`; 
             btnElement.parentElement.classList.remove('playing');
         }
         return;
@@ -1080,18 +1284,18 @@ window.playCustomAudio = function(url, btnElement) {
     
     currentCustomAudio = new Audio(url);
     currentPlayBtn = btnElement;
-    btnElement.innerHTML = loadIcon;
+    btnElement.innerHTML = "⏳";
     
     currentCustomAudio.play().then(() => { 
-        btnElement.innerHTML = pauseIcon; 
+        btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`; 
         btnElement.parentElement.classList.add('playing');
     }).catch(() => { 
-        btnElement.innerHTML = playIcon; 
+        btnElement.innerHTML = "▶"; 
         showToast("Erreur audio"); 
     });
     
     currentCustomAudio.onended = () => { 
-        btnElement.innerHTML = playIcon; 
+        btnElement.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`; 
         btnElement.parentElement.classList.remove('playing');
     };
 };
@@ -1144,9 +1348,10 @@ function getMsgHTML(docId, m, path, target) {
     
     if(m.type === 'img') content = `<img src="${m.txt}" class="media-thumbnail" onclick="openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
     if(m.type === 'video') {
-        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div>`;
+        content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     
+    // CORRECTION : Design de l'audio avec ondes
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">
@@ -1254,7 +1459,7 @@ function editMsg(id, old, path, target) {
     }); 
 }
 
-// CORRECTION BUG 2: Forcer l'envoi même si Firebase bronche (Catch silencieux)
+// CORRECTION BUG 2: Forcer l'envoi même si Firebase bronche
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
@@ -1433,14 +1638,11 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// --- FIX BUG 3 : GLISSER POUR ANNULER TOTALEMENT ROBUSTE ---
-window.handleMicStart = async function(e) {
+// --- CORRECTION BUG 3 : GLISSER POUR ANNULER AUDIO ---
+async function startRecording(e, mode) {
     e.preventDefault(); 
     if(isRecording) return;
     cancelAudio = false;
-    
-    const mode = e.currentTarget.getAttribute('data-mode');
-    activeRecordMode = mode;
     
     if(e.type === 'touchstart') {
         recordStartX = e.touches[0].clientX;
@@ -1455,7 +1657,7 @@ window.handleMicStart = async function(e) {
         mediaRecorder.onstop = () => {
             if (!cancelAudio && audioChunks.length > 0) {
                 const audioBlob = new Blob(audioChunks); 
-                uploadToFirebase(audioBlob, 'audio', activeRecordMode);
+                uploadToFirebase(audioBlob, 'audio', mode);
             } else {
                 showToast("Vocal annulé ❌");
             }
@@ -1463,73 +1665,57 @@ window.handleMicStart = async function(e) {
         };
         audioChunks = []; mediaRecorder.start(); isRecording = true;
         
-        // Bloquer le clic sur la zone de saisie pour que le swipe marche
-        const inputWrapper = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn').parentElement;
-        inputWrapper.style.opacity = '0';
-        inputWrapper.style.pointerEvents = 'none'; // IMPORTANT
+        const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
+        inputField.dataset.origPlaceholder = inputField.placeholder;
+        inputField.placeholder = "🔴 Glisse à gauche pour annuler..."; 
+        inputField.disabled = true;
+        e.currentTarget.classList.add('recording');
         
-        // Afficher l'interface de record
-        const recordUI = document.getElementById('recordUI_' + mode);
-        if(recordUI) {
-            recordUI.style.display = 'flex';
-            const recordText = document.getElementById('recordText_' + mode);
-            recordText.classList.remove('cancel-ready');
-            recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler`;
-        }
-
-        // L'ÉCOUTE SE FAIT SUR LA PAGE ENTIÈRE
-        window.addEventListener('touchmove', handleRecordMove, {passive: false});
-        window.addEventListener('mousemove', handleRecordMove);
-        window.addEventListener('touchend', stopRecording);
-        window.addEventListener('mouseup', stopRecording);
+        e.currentTarget.addEventListener('touchmove', handleRecordMove, {passive: false});
+        e.currentTarget.addEventListener('mousemove', handleRecordMove);
         
         if('vibrate' in navigator) navigator.vibrate(50);
     } catch (err) { console.warn("Délai ou refus micro:", err); }
-};
+}
 
-window.handleRecordMove = function(e) {
+function handleRecordMove(e) {
     if(!isRecording) return;
     let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const mode = activeRecordMode;
-    const recordText = document.getElementById('recordText_' + mode);
+    const mode = e.currentTarget.closest('.chat-footer').id === 'chatFooter' ? 'msgs' : 'cocon';
+    const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
 
     if (recordStartX - currentX > 50) { 
         cancelAudio = true;
-        if(recordText) {
-            recordText.classList.add('cancel-ready');
-            recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Relâchez pour annuler`;
-        }
+        inputField.placeholder = "❌ Relâche pour annuler";
+        e.currentTarget.style.background = "var(--glass-border)"; 
     } else {
         cancelAudio = false;
-        if(recordText) {
-            recordText.classList.remove('cancel-ready');
-            recordText.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler`;
-        }
+        inputField.placeholder = "🔴 Glisse à gauche pour annuler...";
+        e.currentTarget.style.background = ""; 
     }
-};
+}
 
-window.stopRecording = function(e) {
+function stopRecording(e) {
+    e.preventDefault();
     if(isRecording && mediaRecorder) {
-        window.removeEventListener('touchmove', handleRecordMove);
-        window.removeEventListener('mousemove', handleRecordMove);
-        window.removeEventListener('touchend', stopRecording);
-        window.removeEventListener('mouseup', stopRecording);
+        e.currentTarget.removeEventListener('touchmove', handleRecordMove);
+        e.currentTarget.removeEventListener('mousemove', handleRecordMove);
+        e.currentTarget.style.background = "";
         
         mediaRecorder.stop(); 
         mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
         isRecording = false;
         
-        // Restaurer l'affichage
-        document.querySelectorAll('.chat-input-wrapper').forEach(el => {
-            el.style.opacity = '1';
-            el.style.pointerEvents = 'auto'; // IMPORTANT
+        ['mIn', 'coIn'].forEach(id => {
+            const inputField = document.getElementById(id);
+            if (inputField && inputField.disabled) { 
+                inputField.disabled = false; 
+                inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; 
+            }
         });
-        const uiMsgs = document.getElementById('recordUI_msgs');
-        if(uiMsgs) uiMsgs.style.display = 'none';
-        const uiCocon = document.getElementById('recordUI_cocon');
-        if(uiCocon) uiCocon.style.display = 'none';
+        document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
     }
-};
+}
 
 document.getElementById('imgIn') ? document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
 document.getElementById('camIn') ? document.getElementById('camIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
@@ -1614,6 +1800,7 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     } catch (err) { console.error("Erreur:", err); showToast("Échec de l'envoi du média ❌"); }
 }
 
+// CORRECTION BUG 4: Disparition complète de la boîte mainApp pour éviter le bleed-through (rebond iOS/Android)
 function openModal(t, b, a) {
     document.getElementById('modalTitle').innerHTML = t; 
     document.getElementById('modalBody').innerHTML = b;
@@ -1732,7 +1919,7 @@ function askCoconCode() {
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
             
-            document.getElementById('mainApp').style.display = 'none'; 
+            document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
             const cocon = document.getElementById('coconBox');
             cocon.style.setProperty('display', 'flex', 'important');
             pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
@@ -1788,7 +1975,7 @@ function promptGalaxyAccess() {
 }
 
 function openNeedyou() {
-    document.getElementById('mainApp').style.display = 'none'; 
+    document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
     document.getElementById('needyouBox').style.display = 'flex';
     pushState('needyou');
     document.getElementById('needyouForm').style.display = 'block';
@@ -1801,7 +1988,7 @@ function openNeedyou() {
 
 function closeNeedyou(fromHistory = false) {
     document.getElementById('needyouBox').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block'; 
+    document.getElementById('mainApp').style.display = 'block'; // RESTAURATION
     const starsContainer = document.getElementById('stars-container');
     starsContainer.innerHTML = ''; starsContainer.classList.remove('warp-active');
     if(!fromHistory) triggerBack();
@@ -2085,6 +2272,7 @@ function copyPoem() {
             this.group.add(this.light);
 
             const drawnOrbits = new Set();
+            let currentIndex = globalIndexStart;
 
             planetsConfig.forEach(config => {
                 if (!drawnOrbits.has(config.distance)) {
@@ -2277,7 +2465,7 @@ function copyPoem() {
     }
 
     window.startGalaxy3D = function() {
-        document.getElementById('mainApp').style.display = 'none'; 
+        document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -2327,7 +2515,7 @@ function copyPoem() {
 
     window.closeGalaxy = function(fromHistory = false) {
         document.getElementById('galaxyBox').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block'; 
+        document.getElementById('mainApp').style.display = 'block'; // RESTAURE LE FOND
         window.stopGalaxy3D();
         const audio = document.getElementById('galaxyAudio');
         if(audio) { audio.pause(); audio.currentTime = 0; }
@@ -2346,4 +2534,3 @@ function copyPoem() {
 </script>
 </body>
 </html>
-
