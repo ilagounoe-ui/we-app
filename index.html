@@ -53,30 +53,22 @@
             --notif-glow: rgba(0, 225, 255, 0.25);
         }
         
-        /* LE FIX MAGIQUE : overscroll-behavior empêche le rebond du navigateur */
+        /* LE FIX ANTI-REBOND (Overscroll) */
         html, body { 
             margin: 0; padding: 0; 
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            overflow: hidden; 
-            overscroll-behavior: none; /* BLOQUE LE REBOND NÉFASTE */
+            overflow: hidden; overscroll-behavior: none;
             font-family: 'Poppins', sans-serif; background: var(--bg); color: white; 
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* --- HACK ANTI-GOOGLE --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
         .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
         .pwd-eye:active { color: var(--accent); transform: translateY(-50%) scale(0.9); }
-
-        .stellar-dust-particle {
-            position: fixed; width: 4px; height: 4px; background: var(--accent); border-radius: 50%;
-            pointer-events: none; z-index: 100000; box-shadow: 0 0 8px var(--accent), 0 0 12px white;
-            animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
+        .stellar-dust-particle { position: fixed; width: 4px; height: 4px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 100000; box-shadow: 0 0 8px var(--accent), 0 0 12px white; animation: dustAnim 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
-        /* --- TOASTER LOGIN --- */
         #authLayer { background: #080612; background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%); transition: background-color 0.8s ease; }
         #authLayer.lamp-on { background-color: #0f0b1a; }
         .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
@@ -112,7 +104,8 @@
         .toaster-toggle-text { flex: 1; text-align: center; font-size: 12px; color: white; z-index: 2; pointer-events: none; font-weight: 600; }
         .toaster-thumb { position: absolute; left: 4px; top: 4px; bottom: 4px; width: calc(50% - 4px); background: var(--accent); border-radius: 25px; z-index: 1; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); box-shadow: 0 0 10px var(--accent-glow); }
 
-        /* GLOBALS */
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.15); background: var(--love); } 100% { transform: scale(1); } }
+        .recording { background: var(--love) !important; color: white !important; transition: transform 0.1s ease; }
         @keyframes alertCocon { 0% { background: var(--card); } 50% { background: var(--love); box-shadow: 0 0 15px var(--love); transform: scale(1.05); } 100% { background: var(--card); } }
         .cocon-notify { animation: alertCocon 1s infinite !important; border: 1px solid white !important; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -149,37 +142,31 @@
 
 
         /* =========================================================
-           ARCHITECTURE FLEXBOX POUR CHAT (CLOUÉ WHATSAPP STYLE)
+           L'EN-TÊTE FIXE RESTAURÉ (POSITION ABSOLUTE COMME AVANT)
            ========================================================= */
         #chatBox, #coconBox { 
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
             background: var(--bg); z-index: 9999; display: none; 
-            flex-direction: column; 
-            height: 100dvh; /* S'adapte au clavier virtuel dynamiquement */
-            background-size: cover; background-position: center; overflow: hidden; 
-            overscroll-behavior: none; /* Empeche le rebond interne */
+            background-size: cover; background-position: center; overflow: hidden; overscroll-behavior: none;
         }
         #coconBox { background: linear-gradient(-45deg, #1a0510, #380a1f, #0b0914); }
         #coconBox .m-me { background: linear-gradient(135deg, #ff4b6e 0%, #ff7eb3 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(255, 75, 110, 0.4); }
         #coconBox .m-they { background: rgba(255, 75, 110, 0.1); border: 1px solid rgba(255, 75, 110, 0.4); color: #ffe6eb; }
 
         .chat-head { 
-            position: relative; width: 100%; height: 90px; padding: 40px 15px 15px; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 90px; padding: 40px 15px 15px; 
             display: flex; align-items: center; gap: 15px; 
-            background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border); 
-            z-index: 20; flex-shrink: 0; 
+            background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--glass-border); z-index: 20; 
         }
         
         .msg-area { 
-            position: relative; 
-            flex: 1; /* Prend tout l'espace disponible au milieu */
+            position: absolute; top: 90px; bottom: 70px; left: 0; right: 0; 
             overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; 
             -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; 
         }
         
         .chat-footer { 
-            position: relative; width: 100%; background: rgba(11,9,20,0.95); 
-            z-index: 20; flex-shrink: 0; 
+            position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(11,9,20,0.95); z-index: 20; 
         }
         /* ========================================================= */
 
@@ -192,7 +179,7 @@
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* --- NOUVEAU DESIGN AUDIO PRO --- */
+        /* --- DESIGN AUDIO (LECTURE) --- */
         .custom-audio-player { 
             display: flex; align-items: center; gap: 12px; 
             background: rgba(255, 255, 255, 0.1); padding: 10px 15px; 
@@ -219,23 +206,19 @@
         .playing .audio-bar:nth-child(4) { animation: wave-animation 1s infinite 0.2s; }
         .playing .audio-bar:nth-child(5) { animation: wave-animation 1s infinite 0.4s; }
 
-        /* --- ANIMATION D'ENREGISTREMENT (UI Dynamique) --- */
+        /* --- ANIMATION ENREGISTREMENT MICRO --- */
         .record-ui {
             position: absolute; left: 15px; right: 110px; top: 10px; bottom: 15px;
             background: var(--card); border-radius: 25px; border: 1px solid var(--love);
-            display: none; align-items: center; justify-content: space-between; padding: 0 20px;
+            display: none; align-items: center; justify-content: space-between; padding: 0 15px;
             z-index: 10; box-shadow: 0 0 15px var(--love-glow); overflow: hidden;
         }
         .is-recording .record-ui { display: flex; }
         .is-recording .chat-input-wrapper { opacity: 0; pointer-events: none; }
         
-        @keyframes pulseDot { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-        .record-dot { width: 10px; height: 10px; background: var(--love); border-radius: 50%; animation: pulseDot 1s infinite; flex-shrink: 0; box-shadow: 0 0 8px var(--love); }
-        
-        .record-text-container { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; overflow: hidden; }
-        .record-slide-text { color: var(--text-sub); font-size: 14px; font-style: italic; white-space: nowrap; transition: transform 0.1s linear, color 0.2s; display: flex; align-items: center; gap: 8px; }
+        .record-text-container { flex: 1; display: flex; align-items: center; justify-content: flex-end; padding-left: 10px; overflow: hidden; }
+        .record-slide-text { color: var(--text-sub); font-size: 14px; font-style: italic; white-space: nowrap; transition: color 0.2s; display: flex; align-items: center; gap: 8px; }
         .record-slide-text.cancel-ready { color: var(--love); font-weight: bold; }
-        /* ========================================================= */
         
         .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; object-fit: cover; cursor: pointer; }
         .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; }
@@ -304,7 +287,6 @@
             margin: 0 auto 20px auto; position: relative; animation: floatOrb 3s ease-in-out infinite; box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
             display: flex; align-items: center; justify-content: center;
         }
-        /* Remplacement du vieil emoji par un SVG étoile magique */
         .ai-magic-orb svg { width: 34px; height: 34px; fill: white; animation: spinStar 4s linear infinite; }
         
         @keyframes floatOrb { 0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); } 50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); } }
@@ -428,16 +410,8 @@
 
     <div id="vCocon" class="view">
         <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 0 30px rgba(208, 168, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); position: relative; overflow: hidden;">
-            
-            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-            </div>
-
+            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
             <h3 class="eternity-title" id="eternityTitle">Notre Éternité</h3>
-            
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
                 <div class="time-box"><span id="d-day" class="time-val">0</span><span class="time-label">Jours</span></div>
                 <div class="time-box"><span id="d-hour" class="time-val">0</span><span class="time-label">Heures</span></div>
@@ -446,29 +420,15 @@
             </div>
         </div>
 
-        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
-        </button>
-        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux
-        </button>
-        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur
-        </button>
-        
-        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)
-        </button>
-
-        <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Rejoindre notre Galaxie
-        </button>
+        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON</button>
+        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux...</button>
+        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur</button>
+        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)</button>
+        <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'"><svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Rejoindre notre Galaxie</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-            <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </div>
+        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'"><svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
         <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')" onclick="this.value=null">
         <input type="file" id="wallInput" hidden accept="image/*" onchange="processMediaUpload(event, 'wall')" onclick="this.value=null">
         <input type="file" id="imgIn" hidden accept="image/*,video/*">
@@ -479,7 +439,7 @@
             <div id="secureInfoBox" style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
                 <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
                     <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; border-radius:20px; border:1px solid var(--accent); display:flex; align-items:center; gap:8px;">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Voir les infos
+                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Appuyez pour voir les infos
                     </span>
                 </div>
                 <div id="secureContent" class="secure-blur">
@@ -526,18 +486,19 @@
             
             <div class="chat-input-wrapper">
                 <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
+                <button class="btn-attachment mic-btn" data-mode="msgs" onmousedown="handleMicStart(event)" ontouchstart="handleMicStart(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
                 <button class="btn-attachment" onclick="openMediaMenu('msgs')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
             </div>
             
             <div class="record-ui" id="recordUI_msgs">
-                <div class="record-dot"></div>
+                <div class="audio-wave playing" style="flex:0; margin-right: 15px;">
+                    <div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div>
+                </div>
                 <div class="record-text-container">
                     <div class="record-slide-text" id="recordText_msgs">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        Glissez pour annuler
+                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler
                     </div>
                 </div>
             </div>
@@ -562,18 +523,19 @@
         <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
             <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
                 <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
-                <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
+                <button class="btn-attachment mic-btn" style="color:var(--love);" data-mode="cocon" onmousedown="handleMicStart(event)" ontouchstart="handleMicStart(event)">
                     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
                 </button>
                 <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
             </div>
 
             <div class="record-ui" id="recordUI_cocon" style="border-color:var(--love);">
-                <div class="record-dot"></div>
+                <div class="audio-wave playing" style="flex:0; margin-right: 15px;">
+                    <div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div><div class="audio-bar" style="background:var(--love)"></div>
+                </div>
                 <div class="record-text-container">
                     <div class="record-slide-text" id="recordText_cocon">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        Glissez pour annuler
+                        <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg> Glissez pour annuler
                     </div>
                 </div>
             </div>
@@ -723,24 +685,24 @@ let recordStartX = 0;
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
 const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
-    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
-    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Ferme les yeux, imagine mes bras... je suis là."],
-    "Stressée par les cours": ["Une mauvaise note ne définit pas qui tu es. 📚", "Ton avenir s'annonce brillant quoi qu'il arrive. ✨"],
-    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front... 😘", "Je t'envoie un million de bisous à travers l'univers."],
-    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur. 🫂", "Je suis ta forteresse. Rien ne peut t'atteindre."]
+    "Heureux": ["Ton bonheur est ma plus belle réussite.", "C'est une journée magnifique pour s'aimer encore plus !"],
+    "Triste": ["N'oublie jamais que je suis ton port d'attache.", "Tes larmes sont mes larmes. Je suis là."],
+    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde.", "Ferme les yeux, laisse-toi porter."],
+    "Amoureux": ["Tu es ma galaxie toute entière.", "Chaque battement de mon cœur porte ton nom."],
+    "Besoin de force": ["Tu es bien plus forte que tu ne le penses.", "Respire un grand coup, tu vas tout déchirer !"],
+    "Seule": ["Regarde le ciel, on regarde la même lune.", "Ferme les yeux, imagine mes bras... je suis là."],
+    "Stressée par les cours": ["Une mauvaise note ne définit pas qui tu es.", "Ton avenir s'annonce brillant quoi qu'il arrive."],
+    "Besoin d'un bisou": ["Un doux baiser déposé tendrement sur ton front...", "Je t'envoie un million de bisous à travers l'univers."],
+    "Besoin d'un câlin": ["Je t'enveloppe de mes bras. Sens ma chaleur.", "Je suis ta forteresse. Rien ne peut t'atteindre."]
 };
 
 const humeursCocon = [
-    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, 
-    {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, 
-    {label: "❌ Retirer l'humeur"}
+    {label: "Amoureux"}, {label: "Heureux"}, 
+    {label: "Tu me manques"}, {label: "Fatigué"}, 
+    {label: "Retirer l'humeur"}
 ];
 
-const allLanguages = [{code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}];
+const allLanguages = [{code: 'fr', name: 'Français', flag: 'FR'}, {code: 'en', name: 'English', flag: 'EN'}];
 
 const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
@@ -922,8 +884,8 @@ function applyTranslations(code) {
 }
 
 function openLangMenu() {
-    let html = `<input type="text" id="langSearch" class="modal-input" placeholder="🔍 Rechercher une langue..." oninput="filterLangs()" style="margin-bottom:15px; background:rgba(0,0,0,0.4);"><div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
-    html += allLanguages.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:24px; margin-right:12px;">${l.flag}</span> <span style="font-size:16px;">${l.name}</span></button>`).join('');
+    let html = `<input type="text" id="langSearch" class="modal-input" placeholder="Rechercher..." style="margin-bottom:15px; background:rgba(0,0,0,0.4);"><div id="langList" class="scroll-hidden" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">`;
+    html += allLanguages.map(l => `<button class="option-btn" style="justify-content:flex-start; padding:15px 20px; background:rgba(255,255,255,0.05);" onclick="setAppLang('${l.code}')"><span style="font-size:16px;">${l.name}</span></button>`).join('');
     html += `</div>`;
     openModal("Langue", html, null);
 }
@@ -1078,7 +1040,6 @@ function addFriend() {
                 
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté !"); })
                 .catch(err => { 
-                    // Bypass local
                     triggerBack(); showToast("Contact ajouté (Mode local) !"); 
                 });
             } else showToast("Inconnu");
@@ -1294,7 +1255,7 @@ function msgOptions(msgId, time, escTxt, path, target, type, isMe) {
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '😂', '${path}', '${target}')">😂</button>
         <button class="reaction-btn" onclick="reactToMsg('${msgId}', '🥺', '${path}', '${target}')">🥺</button>
         <div style="width:1px; height:24px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
-        <input type="text" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" placeholder="➕" oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
+        <input type="text" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px dashed var(--accent); border-radius: 50%; text-align: center; font-size: 18px; color: white; outline: none; cursor: pointer; padding: 0;" placeholder="+" oninput="if(this.value.trim() !== '') reactToMsg('${msgId}', this.value.trim(), '${path}', '${target}')">
     </div>`;
 
     if(type === 'text' && isMe && (Date.now() - time <= 30 * 60 * 1000)) {
@@ -1368,7 +1329,6 @@ function sendMsg(mode) {
         }).then(() => {
             inp.value = ""; inp.focus(); setTimeout(() => { window.isSendingMsg = false; }, 500); 
         }).catch(err => { 
-            console.error("Erreur d'envoi ignorée localement"); 
             window.isSendingMsg = false; 
             inp.value = ""; 
         });
@@ -1518,12 +1478,13 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// CORRECTION BUG 3 : GLISSER POUR ANNULER AUDIO PRO
-async function startRecording(e, mode) {
+// --- CORRECTION BUG 3 : GLISSER POUR ANNULER AUDIO PRO ---
+window.handleMicStart = async function(e) {
     e.preventDefault(); 
     if(isRecording) return;
     cancelAudio = false;
     
+    const mode = e.currentTarget.getAttribute('data-mode');
     if(e.type === 'touchstart') {
         recordStartX = e.touches[0].clientX;
     } else {
@@ -1560,15 +1521,18 @@ async function startRecording(e, mode) {
         e.currentTarget.classList.add('recording');
         e.currentTarget.addEventListener('touchmove', handleRecordMove, {passive: false});
         e.currentTarget.addEventListener('mousemove', handleRecordMove);
+        e.currentTarget.addEventListener('touchend', stopRecording);
+        e.currentTarget.addEventListener('mouseup', stopRecording);
+        e.currentTarget.addEventListener('mouseleave', stopRecording);
         
         if('vibrate' in navigator) navigator.vibrate(50);
     } catch (err) { console.warn("Délai ou refus micro:", err); }
-}
+};
 
 function handleRecordMove(e) {
     if(!isRecording) return;
     let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const mode = e.currentTarget.closest('.chat-footer').id === 'chatFooter' ? 'msgs' : 'cocon';
+    const mode = e.currentTarget.getAttribute('data-mode');
     const recordText = document.getElementById('recordText_' + mode);
 
     if (recordStartX - currentX > 50) { 
@@ -1593,6 +1557,9 @@ function stopRecording(e) {
     if(isRecording && mediaRecorder) {
         e.currentTarget.removeEventListener('touchmove', handleRecordMove);
         e.currentTarget.removeEventListener('mousemove', handleRecordMove);
+        e.currentTarget.removeEventListener('touchend', stopRecording);
+        e.currentTarget.removeEventListener('mouseup', stopRecording);
+        e.currentTarget.removeEventListener('mouseleave', stopRecording);
         e.currentTarget.style.background = "";
         
         mediaRecorder.stop(); 
@@ -1811,7 +1778,7 @@ function askCoconCode() {
             document.getElementById('customModal').style.display = 'none';
             stateStack = stateStack.filter(s => s !== 'modal'); 
             
-            document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
+            document.getElementById('mainApp').style.display = 'none'; 
             const cocon = document.getElementById('coconBox');
             cocon.style.setProperty('display', 'flex', 'important');
             pushState('coconBox'); lockAppHeight(); syncMessages('cocon', user.code, 'coArea');
@@ -1867,7 +1834,7 @@ function promptGalaxyAccess() {
 }
 
 function openNeedyou() {
-    document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
+    document.getElementById('mainApp').style.display = 'none'; 
     document.getElementById('needyouBox').style.display = 'flex';
     pushState('needyou');
     document.getElementById('needyouForm').style.display = 'block';
@@ -1880,7 +1847,7 @@ function openNeedyou() {
 
 function closeNeedyou(fromHistory = false) {
     document.getElementById('needyouBox').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block'; // RESTAURATION
+    document.getElementById('mainApp').style.display = 'block'; 
     const starsContainer = document.getElementById('stars-container');
     starsContainer.innerHTML = ''; starsContainer.classList.remove('warp-active');
     if(!fromHistory) triggerBack();
