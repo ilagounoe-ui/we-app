@@ -64,7 +64,7 @@
         /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
-        .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: padding: 5px; z-index: 5; transition: 0.2s; }
+        .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
         .pwd-eye:active { color: var(--accent); transform: translateY(-50%) scale(0.9); }
 
         .stellar-dust-particle {
@@ -147,9 +147,8 @@
         .bulle-humeur { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 11px; color: white; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); font-weight: 600; }
         .badge-count { background: #ff4b6e; color: white; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-shadow: 0 0 10px rgba(255, 75, 110, 0.4); }
 
-
         /* =========================================================
-           ARCHITECTURE FLEXBOX POUR CHAT (FIXÉ)
+           ARCHITECTURE FLEXBOX POUR CHAT
            ========================================================= */
         #chatBox, #coconBox { 
             position: absolute; 
@@ -172,7 +171,7 @@
         
         .msg-area { 
             position: relative; 
-            flex: 1; /* Prend tout l'espace restant */
+            flex: 1; 
             overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; 
             -webkit-overflow-scrolling: touch; 
         }
@@ -182,7 +181,6 @@
             width: 100%; background: rgba(11,9,20,0.95); 
             z-index: 20; flex-shrink: 0; 
         }
-        /* ========================================================= */
 
         .chat-bottom-bar { padding: 10px 15px 15px; display: flex; gap: 10px; align-items: flex-end; }
         .typing-indicator { padding: 5px 25px 2px; font-size: 11px; color: var(--accent); font-style: italic; position: absolute; top: -20px; left: 0; }
@@ -193,7 +191,7 @@
         .m-they { align-self: flex-start; background: var(--card); border-bottom-left-radius: 4px; }
         .msg-meta { font-size: 10px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 5px; opacity: 0.8; align-items: center; }
 
-        /* --- NOUVEAU DESIGN AUDIO --- */
+        /* --- DESIGN AUDIO & ONDES --- */
         .custom-audio-player { 
             display: flex; align-items: center; gap: 12px; 
             background: rgba(255, 255, 255, 0.1); padding: 10px 15px; 
@@ -207,114 +205,63 @@
             font-size: 18px; cursor: pointer; flex-shrink: 0; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s;
         }
-        .audio-play-btn:active { transform: scale(0.9); }
-        .m-me .audio-play-btn { background: #fff; color: #000; }
         
         .audio-wave { flex: 1; height: 30px; display: flex; align-items: center; gap: 4px; justify-content: center; }
-        .audio-bar { width: 4px; background: rgba(255,255,255,0.5); border-radius: 2px; transition: height 0.2s ease; }
+        .audio-bar { width: 4px; height: 8px; background: rgba(255,255,255,0.5); border-radius: 2px; transition: height 0.2s ease; }
         .m-me .audio-bar { background: rgba(0,0,0,0.4); }
         
-        /* Animation ondes sonores actives */
         @keyframes wave-animation {
-            0% { height: 10px; }
+            0%, 100% { height: 10px; }
             50% { height: 30px; }
-            100% { height: 10px; }
         }
-        .playing .audio-bar:nth-child(1) { animation: wave-animation 1s infinite 0.1s; }
-        .playing .audio-bar:nth-child(2) { animation: wave-animation 1s infinite 0.3s; }
-        .playing .audio-bar:nth-child(3) { animation: wave-animation 1s infinite 0.5s; }
-        .playing .audio-bar:nth-child(4) { animation: wave-animation 1s infinite 0.2s; }
-        .playing .audio-bar:nth-child(5) { animation: wave-animation 1s infinite 0.4s; }
+        .playing .audio-bar { animation: wave-animation 0.8s infinite ease-in-out; }
+        .playing .audio-bar:nth-child(1) { animation-delay: 0.1s; }
+        .playing .audio-bar:nth-child(2) { animation-delay: 0.3s; }
+        .playing .audio-bar:nth-child(3) { animation-delay: 0.5s; }
+        .playing .audio-bar:nth-child(4) { animation-delay: 0.2s; }
+        .playing .audio-bar:nth-child(5) { animation-delay: 0.4s; }
 
-        /* Animation enregistrement (placeholder text) */
-        @keyframes recordGlow {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        .recording-text { animation: recordGlow 1.5s infinite; color: var(--love); font-weight: bold; }
-        /* ========================================================= */
-        
         .media-thumbnail { width: 100%; border-radius: 12px; margin-top: 5px; object-fit: cover; cursor: pointer; }
         .video-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(0,0,0,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; }
 
-        #mediaViewerOverlay { position: fixed; inset: 0; background: #000; z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
-        #mediaViewerOverlay.show { opacity: 1; display: flex; }
-        #mediaViewerOverlay .close-btn { position: absolute; top: 40px; left: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; z-index: 10; }
-        #mediaViewerContent { max-width: 100vw; max-height: 100vh; object-fit: contain; }
-        
         .chat-input-wrapper { flex: 1; display: flex; align-items: center; background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 2px 5px 2px 15px; border: 1px solid rgba(255, 255, 255, 0.1); min-width: 0; transition: 0.3s; }
         .chat-input-field { flex: 1; background: transparent; border: none; padding: 12px 0; color: white; font-size: 15px; font-family: 'Poppins', sans-serif; outline: none; min-width: 0; width: 100%; transition: 0.3s; }
         
         .btn-attachment { background: transparent; border: none; color: var(--text-sub); padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.2s; }
-        .btn-attachment:hover { color: white; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 20000; display: none; align-items: center; justify-content: center; padding: 25px; }
         .modal-content { background: rgba(26, 26, 46, 0.95); width: 100%; max-width: 340px; padding: 30px; border-radius: 40px; border: 1px solid rgba(187,134,252,0.3); text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
         
-        .modal-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 16px; border-radius: 20px; color: white; margin: 15px 0; text-align: center; font-size: 16px; transition: 0.3s; font-family: 'Poppins', sans-serif;}
-        .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
-        
         .option-btn { width: 100%; padding: 16px; margin-top: 12px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: white; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: left; transition: all 0.2s; }
-        .option-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
         
-        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 600; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 999999; box-shadow: 0 10px 30px var(--accent-glow); text-align: center; width: max-content; max-width: 90%; will-change: bottom; }
+        .toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 14px 28px; border-radius: 30px; font-weight: 600; transition: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 999999; box-shadow: 0 10px 30px var(--accent-glow); text-align: center; }
         .toast.show { bottom: 50px; }
 
         #vWidgetFull { display:none; position:fixed; inset:0; background:rgba(11,9,20,0.95); z-index:30000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         .mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 300px; margin-top: 25px; overflow-y: auto; max-height: 50vh; padding-bottom: 20px; }
         
         .fab { position: fixed; bottom: 30px; right: 25px; width: 65px; height: 65px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; z-index: 50; box-shadow: 0 10px 30px var(--accent-glow); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; }
-        .fab:active { transform: scale(0.85); box-shadow: 0 5px 15px var(--accent-glow); }
         
         .secure-blur { filter: blur(8px); pointer-events: none; opacity: 0.4; transition: 0.4s ease; }
         
         .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         .theme-card { height: 90px; border-radius: 15px; border: 2px solid transparent; cursor: pointer; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; text-shadow: 0 2px 5px black; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        .theme-card:active { transform: scale(0.92); border-color: var(--accent); }
         
-        .scroll-hidden::-webkit-scrollbar { display: none; }
         .svg-icon { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
         .svg-icon-lg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
-        
-        .msg-reactions { position: absolute; bottom: -12px; right: 15px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 12px; padding: 2px 6px; font-size: 13px; display: flex; gap: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 2; }
-        .m-they .msg-reactions { right: auto; left: 15px; }
-        .reaction-btn { background: transparent; border: none; font-size: 24px; cursor: pointer; transition: transform 0.2s; padding: 8px; border-radius: 50%; }
-        .reaction-btn:active { transform: scale(1.4); background: rgba(255,255,255,0.1); }
         
         #galaxyBox { display: none; position: fixed; inset: 0; background: #010005; z-index: 100000; overflow: hidden; }
         #galaxyCanvasContainer { position: absolute; inset: 0; outline: none; }
 
-        /* --- CSS NEEDYOU (LOCAL) --- */
-        @keyframes warpSpeed { 0% { transform: scale(1) translateZ(0); opacity: 0.5; } 100% { transform: scale(3) translateZ(0); opacity: 1; } }
-        .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
         .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
-
-        .custom-radio-label { display: flex; align-items: center; padding: 14px 18px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease; font-size: 14px; color: rgba(255,255,255,0.8); }
-        .custom-radio-label:active { transform: scale(0.97); }
-        .custom-radio-label input { display: none; }
-        .radio-box { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .custom-radio-label:has(input:checked) { border-color: var(--accent); background: rgba(208, 168, 255, 0.1); color: white; font-weight: bold; box-shadow: inset 0 0 15px rgba(208, 168, 255, 0.05); }
-        .custom-radio-label:has(input:checked) .radio-box { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-        .custom-radio-label:has(input:checked) .radio-box::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 5px var(--accent); }
-
-        .ai-magic-orb {
-            width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--love));
-            margin: 0 auto 20px auto; position: relative; animation: floatOrb 3s ease-in-out infinite; box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3);
-        }
-        .ai-magic-orb::after {
-            content: '✨'; font-size: 30px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: spinStar 4s linear infinite;
-        }
-        @keyframes floatOrb { 0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); } 50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); } }
-        @keyframes spinStar { 0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); } 50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); } 100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); } }
     </style>
 </head>
 <body onclick="unlockAudio()">
 
 <div id="toastAlert" class="toast"></div>
 
-<div id="mediaViewerOverlay">
-    <div class="close-btn" onclick="closeMediaViewer()">
+<div id="mediaViewerOverlay" style="position: fixed; inset: 0; background: #000; z-index: 100000; display: none; flex-direction: column; align-items: center; justify-content: center;">
+    <div class="close-btn" onclick="closeMediaViewer()" style="position: absolute; top: 40px; left: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer;">
         <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </div>
     <div id="mediaViewerContainer" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;"></div>
@@ -322,41 +269,36 @@
 
 <div id="galaxyBox">
     <audio id="galaxyAudio" loop preload="auto" src="https://res.cloudinary.com/dgiy2zapd/video/upload/v1777060481/Daydream_Inspiration_piano_music_calm_pianomusic_inspiration_-_320_Kbps_wmirrn.mp3"></audio>
-
     <div style="position:absolute; top:40px; left:20px; z-index:105;" onclick="closeGalaxy()">
         <div style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
             <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </div>
     </div>
-    
     <input type="file" id="floatingPhotoInput" hidden accept="image/*" onchange="processMediaUpload(event, 'floatingPhoto')" onclick="this.value=null">
-
     <div id="galaxyCanvasContainer"></div>
 </div>
 
-<div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; flex-direction: column; align-items: center; text-align: center;">
+<div id="coconNoteDisplay" style="display:none; position:fixed; z-index:50000; flex-direction: column; align-items: center; text-align: center; top: 20px; left: 5%; width: 90%; background: rgba(0, 77, 64, 0.95); border-radius: 35px; border: 1px solid var(--notif-vibrant); box-shadow: 0 15px 35px rgba(0,0,0,0.6); padding: 20px;">
     <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 15px;">
-        <svg style="width:32px; height:32px; fill:var(--notif-vibrant); animation:pulse 2s infinite;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-        <h2 style="font-family:'Pacifico'; font-size:22px; color:var(--notif-vibrant); margin:0; text-shadow: 0 2px 10px rgba(0,229,255,0.3);">Mot doux reçu...</h2>
+        <svg style="width:32px; height:32px; fill:var(--notif-vibrant);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <h2 style="font-family:'Pacifico'; font-size:22px; color:var(--notif-vibrant); margin:0;">Mot doux reçu...</h2>
     </div>
-    <p id="coconNoteText" style="font-size:15px; font-weight:500; color:white; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:18px; width:100%; line-height:1.5; border: 1px solid var(--glass-border); margin: 0 0 20px 0; font-style: italic;"></p>
-    <button onclick="closeCoconNote()" style="width:100%; padding:14px; border-radius:20px; border:none; background:var(--notif-vibrant); color:white; font-weight:bold; font-size:15px; box-shadow: 0 8px 20px rgba(0,229,255,0.3); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci</button>
+    <p id="coconNoteText" style="font-size:15px; color:white; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:18px; margin-bottom: 20px; font-style: italic;"></p>
+    <button onclick="closeCoconNote()" style="width:100%; padding:14px; border-radius:20px; border:none; background:var(--notif-vibrant); color:white; font-weight:bold;">Merci</button>
 </div>
 
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
-    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px; text-shadow: 0 4px 15px var(--love-glow); display:flex; align-items:center; gap:10px; justify-content:center;">
-        L'Univers te parle... 💖
-    </div>
-    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;">...</div>
+    <div style="font-family:'Pacifico'; color:var(--love); font-size:32px; margin-bottom:20px;">L'Univers te parle... 💖</div>
+    <div id="widgetText" style="font-size:20px; color:white; background:rgba(255,255,255,0.05); padding:30px; border-radius:35px; border:1px solid rgba(255,75,110,0.5); min-height:120px; width:90%; display:flex; align-items:center; justify-content:center; text-align: center;">...</div>
     <div id="moodOptions" class="mood-grid scroll-hidden"></div>
-    <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold; transition:0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Retour</button>
+    <button onclick="document.getElementById('vWidgetFull').style.display='none'" style="margin-top:40px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); color:white; padding:15px 40px; border-radius:25px; font-weight:bold;">Retour</button>
 </div>
 
 <div class="modal-overlay" id="customModal">
     <div class="modal-content" id="modalFrame">
-        <h3 id="modalTitle" style="color:var(--accent); margin:0 0 15px 0; font-family:'Pacifico'; text-shadow: 0 2px 10px var(--accent-glow);">...</h3>
+        <h3 id="modalTitle" style="color:var(--accent); margin:0 0 15px 0; font-family:'Pacifico';">...</h3>
         <div id="modalBody"></div>
         <div id="modalActions" style="display:flex; gap:12px; margin-top:25px;">
             <button class="option-btn" style="background:rgba(255,255,255,0.05); justify-content:center;" onclick="triggerBack()">Annuler</button>
@@ -366,367 +308,181 @@
 </div>
 
 <div id="authLayer" style="position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-    
     <div class="lamp-glow-bg"></div>
-
     <div class="auth-container-flex">
-        
         <div class="lamp-wrapper">
-            <h1 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); margin-bottom: 20px; text-shadow: 0 0 15px var(--accent-glow);">Notre Univers</h1>
-            
+            <h1 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); margin-bottom: 20px;">Notre Univers</h1>
             <div class="lamp-container" onclick="document.getElementById('authLayer').classList.toggle('lamp-on');">
-                <div class="lamp-head"></div>
-                <div class="lamp-bulb" id="lampBulb"></div>
-                <div class="lamp-body"></div>
-                <div class="lamp-base"></div>
-                <div class="lamp-table"></div>
+                <div class="lamp-head"></div><div class="lamp-bulb" id="lampBulb"></div><div class="lamp-body"></div><div class="lamp-base"></div><div class="lamp-table"></div>
                 <div class="lamp-string"><div class="lamp-string-ball"></div></div>
             </div>
             <p class="pull-text">Tirer le fil</p>
         </div>
-
         <div id="authFormWrapper">
             <div id="loginUI">
-                <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center; margin-top:0; margin-bottom: 20px;">Bienvenue</h2>
-                
-                <input type="text" inputmode="tel" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone" autocomplete="off" spellcheck="false">
-                
+                <h2 style="font-family:'Pacifico'; color:white; font-size:24px; text-align:center;">Bienvenue</h2>
+                <input type="text" inputmode="tel" class="toaster-input" placeholder="Identifiant (Numéro)" id="lPhone">
                 <div class="pwd-wrapper">
-                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') login()">
-                    <span class="pwd-eye" onclick="togglePwd('lPass', this)">
-                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </span>
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="lPass" autocomplete="new-password">
+                    <span class="pwd-eye" onclick="togglePwd('lPass', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
                 </div>
-                
                 <button class="toaster-btn" onclick="login()">Se connecter</button>
             </div>
-            
             <div id="regUI" style="display:none;">
-                <h2 style="font-family:'Pacifico'; color:white; font-size:22px; text-align:center; margin-top:0; margin-bottom: 15px;">Nouveau Profil</h2>
-                <input type="text" class="toaster-input" placeholder="Pseudo" id="rPseudo" autocomplete="off" spellcheck="false">
-                <input type="text" inputmode="tel" class="toaster-input" placeholder="Numéro" id="rPhone" autocomplete="off" spellcheck="false">
-                
+                <h2 style="font-family:'Pacifico'; color:white; font-size:22px; text-align:center;">Nouveau Profil</h2>
+                <input type="text" class="toaster-input" placeholder="Pseudo" id="rPseudo">
+                <input type="text" inputmode="tel" class="toaster-input" placeholder="Numéro" id="rPhone">
                 <div class="pwd-wrapper">
-                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass" autocomplete="new-password" spellcheck="false" autocorrect="off">
-                    <span class="pwd-eye" onclick="togglePwd('rPass', this)">
-                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </span>
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Mot de passe" id="rPass">
+                    <span class="pwd-eye" onclick="togglePwd('rPass', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
                 </div>
-                
                 <div class="pwd-wrapper">
-                    <input type="text" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode" autocomplete="new-password" spellcheck="false" autocorrect="off" onkeydown="if(event.key === 'Enter') register()">
-                    <span class="pwd-eye" onclick="togglePwd('rCode', this)">
-                        <svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    </span>
+                    <input type="text" class="toaster-input masquer-texte" placeholder="Code Cocon" id="rCode">
+                    <span class="pwd-eye" onclick="togglePwd('rCode', this)"><svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg></span>
                 </div>
-                
                 <button class="toaster-btn" onclick="register()">Créer mon univers</button>
             </div>
-
-            <div style="display:flex; justify-content:center; margin-top:15px;">
-                <div class="toaster-toggle-container" onclick="toggleAuthMode()">
-                    <div class="toaster-toggle-text">Connexion</div>
-                    <div class="toaster-toggle-text">Inscription</div>
-                    <div id="toasterThumb" class="toaster-thumb"></div>
-                </div>
+            <div class="toaster-toggle-container" onclick="toggleAuthMode()">
+                <div class="toaster-toggle-text">Connexion</div><div class="toaster-toggle-text">Inscription</div><div id="toasterThumb" class="toaster-thumb"></div>
             </div>
         </div>
-        
     </div>
 </div>
+
 <div id="mainApp" style="display:none; height: 100%; overflow: auto;">
     <header class="main-header">
         <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; flex-direction:column;">
-                <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px; text-shadow: 0 2px 10px var(--accent-glow);">Pseudo</h2>
-                <div id="myMoodDisp" class="bulle-humeur" style="display:none; margin-top:5px; width:max-content;"></div>
+                <h2 id="uNameDisp" style="margin:0; font-family:'Pacifico'; color:var(--accent); font-size:24px;">Pseudo</h2>
+                <div id="myMoodDisp" class="bulle-humeur" style="display:none; margin-top:5px;"></div>
             </div>
-            <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; border:1px solid var(--glass-border); color:var(--online);">● Connecté</div>
+            <div id="globalStatus" style="font-size:11px; padding:5px 12px; background:rgba(0,0,0,0.3); border-radius:15px; color:var(--online);">● Connecté</div>
         </div>
         <div class="tabs">
-            <div class="tab active" onclick="switchV('vChats', this)">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
-                <span data-i18n="tab_msg">Messages</span>
-                <div id="globalUnreadBadge" class="badge-count" style="display:none;">0</div>
-            </div>
-            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> 
-                <span data-i18n="tab_cocon">Le Cocon</span>
-            </div>
-            <div class="tab" onclick="switchV('vSet', this)">
-                <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
-                <span data-i18n="tab_set">Réglages</span>
-            </div>
+            <div class="tab active" onclick="switchV('vChats', this)"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> <span>Messages</span><div id="globalUnreadBadge" class="badge-count" style="display:none;">0</div></div>
+            <div class="tab" id="coconTabBtn" onclick="switchV('vCocon', this)"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> <span>Le Cocon</span></div>
+            <div class="tab" onclick="switchV('vSet', this)"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>Réglages</span></div>
         </div>
     </header>
 
     <div id="vChats" class="view active">
         <div id="chatList"></div>
-        <div class="fab" onclick="addFriend()">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </div>
+        <div class="fab" onclick="addFriend()"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
     </div>
 
     <div id="vCocon" class="view">
-        <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 0 30px rgba(208, 168, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); position: relative; overflow: hidden;">
-            
-            <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                </svg>
-            </div>
-
+        <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; border: 1px solid rgba(255, 255, 255, 0.05);">
             <h3 class="eternity-title" id="eternityTitle">Notre Éternité</h3>
-            
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
-                <div class="time-box">
-                    <span id="d-day" class="time-val">0</span>
-                    <span class="time-label">Jours</span>
-                </div>
-                <div class="time-box">
-                    <span id="d-hour" class="time-val">0</span>
-                    <span class="time-label">Heures</span>
-                </div>
-                <div class="time-box">
-                    <span id="d-min" class="time-val">0</span>
-                    <span class="time-label">Min</span>
-                </div>
-                <div class="time-box">
-                    <span id="d-sec" class="time-val">0</span>
-                    <span class="time-label">Sec</span>
-                </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                <div class="time-box"><span id="d-day" class="time-val">0</span><span class="time-label">Jours</span></div>
+                <div class="time-box"><span id="d-hour" class="time-val">0</span><span class="time-label">Heures</span></div>
+                <div class="time-box"><span id="d-min" class="time-val">0</span><span class="time-label">Min</span></div>
+                <div class="time-box"><span id="d-sec" class="time-val">0</span><span class="time-label">Sec</span></div>
             </div>
         </div>
-
-        <button onclick="askCoconCode()" style="width:100%; padding:25px; border-radius:30px; border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); font-weight:bold; font-size:16px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> DÉVERROUILLER LE COCON
-        </button>
-        <button onclick="openMoodSelector()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:20px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> J'ai besoin d'un mot doux...
-        </button>
-        <button onclick="choisirHumeurCocon()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--glass-border); background:var(--card); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Définir mon humeur
-        </button>
-        
-        <button onclick="openNeedyou()" style="width:100%; padding:18px; border-radius:30px; border:1px solid transparent; background: linear-gradient(135deg, rgba(208, 168, 255, 0.1), rgba(255, 75, 110, 0.1)); color:white; font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow: 0 0 15px rgba(255, 75, 110, 0.2);" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Needyou (Poème Stellaire)
-        </button>
-
-        <button onclick="promptGalaxyAccess()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--accent); background:rgba(208, 168, 255, 0.05); color:var(--accent); font-weight:bold; margin-top:10px; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Rejoindre notre Galaxie
-        </button>
+        <button onclick="askCoconCode()" class="option-btn" style="border:2px dashed var(--love); background:rgba(255,75,110,0.05); color:var(--love); justify-content:center;">DÉVERROUILLER LE COCON</button>
+        <button onclick="openMoodSelector()" class="option-btn" style="justify-content:center; margin-top:20px;">Mots doux...</button>
+        <button onclick="openNeedyou()" class="option-btn" style="justify-content:center; margin-top:10px;">Needyou</button>
+        <button onclick="promptGalaxyAccess()" class="option-btn" style="justify-content:center; margin-top:10px; border-color: var(--accent); color: var(--accent);">Notre Galaxie</button>
     </div>
 
     <div id="vSet" class="view">
-        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent); font-size:45px; box-shadow: 0 10px 30px var(--accent-glow); cursor:pointer; transition:0.3s;" onclick="document.getElementById('pfpInput').click()" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-            <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; stroke-width:1.5; fill:none; stroke-linecap:round; stroke-linejoin:round;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </div>
-        <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')" onclick="this.value=null">
-        <input type="file" id="wallInput" hidden accept="image/*" onchange="processMediaUpload(event, 'wall')" onclick="this.value=null">
-        
-        <input type="file" id="imgIn" hidden accept="image/*,video/*">
-        <input type="file" id="camIn" hidden accept="image/*" capture="environment">
-        <input type="file" id="audioChatIn" hidden accept="audio/*">
-
+        <div id="pfpPreview" class="pfp" style="width:120px; height:120px; margin:0 auto 25px; border:4px solid var(--accent);" onclick="document.getElementById('pfpInput').click()"></div>
+        <input type="file" id="pfpInput" hidden accept="image/*" onchange="processMediaUpload(event, 'pfp')">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;">
-            <div id="secureInfoBox" style="background:var(--card); padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border:1px solid var(--glass-border); position:relative; overflow:hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.2);">
-                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer; gap:8px;" onclick="unlockSecureSettings()">
-                    <span style="font-size:13px; font-weight:bold; color:var(--accent); padding:10px 20px; border-radius:20px; border:1px solid var(--accent); display:flex; align-items:center; gap:8px;">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Appuyez pour voir les infos
-                    </span>
-                </div>
-                <div id="secureContent" class="secure-blur">
-                    <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
-                        <svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> 
-                        <b>Infos du compte</b>
-                    </div>
-                    <div style="font-size:14px; color:var(--text-sub);">
-                        <span>Numéro : <b id="setPhoneDisplay" style="color:white;"></b></span><br>
-                        <span>Code Cocon : <b id="setCodeDisplay" style="color:var(--love); text-shadow: 0 0 10px var(--love-glow);"></b></span><br>
-                        <span>ID Unique : <b id="setIdDisplay" style="color:white;"></b></span><br>
-                        <span style="display:inline-block; margin-top:5px; color:var(--check); font-size:11px; display:inline-flex; align-items:center; justify-content:center; gap:4px;">
-                            <svg style="width:12px; height:12px; stroke:currentColor; stroke-width:2; fill:none;" viewBox="0 0 24 24"><path d="M21 13.25V6l-9-4-9 4v7.25c0 6.27 4.28 11.83 9 13.15 4.72-1.32 9-6.88 9-13.15z"></path></svg> Chiffrement E2EE Actif
-                        </span>
-                    </div>
-                </div>
+            <div id="secureInfoBox" style="background:var(--card); padding:22px; border-radius:28px; grid-column: span 2; position:relative; overflow:hidden;">
+                <div id="secureBlurOverlay" style="position:absolute; inset:0; background:rgba(0,0,0,0.8); z-index:5; display:flex; align-items:center; justify-content:center; cursor:pointer;" onclick="unlockSecureSettings()">Appuyer pour voir</div>
+                <div id="secureContent" class="secure-blur">Infos du compte...</div>
             </div>
-
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('pseudo')">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <b data-i18n="set_pseudo">Pseudo</b>
-            </div>
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; margin:0; flex-direction:column;" onclick="openEdit('code')">
-                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                <b data-i18n="set_code">Code Cocon</b>
-            </div>
-            
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0; flex-direction:column; gap:5px;" onclick="openLangMenu()">
-                <div style="display:flex; align-items:center; gap:8px;"><svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> <b data-i18n="set_lang">Langue de l'Univers</b></div>
-                <div style="font-size:12px; color:var(--accent); font-weight:bold;" id="currentLangDisp">FR</div>
-            </div>
-
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openDateEdit()">
-                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <b data-i18n="set_date">Date de notre début</b>
-            </div>
-            
-            <div class="option-btn" style="padding:22px; border-radius:28px; text-align:center; grid-column: span 2; margin:0;" onclick="openWallMenu()">
-                <svg class="svg-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                <b data-i18n="set_wall">Personnaliser l'Univers</b>
-            </div>
-
-            <div class="option-btn" style="background:linear-gradient(135deg, var(--accent), var(--love)); border:none; padding:22px; border-radius:28px; text-align:center; grid-column:span 2; color:black; font-weight:bold; margin:0; box-shadow:0 8px 25px rgba(255,75,110,0.4);" onclick="sendGlobalNote()" data-i18n="set_note">
-                <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                Envoyer un mot doux au Cocon
-            </div>
-            
-            <div class="option-btn" style="background:transparent; padding:22px; border-radius:28px; text-align:center; grid-column: span 2; border: 1px dashed var(--love); margin-top: 10px;" onclick="openBlockedList()">
-                <svg class="svg-icon" style="stroke:var(--love);" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                <b data-i18n="set_blocked" style="color:var(--love);">Contacts bloqués</b>
-            </div>
-            
-            <button onclick="confirmLogout()" style="grid-column:span 2; background:none; border:none; color:var(--text-sub); font-weight:bold; margin-top:30px; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; transition:0.2s;" onmousedown="this.style.color='white'" data-i18n="set_leave">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Quitter l'Univers
-            </button>
+            <button class="option-btn" onclick="openEdit('pseudo')">Pseudo</button>
+            <button class="option-btn" onclick="openEdit('code')">Code</button>
+            <button class="option-btn" style="grid-column: span 2;" onclick="confirmLogout()">Quitter l'Univers</button>
         </div>
     </div>
 </div>
 
 <div id="chatBox">
     <div class="chat-head">
-        <span onclick="triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </span>
-        <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0; border:none;"></div>
-        <div style="flex:1">
-            <b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br>
-            <small id="cStatus" style="font-size:11px; opacity:0.8;"></small>
-        </div>
-        <div class="opt-dots" id="chatDots" onclick="openContactOptions()" style="display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-        </div>
+        <span onclick="triggerBack()" style="cursor:pointer;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></span>
+        <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0;"></div>
+        <div style="flex:1"><b id="cName">...</b><br><small id="cStatus"></small></div>
     </div>
-    
     <div class="msg-area" id="mArea"></div>
-    
     <div class="chat-footer" id="chatFooter">
-        <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
+        <div id="typingDisp" class="typing-indicator" style="display:none;">écrit...</div>
         <div class="chat-bottom-bar">
             <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()">
                 
-                <button class="btn-attachment mic-btn" onmousedown="startRecording(event, 'msgs')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'msgs')" ontouchend="stopRecording(event)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                <button class="btn-attachment" onclick="openMediaMenu('msgs')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                </button>
+                <div id="recUiMsgs" style="display:none; flex:1; align-items:center; gap:10px;">
+                    <div style="color:var(--love); animation: pulse 1s infinite;">🔴</div>
+                    <div class="audio-wave playing" style="flex:1;">
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                    </div>
+                    <span id="recTimeMsgs" style="font-size:14px; font-weight:bold; color:var(--love);">00:00</span>
+                </div>
+
+                <button id="trashBtnMsgs" class="btn-attachment" style="display:none; color:var(--love);" onclick="cancelRecord('msgs')">🗑️</button>
+                <button id="micBtnMsgs" class="btn-attachment mic-btn" onclick="toggleRecord('msgs')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line></svg></button>
+                <button id="mediaBtnMsgs" class="btn-attachment" onclick="openMediaMenu('msgs')"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></button>
             </div>
-            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-                <svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
+            <button onclick="sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center;">➤</button>
         </div>
     </div>
 </div>
 
 <div id="coconBox">
-    <div class="chat-head" style="background:rgba(0,0,0,0.85); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
-        <span onclick="triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </span>
-        
-        <div style="flex:1; text-align:center;" onclick="nextCoconTrack()">
-            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                Notre Cocon Privé 
-            </b>
-        </div>
-        
-        <audio id="coconAudio" src=""></audio>
+    <div class="chat-head" style="border-bottom:1px solid rgba(255,75,110,0.2);">
+        <span onclick="triggerBack()" style="cursor:pointer;"><svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></span>
+        <div style="flex:1; text-align:center;"><b style="font-family:'Pacifico'; font-size:20px; color:var(--love);">Notre Cocon Privé</b></div>
+        <audio id="coconAudio"></audio>
     </div>
-    
     <div class="msg-area" id="coArea"></div>
-    
     <div class="chat-footer" id="coconFooter">
-        <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
-            <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
+        <div class="chat-bottom-bar">
+            <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08);">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret">
                 
-                <button class="btn-attachment mic-btn" style="color:var(--love);" onmousedown="startRecording(event, 'cocon')" onmouseup="stopRecording(event)" onmouseleave="stopRecording(event)" ontouchstart="startRecording(event, 'cocon')" ontouchend="stopRecording(event)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                <button class="btn-attachment" onclick="openMediaMenu('cocon')" style="color:var(--love);">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                </button>
+                <div id="recUiCo" style="display:none; flex:1; align-items:center; gap:10px;">
+                    <div style="color:var(--love); animation: pulse 1s infinite;">🔴</div>
+                    <div class="audio-wave playing" style="flex:1;">
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                    </div>
+                    <span id="recTimeCo" style="font-size:14px; font-weight:bold; color:var(--love);">00:00</span>
+                </div>
+
+                <button id="trashBtnCo" class="btn-attachment" style="display:none; color:var(--love);" onclick="cancelRecord('cocon')">🗑️</button>
+                <button id="micBtnCo" class="btn-attachment mic-btn" style="color:var(--love);" onclick="toggleRecord('cocon')">🎤</button>
+                <button id="mediaBtnCo" class="btn-attachment" onclick="openMediaMenu('cocon')">📎</button>
             </div>
-            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-                <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
+            <button onclick="sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white;">➤</button>
         </div>
     </div>
 </div>
 
 <div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
-    
-    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
-
-    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10;">
-        <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
-            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </div>
+    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5;"></div>
+    <div onclick="closeNeedyou()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;"><svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></div>
+    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-align:center;">Needyou</h2>
+    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); padding:25px; border-radius:30px; border:1px solid var(--glass-border);">
+        <input type="text" id="aiMood" class="toaster-input" placeholder="Ton Humeur...">
+        <button onclick="generatePoem()" style="width:100%; padding:16px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold;">Composer</button>
     </div>
-
-    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:10px; text-align:center;">Needyou</h2>
-    <p style="opacity:0.7; font-size:13px; text-align:center; margin-bottom:30px;">Laisse l'Univers écrire pour toi...</p>
-
-    <div id="needyouForm" style="width:100%; max-width:340px; background:rgba(255,255,255,0.05); padding:25px; border-radius:30px; border:1px solid var(--glass-border); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-        
-        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px;">Ton Humeur actuelle</label>
-        <input type="text" id="aiMood" class="toaster-input" placeholder="Ex: Rêveur, Fatigué, Fou amoureux..." style="margin-bottom:25px;" autocomplete="off" spellcheck="false">
-
-        <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Style du poème</label>
-        
-        <label class="custom-radio-label">
-            <input type="radio" name="aiStyle" id="styleDoux" value="Doux et Romantique" checked>
-            <div class="radio-box"></div> Doux & Romantique
-        </label>
-        
-        <label class="custom-radio-label">
-            <input type="radio" name="aiStyle" id="styleEpique" value="Épique et Spatial">
-            <div class="radio-box"></div> Épique & Spatial
-        </label>
-        
-        <label class="custom-radio-label">
-            <input type="radio" name="aiStyle" id="styleMelancolique" value="Mélancolique">
-            <div class="radio-box"></div> Mélancolique
-        </label>
-        
-        <label class="custom-radio-label">
-            <input type="radio" name="aiStyle" id="styleHaiku" value="Haïku Court">
-            <div class="radio-box"></div> Haïku (Court et Poétique)
-        </label>
-
-        <button onclick="generatePoem()" style="width:100%; padding:16px; border-radius:20px; border:none; background:linear-gradient(135deg, var(--accent), var(--love)); color:black; font-weight:bold; font-size:16px; box-shadow: 0 8px 25px rgba(255,75,110,0.4); cursor:pointer; transition:0.3s; margin-top: 15px; display:flex; align-items:center; justify-content:center; gap:8px;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            Murmurer aux étoiles
-        </button>
-    </div>
-
-    <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
-        <div id="aiGeneratingBlock" style="text-align:center;">
-            <div class="ai-magic-orb"></div>
-            <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div>
-        </div>
-        
-        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
-        </div>
-
-        <button id="aiCopyBtn" onclick="copyPoem()" style="display:none; width:100%; padding:15px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.1); color:white; font-weight:bold; margin-top:20px; cursor:pointer;">
-            Copier pour le Cocon
-        </button>
+    <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px;">
+        <div id="aiGeneratingBlock"><div class="ai-magic-orb"></div></div>
+        <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px;"></div>
+        <button onclick="copyPoem()" style="margin-top:20px; color:white;">Copier</button>
     </div>
 </div>
+    
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
@@ -835,14 +591,15 @@ let typingTimeout = null;
 let chatClearedAt = 0; 
 let timeCounterInterval = null; 
 let unsubMsgs = null; 
+
+// --- VARIABLES AUDIO ---
 let mediaRecorder;
 let audioChunks = [];
 let isRecording = false;
 let audioUnlocked = false;
-
-// Variables Micro Swipe
 let cancelAudio = false;
-let recordStartX = 0;
+let recordTimerInterval = null;
+let recordSeconds = 0;
 
 const sounds = { pop: "https://res.cloudinary.com/dgiy2zapd/video/upload/v1710000000/pop_sound.mp3" };
 
@@ -1260,7 +1017,6 @@ function revealCapsule(docId, path) {
 let currentCustomAudio = null;
 let currentPlayBtn = null;
 window.playCustomAudio = function(url, btnElement) {
-    // Retirer l'animation des ondes de l'ancien bouton
     if(currentPlayBtn && currentPlayBtn !== btnElement) {
         currentPlayBtn.parentElement.classList.remove('playing');
         currentPlayBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
@@ -1352,7 +1108,6 @@ function getMsgHTML(docId, m, path, target) {
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     
-    // CORRECTION : Design de l'audio avec ondes
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">
@@ -1461,6 +1216,17 @@ function editMsg(id, old, path, target) {
 }
 
 function sendMsg(mode) {
+    // 1. Interception si on est en train d'enregistrer un vocal
+    if (isRecording) {
+        cancelAudio = false; // On confirme qu'on VEUT envoyer
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        isRecording = false;
+        clearInterval(recordTimerInterval);
+        return; // L'événement onstop déclenche l'upload
+    }
+
+    // 2. Comportement texte classique
     if (window.isSendingMsg) return; 
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
     const text = inp.value.trim();
@@ -1473,7 +1239,7 @@ function sendMsg(mode) {
             if(doc.exists) { showToast("Impossible, contact bloqué."); window.isSendingMsg = false; return; }
             proceedSend();
         }).catch(err => { 
-            proceedSend(); // On force l'envoi si la vérification échoue
+            proceedSend();
         });
     } else { proceedSend(); }
     
@@ -1491,7 +1257,6 @@ function sendMsg(mode) {
             console.error("Erreur Firebase:", err); 
             showToast("Erreur réseau : message non envoyé ❌");
             window.isSendingMsg = false; 
-            // L'input n'est PLUS vidé, on garde le texte écrit !
         });
         
         if(mode === 'msgs') {
@@ -1639,83 +1404,74 @@ function sendCapsule(text, unlockTimestamp) {
     showToast("<div style='display:flex;align-items:center;gap:5px;'><svg class='svg-icon' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'></circle><polyline points='12 6 12 12 16 14'></polyline></svg> Capsule envoyée dans le futur...</div>");
 }
 
-// --- CORRECTION BUG 3 : GLISSER POUR ANNULER AUDIO ---
-async function startRecording(e, mode) {
-    e.preventDefault(); 
-    if(isRecording) return;
-    cancelAudio = false;
-    
-    if(e.type === 'touchstart') {
-        recordStartX = e.touches[0].clientX;
-    } else {
-        recordStartX = e.clientX;
-    }
+// --- NOUVEAU SYSTEME VOCAL (CLIC & CORBEILLE) ---
+async function toggleRecord(mode) {
+    if (isRecording) return; 
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
         mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        cancelAudio = false;
+
         mediaRecorder.ondataavailable = event => { if (event.data.size > 0 && !cancelAudio) audioChunks.push(event.data); };
         mediaRecorder.onstop = () => {
             if (!cancelAudio && audioChunks.length > 0) {
                 const audioBlob = new Blob(audioChunks); 
-                uploadToFirebase(audioBlob, 'audio', mode);
+                uploadToFirebase(audioBlob, 'audio', mode); 
             } else {
-                showToast("Vocal annulé ❌");
+                showToast("Vocal supprimé 🗑️");
             }
             audioChunks = [];
+            restoreRecordUI(mode);
         };
-        audioChunks = []; mediaRecorder.start(); isRecording = true;
+
+        mediaRecorder.start(); 
+        isRecording = true;
         
-        const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
-        inputField.dataset.origPlaceholder = inputField.placeholder;
-        inputField.placeholder = "🔴 Glisse à gauche pour annuler..."; 
-        inputField.disabled = true;
-        e.currentTarget.classList.add('recording');
+        // Cacher le texte et afficher l'interface audio
+        const suffix = mode === 'msgs' ? 'Msgs' : 'Co';
+        document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn').style.display = 'none';
+        document.getElementById('micBtn' + suffix).style.display = 'none';
+        document.getElementById('mediaBtn' + suffix).style.display = 'none';
         
-        e.currentTarget.addEventListener('touchmove', handleRecordMove, {passive: false});
-        e.currentTarget.addEventListener('mousemove', handleRecordMove);
-        
+        document.getElementById('recUi' + suffix).style.display = 'flex';
+        document.getElementById('trashBtn' + suffix).style.display = 'flex';
+
+        // Lancer le chronomètre !
+        recordSeconds = 0;
+        const timerEl = document.getElementById('recTime' + suffix);
+        timerEl.innerText = "00:00";
+        recordTimerInterval = setInterval(() => {
+            recordSeconds++;
+            let m = Math.floor(recordSeconds / 60).toString().padStart(2, '0');
+            let s = (recordSeconds % 60).toString().padStart(2, '0');
+            timerEl.innerText = `${m}:${s}`;
+        }, 1000);
+
         if('vibrate' in navigator) navigator.vibrate(50);
-    } catch (err) { console.warn("Délai ou refus micro:", err); }
-}
-
-function handleRecordMove(e) {
-    if(!isRecording) return;
-    let currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
-    const mode = e.currentTarget.closest('.chat-footer').id === 'chatFooter' ? 'msgs' : 'cocon';
-    const inputField = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
-
-    if (recordStartX - currentX > 50) { 
-        cancelAudio = true;
-        inputField.placeholder = "❌ Relâche pour annuler";
-        e.currentTarget.style.background = "var(--glass-border)"; 
-    } else {
-        cancelAudio = false;
-        inputField.placeholder = "🔴 Glisse à gauche pour annuler...";
-        e.currentTarget.style.background = ""; 
+    } catch (err) { 
+        console.warn("Erreur micro:", err); 
+        showToast("Accès au microphone refusé."); 
     }
 }
 
-function stopRecording(e) {
-    e.preventDefault();
-    if(isRecording && mediaRecorder) {
-        e.currentTarget.removeEventListener('touchmove', handleRecordMove);
-        e.currentTarget.removeEventListener('mousemove', handleRecordMove);
-        e.currentTarget.style.background = "";
-        
-        mediaRecorder.stop(); 
-        mediaRecorder.stream.getTracks().forEach(track => track.stop()); 
-        isRecording = false;
-        
-        ['mIn', 'coIn'].forEach(id => {
-            const inputField = document.getElementById(id);
-            if (inputField && inputField.disabled) { 
-                inputField.disabled = false; 
-                inputField.placeholder = inputField.dataset.origPlaceholder || "Message"; 
-            }
-        });
-        document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('recording'));
-    }
+function cancelRecord(mode) {
+    if (!isRecording) return;
+    cancelAudio = true; // Signale à l'arrêt qu'on jette tout
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    isRecording = false;
+    clearInterval(recordTimerInterval);
+}
+
+function restoreRecordUI(mode) {
+    const suffix = mode === 'msgs' ? 'Msgs' : 'Co';
+    document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn').style.display = 'block';
+    document.getElementById('micBtn' + suffix).style.display = 'flex';
+    document.getElementById('mediaBtn' + suffix).style.display = 'flex';
+    document.getElementById('recUi' + suffix).style.display = 'none';
+    document.getElementById('trashBtn' + suffix).style.display = 'none';
 }
 
 document.getElementById('imgIn') ? document.getElementById('imgIn').onchange = (e) => processMediaUpload(e, currentMediaMode) : null;
@@ -1801,7 +1557,6 @@ async function uploadToFirebase(fileData, typeParam, targetPath) {
     } catch (err) { console.error("Erreur:", err); showToast("Échec de l'envoi du média ❌"); }
 }
 
-// CORRECTION BUG 4: Disparition complète de la boîte mainApp pour éviter le bleed-through (rebond iOS/Android)
 function openModal(t, b, a) {
     document.getElementById('modalTitle').innerHTML = t; 
     document.getElementById('modalBody').innerHTML = b;
@@ -2466,7 +2221,7 @@ function copyPoem() {
     }
 
     window.startGalaxy3D = function() {
-        document.getElementById('mainApp').style.display = 'none'; // CACHE LE FOND
+        document.getElementById('mainApp').style.display = 'none'; 
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -2499,7 +2254,7 @@ function copyPoem() {
                     loader.load(url, (texture) => {
                         texture.colorSpace = THREE.SRGBColorSpace;
                         
-                        // Nettoyage de l'ancienne texture pour libérer la mémoire (GPU)
+                        // Nettoyage de l'ancienne texture
                         if (targetCard.material.map && targetCard.material.map !== defaultTex) {
                             targetCard.material.map.dispose();
                         }
@@ -2522,7 +2277,7 @@ function copyPoem() {
 
     window.closeGalaxy = function(fromHistory = false) {
         document.getElementById('galaxyBox').style.display = 'none';
-        document.getElementById('mainApp').style.display = 'block'; // RESTAURE LE FOND
+        document.getElementById('mainApp').style.display = 'block'; 
         window.stopGalaxy3D();
         const audio = document.getElementById('galaxyAudio');
         if(audio) { audio.pause(); audio.currentTime = 0; }
