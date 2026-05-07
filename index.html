@@ -64,7 +64,7 @@
         /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
-        .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
+        .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: padding: 5px; z-index: 5; transition: 0.2s; }
         .pwd-eye:active { color: var(--accent); transform: translateY(-50%) scale(0.9); }
 
         .stellar-dust-particle {
@@ -1187,7 +1187,6 @@ function renderContacts(arr) {
     });
 }
 
-// CORRECTION BUG 1 : Bypasser le refus serveur si besoin (silencieux)
 function addFriend() {
     openModal("Ajouter", `<input type="tel" inputmode="tel" id="modalInput" class="modal-input" placeholder="0XXXXXXXX">`, (tel) => {
         if(!tel) return;
@@ -1202,15 +1201,17 @@ function addFriend() {
                 
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté !"); })
                 .catch(err => { 
-                    // Bypasser le blocage Firebase
-                    triggerBack(); showToast("Contact ajouté localement !"); 
+                    console.error("Erreur d'ajout Firebase:", err);
+                    showToast("Erreur serveur : ajout impossible ❌"); 
                 });
             } else showToast("Inconnu");
-        }).catch(()=> showToast("Erreur serveur ignorée"));
+        }).catch((err)=> {
+            console.error("Erreur de recherche contact:", err);
+            showToast("Erreur réseau : recherche impossible ❌");
+        });
     });
 }
 
-// FIX WHATSAPP : Masquer complètement mainApp pour bloquer le rebond visuel
 function openChat(id, name, pfp) {
     currentPeerId = id; activeId = [user.id, id].sort().join('_');
     document.getElementById('cName').innerText = name;
@@ -1459,7 +1460,6 @@ function editMsg(id, old, path, target) {
     }); 
 }
 
-// CORRECTION BUG 2: Forcer l'envoi même si Firebase bronche
 function sendMsg(mode) {
     if (window.isSendingMsg) return; 
     const inp = document.getElementById(mode === 'msgs' ? 'mIn' : 'coIn');
@@ -1488,9 +1488,10 @@ function sendMsg(mode) {
         }).then(() => {
             inp.value = ""; inp.focus(); setTimeout(() => { window.isSendingMsg = false; }, 500); 
         }).catch(err => { 
-            console.error("Erreur d'envoi ignorée localement"); 
+            console.error("Erreur Firebase:", err); 
+            showToast("Erreur réseau : message non envoyé ❌");
             window.isSendingMsg = false; 
-            inp.value = ""; 
+            // L'input n'est PLUS vidé, on garde le texte écrit !
         });
         
         if(mode === 'msgs') {
@@ -2497,6 +2498,12 @@ function copyPoem() {
                     targetCard.userData.currentUrl = url;
                     loader.load(url, (texture) => {
                         texture.colorSpace = THREE.SRGBColorSpace;
+                        
+                        // Nettoyage de l'ancienne texture pour libérer la mémoire (GPU)
+                        if (targetCard.material.map && targetCard.material.map !== defaultTex) {
+                            targetCard.material.map.dispose();
+                        }
+                        
                         targetCard.material.map = texture;
                         targetCard.material.alphaMap = cardAlphaMap;
                         targetCard.material.needsUpdate = true;
