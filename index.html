@@ -19,6 +19,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
     <script type="importmap">
         {
@@ -114,6 +115,7 @@
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .recording { color: var(--love) !important; transition: transform 0.1s ease; }
         
+        /* Onglet Cocon élégant (pas d'alarme rouge) */
         .cocon-notify { border: 1px solid var(--accent) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow) !important; }
         
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -121,15 +123,15 @@
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
         
         /* --- NOUVELLE ANIMATION DES PLUMES --- */
-        .feather-container { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 0 auto 20px auto; }
-        .feather { font-size: 28px; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); animation: featherBounce 1.5s infinite ease-in-out; }
+        .feather-container { display: flex; gap: 15px; justify-content: center; align-items: center; margin: 0 auto 20px auto; }
+        .feather { font-size: 32px; filter: hue-rotate(270deg); text-shadow: 0 0 10px var(--accent-glow); animation: featherBounce 1.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }
         .feather:nth-child(1) { animation-delay: 0s; }
-        .feather:nth-child(2) { animation-delay: 0.2s; }
-        .feather:nth-child(3) { animation-delay: 0.4s; }
+        .feather:nth-child(2) { animation-delay: 0.3s; }
+        .feather:nth-child(3) { animation-delay: 0.6s; }
 
         @keyframes featherBounce {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
-            50% { transform: translateY(-15px) rotate(10deg); opacity: 1; text-shadow: 0 0 20px var(--accent); }
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+            50% { transform: translateY(-12px) rotate(15deg) scale(1.1); opacity: 1; text-shadow: 0 0 25px var(--accent); }
         }
         
         .eternity-title { background: linear-gradient(90deg, #d0a8ff, #ff4b6e, #d0a8ff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: textShimmer 3s linear infinite; font-family: 'Pacifico', cursive; font-size: 26px; margin: 0 0 20px 0; text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2); padding: 10px; }
@@ -403,7 +405,7 @@
     <div id="vCocon" class="view">
         <div style="background: radial-gradient(circle at center, #1a0b2e 0%, #0b0914 100%); padding:40px 20px; border-radius:40px; text-align:center; margin-bottom:30px; box-shadow: 0 0 30px rgba(208, 168, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.05); position: relative; overflow: hidden;">
             <div style="margin-bottom:20px; opacity: 0.8; display:flex; justify-content:center;">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#d0a8ff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 10s linear infinite;"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
             </div>
             <h3 class="eternity-title" id="eternityTitle">Notre Éternité</h3>
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 25px;">
@@ -836,6 +838,7 @@ if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
 const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
+const storage = firebase.storage();
 
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
@@ -855,7 +858,7 @@ function initApp() {
                     setupApp();
                     document.getElementById('splash').style.display = 'none';
                     
-                    // On valide que l'appli est chargée pour autoriser les notifications/vibrations
+                    // L'appli est chargée, on autorise les notifications/vibrations
                     setTimeout(() => { window.appReady = true; }, 1000);
                 } else {
                     document.getElementById('authLayer').style.display = 'flex';
@@ -976,11 +979,9 @@ function setupApp() {
                 document.getElementById('coconNoteDisplay').style.display = 'flex';
             };
 
-            // On vérifie si l'app est prête (fini l'écran de chargement)
             if (window.appReady) {
                 afficherAlerte();
             } else {
-                // Si l'app est en train de s'ouvrir, on retarde légèrement la notif
                 setTimeout(afficherAlerte, 2500);
             }
         }
@@ -1168,7 +1169,6 @@ function addFriend() {
                 
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté !"); })
                 .catch(err => { 
-                    // Bypass local conservé
                     triggerBack(); showToast("Contact ajouté localement !"); 
                 });
             } else showToast("Inconnu");
@@ -1190,14 +1190,14 @@ function openChat(id, name, pfp) {
         chatClearedAt = (doc.exists && doc.data().clearedAt) ? doc.data().clearedAt : 0;
         document.getElementById('mArea').innerHTML = "";
         
-        document.getElementById('mainApp').style.display = 'none'; // FIX REBOND
+        document.getElementById('mainApp').style.display = 'none';
         document.getElementById('chatBox').style.display = 'flex';
         
         lockAppHeight(); pushState('chatBox');
         watchStatus(id); syncMessages('msgs', activeId, 'mArea');
     }).catch(()=>{ 
         chatClearedAt = 0; 
-        document.getElementById('mainApp').style.display = 'none'; // FIX REBOND
+        document.getElementById('mainApp').style.display = 'none';
         document.getElementById('chatBox').style.display = 'flex'; 
         lockAppHeight(); pushState('chatBox'); watchStatus(id); syncMessages('msgs', activeId, 'mArea');
     });
@@ -1211,7 +1211,7 @@ function closeChat() {
     document.getElementById('chatBox').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
     
-    document.getElementById('mainApp').style.display = 'block'; // RESTAURATION DU MENU
+    document.getElementById('mainApp').style.display = 'block';
 }
 
 function revealCapsule(docId, path) {
@@ -1795,7 +1795,8 @@ function login() {
 }
 
 function register() {
-    const phStr = document.getElementById('rPhone').value.replace(/\D/g,'async   const pseudo = document.getElementById('rPseudo').value.trim();
+    const phStr = document.getElementById('rPhone').value.replace(/\D/g,'');
+    const pseudo = document.getElementById('rPseudo').value.trim();
     const ps = document.getElementById('rPass').value;
     const codeSaisi = document.getElementById('rCode').value || '0000'; 
     
@@ -1971,6 +1972,7 @@ function generateStars() {
         container.appendChild(star);
     }
 }
+
 async function generatePoem() {
     const humeurInput = document.getElementById('aiMood').value.trim() || "calme";
     const humeur = humeurInput.toLowerCase();
@@ -1989,7 +1991,7 @@ async function generatePoem() {
     // Ta clé API intégrée
     const GEMINI_API_KEY = "AIzaSyCrjFgdbW6MV2drelwuQC2Ia-ir6wlPE3k";
 
-    const promptText = `Tu es l'Univers. Écris un poème d'amour court, touchant et sans rimes forcées pour mon/ma partenaire à vie, . Mon humeur actuelle est : ${humeur}. Le style du poème doit être : ${style}. N'inclus aucun titre, aucun commentaire avant ou après, donne uniquement le texte du poème.`;
+    const promptText = `Tu es l'Univers. Écris un poème d'amour court, touchant et sans rimes forcées pour la femme de ma vie, Alicia. Mon humeur actuelle est : ${humeur}. Le style du poème doit être : ${style}. N'inclus aucun titre, aucun commentaire avant ou après, donne uniquement le texte du poème.`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -2001,9 +2003,8 @@ async function generatePoem() {
         });
 
         if (!response.ok) {
-            // On récupère le texte brut de l'erreur
-            const errText = await response.text();
-            throw new Error(`Code ${response.status} : ${errText}`);
+            const errData = await response.json();
+            throw new Error(errData.error?.message || "Erreur inconnue du serveur");
         }
 
         const data = await response.json();
@@ -2022,11 +2023,10 @@ async function generatePoem() {
 
     } catch (err) {
         console.error("Erreur détaillée :", err);
-        // 🔴 ALERTE SYSTÈME POUR DEBUGGER
-        alert("ERREUR TECHNIQUE : " + err.message);
+        showToast("Erreur API : " + err.message);
         
         document.getElementById('stars-container').classList.remove('warp-active');
-        closeNeedyou();
+        setTimeout(closeNeedyou, 4000);
     }
 }
     
