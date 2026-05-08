@@ -62,6 +62,7 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
+        /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
         .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
@@ -74,6 +75,7 @@
         }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
+        /* --- TOASTER LOGIN --- */
         #authLayer { background: #080612; background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%); transition: background-color 0.8s ease; }
         #authLayer.lamp-on { background-color: #0f0b1a; }
         .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
@@ -233,12 +235,43 @@
         .ny-step.active { display: flex; opacity: 1; transform: translateY(0); }
         
         /* Map des humeurs transparente et sans bordure moche */
-        #nyMoodViewport { position: relative; width: 100%; height: 400px; overflow: hidden; touch-action: none; cursor: grab; margin-top: 10px; }
+        #nyMoodViewport { 
+            position: relative; 
+            width: 100%; 
+            height: 400px; 
+            overflow: hidden; 
+            touch-action: none; 
+            cursor: grab; 
+            margin-top: 10px; 
+            /* Grille subtile pour faire comprendre que c'est vaste */
+            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4)),
+                        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            border-radius: 30px;
+        }
         #nyMoodViewport:active { cursor: grabbing; }
         #nyMoodMap { position: absolute; width: 1200px; height: 1200px; top: -400px; left: -400px; transition: transform 0.1s; }
-        .ny-bubble { position: absolute; padding: 12px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 30px; font-size: 14px; font-weight: 600; color: white; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s; animation: floatBubble 4s infinite ease-in-out alternate; white-space: nowrap; }
-        .ny-bubble:active { transform: scale(0.9); }
-        .ny-bubble.selected { border-color: var(--accent); background: rgba(208, 168, 255, 0.15); box-shadow: 0 0 20px var(--accent-glow), inset 0 0 10px var(--accent-glow); color: var(--accent); z-index: 10; }
+        
+        /* Bulles Mignonnes & Arrondies */
+        .ny-bubble { 
+            position: absolute; 
+            padding: 14px 28px; 
+            background: rgba(20, 10, 30, 0.6); 
+            border: 2px solid transparent; 
+            border-radius: 50px; 
+            font-size: 15px; 
+            font-weight: 600; 
+            color: white; 
+            cursor: pointer; 
+            backdrop-filter: blur(8px); 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            animation: floatBubble 4s infinite ease-in-out alternate; 
+            white-space: nowrap; 
+        }
+        .ny-bubble:active { transform: scale(0.85) !important; }
+        .ny-bubble.selected { transform: scale(1.1); font-weight: bold; z-index: 10; }
         
         @keyframes floatBubble { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-10px) rotate(2deg); } }
 
@@ -260,8 +293,12 @@
         .ny-btn-copy { width: 100%; padding: 16px; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.1); color: white; font-weight: bold; margin-top: 15px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; flex-shrink: 0; }
         .ny-btn-copy.success { background: rgba(37, 211, 102, 0.2); border-color: #25D366; color: #25D366; box-shadow: 0 0 15px rgba(37, 211, 102, 0.3); }
 
-        /* Input du prénom */
-        .ny-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; color: white; font-family: 'Poppins', sans-serif; font-size: 16px; text-align: center; outline: none; transition: 0.3s; margin-top: 20px; }
+        /* Bouton Retry (Recommencer) */
+        .ny-btn-retry { position: absolute; top: 15px; right: 15px; background: rgba(255, 255, 255, 0.15); border: 1px solid var(--glass-border); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: 0.3s; backdrop-filter: blur(5px); z-index: 10; }
+        .ny-btn-retry:active { transform: scale(0.8) rotate(-45deg); }
+
+        /* Input du prénom et Souhait */
+        .ny-input { width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; color: white; font-family: 'Poppins', sans-serif; font-size: 16px; text-align: center; outline: none; transition: 0.3s; margin-top: 5px; }
         .ny-input:focus { border-color: var(--love); box-shadow: 0 0 15px var(--love-glow); }
 
         /* Animation des plumes */
@@ -628,93 +665,6 @@
         </div>
     </div>
 </div>
-
-<div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
-    
-    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
-
-    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10; flex-shrink: 0;">
-        <div onclick="playClick(); closeNeedyouWizard()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
-            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </div>
-    </div>
-
-    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:0px; text-align:center; flex-shrink: 0;">Needyou</h2>
-    
-    <div id="nyWizard" style="width:100%; max-width:360px; position:relative; flex:1; display:flex; flex-direction:column; margin-top:5px; height: 100%; max-height: calc(100vh - 150px); overflow: hidden;">
-
-        <div id="nyStep1" class="ny-step active">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Dans quel état d'esprit es-tu ?</p>
-            <div id="nyMoodViewport">
-                <div id="nyMoodMap">
-                    </div>
-            </div>
-            <p style="text-align:center; font-size:11px; opacity:0.6; margin-top:15px;">Fais glisser ton doigt pour explorer les humeurs ✨</p>
-        </div>
-
-        <div id="nyStep2" class="ny-step">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Choisis ton style d'écriture</p>
-            <div class="ny-grid" id="nyStyleGrid">
-                </div>
-        </div>
-
-        <div id="nyStep3" class="ny-step">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Les derniers détails...</p>
-            
-            <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Longueur du poème</label>
-            <div class="ny-grid" style="max-height: max-content; padding-bottom: 0;" id="nyLengthGrid">
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclair')">
-                    <div class="ny-card-title">Éclair ⚡</div>
-                    <div class="ny-card-desc">Quelques mots intenses</div>
-                </div>
-                <div class="ny-card selected" onclick="playClick(); selectNyOption(this, 'length', 'Météore')">
-                    <div class="ny-card-title">Météore ☄️</div>
-                    <div class="ny-card-desc">Un petit paragraphe</div>
-                </div>
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Orbite')">
-                    <div class="ny-card-title">Orbite 🪐</div>
-                    <div class="ny-card-desc">Deux ou trois strophes</div>
-                </div>
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclipse')">
-                    <div class="ny-card-title">Éclipse 🌑</div>
-                    <div class="ny-card-desc">Une longue déclaration</div>
-                </div>
-            </div>
-
-            <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-top:20px;">Pour qui l'Univers écrit-il ?</label>
-            <input type="text" id="nyTargetName" class="ny-input" placeholder="Son prénom..." autocomplete="off" spellcheck="false">
-
-            <button class="ny-btn-nav primary" style="margin-top:25px;" onclick="playClick(); startNeedyouGeneration()">
-                <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    Murmurer aux étoiles
-                </div>
-            </button>
-        </div>
-
-        <div id="nyStepResult" class="ny-step" style="flex:1; height:100%; display:flex; flex-direction:column; overflow:hidden; padding-bottom:20px;">
-            <div id="aiGeneratingBlock" style="text-align:center; margin-top: 50px;">
-                <div class="feather-container">
-                    <span class="feather">🪶</span>
-                    <span class="feather">🪶</span>
-                    <span class="feather">🪶</span>
-                </div>
-                <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose...</div>
-            </div>
-            
-            <div id="aiPoemOutputBox" style="display:none; flex:1; width:100%; flex-direction:column; overflow:hidden;">
-                <div style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.6); border:1px solid var(--accent); border-radius:30px; padding:30px; font-size:15.5px; line-height:1.7; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1); scroll-behavior: smooth;">
-                    <span id="aiPoemTypewriter"></span><span class="typewriter-cursor" id="nyCursor"></span>
-                </div>
-
-                <button id="aiCopyBtn" class="ny-btn-copy" onclick="playClick(); copyPoemInteractive(this)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    Copier le texte
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 <script>
 window.sharedPlaylist = [];
 let toastTimeout = null;
@@ -869,7 +819,6 @@ const i18n = {
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
 };
 
-// 🔴 ASTUCE ANTI-ROBOTS GITHUB : Clé Firebase coupée en deux
 const fbPart1 = "AIzaSyBtx8uE9h";
 const fbPart2 = "kBB86uA9p4gCCP3OHx3jdmfAs";
 
@@ -1972,6 +1921,13 @@ const moodsSansEmoji = [
     "Apaisé", "Sensuel", "Émerveillé"
 ];
 
+// Palette Néon pour les bulles
+const neonColors = [
+    { border: 'rgba(255, 75, 110, 0.8)', bg: 'rgba(255, 75, 110, 0.15)' }, // Rose
+    { border: 'rgba(208, 168, 255, 0.8)', bg: 'rgba(208, 168, 255, 0.15)' }, // Violet
+    { border: 'rgba(0, 210, 255, 0.8)', bg: 'rgba(0, 210, 255, 0.15)' }    // Turquoise
+];
+
 const stylesNy = [
     { n: "Doux & Romantique", d: "Mots tendres et cajoleurs" },
     { n: "Épique & Cosmique", d: "Métaphores spatiales infinies" },
@@ -1983,11 +1939,42 @@ const stylesNy = [
     { n: "Énigmatique", d: "Mystérieux, passionné, à déchiffrer" }
 ];
 
+// INJECTION DOM SÉCURISÉE DES ÉLÉMENTS MANQUANTS (Souhait + Bouton Retry)
+function injectNyElements() {
+    // 1. Le champ Souhait dans l'étape 3
+    if(!document.getElementById('nyCustomPrompt')) {
+        const nyStep3 = document.getElementById('nyStep3');
+        if(nyStep3) {
+            const btnNav = nyStep3.querySelector('.ny-btn-nav');
+            const wrapper = document.createElement('div');
+            wrapper.style.width = '100%';
+            wrapper.innerHTML = `
+                <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-top:20px;">Un souhait particulier ? (Optionnel)</label>
+                <textarea id="nyCustomPrompt" class="ny-input" style="height: 80px; resize: none; border-radius: 15px; padding:15px; font-size:14px;" placeholder="Ex: Elle a passé une mauvaise journée..."></textarea>
+            `;
+            nyStep3.insertBefore(wrapper, btnNav);
+        }
+    }
+    // 2. Le bouton Retry dans le résultat
+    if(!document.getElementById('nyRetryBtn')) {
+        const box = document.getElementById('aiPoemOutputBox');
+        if(box) {
+            const btn = document.createElement('button');
+            btn.id = 'nyRetryBtn';
+            btn.className = 'ny-btn-retry';
+            btn.innerHTML = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.36l5.67-5.67"></path></svg>`;
+            btn.onclick = () => { playClick(); startNeedyouGeneration(true); };
+            box.appendChild(btn);
+        }
+    }
+}
+
 function openNeedyouWizard() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('needyouBox').style.display = 'flex';
     pushState('needyou');
     generateStars();
+    injectNyElements();
     initNyWizard();
 }
 
@@ -2006,6 +1993,7 @@ function initNyWizard() {
     renderNyMoods();
     renderNyStyles();
     document.getElementById('nyTargetName').value = '';
+    if(document.getElementById('nyCustomPrompt')) document.getElementById('nyCustomPrompt').value = '';
     document.getElementById('aiPoemOutputBox').style.display = 'none';
     
     document.querySelectorAll('#nyLengthGrid .ny-card').forEach(c => c.classList.remove('selected'));
@@ -2023,15 +2011,17 @@ function renderNyMoods() {
     
     const bubbles = [];
     const mapSize = 1200;
-    const bubbleRadius = 55; // Rayon approximatif d'une bulle + marge anti-collision
+    
+    // On agrandit virtuellement le rayon pour que les rectangles (pilules) ne se touchent pas du tout
+    const safeRadius = 75; 
     
     moodsSansEmoji.forEach((m) => {
         let x, y;
         let overlapping = true;
         let attempts = 0;
         
-        // Algorithme anti-collision
-        while (overlapping && attempts < 150) {
+        // Algorithme anti-collision (évite le chevauchement)
+        while (overlapping && attempts < 200) {
             x = Math.random() * (mapSize - 200) + 100; 
             y = Math.random() * (mapSize - 200) + 100;
             overlapping = false;
@@ -2039,7 +2029,7 @@ function renderNyMoods() {
                 let dx = x - b.x;
                 let dy = y - b.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < bubbleRadius * 2.2) {
+                if (dist < safeRadius * 2) {
                     overlapping = true;
                     break;
                 }
@@ -2054,6 +2044,11 @@ function renderNyMoods() {
         div.style.left = x + 'px';
         div.style.top = y + 'px';
         div.style.animationDelay = (Math.random() * 2) + 's'; 
+        
+        // Attribution de la couleur Néon Mignonne
+        const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
+        div.style.borderColor = neon.border;
+        div.style.backgroundColor = neon.bg;
         
         div.onclick = (e) => {
             playClick();
@@ -2090,7 +2085,7 @@ function initDragMap() {
         const x = e.pageX - startX;
         const y = e.pageY - startY;
         
-        // Limites du pan
+        // Limites du glissement
         currentX = Math.max(-800, Math.min(0, x));
         currentY = Math.max(-800, Math.min(0, y));
         
@@ -2140,14 +2135,16 @@ function generateStars() {
     }
 }
 
-async function startNeedyouGeneration() {
-    const nameInput = document.getElementById('nyTargetName').value.trim();
-    nySelections.name = nameInput || "Alicia"; 
-    
-    if(!nySelections.mood) { showToast("Choisis une humeur d'abord !"); showNyStep(1); return; }
-    if(!nySelections.style) { showToast("Choisis un style d'abord !"); showNyStep(2); return; }
+async function startNeedyouGeneration(isRetry = false) {
+    if(!isRetry) {
+        const nameInput = document.getElementById('nyTargetName').value.trim();
+        nySelections.name = nameInput || "mon amour"; 
+        
+        if(!nySelections.mood) { showToast("Choisis une humeur d'abord !"); showNyStep(1); return; }
+        if(!nySelections.style) { showToast("Choisis un style d'abord !"); showNyStep(2); return; }
+        showNyStep(4);
+    }
 
-    showNyStep(4);
     document.getElementById('aiGeneratingBlock').style.display = 'block';
     document.getElementById('aiPoemOutputBox').style.display = 'none';
     
@@ -2162,13 +2159,20 @@ async function startNeedyouGeneration() {
     const geminiPart2 = "JwRltTnShQLStB_uql4"; 
     const GEMINI_API_KEY = geminiPart1 + geminiPart2;
 
-    let promptText = `Tu es l'Univers. Écris un poème d'amour exceptionnel pour la femme de ma vie nommée ${nySelections.name}. Mon humeur actuelle est : ${nySelections.mood}. Le style du poème doit être : ${nySelections.style}. Longueur souhaitée : format ${nySelections.length}.`;
+    let promptText = `Tu es l'Univers. Écris un poème d'amour exceptionnel pour ma partenaire nommée ${nySelections.name}. Mon humeur actuelle est : ${nySelections.mood}. Le style du poème doit être : ${nySelections.style}. Longueur souhaitée : format ${nySelections.length}.`;
 
-    if (nySelections.mood.toLowerCase() === 'sensuel') {
-        promptText += ` Instruction spéciale secrète : Ajoute une tension amoureuse palpable, intime, charnelle et très brûlante. Sois poétiquement explicite sur le désir profond (+18 poétique).`;
+    // Ajout du souhait personnalisé (s'il existe)
+    const customPromptEl = document.getElementById('nyCustomPrompt');
+    if(customPromptEl && customPromptEl.value.trim() !== '') {
+        promptText += ` \nVoici un contexte particulier à intégrer avec émotion : "${customPromptEl.value.trim()}".`;
     }
 
-    promptText += ` N'inclus aucun titre, aucun commentaire avant ou après, donne uniquement le texte final du poème, avec de jolis sauts de ligne.`;
+    // Touche secrète +18
+    if (nySelections.mood.toLowerCase() === 'sensuel') {
+        promptText += ` \nInstruction spéciale secrète : Ajoute une tension amoureuse palpable, très intime, charnelle et brûlante. Sois poétiquement explicite sur le désir profond (+18 poétique et élégant).`;
+    }
+
+    promptText += ` \nN'inclus aucun titre, aucun commentaire avant ou après, donne uniquement le texte final du poème, avec de jolis sauts de ligne.`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -2198,7 +2202,8 @@ async function startNeedyouGeneration() {
         showToast("L'Univers est surchargé. Réessaie dans un instant ✨");
         
         document.getElementById('stars-container').classList.remove('warp-active');
-        closeNeedyouWizard();
+        document.getElementById('aiGeneratingBlock').style.display = 'none';
+        if(!isRetry) closeNeedyouWizard();
     }
 }
 
@@ -2209,7 +2214,7 @@ function typeWriterEffect(text, elementId) {
     let i = 0;
     const speed = 25; 
     const cursor = document.getElementById('nyCursor');
-    cursor.style.display = 'inline-block';
+    if(cursor) cursor.style.display = 'inline-block';
     
     function type() {
         if (i < text.length) {
@@ -2229,7 +2234,7 @@ function typeWriterEffect(text, elementId) {
             i++;
             setTimeout(type, speed);
         } else {
-            cursor.style.display = 'none';
+            if(cursor) cursor.style.display = 'none';
         }
     }
     type();
