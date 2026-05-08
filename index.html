@@ -1971,7 +1971,6 @@ function generateStars() {
         container.appendChild(star);
     }
 }
-
 async function generatePoem() {
     const humeurInput = document.getElementById('aiMood').value.trim() || "calme";
     const humeur = humeurInput.toLowerCase();
@@ -2002,9 +2001,9 @@ async function generatePoem() {
         });
 
         if (!response.ok) {
-            const errData = await response.json();
-            // On force l'application à renvoyer la VRAIE erreur de Google
-            throw new Error(errData.error?.message || "Erreur inconnue du serveur");
+            // On récupère le texte brut de l'erreur
+            const errText = await response.text();
+            throw new Error(`Code ${response.status} : ${errText}`);
         }
 
         const data = await response.json();
@@ -2022,14 +2021,15 @@ async function generatePoem() {
         document.getElementById('aiCopyBtn').style.display = 'block';
 
     } catch (err) {
-        console.error("Erreur Gemini:", err);
-        // Affichage de l'erreur détaillée à l'écran
-        showToast("Erreur technique : " + err.message);
+        console.error("Erreur détaillée :", err);
+        // 🔴 ALERTE SYSTÈME POUR DEBUGGER
+        alert("ERREUR TECHNIQUE : " + err.message);
+        
         document.getElementById('stars-container').classList.remove('warp-active');
-        setTimeout(closeNeedyou, 4500);
+        closeNeedyou();
     }
 }
-
+    
 function copyPoem() {
     const text = document.getElementById('aiPoemOutput').innerText;
     navigator.clipboard.writeText(text).then(() => {
