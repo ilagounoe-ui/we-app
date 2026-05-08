@@ -114,12 +114,23 @@
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .recording { color: var(--love) !important; transition: transform 0.1s ease; }
         
-        /* Onglet Cocon élégant (pas d'alarme rouge) */
         .cocon-notify { border: 1px solid var(--accent) !important; color: var(--accent) !important; box-shadow: inset 0 0 10px var(--accent-glow) !important; }
         
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes springMsg { 0% { opacity: 0; transform: translateY(20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+        
+        /* --- NOUVELLE ANIMATION DES PLUMES --- */
+        .feather-container { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 0 auto 20px auto; }
+        .feather { font-size: 28px; color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); animation: featherBounce 1.5s infinite ease-in-out; }
+        .feather:nth-child(1) { animation-delay: 0s; }
+        .feather:nth-child(2) { animation-delay: 0.2s; }
+        .feather:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes featherBounce {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.6; }
+            50% { transform: translateY(-15px) rotate(10deg); opacity: 1; text-shadow: 0 0 20px var(--accent); }
+        }
         
         .eternity-title { background: linear-gradient(90deg, #d0a8ff, #ff4b6e, #d0a8ff); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: textShimmer 3s linear infinite; font-family: 'Pacifico', cursive; font-size: 26px; margin: 0 0 20px 0; text-shadow: 0 2px 10px rgba(255, 75, 110, 0.2); padding: 10px; }
         .time-box { background: rgba(30, 25, 45, 0.8); padding: 18px 5px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 20px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -250,10 +261,6 @@
         .custom-radio-label:has(input:checked) .radio-box { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         .custom-radio-label:has(input:checked) .radio-box::after { content: ''; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 5px var(--accent); }
 
-        .ai-magic-orb { width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--love)); margin: 0 auto 20px auto; position: relative; animation: floatOrb 3s ease-in-out infinite; box-shadow: 0 0 20px rgba(208, 168, 255, 0.5), 0 0 40px rgba(255, 75, 110, 0.3); }
-        .ai-magic-orb::after { content: '✨'; font-size: 30px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: spinStar 4s linear infinite; }
-        @keyframes floatOrb { 0%, 100% { transform: translateY(0) scale(1); filter: hue-rotate(0deg); } 50% { transform: translateY(-15px) scale(1.1); filter: hue-rotate(30deg); box-shadow: 0 0 35px rgba(208, 168, 255, 0.8), 0 0 60px rgba(255, 75, 110, 0.6); } }
-        @keyframes spinStar { 0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); } 50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.2); } 100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); } }
     </style>
 </head>
 <body onclick="unlockAudio()">
@@ -655,8 +662,12 @@
 
     <div id="needyouResultBlock" style="display:none; width:100%; max-width:340px; text-align:center; margin-top:20px; z-index:10;">
         <div id="aiGeneratingBlock" style="text-align:center;">
-            <div class="ai-magic-orb"></div>
-            <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose en silence...</div>
+            <div class="feather-container">
+                <span class="feather">🪶</span>
+                <span class="feather">🪶</span>
+                <span class="feather">🪶</span>
+            </div>
+            <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose...</div>
         </div>
         
         <div id="aiPoemOutput" style="display:none; background:rgba(0,0,0,0.8); border:1px solid var(--accent); border-radius:30px; padding:30px; margin-top:20px; font-size:15px; line-height:1.6; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1);">
@@ -671,6 +682,7 @@
 window.sharedPlaylist = [];
 let toastTimeout = null;
 let isLoginMode = true;
+window.appReady = false; // Variable pour empêcher la vibration pendant le chargement
 
 // --- L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
 window.togglePwd = function(inputId, eyeIcon) {
@@ -841,11 +853,15 @@ function initApp() {
                     document.getElementById('authLayer').style.display = 'none';
                     document.getElementById('mainApp').style.display = 'block';
                     setupApp();
+                    document.getElementById('splash').style.display = 'none';
+                    
+                    // On valide que l'appli est chargée pour autoriser les notifications/vibrations
+                    setTimeout(() => { window.appReady = true; }, 1000);
                 } else {
                     document.getElementById('authLayer').style.display = 'flex';
                     document.getElementById('mainApp').style.display = 'none';
+                    document.getElementById('splash').style.display = 'none';
                 }
-                document.getElementById('splash').style.display = 'none';
             }).catch(err => {
                 showToast("Accès à la base de données bloqué.");
                 document.getElementById('authLayer').style.display = 'flex';
@@ -951,12 +967,22 @@ function setupApp() {
     fs.collection('globalNotes').doc(user.code).onSnapshot(doc => {
         const note = doc.data();
         if(note && note.sid !== user.id && !note.readBy?.[user.id]) {
-            if (navigator.vibrate) { navigator.vibrate(200); }
-            document.getElementById('coconTabBtn').classList.add('cocon-notify');
-            if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
-            
-            document.getElementById('coconNoteText').innerText = note.txt;
-            document.getElementById('coconNoteDisplay').style.display = 'flex';
+            const afficherAlerte = () => {
+                if (navigator.vibrate) { navigator.vibrate(200); }
+                document.getElementById('coconTabBtn').classList.add('cocon-notify');
+                if(audioUnlocked && sounds.pop) new Audio(sounds.pop).play().catch(()=>{});
+                
+                document.getElementById('coconNoteText').innerText = note.txt;
+                document.getElementById('coconNoteDisplay').style.display = 'flex';
+            };
+
+            // On vérifie si l'app est prête (fini l'écran de chargement)
+            if (window.appReady) {
+                afficherAlerte();
+            } else {
+                // Si l'app est en train de s'ouvrir, on retarde légèrement la notif
+                setTimeout(afficherAlerte, 2500);
+            }
         }
     });
 }
@@ -1142,11 +1168,14 @@ function addFriend() {
                 
                 batch.commit().then(() => { triggerBack(); showToast("Contact ajouté !"); })
                 .catch(err => { 
-                    // Bypasser le blocage Firebase
+                    // Bypass local conservé
                     triggerBack(); showToast("Contact ajouté localement !"); 
                 });
             } else showToast("Inconnu");
-        }).catch(()=> showToast("Erreur serveur ignorée"));
+        }).catch((err)=> {
+            console.error("Erreur de recherche contact:", err);
+            showToast("Erreur réseau : recherche impossible ❌");
+        });
     });
 }
 
@@ -1289,7 +1318,6 @@ function getMsgHTML(docId, m, path, target) {
         content = `<div style="position:relative;" onclick="openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     }
     
-    // CORRECTION : Design de l'audio avec ondes
     if(m.type === 'audio') {
         content = `<div class="custom-audio-player">
             <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">
@@ -1487,7 +1515,7 @@ function sendMsg(mode) {
             if(doc.exists) { showToast("Impossible, contact bloqué."); window.isSendingMsg = false; return; }
             proceedSend();
         }).catch(err => { 
-            proceedSend(); // On force l'envoi si la vérification échoue
+            proceedSend(); // Bypass local conservé
         });
     } else { proceedSend(); }
     
@@ -1502,9 +1530,10 @@ function sendMsg(mode) {
         }).then(() => {
             inp.value = ""; inp.focus(); setTimeout(() => { window.isSendingMsg = false; }, 500); 
         }).catch(err => { 
-            console.error("Erreur d'envoi ignorée localement"); 
+            // Bypass local conservé (on ne vide pas l'input pour pouvoir réessayer)
+            console.error("Erreur Firebase:", err); 
+            showToast("Erreur réseau : message non envoyé ❌");
             window.isSendingMsg = false; 
-            inp.value = ""; 
         });
         
         if(mode === 'msgs') {
@@ -1944,7 +1973,7 @@ function generateStars() {
     }
 }
 
-function generatePoem() {
+async function generatePoem() {
     const humeurInput = document.getElementById('aiMood').value.trim() || "calme";
     const humeur = humeurInput.toLowerCase();
     
@@ -1959,35 +1988,29 @@ function generatePoem() {
     document.getElementById('aiPoemOutput').style.display = 'none';
     document.getElementById('aiCopyBtn').style.display = 'none';
 
-    let vocabs = {
-        noms: ["Ton sourire", "Ton regard", "La lumière", "L'étoile", "Cette galaxie", "Ton souffle", "Notre destin", "L'univers", "Le silence", "La nuit"],
-        verbesDoux: ["illumine", "traverse", "embrasse", "caresse", "apaise", "enveloppe", "berce", "réchauffe"],
-        verbesForts: ["enflamme", "chavire", "bouscule", "réveille", "transperce", "attire", "consume"],
-        adjectifs: ["infini", "éternel", "doux", "magique", "lointain", "céleste", "précieux", "absolu", "mystérieux"],
-        lieux: ["dans le vide de l'espace", "au creux de la nuit", "sous les nébuleuses", "par-delà les astres", "dans mon cœur", "sur notre planète"],
-        metaphores: ["comme une comète filante", "tel un soleil naissant", "comme un murmure stellaire", "plus brillant qu'une supernova", "comme une poussière d'étoile"]
-    };
+    // 🔴 1. COLLE TA CLÉ API SECRÈTE JUSTE ICI (Entre les guillemets) :
+    const GEMINI_API_KEY = "AlzaSyCrjFgdbW6MV2drelwuQC2la-ir6wIPE3k";
 
-    function melanger(array) { return array.sort(() => 0.5 - Math.random()); }
+    // 2. La commande ultra-précise envoyée au cerveau de l'Univers
+    const promptText = `Tu es l'Univers. Écris un poème d'amour court, touchant et sans rimes forcées pour la femme de ma vie, Alicia. Mon humeur actuelle est : ${humeur}. Le style du poème doit être : ${style}. N'inclus aucun titre, aucun commentaire avant ou après, donne uniquement le texte du poème.`;
 
-    const n = melanger(vocabs.noms);
-    const vD = melanger(vocabs.verbesDoux);
-    const vF = melanger(vocabs.verbesForts);
-    const adj = melanger(vocabs.adjectifs);
-    const lieu = melanger(vocabs.lieux);
-    const meta = melanger(vocabs.metaphores);
+    try {
+        // 3. L'appel direct à Gemini (Modèle rapide 1.5 Flash)
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: promptText }] }]
+            })
+        });
 
-    setTimeout(() => {
-        let poemText = "";
-        if (style === "Haïku Court") {
-            poemText = `${n[0]} ${adj[0]},<br>Me rend si ${humeur}...<br>${n[1]} ${vD[0]}.`;
-        } else if (style === "Épique et Spatial") {
-            poemText = `${lieu[0]}, je me sens ${humeur}.<br>${n[0]} ${vF[0]} mon âme, ${meta[0]}.<br><br>Quand ${n[1]} ${vF[1]} notre destin,<br>C'est un amour ${adj[0]} et ${adj[1]} qui s'éveille.<br>Même ${lieu[1]}, je te trouverai.`;
-        } else if (style === "Mélancolique") {
-            poemText = `Le vide est grand, et je suis ${humeur}.<br>${n[0]} me manque ${lieu[0]}.<br><br>Parfois, ${n[1]} ${vD[0]} mes pensées,<br>Une illusion ${adj[0]}, ${meta[0]}.<br>Reviens-moi.`;
-        } else {
-            poemText = `Aujourd'hui je suis ${humeur}, mais tu es là.<br>${n[0]} ${vD[0]} mes peurs, ${lieu[0]}.<br><br>Tu es ${meta[0]}, un éclat ${adj[0]}.<br>Tant que ${n[1]} ${vD[1]} notre monde,<br>Tout sera toujours ${adj[1]}.`;
-        }
+        if (!response.ok) throw new Error("Le réseau stellaire est perturbé");
+
+        const data = await response.json();
+        let poemText = data.candidates[0].content.parts[0].text;
+        
+        // 4. On convertit les sauts de ligne de l'IA pour l'affichage HTML
+        poemText = poemText.replace(/\n/g, '<br>');
 
         document.getElementById('stars-container').classList.remove('warp-active');
         document.getElementById('aiGeneratingBlock').style.display = 'none';
@@ -1995,9 +2018,15 @@ function generatePoem() {
         const poemOutput = document.getElementById('aiPoemOutput');
         poemOutput.style.display = 'block';
         poemOutput.innerHTML = poemText;
+        
         document.getElementById('aiCopyBtn').style.display = 'block';
 
-    }, 3500); 
+    } catch (err) {
+        console.error("Erreur Gemini:", err);
+        showToast("Les étoiles sont injoignables ❌");
+        document.getElementById('stars-container').classList.remove('warp-active');
+        closeNeedyou();
+    }
 }
 
 function copyPoem() {
