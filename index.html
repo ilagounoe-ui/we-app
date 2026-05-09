@@ -62,7 +62,6 @@
             background-size: cover; background-position: center; transition: background 0.5s ease;
         }
 
-        /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
         .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
@@ -75,7 +74,6 @@
         }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
-        /* --- TOASTER LOGIN --- */
         #authLayer { background: #080612; background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%); transition: background-color 0.8s ease; display:flex;}
         #authLayer.lamp-on { background-color: #0f0b1a; }
         .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
@@ -303,7 +301,7 @@
         .typewriter-cursor { display: inline-block; width: 8px; height: 18px; background-color: var(--accent); margin-left: 2px; animation: blinkCursor 0.8s infinite; vertical-align: text-bottom; }
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- NOUVEAU SLIDER INTENSITÉ (Le Spider !) --- */
+        /* --- NOUVEAU SLIDER INTENSITÉ --- */
         .ny-slider-container { width: 100%; padding: 0 10px; margin-top: 20px; }
         .ny-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 5px; background: rgba(255,255,255,0.1); outline: none; transition: 0.3s; }
         .ny-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 15px var(--accent-glow); border: 2px solid white; transition: 0.2s; }
@@ -314,19 +312,40 @@
         #arCamera { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         #arOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); pointer-events: none; z-index: 10; }
         
+        /* Pré-écran d'autorisation très classe */
+        #arPermissionScreen { position: absolute; inset:0; background: var(--bg); z-index: 200; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
+        
+        /* Écran de mission */
         .ar-mission-card { position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; }
         .ar-mission-title { font-family: 'Pacifico'; color: var(--accent); margin: 0 0 10px 0; font-size: 22px; text-shadow: 0 2px 10px var(--accent-glow); }
         .ar-mission-text { color: white; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.4; }
         
         .ar-scan-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 300px; padding: 18px; border-radius: 30px; border: none; background: linear-gradient(135deg, var(--check), #007bff); color: black; font-weight: bold; font-size: 16px; box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4); display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; z-index: 100; cursor: pointer; }
         .ar-scan-btn:active { transform: translateX(-50%) scale(0.95); }
+
+        /* Écran de Victoire (Success Screen) */
+        #arSuccessScreen { position: absolute; inset:0; background: rgba(0,0,0,0.85); z-index: 150; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter: blur(10px); }
+        .confetti { position: absolute; width: 10px; height: 10px; animation: confettiFall 3s linear forwards; }
+        @keyframes confettiFall { 0% { transform: translateY(-100px) rotate(0deg); opacity:1;} 100% { transform: translateY(100vh) rotate(360deg); opacity:0;} }
     </style>
 </head>
-<body onclick="unlockAudio()">
+<body>
 
 <div id="toastAlert" class="toast"></div>
 
 <div id="arQuizContainer">
+    
+    <div id="arPermissionScreen">
+        <svg style="width:80px; height:80px; stroke:var(--accent); fill:none; margin-bottom:20px;" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        <h2 style="font-family:'Pacifico'; color:white; font-size:26px; margin:0 0 15px 0;">Accès à la Vision</h2>
+        <p style="color:var(--text-sub); font-size:14px; margin-bottom:30px;">Pour jouer à la Chasse aux Souvenirs, l'Univers a besoin de voir à travers tes yeux.</p>
+        <button class="ny-btn-nav primary" style="max-width: 250px;" onclick="playClick(); requestARCamera()">Ouvrir les yeux</button>
+        <button class="option-btn" style="background:transparent; border:none; justify-content:center; color:var(--text-sub);" onclick="playClick(); closeARQuiz()">Plus tard</button>
+    </div>
+
     <video id="arCamera" autoplay playsinline></video>
     <div id="arOverlay"></div>
     
@@ -346,6 +365,17 @@
         <span>Scanner l'objet</span>
     </button>
     
+    <div id="arSuccessScreen">
+        <h2 style="font-family:'Pacifico'; color:var(--check); font-size:32px; margin-bottom:10px; text-shadow:0 0 15px rgba(0, 210, 255, 0.4);">Trouvé ! 🎉</h2>
+        <div style="background:var(--card); border:1px solid var(--accent); padding:25px; border-radius:25px; width:90%; max-width:350px; margin-top:20px;">
+            <p style="font-size:12px; color:var(--text-sub); text-transform:uppercase; margin-top:0;">Ta récompense</p>
+            <p id="arRewardText" style="font-size:16px; font-weight:bold; font-style:italic; line-height:1.5; color:white;">...</p>
+        </div>
+        <button class="ny-btn-nav primary" style="width:90%; max-width:300px; margin-top:30px;" onclick="playClick(); nextARMission()">
+            Passer à la suite
+        </button>
+    </div>
+
     <canvas id="arCanvas" style="display:none;"></canvas>
 </div>
 
@@ -803,12 +833,17 @@
     </div>
 </div>
 <script>
+// ==========================================
+// --- VARIABLES GLOBALES ET ÉTAT ---
+// ==========================================
 window.sharedPlaylist = [];
 let toastTimeout = null;
 let isLoginMode = true;
 window.appReady = false; 
 
-// --- GESTION DU SON ET VIBREUR (Moteur Audio Optimisé Anti-Crash) ---
+// ==========================================
+// --- GESTION DU SON ET VIBREUR (Singleton) ---
+// ==========================================
 let globalAudioCtx = null;
 
 function playClick() {
@@ -819,7 +854,7 @@ function playClick() {
         }
     } catch(e) {}
     
-    // 2. Son (recyclage du moteur pour éviter de saturer la mémoire du téléphone)
+    // 2. Son (recyclage du moteur pour éviter les crashs de mémoire)
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) {
@@ -849,7 +884,9 @@ function playClick() {
     }
 }
 
+// ==========================================
 // --- L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
+// ==========================================
 window.togglePwd = function(inputId, eyeIcon) {
     playClick();
     const input = document.getElementById(inputId);
@@ -880,7 +917,9 @@ window.togglePwd = function(inputId, eyeIcon) {
     }
 }
 
+// ==========================================
 // --- FIX WHATSAPP : GESTION DU CLAVIER ---
+// ==========================================
 function lockAppHeight() {
     const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     document.body.style.height = trueHeight + 'px';
@@ -901,6 +940,7 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', lockAppHeight);
 }
 
+// Animation des petites roses au clic dans le Cocon
 document.getElementById('coArea').addEventListener('click', function(e) {
     if(e.target.closest('.bubble') || e.target.closest('button')) return;
     
@@ -920,6 +960,9 @@ document.getElementById('coArea').addEventListener('click', function(e) {
     setTimeout(() => rose.remove(), 1500);
 });
 
+// ==========================================
+// --- MUSIQUE DU COCON ---
+// ==========================================
 const defaultPlaylist = [
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
     "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
@@ -946,6 +989,9 @@ window.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
+// ==========================================
+// --- VARIABLES FIREBASE ET CHAT ---
+// ==========================================
 let user = null;
 let stateStack = [];
 let activeId = null;
@@ -1048,6 +1094,9 @@ function initApp() {
     });
 }
 
+// ==========================================
+// --- CHIFFREMENT E2EE ---
+// ==========================================
 const E2EE = {
     encrypt: (text, key) => {
         if(!text) return "";
@@ -1133,7 +1182,9 @@ function openMoodSelector() {
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
-// IA POUR LES MOTS DOUX
+// ==========================================
+// --- IA POUR LES MOTS DOUX ---
+// ==========================================
 async function showMoodMessage(mood) {
     const widgetText = document.getElementById('widgetText');
     
@@ -1179,6 +1230,9 @@ async function showMoodMessage(mood) {
     }
 }
 
+// ==========================================
+// --- CONFIGURATION UTILISATEUR ---
+// ==========================================
 function setupApp() {
     document.getElementById('uNameDisp').innerText = user.pseudo;
     document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
@@ -1378,6 +1432,9 @@ function toggleAuthMode() {
     }
 }
 
+// ==========================================
+// --- GESTION DES CONTACTS ---
+// ==========================================
 function loadContacts() {
     const list = document.getElementById('chatList');
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
@@ -1773,6 +1830,9 @@ function editMsg(id, old, path, target) {
     });
 }
 
+// ==========================================
+// --- GESTION DU MICROPHONE ---
+// ==========================================
 async function toggleRecord(mode) {
     if (isRecording) return;
     
@@ -2445,38 +2505,9 @@ function promptGalaxyAccess() {
     });
 }
 
-
 // ==========================================
 // --- WIZARD NEEDYOU : IA & DESIGN ---
 // ==========================================
-
-let nyCurrentStep = 1;
-let nySelections = { mood: '', style: '', length: 'Météore', name: '' };
-
-const moodsSansEmoji = [
-    "Radieux", "Nostalgique", "Passionné", "Rêveur", "Mélancolique", 
-    "Taquin", "En manque", "Reconnaissant", "Épuisé", "Zen", 
-    "Fier", "Fou amoureux", "Inquiet", "Protecteur", "Inspiré", 
-    "Apaisé", "Sensuel", "Émerveillé"
-];
-
-const neonColors = [
-    { border: 'rgba(255, 75, 110, 0.8)', bg: 'rgba(255, 75, 110, 0.2)', shadow: 'rgba(255, 75, 110, 0.5)' }, 
-    { border: 'rgba(208, 168, 255, 0.8)', bg: 'rgba(208, 168, 255, 0.2)', shadow: 'rgba(208, 168, 255, 0.5)' }, 
-    { border: 'rgba(0, 212, 255, 0.8)', bg: 'rgba(0, 212, 255, 0.2)', shadow: 'rgba(0, 212, 255, 0.5)' }    
-];
-
-const stylesNy = [
-    { n: "Doux & Romantique", d: "Mots tendres et cajoleurs" },
-    { n: "Épique & Cosmique", d: "Métaphores spatiales infinies" },
-    { n: "Mélancolique", d: "Émotion profonde et pluie d'étoiles" },
-    { n: "Haïku Stellaire", d: "Très court, percutant et poétique" },
-    { n: "Sonnet Classique", d: "Rimes et structure élégante" },
-    { n: "Prose Poétique", d: "Texte fluide, libre et touchant" },
-    { n: "Lettre d'Amour", d: "Déclaration sincère et très directe" },
-    { n: "Énigmatique", d: "Mystérieux, passionné, à déchiffrer" }
-];
-
 function openNeedyouWizard() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('needyouBox').style.display = 'flex';
@@ -2558,12 +2589,6 @@ function renderNyMoods() {
         let div = document.createElement('div');
         div.className = 'ny-bubble';
         div.innerText = m;
-        
-        div.style.borderRadius = "50px";
-        div.style.padding = "14px 28px";
-        div.style.fontWeight = "bold";
-        div.style.color = "white";
-        
         div.style.left = x + 'px';
         div.style.top = y + 'px';
         div.style.animationDelay = (Math.random() * 2) + 's'; 
@@ -2803,47 +2828,28 @@ function copyPoemInteractive(btn) {
 // --- ODYSSÉE AR (CHASSE AUX SOUVENIRS) ---
 // ==========================================
 
-let arStream = null;
-let currentMissionTarget = "";
-
-const arMissions = [
-    { obj: "fourchette", text: "Je me souviens de nos repas... Montre-moi une fourchette pour débloquer ce souvenir." },
-    { obj: "clé", text: "Tu as la clé de mon cœur... Montre m'en une vraie pour le prouver." },
-    { obj: "stylo", text: "Notre histoire s'écrit chaque jour. Trouve un stylo." },
-    { obj: "livre", text: "Notre amour est un conte de fées. Trouve un livre et scanne-le." },
-    { obj: "chaussure", text: "Prête à marcher à mes côtés pour la vie ? Montre-moi une chaussure." },
-    { obj: "verre", text: "J'ai soif de tes baisers... Montre-moi un verre." }
-];
-
-async function openARQuiz() {
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('coconBox').style.display = 'none';
-    
-    const arUI = document.getElementById('arQuizContainer');
-    arUI.style.display = 'flex';
-    pushState('arQuiz');
-    
-    const mission = arMissions[Math.floor(Math.random() * arMissions.length)];
-    currentMissionTarget = mission.obj;
-    document.getElementById('arMissionText').innerText = mission.text;
-    
+async function requestARCamera() {
     try {
-        arStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        arStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: "environment",
+                width: { ideal: 4096 },
+                height: { ideal: 2160 }
+            } 
+        });
         document.getElementById('arCamera').srcObject = arStream;
-    } catch(e) {
-        showToast("Accès caméra refusé ou impossible 😕");
-        closeARQuiz();
+        document.getElementById('arPermissionScreen').style.display = 'none';
+        nextARMission();
+    } catch(e) { 
+        showToast("Caméra indisponible 😕"); 
     }
 }
 
-function closeARQuiz(fromHistory = false) {
-    if(arStream) {
-        arStream.getTracks().forEach(t => t.stop());
-        arStream = null;
-    }
-    document.getElementById('arQuizContainer').style.display = 'none';
-    document.getElementById('coconBox').style.display = 'flex';
-    if(!fromHistory) triggerBack();
+function nextARMission() {
+    currentMission = arMissions[Math.floor(Math.random() * arMissions.length)];
+    document.getElementById('arMissionText').innerText = currentMission.text;
+    document.getElementById('arSuccessScreen').style.display = 'none';
+    document.getElementById('arScanBtn').style.display = 'flex';
 }
 
 async function scanARObject() {
@@ -2862,7 +2868,6 @@ async function scanARObject() {
     
     const base64Img = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
     
-    // 🔴 ASTUCE ANTI-ROBOTS GITHUB : Clé Gemini coupée en deux
     const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
     const geminiPart2 = "JwRltTnShQLStB_uql4"; 
     const GEMINI_API_KEY = geminiPart1 + geminiPart2;
@@ -2889,20 +2894,34 @@ async function scanARObject() {
         const answer = data.candidates[0].content.parts[0].text.trim().toUpperCase();
         
         if (answer.includes("OUI")) {
-            showToast("✨ Bravo ! Mission accomplie ! ✨");
-            setTimeout(() => {
-                closeARQuiz();
-                openMoodSelector(); 
-            }, 2000);
+            showARVictory();
         } else {
-            showToast("Hmm, ce n'est pas ça... Réessaie ! 🕵️‍♂️");
+            showToast("Ce n'est pas ça... Réessaie ! 🕵️‍♂️");
+            btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>Scanner l'objet</span>`;
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
         }
     } catch(e) {
-        showToast("Erreur de connexion spatiale ✨");
-    } finally {
+        showToast("Erreur de l'Univers ✨");
         btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>Scanner l'objet</span>`;
         btn.style.opacity = '1';
         btn.style.pointerEvents = 'auto';
+    }
+}
+
+function showARVictory() {
+    playClick();
+    document.getElementById('arScanBtn').style.display = 'none';
+    document.getElementById('arRewardText').innerText = currentMission.reward;
+    document.getElementById('arSuccessScreen').style.display = 'flex';
+    
+    for(let i=0; i<30; i++) {
+        let c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random()*100+'vw';
+        c.style.backgroundColor = ['#ff4b6e', '#d0a8ff', '#00d2ff'][Math.floor(Math.random()*3)];
+        document.body.appendChild(c);
+        setTimeout(()=>c.remove(), 3000);
     }
 }
 </script>
@@ -3225,11 +3244,14 @@ async function scanARObject() {
     const defaultTex = createPlusTexture();
 
     for(let i = 0; i < totalCards; i++) {
+        // LE CORRECTIF VISUEL EST ICI : alphaTest: 0.5, depthWrite: false
         const cardMat = new THREE.MeshBasicMaterial({ 
             map: defaultTex, 
             alphaMap: cardAlphaMap, 
             transparent: true, 
-            side: THREE.DoubleSide 
+            side: THREE.DoubleSide,
+            alphaTest: 0.5,
+            depthWrite: false
         });
         const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
