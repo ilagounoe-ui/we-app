@@ -3017,11 +3017,14 @@ function copyPoemInteractive(btn) {
 
     for(let i = 0; i < totalCards; i++) {
         const cardMat = new THREE.MeshBasicMaterial({ 
-            map: defaultTex, 
-            alphaMap: cardAlphaMap, 
-            transparent: true, 
-            side: THREE.DoubleSide 
-        });
+    map: defaultTex, 
+    alphaMap: cardAlphaMap, 
+    transparent: true, 
+    side: THREE.DoubleSide,
+    alphaTest: 0.5,
+    depthWrite: false
+});
+
         const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
         
         const angle = (i / totalCards) * Math.PI * 2;
