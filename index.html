@@ -2871,6 +2871,7 @@ function copyPoemInteractive(btn) {
 
 let arStream = null;
 let currentMissionTarget = "";
+let currentMissionReward = "";
 
 const arMissions = [
     { obj: "fourchette", text: "Je me souviens de nos repas... Montre-moi une fourchette pour débloquer ce souvenir.", reward: "Tu es le sel de ma vie... 🧂" },
@@ -2891,6 +2892,7 @@ async function openARQuiz() {
     
     const mission = arMissions[Math.floor(Math.random() * arMissions.length)];
     currentMissionTarget = mission.obj;
+    currentMissionReward = mission.reward;
     document.getElementById('arMissionText').innerText = mission.text;
     
     try {
@@ -2911,9 +2913,15 @@ function closeARQuiz(fromHistory = false) {
     document.getElementById('arPermissionScreen').style.display = 'none';
     document.getElementById('arSuccessScreen').style.display = 'none';
     
-    document.getElementById('coconBox').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'block';
+    
     if(!fromHistory) triggerBack();
 }
+
+window.nextARMission = function() {
+    playClick();
+    closeARQuiz();
+};
 
 async function scanARObject() {
     const video = document.getElementById('arCamera');
@@ -2959,10 +2967,16 @@ async function scanARObject() {
         
         if (answer.includes("OUI")) {
             showToast("✨ Bravo ! Mission accomplie ! ✨");
-            setTimeout(() => {
-                closeARQuiz();
-                openMoodSelector(); 
-            }, 2000);
+            
+            if(arStream) {
+                arStream.getTracks().forEach(t => t.stop());
+                arStream = null;
+            }
+            
+            document.getElementById('arRewardText').innerText = currentMissionReward;
+            document.getElementById('arSuccessScreen').style.display = 'flex';
+            
+            resetScanButton(btn);
         } else {
             showToast("Hmm, ce n'est pas ça... Réessaie ! 🕵️‍♂️");
             resetScanButton(btn);
