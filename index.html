@@ -10,7 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="Univers">
     <link rel="apple-touch-icon" href="icon-192.png">
     
-    <title>Notre Univers v57 - Édition Immersive</title>
+    <title>Notre Univers v58 - Édition Immersive</title>
     
     <link rel="manifest" href="./manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Pacifico&display=swap" rel="stylesheet">
@@ -235,48 +235,14 @@
         .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
         .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
 
-        /* --- NOUVEAU DESIGN NEEDYOU --- */
+        /* --- NOUVEAU DESIGN NEEDYOU : ÉPURÉ ET GLASSMORPHISM --- */
         .ny-step { display: none; width: 100%; flex-direction: column; align-items: center; opacity: 0; transform: translateY(20px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .ny-step.active { display: flex; opacity: 1; transform: translateY(0); }
         
-        #nyMoodViewport { 
-            position: relative; 
-            width: 100%; 
-            height: 400px; 
-            overflow: hidden; 
-            touch-action: none; 
-            cursor: grab; 
-            margin-top: 10px; 
-            background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.4)),
-                        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 40px 40px, 40px 40px;
-            border-radius: 30px;
-        }
-        #nyMoodViewport:active { cursor: grabbing; }
-        #nyMoodMap { position: absolute; width: 1200px; height: 1200px; top: -400px; left: -400px; transition: transform 0.1s; }
-        
-        .ny-bubble { 
-            position: absolute; 
-            padding: 14px 28px; 
-            background: rgba(20, 10, 30, 0.6); 
-            border: 2px solid transparent; 
-            border-radius: 50px; 
-            font-size: 15px; 
-            font-weight: 600; 
-            color: white; 
-            cursor: pointer; 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4); 
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            animation: floatBubble 4s infinite ease-in-out alternate; 
-            white-space: nowrap; 
-        }
-        .ny-bubble:active { transform: scale(0.85) !important; }
-        .ny-bubble.selected { transform: scale(1.1); font-weight: bold; z-index: 10; }
-        
-        @keyframes floatBubble { 0% { transform: translateY(0px) rotate(0deg); } 100% { transform: translateY(-10px) rotate(2deg); } }
+        .ny-mood-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 10px; max-height: 420px; overflow-y: auto; padding-bottom: 20px; }
+        .ny-mood-pill { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 18px 10px; text-align: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .ny-mood-pill:active { transform: scale(0.95); }
+        .ny-mood-pill.selected { background: rgba(208, 168, 255, 0.1); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 20px rgba(208, 168, 255, 0.2), inset 0 0 10px rgba(208, 168, 255, 0.1); transform: scale(1.05); }
 
         .ny-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; margin-top: 10px; max-height: 420px; overflow-y: auto; padding-bottom: 20px; }
         .ny-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 20px 10px; text-align: center; cursor: pointer; transition: all 0.3s; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 90px; }
@@ -309,7 +275,6 @@
         .typewriter-cursor { display: inline-block; width: 8px; height: 18px; background-color: var(--accent); margin-left: 2px; animation: blinkCursor 0.8s infinite; vertical-align: text-bottom; }
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* --- NOUVEAU SLIDER INTENSITÉ (Le Spider !) --- */
         .ny-slider-container { width: 100%; padding: 0 10px; margin-top: 20px; }
         .ny-slider { -webkit-appearance: none; width: 100%; height: 6px; border-radius: 5px; background: rgba(255,255,255,0.1); outline: none; transition: 0.3s; }
         .ny-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 15px var(--accent-glow); border: 2px solid white; transition: 0.2s; }
@@ -320,10 +285,8 @@
         #arCamera { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         #arOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); pointer-events: none; z-index: 10; }
         
-        /* Pré-écran d'autorisation très classe */
         #arPermissionScreen { position: absolute; inset:0; background: var(--bg); z-index: 200; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
         
-        /* Écran de mission */
         .ar-mission-card { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; }
         .ar-mission-title { font-family: 'Pacifico'; color: var(--accent); margin: 0 0 10px 0; font-size: 22px; text-shadow: 0 2px 10px var(--accent-glow); }
         .ar-mission-text { color: white; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.4; }
@@ -331,7 +294,6 @@
         .ar-scan-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 300px; padding: 18px; border-radius: 30px; border: none; background: linear-gradient(135deg, var(--check), #007bff); color: black; font-weight: bold; font-size: 16px; box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4); display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; z-index: 100; cursor: pointer; }
         .ar-scan-btn:active { transform: translateX(-50%) scale(0.95); }
 
-        /* Écran de Victoire (Success Screen) */
         #arSuccessScreen { position: absolute; inset:0; background: rgba(0,0,0,0.85); z-index: 1500; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px; backdrop-filter: blur(10px); }
         .confetti { position: absolute; width: 10px; height: 10px; z-index: 2000; animation: confettiFall 3s linear forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-10vh) rotate(0deg); opacity:1;} 100% { transform: translateY(100vh) rotate(720deg); opacity:0;} }
@@ -754,10 +716,7 @@
 
         <div id="nyStep1" class="ny-step active">
             <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Dans quel état d'esprit es-tu ?</p>
-            <div id="nyMoodViewport">
-                <div id="nyMoodMap"></div>
-            </div>
-            <p style="text-align:center; font-size:11px; opacity:0.6; margin-top:15px;">Fais glisser ton doigt pour explorer les humeurs ✨</p>
+            <div id="nyMoodGrid" class="ny-mood-grid scroll-hidden"></div>
         </div>
 
         <div id="nyStep2" class="ny-step">
@@ -2587,100 +2546,23 @@ function showNyStep(step) {
 }
 
 function renderNyMoods() {
-    const map = document.getElementById('nyMoodMap');
-    map.style.top = '0px'; 
-    map.style.left = '0px';
-    map.innerHTML = '';
-    
-    const bubbles = [];
-    const centerX = 600;
-    const centerY = 600;
+    const grid = document.getElementById('nyMoodGrid');
+    grid.innerHTML = '';
     
     moodsSansEmoji.forEach((m) => {
-        let x, y;
-        let overlapping = true;
-        let attempts = 0;
-        
-        while (overlapping && attempts < 500) {
-            let angle = Math.random() * Math.PI * 2;
-            let radius = Math.random() * 300; 
-            x = centerX + Math.cos(angle) * radius; 
-            y = centerY + Math.sin(angle) * radius;
-            
-            overlapping = false;
-            for (let b of bubbles) {
-                let dx = x - b.x; 
-                let dy = y - b.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if (dist < 120) { 
-                    overlapping = true; 
-                    break;
-                }
-            }
-            attempts++;
-        }
-        bubbles.push({x, y});
-
         let div = document.createElement('div');
-        div.className = 'ny-bubble';
+        div.className = 'ny-mood-pill';
         div.innerText = m;
-        
-        div.style.borderRadius = "50px";
-        div.style.padding = "14px 28px";
-        div.style.fontWeight = "bold";
-        div.style.color = "white";
-        
-        div.style.left = x + 'px';
-        div.style.top = y + 'px';
-        div.style.animationDelay = (Math.random() * 2) + 's'; 
-        
-        const neon = neonColors[Math.floor(Math.random() * neonColors.length)];
-        div.style.borderColor = neon.border;
-        div.style.backgroundColor = neon.bg;
-        div.style.boxShadow = "0 0 15px " + neon.shadow;
         
         div.onclick = () => {
             playClick();
-            document.querySelectorAll('.ny-bubble').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.ny-mood-pill').forEach(b => b.classList.remove('selected'));
             div.classList.add('selected');
             nySelections.mood = m;
             setTimeout(() => { showNyStep(2); }, 400);
         };
-        map.appendChild(div);
+        grid.appendChild(div);
     });
-    
-    initDragMap(centerX, centerY);
-}
-
-function initDragMap(cX, cY) {
-    const viewport = document.getElementById('nyMoodViewport');
-    const map = document.getElementById('nyMoodMap');
-    let isDown = false; 
-    let startX, startY;
-
-    let vW = viewport.clientWidth || 360;
-    let vH = viewport.clientHeight || 400;
-    let currentX = (vW/2) - cX;
-    let currentY = (vH/2) - cY;
-    
-    map.style.transform = `translate(${currentX}px, ${currentY}px)`;
-
-    viewport.onpointerdown = (e) => { 
-        isDown = true; 
-        startX = e.pageX - currentX; 
-        startY = e.pageY - currentY; 
-    };
-    viewport.onpointerleave = () => { isDown = false; };
-    viewport.onpointerup = () => { isDown = false; };
-    viewport.onpointermove = (e) => {
-        if(!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - startX;
-        const y = e.pageY - startY;
-        currentX = Math.max(-1000, Math.min(200, x));
-        currentY = Math.max(-1000, Math.min(200, y));
-        map.style.transform = `translate(${currentX}px, ${currentY}px)`;
-    };
 }
 
 function renderNyStyles() {
@@ -2873,14 +2755,35 @@ let arStream = null;
 let currentMissionTarget = "";
 let currentMissionReward = "";
 
-const arMissions = [
+const allARMissions = [
     { obj: "fourchette", text: "Je me souviens de nos repas... Montre-moi une fourchette pour débloquer ce souvenir.", reward: "Tu es le sel de ma vie... 🧂" },
     { obj: "clé", text: "Tu as la clé de mon cœur... Montre m'en une vraie pour le prouver.", reward: "Mon cœur t'appartient pour toujours. 🗝️" },
     { obj: "stylo", text: "Notre histoire s'écrit chaque jour. Trouve un stylo.", reward: "Chaque ligne de ma vie parle de toi. ✍️" },
     { obj: "livre", text: "Notre amour est un conte de fées. Trouve un livre et scanne-le.", reward: "Tu es mon plus beau chapitre. 📖" },
     { obj: "chaussure", text: "Prête à marcher à mes côtés pour la vie ? Montre-moi une chaussure.", reward: "On ira au bout du monde ensemble. 👟" },
-    { obj: "verre", text: "J'ai soif de tes baisers... Montre-moi un verre.", reward: "Je trinque à notre amour éternel. 🥂" }
+    { obj: "verre", text: "J'ai soif de tes baisers... Montre-moi un verre.", reward: "Je trinque à notre amour éternel. 🥂" },
+    { obj: "clavier", text: "Montre-moi un clavier ou des touches...", reward: "Tu joues la plus belle mélodie sur mon cœur. 🎹" },
+    { obj: "bouteille d'eau", text: "Prends soin de toi après l'effort, montre-moi une bouteille d'eau.", reward: "Mon amour pour toi est une source inépuisable. 💧" },
+    { obj: "montre", text: "Le temps passe si vite avec toi... Trouve une montre ou une horloge.", reward: "Je t'aimerai jusqu'à la fin des temps. ⏳" },
+    { obj: "fleur", text: "Notre amour grandit chaque jour. Scanne une plante ou une fleur.", reward: "Tu es la plus belle chose qui ait fleuri dans ma vie. 🌸" },
+    { obj: "coussin", text: "J'aimerais me reposer contre toi. Trouve un oreiller ou un coussin.", reward: "Dans tes bras se trouve mon seul vrai repos. ☁️" }
 ];
+
+function getNextARMission() {
+    let deck = JSON.parse(localStorage.getItem('nu_ar_deck') || '[]');
+    
+    if (deck.length === 0) {
+        deck = [...allARMissions];
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+    }
+    
+    const mission = deck.shift();
+    localStorage.setItem('nu_ar_deck', JSON.stringify(deck));
+    return mission;
+}
 
 async function openARQuiz() {
     document.getElementById('mainApp').style.display = 'none';
@@ -2890,7 +2793,7 @@ async function openARQuiz() {
     arUI.style.display = 'flex';
     pushState('arQuiz');
     
-    const mission = arMissions[Math.floor(Math.random() * arMissions.length)];
+    const mission = getNextARMission();
     currentMissionTarget = mission.obj;
     currentMissionReward = mission.reward;
     document.getElementById('arMissionText').innerText = mission.text;
