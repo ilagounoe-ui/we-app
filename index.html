@@ -344,11 +344,20 @@
     
     <div id="arSuccessScreen">
         <h2 style="font-family:'Pacifico'; color:var(--check); font-size:32px; margin-bottom:10px; text-shadow:0 0 15px rgba(0, 210, 255, 0.4);">Trouvé ! 🎉</h2>
-        <div style="background:var(--card); border:1px solid var(--accent); padding:25px; border-radius:25px; width:90%; max-width:350px; margin-top:20px;">
-            <p style="font-size:12px; color:var(--text-sub); text-transform:uppercase; margin-top:0;">Ta récompense</p>
-            <p id="arRewardText" style="font-size:16px; font-weight:bold; font-style:italic; line-height:1.5; color:white;">...</p>
+        
+        <!-- LE PUZZLE PHOTOGRAPHIQUE -->
+        <div style="position:relative; width:220px; height:220px; border-radius:20px; overflow:hidden; margin: 15px auto; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(208, 168, 255, 0.3);">
+            <!-- Remplace l'URL ci-dessous par un lien vers une belle photo de vous -->
+            <img src="https://images.unsplash.com/photo-1518199266791-5375a83164ba?q=80&w=500" style="width:100%; height:100%; object-fit:cover;">
+            <!-- Le calque de flou qui va disparaître progressivement -->
+            <div id="puzzleBlurOverlay" style="position:absolute; inset:0; backdrop-filter: blur(25px); background: rgba(0,0,0,0.2); transition: backdrop-filter 1.5s ease;"></div>
         </div>
-        <button class="ny-btn-nav primary" style="width:90%; max-width:300px; margin-top:30px;" onclick="playClick(); nextARMission()">
+
+        <div style="background:var(--card); border:1px solid var(--accent); padding:20px; border-radius:25px; width:90%; max-width:350px; margin-top:10px;">
+            <p style="font-size:12px; color:var(--text-sub); text-transform:uppercase; margin-top:0;">Ta récompense</p>
+            <p id="arRewardText" style="font-size:16px; font-weight:bold; font-style:italic; line-height:1.4; color:white;">...</p>
+        </div>
+        <button class="ny-btn-nav primary" style="width:90%; max-width:300px; margin-top:20px;" onclick="playClick(); nextARMission()">
             Passer à la suite
         </button>
     </div>
@@ -2811,16 +2820,13 @@ let currentMissionTarget = "";
 let currentMissionReward = "";
 
 const allARMissions = [
-    { obj: "fourchette", text: "Je me souviens de nos repas... Montre-moi une fourchette pour débloquer ce souvenir.", reward: "Tu es le sel de ma vie... 🧂" },
-    { obj: "clé", text: "Tu as la clé de mon cœur... Montre m'en une vraie pour le prouver.", reward: "Mon cœur t'appartient pour toujours. 🗝️" },
-    { obj: "stylo", text: "Notre histoire s'écrit chaque jour. Trouve un stylo.", reward: "Chaque ligne de ma vie parle de toi. ✍️" },
+    { obj: "sourire", text: "L'Univers est un peu sombre aujourd'hui... Tourne la caméra vers toi et éclaire-le avec un sourire.", reward: "Ton sourire est mon soleil personnel. ☀️" },
+    { obj: "dessin d'un cœur", text: "Prends un bout de papier, dessine un cœur et montre-le à l'Univers.", reward: "Mon cœur bat au même rythme que le tien. ❤️" },
+    { obj: "mains jointes ou doigts entrelacés", text: "Montre-moi tes mains... Fais comme si tu tenais les miennes.", reward: "Je ne lâcherai jamais ta main. 🤝" },
     { obj: "livre", text: "Notre amour est un conte de fées. Trouve un livre et scanne-le.", reward: "Tu es mon plus beau chapitre. 📖" },
-    { obj: "chaussure", text: "Prête à marcher à mes côtés pour la vie ? Montre-moi une chaussure.", reward: "On ira au bout du monde ensemble. 👟" },
-    { obj: "verre", text: "J'ai soif de tes baisers... Montre-moi un verre.", reward: "Je trinque à notre amour éternel. 🥂" },
-    { obj: "clavier", text: "Montre-moi un clavier ou des touches...", reward: "Tu joues la plus belle mélodie sur mon cœur. 🎹" },
-    { obj: "bouteille d'eau", text: "Prends soin de toi après l'effort, montre-moi une bouteille d'eau.", reward: "Mon amour pour toi est une source inépuisable. 💧" },
-    { obj: "montre", text: "Le temps passe si vite avec toi... Trouve une montre ou une horloge.", reward: "Je t'aimerai jusqu'à la fin des temps. ⏳" },
-    { obj: "fleur", text: "Notre amour grandit chaque jour. Scanne une plante ou une fleur.", reward: "Tu es la plus belle chose qui ait fleuri dans ma vie. 🌸" },
+    { obj: "tasse de café ou thé", text: "L'amour, c'est comme un bon café chaud le matin. Trouve une tasse.", reward: "Tu me réchauffes de l'intérieur. ☕" },
+    { obj: "bijou ou bague", text: "Montre-moi quelque chose de précieux, comme toi...", reward: "Tu es le plus beau trésor de mon univers. ✨" },
+    { obj: "clavier", text: "Montre-moi un clavier, laisse tes doigts parler...", reward: "Tu joues la plus belle mélodie sur mon cœur. 🎹" },
     { obj: "coussin", text: "J'aimerais me reposer contre toi. Trouve un oreiller ou un coussin.", reward: "Dans tes bras se trouve mon seul vrai repos. ☁️" }
 ];
 
@@ -2902,7 +2908,7 @@ async function scanARObject() {
     const geminiPart2 = "JwRltTnShQLStB_uql4"; 
     const GEMINI_API_KEY = geminiPart1 + geminiPart2;
     
-    const promptText = `Voici une image. L'utilisateur devait trouver cet objet : "${currentMissionTarget}". Est-ce que cet objet (ou quelque chose qui y ressemble fortement) est visible sur l'image ? Réponds UNIQUEMENT par le mot "OUI" ou "NON", sans ponctuation ni texte supplémentaire.`;
+    const promptText = `Voici une image. L'utilisateur devait trouver cet objet ou réaliser cette action : "${currentMissionTarget}". Est-ce que cela est visible sur l'image ? Réponds UNIQUEMENT par le mot "OUI" ou "NON", sans ponctuation ni texte supplémentaire.`;
     
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
@@ -2933,6 +2939,21 @@ async function scanARObject() {
             
             document.getElementById('arRewardText').innerText = currentMissionReward;
             document.getElementById('arSuccessScreen').style.display = 'flex';
+            
+            // --- LOGIQUE DU PUZZLE ---
+            let currentBlur = parseInt(localStorage.getItem('nu_puzzle_blur') || '25');
+            currentBlur = Math.max(0, currentBlur - 5);
+            localStorage.setItem('nu_puzzle_blur', currentBlur);
+            
+            let blurOverlay = document.getElementById('puzzleBlurOverlay');
+            if(blurOverlay) {
+                blurOverlay.style.backdropFilter = `blur(${currentBlur}px)`;
+                blurOverlay.style.webkitBackdropFilter = `blur(${currentBlur}px)`; 
+            }
+            
+            if(currentBlur === 0) {
+                setTimeout(() => showToast("💖 Souvenir débloqué à 100% !"), 1500);
+            }
             
             resetScanButton(btn);
         } else {
