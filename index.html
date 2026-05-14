@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -3531,6 +3531,246 @@ function resetScanButton(btn) {
         
         if(!fromHistory && typeof window.triggerBack === 'function') window.triggerBack();
     };
+  // ==========================================
+// --- MOTEUR DE L'ODYSSÉE LIVE (APPEL P2P & JEU IA) ---
+// ==========================================
+
+let liveStream = null;
+let peerConnection = null;
+let liveUnsub = null; // Pour couper l'écoute Firebase quand on quitte
+
+// Configuration des serveurs STUN de Google pour trouver les téléphones sur internet
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// 1. OUVERTURE DE LA SALLE ET DE LA CAMÉRA
+async function openGameRoom() {
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('coconBox').style.display = 'none';
+    document.getElementById('gameRoomContainer').style.display = 'flex';
+    pushState('gameRoom');
+
+    try {
+        // On demande la caméra et le micro
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideoLive').srcObject = liveStream;
+        showToast("Caméra activée. Connexion en cours...");
+        
+        // On lance la plomberie vidéo et l'écoute du jeu
+        initWebRTC();
+        listenToLiveSync();
+    } catch (err) {
+        showToast("L'Univers a besoin de ta caméra pour le Live !");
+        closeGameRoom();
+    }
+}
+
+// 2. FERMETURE ET NETTOYAGE
+function closeGameRoom(fromHistory = false) {
+    if (liveStream) {
+        liveStream.getTracks().forEach(t => t.stop());
+        liveStream = null;
+    }
+    if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+    }
+    if (liveUnsub) {
+        liveUnsub();
+        liveUnsub = null;
+    }
+    
+    // On détruit la salle d'attente sur Firebase
+    if(user && user.code) {
+        fs.collection('liveRooms').doc(user.code).delete().catch(()=>{});
+    }
+
+    document.getElementById('gameRoomContainer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    if (!fromHistory) triggerBack();
+}
+
+// 3. LE COEUR WEBRTC (CONNEXION VIDÉO P2P VIA FIREBASE)
+async function initWebRTC() {
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    const roomRef = fs.collection('liveRooms').doc(user.code);
+
+    // Ajouter mon flux vidéo local pour l'envoyer à l'autre
+    liveStream.getTracks().forEach(track => {
+        peerConnection.addTrack(track, liveStream);
+    });
+
+    // Recevoir le flux vidéo de l'autre et l'afficher
+    peerConnection.ontrack = event => {
+        const remoteVid = document.getElementById('remoteVideo');
+        if (!remoteVid.srcObject) {
+            remoteVid.srcObject = new MediaStream();
+        }
+        remoteVid.srcObject.addTrack(event.track);
+        document.getElementById('remotePlaceholder').style.display = 'none'; // Cacher le texte d'attente
+    };
+
+    const roomSnapshot = await roomRef.get();
+
+    // S'il n'y a personne, je CREE la salle (Offre)
+    if (!roomSnapshot.exists || !roomSnapshot.data().offer) {
+        
+        peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+                roomRef.collection('callerCandidates').add(event.candidate.toJSON());
+            }
+        };
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+
+        await roomRef.set({
+            offer: { type: offer.type, sdp: offer.sdp },
+            creatorId: user.id
+        });
+
+        // J'écoute si ma partenaire répond
+        roomRef.onSnapshot(async snapshot => {
+            const data = snapshot.data();
+            if (!peerConnection.currentRemoteDescription && data && data.answer) {
+                const rtcSessionDescription = new RTCSessionDescription(data.answer);
+                await peerConnection.setRemoteDescription(rtcSessionDescription);
+            }
+        });
+
+        // J'écoute le réseau de ma partenaire
+        roomRef.collection('calleeCandidates').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(async change => {
+                if (change.type === 'added') {
+                    let data = change.doc.data();
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data));
+                }
+            });
+        });
+
+    } 
+    // Sinon, je REJOINS la salle (Réponse)
+    else if (roomSnapshot.data().creatorId !== user.id) {
+        
+        peerConnection.onicecandidate = event => {
+            if (event.candidate) {
+                roomRef.collection('calleeCandidates').add(event.candidate.toJSON());
+            }
+        };
+
+        const offer = roomSnapshot.data().offer;
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        await roomRef.update({ answer: { type: answer.type, sdp: answer.sdp } });
+
+        // J'écoute le réseau du créateur
+        roomRef.collection('callerCandidates').onSnapshot(snapshot => {
+            snapshot.docChanges().forEach(async change => {
+                if (change.type === 'added') {
+                    let data = change.doc.data();
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(data));
+                }
+            });
+        });
+    }
+}
+
+// 4. SYNCHRONISATION DU JEU (SLIDER + POP-UP)
+function updateGameIntensity(val) {
+    // Changement visuel local
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById('int' + i).style.opacity = (i == val) ? '1' : '0.5';
+        document.getElementById('int' + i).style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
+    }
+    // Envoi à Firebase
+    fs.collection('liveRooms').doc(user.code).set({ intensity: val }, { merge: true }).catch(()=>{});
+}
+
+function listenToLiveSync() {
+    liveUnsub = fs.collection('liveRooms').doc(user.code).onSnapshot(doc => {
+        const data = doc.data();
+        if (!data) return;
+
+        // Si l'autre bouge le slider
+        if (data.intensity) {
+            const slider = document.getElementById('gameIntensitySlider');
+            if(slider && slider.value != data.intensity) {
+                slider.value = data.intensity;
+                for (let i = 1; i <= 4; i++) {
+                    const label = document.getElementById('int' + i);
+                    if(label) {
+                        label.style.opacity = (i == data.intensity) ? '1' : '0.5';
+                        label.style.textShadow = (i == data.intensity) ? '0 0 10px var(--accent)' : 'none';
+                    }
+                }
+            }
+        }
+
+        // Si l'autre a généré un défi avec l'IA
+        if (data.currentChallenge && data.challengeTimestamp > (window.lastChallengeTime || 0)) {
+            window.lastChallengeTime = data.challengeTimestamp;
+            showChallengePopup(data.currentChallenge, data.challengeType);
+        }
+    });
+}
+
+// 5. INTELLIGENCE ARTIFICIELLE GEMINI
+async function drawCard(type) {
+    const val = document.getElementById('gameIntensitySlider').value;
+    const intensities = ["Mignon", "Complice", "Sensuel", "Hot 🌶️"];
+    const intent = intensities[val - 1];
+
+    showToast("L'Univers génère votre défi...");
+
+    // Ta clé API
+    const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
+    const geminiPart2 = "JwRltTnShQLStB_uql4"; 
+    const GEMINI_API_KEY = geminiPart1 + geminiPart2;
+
+    const promptText = `Donne-moi un défi ou une question à poser en direct en appel vidéo. 
+                        C'est de type "${type}". 
+                        Niveau d'intensité demandé : ${intent}. 
+                        Règle stricte : Fais une seule phrase, sois direct, romantique et joueur. Ne mets pas de guillemets. C'est pour un couple.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+
+        const data = await response.json();
+        const challenge = data.candidates[0].content.parts[0].text.trim();
+
+        // On envoie le défi généré sur Firebase pour qu'il s'affiche chez les deux joueurs
+        await fs.collection('liveRooms').doc(user.code).set({
+            currentChallenge: challenge,
+            challengeType: type,
+            challengeTimestamp: Date.now()
+        }, { merge: true });
+
+    } catch (err) {
+        showToast("L'IA est timide, réessaie...");
+    }
+}
+
+// Affiche la popup simultanément
+function showChallengePopup(text, type) {
+    playClick(); // Fait vibrer le téléphone
+    const title = type === 'action' ? '<span style="color:#ff4b2b;">🟥 Action</span>' : '<span style="color:#38ef7d;">🟩 Vérité</span>';
+    openModal(
+        `<div style='display:flex;align-items:center;gap:8px;justify-content:center; font-family:"Pacifico";'>${title}</div>`, 
+        `<div style="font-size:18px; padding:15px; font-style:italic; line-height: 1.5; color: white;">"${text}"</div>`, 
+        null
+    );
+}  
 </script>
 
 <script>
