@@ -20,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 
     <script type="importmap">
         {
@@ -1357,6 +1358,8 @@ function setupApp() {
                          </div>`,
                         () => { 
                             playClick();
+                            window.myCallRole = 'callee';
+                            window.livePartnerId = data.invitation.callerId;
                             openGameRoom(); 
                         }
                     );
@@ -2586,32 +2589,22 @@ function promptGalaxyAccess() {
 }
 
 // ==========================================
-// --- MOTEUR DE L'ODYSSÉE LIVE (APPEL P2P & JEU IA) ---
+// --- MOTEUR DE L'ODYSSÉE LIVE (PEERJS + FIREBASE) ---
 // ==========================================
-let peerConnection = null;
+let liveStream = null;
+let myPeer = null;
+let currentCall = null;
 let liveUnsub = null; 
-
-const rtcConfig = {
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
-    ]
-};
+window.myCallRole = null;
+window.livePartnerId = null;
 
 async function sendLiveCall() {
     playClick();
     showToast("Appel en cours... 🔔");
-    const roomRef = fs.collection('liveRooms').doc(user.code);
+    window.myCallRole = 'caller';
     
-    await roomRef.delete().catch(()=>{});
-    
-    await roomRef.set({
-        invitation: {
-            callerName: user.pseudo,
-            callerId: user.id,
-            active: true,
-            timestamp: Date.now()
-        }
+    await fs.collection('liveRooms').doc(user.code).set({
+        invitation: { callerName: user.pseudo, callerId: user.id, active: true, timestamp: Date.now() }
     });
     openGameRoom();
 }
@@ -2625,114 +2618,59 @@ async function openGameRoom() {
     try {
         liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('localVideoLive').srcObject = liveStream;
-        showToast("Caméra activée. Connexion en cours...");
-        initWebRTC();
-        listenToLiveSync();
+        showToast("Caméra activée. Connexion P2P...");
+
+        myPeer = new Peer('nu_' + user.id);
+
+        myPeer.on('open', (id) => {
+            if (window.myCallRole === 'callee' && window.livePartnerId) {
+                currentCall = myPeer.call('nu_' + window.livePartnerId, liveStream);
+                handleCallStream(currentCall);
+            }
+        });
+
+        myPeer.on('call', (call) => {
+            currentCall = call;
+            call.answer(liveStream);
+            handleCallStream(call);
+        });
+
+        listenToLiveSync(); 
     } catch (err) {
         showToast("L'Univers a besoin de ta caméra pour le Live !");
         closeGameRoom();
     }
 }
 
+function handleCallStream(call) {
+    call.on('stream', (remoteStream) => {
+        const remoteVid = document.getElementById('remoteVideo');
+        remoteVid.srcObject = remoteStream;
+        document.getElementById('remotePlaceholder').style.display = 'none'; 
+    });
+    call.on('close', () => { closeGameRoom(); });
+    call.on('error', () => { showToast("Connexion réseau perdue."); closeGameRoom(); });
+}
+
 function closeGameRoom(fromHistory = false) {
-    if (liveStream) {
-        liveStream.getTracks().forEach(t => t.stop());
-        liveStream = null;
-    }
-    if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-    }
-    if (liveUnsub) {
-        liveUnsub();
-        liveUnsub = null;
-    }
+    if (currentCall) { currentCall.close(); currentCall = null; }
+    if (myPeer) { myPeer.destroy(); myPeer = null; }
+    if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
+    if (liveUnsub) { liveUnsub(); liveUnsub = null; }
+    
+    window.myCallRole = null;
+    window.livePartnerId = null;
     
     if(user && user.code) {
         fs.collection('liveRooms').doc(user.code).set({ invitation: { active: false } }, { merge: true });
-        fs.collection('liveRooms').doc(user.code).delete().catch(()=>{});
     }
 
     document.getElementById('gameRoomContainer').style.display = 'none';
+    document.getElementById('remotePlaceholder').style.display = 'flex';
+    document.getElementById('remoteVideo').srcObject = null;
     document.getElementById('mainApp').style.display = 'block';
+    
     if (!fromHistory) triggerBack();
-}
-
-async function initWebRTC() {
-    peerConnection = new RTCPeerConnection(rtcConfig);
-    const roomRef = fs.collection('liveRooms').doc(user.code);
-
-    liveStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, liveStream);
-    });
-
-    peerConnection.ontrack = event => {
-        const remoteVid = document.getElementById('remoteVideo');
-        if (!remoteVid.srcObject) {
-            remoteVid.srcObject = new MediaStream();
-        }
-        remoteVid.srcObject.addTrack(event.track);
-        document.getElementById('remotePlaceholder').style.display = 'none'; 
-    };
-
-    const roomSnapshot = await roomRef.get();
-
-    if (!roomSnapshot.exists || !roomSnapshot.data().offer) {
-        peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-                roomRef.update({ callerCandidates: firebase.firestore.FieldValue.arrayUnion(event.candidate.toJSON()) }).catch(()=>{});
-            }
-        };
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-
-        await roomRef.set({
-            offer: { type: offer.type, sdp: offer.sdp },
-            creatorId: user.id
-        }, { merge: true });
-
-        roomRef.onSnapshot(async snapshot => {
-            const data = snapshot.data();
-            if (!data) return;
-
-            if (!peerConnection.currentRemoteDescription && data.answer) {
-                const rtcSessionDescription = new RTCSessionDescription(data.answer);
-                await peerConnection.setRemoteDescription(rtcSessionDescription);
-            }
-            if (data.calleeCandidates) {
-                data.calleeCandidates.forEach(async candidate => {
-                    try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
-                });
-            }
-        });
-
-    } else if (roomSnapshot.data().creatorId !== user.id) {
-        peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-                roomRef.update({ calleeCandidates: firebase.firestore.FieldValue.arrayUnion(event.candidate.toJSON()) }).catch(()=>{});
-            }
-        };
-
-        const offer = roomSnapshot.data().offer;
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-        
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-
-        await roomRef.update({ answer: { type: answer.type, sdp: answer.sdp } });
-
-        roomRef.onSnapshot(async snapshot => {
-            const data = snapshot.data();
-            if (!data) return;
-
-            if (data.callerCandidates) {
-                data.callerCandidates.forEach(async candidate => {
-                    try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e){}
-                });
-            }
-        });
-    }
 }
 
 window.updateLiveIntensity = function(val) {
@@ -2844,6 +2782,30 @@ function showChallengePopup(text, type) {
         null
     );
 }
+
+function pushState(id) {
+    stateStack.push(id);
+    history.pushState({id}, "");
+}
+
+window.onpopstate = (e) => {
+    const last = stateStack.pop();
+    if(last === 'modal') {
+        document.getElementById('customModal').style.display = 'none';
+    } else if(last === 'mediaViewer') {
+        closeMediaViewer(true);
+    } else if(last === 'galaxy') {
+        closeGalaxy(true);
+    } else if(last === 'needyou') {
+        closeNeedyouWizard(true);
+    } else if(last === 'arQuiz') {
+        closeARQuiz(true);
+    } else if(last === 'gameRoom') {
+        closeGameRoom(true);
+    } else if(last === 'chatBox' || last === 'coconBox') {
+        closeChat();
+    }
+};
 
 // ==========================================
 // --- WIZARD NEEDYOU : IA & DESIGN ---
