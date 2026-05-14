@@ -296,7 +296,7 @@
         
         .ar-mission-card { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--card); border: 1px solid var(--glass-border); border-radius: 25px; padding: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; }
         .ar-mission-title { font-family: 'Pacifico'; color: var(--accent); margin: 0 0 10px 0; font-size: 22px; text-shadow: 0 2px 10px var(--accent-glow); }
-        .ar-mission-text { color: white; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.4; }
+        .ar-mission-text { color: white; font-size: 15px; font-weight: 600; margin: 0; line-height: 1.4; transition: opacity 0.3s; }
         
         .ar-scan-btn { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 300px; padding: 18px; border-radius: 30px; border: none; background: linear-gradient(135deg, var(--check), #007bff); color: black; font-weight: bold; font-size: 16px; box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4); display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; z-index: 100; cursor: pointer; }
         .ar-scan-btn:active { transform: translateX(-50%) scale(0.95); }
@@ -324,6 +324,54 @@
 
 <div id="toastAlert" class="toast"></div>
 
+<!-- ==================== L'ODYSSÉE (APPEL / JEU DE SOCIÉTÉ) ==================== -->
+<div id="gameRoomContainer" style="display:none; position:fixed; inset:0; background:#000; z-index:150000; flex-direction:column; overflow:hidden;">
+    <!-- Vidéos (Fond) -->
+    <div style="position:relative; flex:1; background:#111;">
+        <video id="remoteVideo" autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+        <div id="remotePlaceholder" style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'Pacifico'; font-size:20px; opacity:0.6;">
+            <div class="loader" style="margin-bottom:15px; border-top-color:var(--love);"></div>
+            En attente de l'autre joueur...
+        </div>
+        <video id="localVideoLive" autoplay playsinline muted style="position:absolute; top:40px; right:20px; width:100px; height:150px; border-radius:15px; object-fit:cover; border:2px solid var(--accent); box-shadow:0 5px 15px rgba(0,0,0,0.5); z-index:10; background:#222; transform: scaleX(-1);"></video>
+
+        <!-- Bouton Quitter l'appel -->
+        <div style="position:absolute; top:40px; left:20px; z-index:10;" onclick="playClick(); closeGameRoom()">
+            <div style="background:rgba(255,255,255,0.2); padding:10px; border-radius:50%; color:white; cursor:pointer; backdrop-filter:blur(5px);">
+                <svg class="svg-icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plateau de Jeu interactif (Bas) -->
+    <div style="background:rgba(20, 15, 30, 0.85); backdrop-filter:blur(15px); border-top:1px solid rgba(208, 168, 255, 0.3); padding:20px 20px 30px; border-radius:30px 30px 0 0; position:relative; z-index:20; box-shadow: 0 -10px 30px rgba(0,0,0,0.5);">
+        
+        <!-- Curseur d'intensité -->
+        <div style="margin-bottom:20px;">
+            <label style="font-size:11px; opacity:0.8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:8px; text-align:center; color:var(--accent);">Température du jeu 🔥</label>
+            <input type="range" min="1" max="4" value="1" class="ny-slider" id="gameIntensitySlider" oninput="updateGameIntensity(this.value)">
+            <div class="ny-slider-labels" style="color:white; font-weight:bold; margin-top:10px;">
+                <span id="int1">Mignon</span>
+                <span id="int2" style="opacity:0.5">Complice</span>
+                <span id="int3" style="opacity:0.5">Sensuel</span>
+                <span id="int4" style="opacity:0.5">Hot 🌶️</span>
+            </div>
+        </div>
+
+        <!-- Cartes Action / Vérité -->
+        <div style="display:flex; gap:15px; justify-content:center;">
+            <button onclick="playClick(); drawCard('verite')" style="flex:1; padding:20px 10px; border-radius:20px; border:none; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; font-weight:bold; font-size:18px; box-shadow:0 8px 25px rgba(56, 239, 125, 0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <span style="font-size:24px;">🟩</span> Vérité
+            </button>
+            <button onclick="playClick(); drawCard('action')" style="flex:1; padding:20px 10px; border-radius:20px; border:none; background:linear-gradient(135deg, #ff416c, #ff4b2b); color:white; font-weight:bold; font-size:18px; box-shadow:0 8px 25px rgba(255, 65, 108, 0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <span style="font-size:24px;">🟥</span> Action
+            </button>
+        </div>
+    </div>
+</div>
+<!-- ========================================================================== -->
+
+
 <div id="arQuizContainer">
     <div id="arPermissionScreen">
         <svg style="width:80px; height:80px; stroke:var(--accent); fill:none; margin-bottom:20px;" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -348,7 +396,7 @@
 
     <div class="ar-mission-card">
         <h3 class="ar-mission-title">L'Odyssée</h3>
-        <p id="arMissionText" class="ar-mission-text" style="transition: opacity 0.3s;">Chargement de la mission...</p>
+        <p id="arMissionText" class="ar-mission-text">Chargement de la mission...</p>
         <button onclick="playClick(); skipARMission()" style="margin-top:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); padding:8px 15px; border-radius:15px; color:white; font-size:12px; cursor:pointer; transition:0.2s;">
             🔄 Changer de défi
         </button>
@@ -556,12 +604,18 @@
         </div>
 
         <button onclick="playClick(); document.getElementById('secretPhotoInput').click()" style="width:100%; padding:14px; border-radius:20px; border:1px dashed var(--accent); background:rgba(208, 168, 255, 0.05); color:white; font-weight:600; font-size:13px; transition:0.3s; margin-bottom: 15px;">
-            📸 Cacher un nouveau souvenir dans l'Odyssée
+            📸 Cacher un nouveau souvenir
         </button>
         <input type="file" id="secretPhotoInput" hidden accept="image/*" onchange="uploadSecretPhoto(event)" onclick="this.value=null">
 
-        <button onclick="playClick(); openARQuiz()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--check); background:rgba(0, 210, 255, 0.05); color:var(--check); font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 30px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> L'Odyssée
+        <!-- BOUTON CLASSIQUE : SCANNER -->
+        <button onclick="playClick(); openARQuiz()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--check); background:rgba(0, 210, 255, 0.05); color:var(--check); font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 10px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> L'Odyssée (Scanner)
+        </button>
+        
+        <!-- NOUVEAU BOUTON : APPEL LIVE -->
+        <button onclick="playClick(); openGameRoom()" style="width:100%; padding:18px; border-radius:30px; border:1px solid #ff416c; background:rgba(255, 65, 108, 0.05); color:#ff416c; font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 30px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+            <svg class="svg-icon" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg> L'Odyssée Live (Appel)
         </button>
     </div>
 
@@ -836,7 +890,7 @@
 </div>
 
 <script>
-  // ==========================================
+// ==========================================
 // --- VARIABLES GLOBALES ET ÉTAT ---
 // ==========================================
 window.sharedPlaylist = [];
@@ -942,7 +996,6 @@ function nextCoconTrack() {
     }
 }
 
-// C'EST CETTE FONCTION QUI LANCE TOUT !
 window.addEventListener('DOMContentLoaded', () => {
     const audioEl = document.getElementById('coconAudio');
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
@@ -989,7 +1042,7 @@ const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
 };
-  
+
 // ==========================================
 // --- INITIALISATION FIREBASE ---
 // ==========================================
@@ -1402,6 +1455,8 @@ window.onpopstate = (e) => {
         closeNeedyouWizard(true);
     } else if(last === 'arQuiz') {
         closeARQuiz(true);
+    } else if(last === 'gameRoom') {
+        closeGameRoom(true);
     } else if(last === 'chatBox' || last === 'coconBox') {
         closeChat();
     }
@@ -2487,6 +2542,62 @@ function promptGalaxyAccess() {
 }
 
 // ==========================================
+// --- L'ODYSSÉE LIVE (JEU EN APPEL) ---
+// ==========================================
+let liveStream = null;
+
+async function openGameRoom() {
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('coconBox').style.display = 'none';
+    document.getElementById('gameRoomContainer').style.display = 'flex';
+    pushState('gameRoom');
+
+    try {
+        // Demande d'accès caméra + micro pour l'appel Live
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideoLive').srcObject = liveStream;
+        showToast("Caméra activée. En attente de connexion...");
+    } catch (err) {
+        showToast("Accès caméra ou micro refusé.");
+        closeGameRoom();
+    }
+}
+
+function closeGameRoom(fromHistory = false) {
+    if (liveStream) {
+        liveStream.getTracks().forEach(t => t.stop());
+        liveStream = null;
+    }
+    document.getElementById('gameRoomContainer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    if (!fromHistory) triggerBack();
+}
+
+function updateGameIntensity(val) {
+    playClick();
+    for (let i = 1; i <= 4; i++) {
+        document.getElementById('int' + i).style.opacity = (i == val) ? '1' : '0.5';
+        document.getElementById('int' + i).style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
+    }
+}
+
+function drawCard(type) {
+    const val = document.getElementById('gameIntensitySlider').value;
+    const intensities = ["Mignonne", "Complice", "Sensuelle", "Hot"];
+    const intent = intensities[val - 1];
+    
+    // Fenêtre modale temporaire pour préparer la phase 2 (Gemini AI + WebRTC)
+    openModal(
+        `<div style='display:flex;align-items:center;gap:8px;justify-content:center;'>${type === 'action' ? '🟥 Action' : '🟩 Vérité'}</div>`, 
+        `<div style="font-size:16px; padding:15px; font-style:italic; line-height: 1.5; color: white;">
+            L'IA générera bientôt une ${type} <b>${intent}</b> ici, synchronisée avec ta partenaire ! 🌶️<br><br>
+            <span style="font-size:12px; opacity:0.6;">(Phase WebRTC à suivre...)</span>
+        </div>`, 
+        null
+    );
+}
+
+// ==========================================
 // --- WIZARD NEEDYOU : IA & DESIGN ---
 // ==========================================
 let nyCurrentStep = 1;
@@ -2773,7 +2884,7 @@ function copyPoemInteractive(btn) {
 }
 
 // ==========================================
-// --- ODYSSÉE AR (CHASSE AUX SOUVENIRS) ---
+// --- ODYSSÉE AR CLASSIQUE (CHASSE AUX SOUVENIRS) ---
 // ==========================================
 
 let arStream = null;
@@ -2781,14 +2892,16 @@ let currentMissionTarget = "";
 let currentMissionReward = "";
 
 const allARMissions = [
-    { obj: "sourire", text: "L'Univers est un peu sombre aujourd'hui... Tourne la caméra vers toi et éclaire-le avec un sourire.", reward: "Ton sourire est mon soleil personnel. ☀️" },
-    { obj: "dessin d'un cœur", text: "Prends un bout de papier, dessine un cœur et montre-le à l'Univers.", reward: "Mon cœur bat au même rythme que le tien. ❤️" },
-    { obj: "mains jointes ou doigts entrelacés", text: "Montre-moi tes mains... Fais comme si tu tenais les miennes.", reward: "Je ne lâcherai jamais ta main. 🤝" },
-    { obj: "livre", text: "Notre amour est un conte de fées. Trouve un livre et scanne-le.", reward: "Tu es mon plus beau chapitre. 📖" },
-    { obj: "tasse de café ou thé", text: "L'amour, c'est comme un bon café chaud le matin. Trouve une tasse.", reward: "Tu me réchauffes de l'intérieur. ☕" },
-    { obj: "bijou ou bague", text: "Montre-moi quelque chose de précieux, comme toi...", reward: "Tu es le plus beau trésor de mon univers. ✨" },
-    { obj: "clavier", text: "Montre-moi un clavier, laisse tes doigts parler...", reward: "Tu joues la plus belle mélodie sur mon cœur. 🎹" },
-    { obj: "coussin", text: "J'aimerais me reposer contre toi. Trouve un oreiller ou un coussin.", reward: "Dans tes bras se trouve mon seul vrai repos. ☁️" }
+    { obj: "sourire", text: "L'Univers est un peu sombre aujourd'hui... Éclaire-le avec un sourire. 😁", reward: "Ton sourire est mon soleil personnel. ☀️" },
+    { obj: "dessin d'un cœur", text: "Prends un bout de papier, dessine un cœur (même un peu moche !) et montre-le à la caméra. 🖍️", reward: "Mon cœur bat au même rythme que le tien. ❤️" },
+    { obj: "grimace", text: "Fini le romantisme cliché ! Tourne la caméra vers toi et fais ta pire grimace 🤪", reward: "Même en faisant n'importe quoi, tu me fais craquer. 😂❤️" },
+    { obj: "signe de paix avec les doigts", text: "Fais le signe 'Peace' (V) avec tes doigts devant la caméra ! ✌️", reward: "Peace, Love, et toi. Le combo parfait. ☮️❤️" },
+    { obj: "chaussure", text: "Prouve-moi que tu es prêt(e) à courir vers moi à tout instant. Scanne une chaussure ! 👟", reward: "J'ai hâte de faire le prochain pas avec toi. 👣" },
+    { obj: "clés", text: "Tu as déjà celle de mon cœur, mais trouve un vrai trousseau de clés pour débloquer ça ! 🔑", reward: "Bientôt, on partagera le même trousseau. 🏡❤️" },
+    { obj: "peluche ou doudou", text: "Trouve la chose la plus douce chez toi (à part toi-même) : scanne une peluche ! 🧸", reward: "J'arrive pour te faire encore plus de câlins que ce doudou. 🤗" },
+    { obj: "brosse à dents", text: "Parce qu'un jour, elles seront rangées dans le même gobelet... Scanne une brosse à dents ! 🪥", reward: "Je rêve de notre petite routine du matin. 🌅" },
+    { obj: "fruit", text: "Ramène ta fraise... ou une banane, une pomme ! Scanne un fruit au hasard. 🍎🍌", reward: "Tu es la cerise sur le gâteau de ma vie. 🍒" },
+    { obj: "fourchette ou cuillère", text: "Parce qu'on va dévorer la vie ensemble : trouve une cuillère ou une fourchette ! 🥄", reward: "J'ai faim de toi ! 🍽️😉" }
 ];
 
 function getNextARMission() {
@@ -2841,7 +2954,7 @@ async function uploadSecretPhoto(e) {
     });
 }
 
-// --- OUVERTURE DE L'ODYSSÉE MODIFIÉE ---
+// --- OUVERTURE DE L'ODYSSÉE CLASSIQUE ---
 async function openARQuiz() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
