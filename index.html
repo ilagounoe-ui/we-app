@@ -479,6 +479,18 @@
     <button onclick="closeCoconNote()" style="width:100%; padding:14px; border-radius:20px; border:none; background:var(--accent); color:black; font-weight:bold; font-size:15px; box-shadow: 0 5px 15px var(--accent-glow); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Je l'ai lu, merci</button>
 </div>
 
+<div id="liveInviteWidget" style="display:none; position:fixed; z-index:100000; flex-direction: column; align-items: center; text-align: center; top: 40px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(20, 15, 30, 0.95); border-radius: 25px; border: 1px solid #ff416c; box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 20px rgba(255, 65, 108, 0.4); padding: 25px; backdrop-filter: blur(10px);">
+    <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 15px;">
+        <svg style="width:32px; height:32px; fill:#ff416c; animation:pulse 2s infinite;" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <h2 style="font-family:'Pacifico'; font-size:22px; color:#ff416c; margin:0; text-shadow: 0 2px 10px rgba(255, 65, 108, 0.4);">Invitation Live</h2>
+    </div>
+    <p id="liveInviteText" style="font-size:15px; font-weight:500; color:white; background:rgba(255,255,255,0.05); padding:15px 20px; border-radius:18px; width:100%; line-height:1.5; border: 1px solid var(--glass-border); margin: 0 0 20px 0;">...</p>
+    <div style="display:flex; gap:10px; width:100%;">
+        <button onclick="declineLiveInvite()" style="flex:1; padding:12px; border-radius:20px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.05); color:white; font-weight:bold; font-size:14px; transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Refuser</button>
+        <button onclick="acceptLiveInvite()" style="flex:1; padding:12px; border-radius:20px; border:none; background:linear-gradient(135deg, #ff416c, #ff4b2b); color:white; font-weight:bold; font-size:14px; box-shadow: 0 5px 15px rgba(255, 65, 108, 0.4); transition:0.2s; cursor:pointer;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Accepter</button>
+    </div>
+</div>
+
 <div id="splash"><div class="loader"></div><p style="margin-top:20px; color:var(--accent); font-weight:600;">Initialisation...</p></div>
 
 <div id="vWidgetFull">
@@ -637,9 +649,9 @@
             <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> L'Odyssée (Scanner)
         </button>
         
-        <button onclick="sendLiveCall()" style="width:100%; padding:18px; border-radius:30px; border:1px solid #ff416c; background:rgba(255, 65, 108, 0.05); color:#ff416c; font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 30px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
+        <button onclick="openLiveInviteMenu()" style="width:100%; padding:18px; border-radius:30px; border:1px solid #ff416c; background:rgba(255, 65, 108, 0.05); color:#ff416c; font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 30px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
-            Lancer l'Odyssée Live (Appeler)
+            Lancer l'Odyssée Live (Inviter)
         </button>
     </div>
 
@@ -718,200 +730,6 @@
     </div>
 </div>
 
-<div id="chatBox">
-    <div class="chat-head">
-        <span onclick="playClick(); triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </span>
-        <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0; border:none;"></div>
-        <div style="flex:1">
-            <b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br>
-            <small id="cStatus" style="font-size:11px; opacity:0.8;"></small>
-        </div>
-        <div class="opt-dots" id="chatDots" onclick="playClick(); openContactOptions()" style="display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-        </div>
-    </div>
-    
-    <div class="msg-area" id="mArea"></div>
-    
-    <div class="chat-footer" id="chatFooter">
-        <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
-        <div class="chat-bottom-bar">
-            <div class="chat-input-wrapper">
-                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
-                
-                <div id="recUiMsgs" style="display:none; flex:1; align-items:center; gap:10px;">
-                    <div style="color:var(--accent); font-size: 18px; animation: pulse 1.5s infinite;">🎙️</div>
-                    <div class="audio-wave playing" style="flex:1;">
-                        <div class="audio-bar" style="background:var(--accent);"></div>
-                        <div class="audio-bar" style="background:var(--accent);"></div>
-                        <div class="audio-bar" style="background:var(--accent);"></div>
-                        <div class="audio-bar" style="background:var(--accent);"></div>
-                        <div class="audio-bar" style="background:var(--accent);"></div>
-                    </div>
-                    <span id="recTimeMsgs" style="font-size:14px; font-weight:bold; color:var(--accent); font-variant-numeric: tabular-nums;">00:00</span>
-                </div>
-
-                <button id="trashBtnMsgs" class="btn-attachment" style="display:none; color:var(--accent);" onclick="playClick(); cancelRecord('msgs')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                </button>
-
-                <button id="micBtnMsgs" class="btn-attachment" onclick="playClick(); toggleRecord('msgs')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                <button id="mediaBtnMsgs" class="btn-attachment" onclick="playClick(); openMediaMenu('msgs')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                </button>
-            </div>
-            <button onclick="playClick(); sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-                <svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div id="coconBox">
-    <div class="chat-head" style="background:rgba(0,0,0,0.85); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
-        <span onclick="playClick(); triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
-            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </span>
-        
-        <div style="flex:1; text-align:center;" onclick="playClick(); nextCoconTrack()">
-            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
-                <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                Notre Cocon Privé 
-            </b>
-        </div>
-        
-        <audio id="coconAudio" src=""></audio>
-    </div>
-    
-    <div class="msg-area" id="coArea"></div>
-    
-    <div class="chat-footer" id="coconFooter">
-        <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
-            <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
-                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
-                
-                <div id="recUiCo" style="display:none; flex:1; align-items:center; gap:10px;">
-                    <div style="color:var(--love); font-size: 18px; animation: pulse 1.5s infinite;">🎙️</div>
-                    <div class="audio-wave playing" style="flex:1;">
-                        <div class="audio-bar" style="background:var(--love);"></div>
-                        <div class="audio-bar" style="background:var(--love);"></div>
-                        <div class="audio-bar" style="background:var(--love);"></div>
-                        <div class="audio-bar" style="background:var(--love);"></div>
-                        <div class="audio-bar" style="background:var(--love);"></div>
-                    </div>
-                    <span id="recTimeCo" style="font-size:14px; font-weight:bold; color:var(--love); font-variant-numeric: tabular-nums;">00:00</span>
-                </div>
-
-                <button id="trashBtnCo" class="btn-attachment" style="display:none; color:var(--love);" onclick="playClick(); cancelRecord('cocon')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                </button>
-
-                <button id="micBtnCo" class="btn-attachment" style="color:var(--love);" onclick="playClick(); toggleRecord('cocon')">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                <button id="mediaBtnCo" class="btn-attachment" onclick="playClick(); openMediaMenu('cocon')" style="color:var(--love);">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                </button>
-            </div>
-            <button onclick="playClick(); sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
-                <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
-    <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
-
-    <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10; flex-shrink: 0;">
-        <div onclick="playClick(); closeNeedyouWizard()" style="background:rgba(255,255,255,0.1); padding:10px; border-radius:50%; cursor: pointer;">
-            <svg class="svg-icon-lg" style="color:white;"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </div>
-    </div>
-
-    <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:0px; text-align:center; flex-shrink: 0;">Needyou</h2>
-    
-    <div id="nyWizard" style="width:100%; max-width:360px; position:relative; flex:1; display:flex; flex-direction:column; margin-top:5px; height: 100%; max-height: calc(100vh - 150px); overflow: hidden;">
-        <div id="nyStep1" class="ny-step active">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Dans quel état d'esprit es-tu ?</p>
-            <div id="nyMoodGrid" class="ny-mood-grid scroll-hidden"></div>
-            <div style="width:100%; margin-top:15px; position:relative;">
-                <input type="text" id="nyCustomMoodInput" class="ny-input" placeholder="Ou écris ton humeur ici..." style="padding-right:60px;">
-                <button onclick="playClick(); window.setCustomNyMood()" style="position:absolute; right:5px; top:10px; bottom:5px; background:var(--accent); border:none; border-radius:15px; width:45px; height:45px; color:black; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                    <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </button>
-            </div>
-        </div>
-
-        <div id="nyStep2" class="ny-step">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Choisis ton style d'écriture</p>
-            <div class="ny-grid" id="nyStyleGrid"></div>
-        </div>
-
-        <div id="nyStep3" class="ny-step">
-            <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Les derniers détails...</p>
-            <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Longueur du poème</label>
-            <div class="ny-grid" style="max-height: max-content; padding-bottom: 0;" id="nyLengthGrid">
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclair')">
-                    <div class="ny-card-title">Éclair ⚡</div><div class="ny-card-desc">Quelques mots intenses</div>
-                </div>
-                <div class="ny-card selected" onclick="playClick(); selectNyOption(this, 'length', 'Météore')">
-                    <div class="ny-card-title">Météore ☄️</div><div class="ny-card-desc">Un petit paragraphe</div>
-                </div>
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Orbite')">
-                    <div class="ny-card-title">Orbite 🪐</div><div class="ny-card-desc">Deux ou trois strophes</div>
-                </div>
-                <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclipse')">
-                    <div class="ny-card-title">Éclipse 🌑</div><div class="ny-card-desc">Une longue déclaration</div>
-                </div>
-            </div>
-
-            <div class="ny-slider-container">
-                <label style="font-size:11px; opacity:0.6; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px;">Intensité de l'émotion</label>
-                <input type="range" min="1" max="3" value="1" class="ny-slider" id="nyIntensitySlider" oninput="playClick();">
-                <div class="ny-slider-labels"><span>Douce</span><span>Passionnée</span><span>Extrême</span></div>
-            </div>
-
-            <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-top:15px;">Un souhait particulier ? (Optionnel)</label>
-            <textarea id="nyCustomPrompt" class="ny-input" style="height: 60px; resize: none; border-radius: 15px; padding:10px; font-size:13px; text-align: left;" placeholder="Ex: Elle a passé une mauvaise journée..."></textarea>
-
-            <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-top:10px;">Pour qui l'Univers écrit-il ?</label>
-            <input type="text" id="nyTargetName" class="ny-input" placeholder="Son prénom..." autocomplete="off" spellcheck="false" style="padding:10px; border-radius:15px; font-size:14px;">
-
-            <button class="ny-btn-nav primary" style="margin-top:15px;" onclick="playClick(); startNeedyouGeneration()">
-                <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <svg class="svg-icon" style="stroke:black;" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                    Murmurer aux étoiles
-                </div>
-            </button>
-        </div>
-
-        <div id="nyStepResult" class="ny-step" style="flex:1; height:100%; display:flex; flex-direction:column; overflow:hidden; padding-bottom:20px; position:relative;">
-            <button id="nyRetryBtn" class="ny-btn-retry" onclick="playClick(); startNeedyouGeneration(true)" style="display:none;">
-                <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.36l5.67-5.67"></path></svg>
-            </button>
-
-            <div id="aiGeneratingBlock" style="text-align:center; margin-top: 50px;">
-                <div class="feather-container"><span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span></div>
-                <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose...</div>
-            </div>
-            
-            <div id="aiPoemOutputBox" style="display:none; flex:1; width:100%; flex-direction:column; overflow:hidden;">
-                <div style="flex:1; overflow-y:auto; background:rgba(0,0,0,0.6); border:1px solid var(--accent); border-radius:30px; padding:30px; font-size:15.5px; line-height:1.7; font-style:italic; box-shadow: inset 0 0 20px rgba(208, 168, 255, 0.1); scroll-behavior: smooth;">
-                    <span id="aiPoemTypewriter"></span><span class="typewriter-cursor" id="nyCursor"></span>
-                </div>
-
-                <button id="aiCopyBtn" class="ny-btn-copy" onclick="playClick(); copyPoemInteractive(this)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copier le texte
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 <script>
 // ==========================================
 // --- VARIABLES GLOBALES ET ÉTAT ---
@@ -941,7 +759,7 @@ function playClick() {
             osc.start(globalAudioCtx.currentTime);
             osc.stop(globalAudioCtx.currentTime + 0.05);
         }
-    } catch(e) { console.warn("Audio bloqué par le navigateur", e); }
+    } catch(e) { console.warn("Audio bloqué", e); }
 }
 
 window.togglePwd = function(inputId, eyeIcon) {
@@ -1123,15 +941,9 @@ function initApp() {
 function showToast(msg) {
     const t = document.getElementById('toastAlert');
     t.innerHTML = msg; 
-    if(!t.classList.contains('show')) {
-        t.classList.add('show');
-    }
-    if(toastTimeout) {
-        clearTimeout(toastTimeout);
-    }
-    toastTimeout = setTimeout(() => { 
-        t.classList.remove('show'); 
-    }, 2500);
+    if(!t.classList.contains('show')) { t.classList.add('show'); }
+    if(toastTimeout) { clearTimeout(toastTimeout); }
+    toastTimeout = setTimeout(() => { t.classList.remove('show'); }, 2500);
 }
 
 // ==========================================
@@ -1205,10 +1017,7 @@ const E2EE = {
 };
 
 function compressImage(file, maxWidth, callback) {
-    if (!file.type.startsWith('image/')) { 
-        callback(file); 
-        return; 
-    }
+    if (!file.type.startsWith('image/')) { callback(file); return; }
     const img = new Image();
     img.src = URL.createObjectURL(file);
     img.onload = () => {
@@ -1220,9 +1029,7 @@ function compressImage(file, maxWidth, callback) {
         canvas.height = img.height * scaleSize;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => { 
-            callback(blob); 
-        }, 'image/jpeg', 0.7); 
+        canvas.toBlob((blob) => { callback(blob); }, 'image/jpeg', 0.7); 
     };
     img.onerror = () => callback(file);
 }
@@ -1240,10 +1047,7 @@ function openMoodSelector() {
         btn.className = "option-btn"; 
         btn.style.justifyContent = "center"; 
         btn.innerText = m;
-        btn.onclick = () => { 
-            playClick(); 
-            showMoodMessage(m); 
-        };
+        btn.onclick = () => { playClick(); showMoodMessage(m); };
         box.appendChild(btn);
     });
     document.getElementById('vWidgetFull').style.display = "flex";
@@ -1251,7 +1055,6 @@ function openMoodSelector() {
 
 async function showMoodMessage(mood) {
     const widgetText = document.getElementById('widgetText');
-    
     widgetText.innerHTML = `
         <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
             <div class="loader" style="width:30px; height:30px; border-width:3px; border-top-color:var(--love);"></div>
@@ -1265,32 +1068,19 @@ async function showMoodMessage(mood) {
     let promptText = `Écris UN SEUL mot doux (une ou deux phrases maximum) pour réconforter, encourager ou charmer la femme de ma vie. Son état d'esprit actuel est : ${mood}. 
     RÈGLE D'OR : Utilise un vocabulaire très simple, naturel et moderne. Parle avec ton cœur. Évite absolument les mots compliqués, soutenus ou les métaphores lourdes sur l'univers. Sois direct et touchant. Ne mets aucun guillemet.`;
 
-    if (mood.toLowerCase() === 'sensuel') {
-        promptText += ` Instruction secrète : Ajoute une tension amoureuse intime et charnelle (+18 élégant, mais toujours avec des mots simples du quotidien).`;
-    }
+    if (mood.toLowerCase() === 'sensuel') promptText += ` Instruction secrète : Ajoute une tension amoureuse intime et charnelle (+18 élégant).`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
-
         if (!response.ok) throw new Error("Erreur API Gemini");
-
         const data = await response.json();
-        let sweetWord = data.candidates[0].content.parts[0].text;
-        
-        widgetText.innerText = sweetWord.replace(/"/g, '').trim();
-
+        widgetText.innerText = data.candidates[0].content.parts[0].text.replace(/"/g, '').trim();
     } catch (err) {
-        console.warn("L'IA est surchargée, passage au Plan B :", err);
         const choices = moodLibrary[mood];
-        if(choices) {
-            widgetText.innerText = choices[Math.floor(Math.random() * choices.length)];
-        } else {
-            widgetText.innerText = "Je pense à toi à chaque instant... ✨";
-        }
+        widgetText.innerText = choices ? choices[Math.floor(Math.random() * choices.length)] : "Je pense à toi à chaque instant... ✨";
     }
 }
 
@@ -1306,13 +1096,10 @@ function setupApp() {
     updatePresence();
     loadContacts();
     updateTimeCounter();
+    listenForLiveInvites(); // IMPORTANT : Écouteur pour le widget d'invitation Live
     
-    if(user.wall) {
-        document.body.style.backgroundImage = `url(${user.wall})`;
-    }
-    if(user.pfp) {
-        document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
-    }
+    if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
+    if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
 
     fs.collection('users').doc(user.id).onSnapshot(doc => {
         const d = doc.data();
@@ -1334,41 +1121,313 @@ function setupApp() {
                 document.getElementById('coconNoteText').innerText = note.txt;
                 document.getElementById('coconNoteDisplay').style.display = 'flex';
             };
-            if (window.appReady) {
-                afficherAlerte();
-            } else {
-                setTimeout(afficherAlerte, 2500);
+            if (window.appReady) afficherAlerte();
+            else setTimeout(afficherAlerte, 2500);
+        }
+    });
+}
+
+// ==========================================
+// --- MOTEUR DE L'ODYSSÉE LIVE (INVITATIONS & PEERJS) ---
+// ==========================================
+let currentLiveInviteId = null;
+let currentLiveRoomId = null;
+let activeInviteListener = null;
+
+let liveStream = null;
+let myPeer = null;
+let currentCall = null;
+let liveUnsub = null; 
+window.myCallRole = null;
+window.livePartnerId = null;
+
+// 1. Ouvre la fenêtre avec les personnes connectées / amis
+function openLiveInviteMenu() {
+    playClick();
+    fs.collection('users').doc(user.id).collection('contacts').get().then(snap => {
+        if(snap.empty) return showToast("Tu n'as aucun partenaire à inviter.");
+        
+        let html = `<div style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding-right:5px;" class="scroll-hidden">`;
+        let promises = [];
+        snap.forEach(doc => promises.push(fs.collection('users').doc(doc.id).get()));
+        
+        Promise.all(promises).then(snaps => {
+            snaps.forEach(uDoc => {
+                if(uDoc.exists) {
+                    const u = uDoc.data();
+                    html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px; border-radius:20px; border:1px solid var(--glass-border);">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div class="pfp" style="width:40px; height:40px; margin:0; border-color:#ff416c;">${u.pfp ? `<img src="${u.pfp}">` : u.pseudo.charAt(0).toUpperCase()}</div>
+                            <span style="font-weight:bold; color:white; font-size:14px;">${u.pseudo}</span>
+                        </div>
+                        <button onclick="sendLiveInvite('${uDoc.id}', '${u.pseudo.replace(/'/g, "\\'")}')" style="background:var(--love); color:white; border:none; width:35px; height:35px; border-radius:50%; font-weight:bold; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px var(--love-glow); transition:0.2s;" onmousedown="this.style.transform='scale(0.8)'" onmouseup="this.style.transform='scale(1)'">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                        </button>
+                    </div>`;
+                }
+            });
+            html += `</div>`;
+            openModal("<span style='color:var(--love); font-family:Pacifico;'>Inviter en Live</span>", html, null);
+        });
+    });
+}
+
+// 2. Envoie l'invitation à la personne
+function sendLiveInvite(peerId, peerName) {
+    playClick();
+    triggerBack(); 
+    showToast(`Invitation envoyée à ${peerName} 🔔`);
+    
+    const inviteRef = fs.collection('users').doc(peerId).collection('liveInvites').doc(user.id);
+    inviteRef.set({
+        callerName: user.pseudo,
+        status: 'pending',
+        timestamp: Date.now(),
+        roomId: user.code 
+    });
+
+    if(activeInviteListener) activeInviteListener();
+    activeInviteListener = inviteRef.onSnapshot(doc => {
+        const data = doc.data();
+        if(data) {
+            if(data.status === 'accepted') {
+                showToast(`<b>${peerName}</b> a accepté ! Connexion...`);
+                window.myCallRole = 'caller';
+                window.livePartnerId = peerId;
+                window.liveRoomId = user.code; 
+                openGameRoom(); 
+                activeInviteListener(); 
+            } else if(data.status === 'declined') {
+                showToast(`<b>${peerName}</b> a refusé l'invitation. 😔`);
+                activeInviteListener(); 
             }
         }
     });
+}
 
-    // =====================================
-    // --- APPEL ENTRANT DE L'ODYSSÉE LIVE ---
-    // =====================================
-    if (user && user.code) {
-        fs.collection('liveRooms').doc(user.code).onSnapshot(doc => {
-            const data = doc.data();
-            if (data && data.invitation && data.invitation.active && data.invitation.callerId !== user.id) {
-                if (Date.now() - data.invitation.timestamp < 60000) {
-                    openModal(
-                        "<span style='color:var(--love); font-family:Pacifico;'>Appel Entrant ! 💖</span>",
-                        `<div style="text-align:center;">
-                            <p><b>${data.invitation.callerName}</b> t'attend dans l'Odyssée Live...</p>
-                            <div class="loader" style="margin:20px auto; border-top-color:var(--love);"></div>
-                         </div>`,
-                        () => { 
-                            playClick();
-                            window.myCallRole = 'callee';
-                            window.livePartnerId = data.invitation.callerId;
-                            openGameRoom(); 
-                        }
-                    );
+// 3. Écouteur pour afficher le widget
+function listenForLiveInvites() {
+    fs.collection('users').doc(user.id).collection('liveInvites').onSnapshot(snap => {
+        snap.docChanges().forEach(change => {
+            const data = change.doc.data();
+            if(change.type === 'added' || change.type === 'modified') {
+                if(data.status === 'pending' && (Date.now() - data.timestamp < 60000)) {
+                    currentLiveInviteId = change.doc.id; 
+                    currentLiveRoomId = data.roomId;
+                    document.getElementById('liveInviteText').innerHTML = `<b>${data.callerName}</b> t'invite à rejoindre la Salle Live ! Prêt(e) à jouer ?`;
+                    document.getElementById('liveInviteWidget').style.display = 'flex';
                     if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                } else if (data.status !== 'pending') {
+                    document.getElementById('liveInviteWidget').style.display = 'none';
                 }
             }
         });
+    });
+}
+
+// 4. Accepter / Refuser
+function acceptLiveInvite() {
+    playClick();
+    document.getElementById('liveInviteWidget').style.display = 'none';
+    if(currentLiveInviteId) {
+        fs.collection('users').doc(user.id).collection('liveInvites').doc(currentLiveInviteId).update({ status: 'accepted' });
+        window.myCallRole = 'callee';
+        window.livePartnerId = currentLiveInviteId;
+        window.liveRoomId = currentLiveRoomId; 
+        openGameRoom();
     }
 }
+
+function declineLiveInvite() {
+    playClick();
+    document.getElementById('liveInviteWidget').style.display = 'none';
+    if(currentLiveInviteId) {
+        fs.collection('users').doc(user.id).collection('liveInvites').doc(currentLiveInviteId).update({ status: 'declined' });
+    }
+}
+
+// 5. SALLE VIDÉO PEERJS
+async function openGameRoom() {
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('coconBox').style.display = 'none';
+    document.getElementById('gameRoomContainer').style.display = 'flex';
+    pushState('gameRoom');
+
+    try {
+        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('localVideoLive').srcObject = liveStream;
+        showToast("Caméra activée. Connexion P2P...");
+
+        myPeer = new Peer('nu_' + user.id);
+
+        myPeer.on('open', (id) => {
+            if (window.myCallRole === 'callee' && window.livePartnerId) {
+                currentCall = myPeer.call('nu_' + window.livePartnerId, liveStream);
+                handleCallStream(currentCall);
+            }
+        });
+
+        myPeer.on('call', (call) => {
+            currentCall = call;
+            call.answer(liveStream);
+            handleCallStream(call);
+        });
+
+        listenToLiveSync(); 
+    } catch (err) {
+        showToast("L'Univers a besoin de ta caméra pour le Live !");
+        closeGameRoom();
+    }
+}
+
+function handleCallStream(call) {
+    call.on('stream', (remoteStream) => {
+        const remoteVid = document.getElementById('remoteVideo');
+        remoteVid.srcObject = remoteStream;
+        document.getElementById('remotePlaceholder').style.display = 'none'; 
+    });
+    call.on('close', () => { closeGameRoom(); });
+    call.on('error', () => { showToast("Connexion réseau perdue."); closeGameRoom(); });
+}
+
+function closeGameRoom(fromHistory = false) {
+    if (currentCall) { currentCall.close(); currentCall = null; }
+    if (myPeer) { myPeer.destroy(); myPeer = null; }
+    if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
+    if (liveUnsub) { liveUnsub(); liveUnsub = null; }
+    if (activeInviteListener) { activeInviteListener(); activeInviteListener = null; }
+    
+    window.myCallRole = null;
+    window.livePartnerId = null;
+
+    document.getElementById('gameRoomContainer').style.display = 'none';
+    document.getElementById('remotePlaceholder').style.display = 'flex'; 
+    document.getElementById('remoteVideo').srcObject = null;
+    document.getElementById('mainApp').style.display = 'block';
+    
+    if (!fromHistory) triggerBack();
+}
+
+// 6. SYNCHRO JEU (Utilise la salle commune liveRoomId)
+function getLiveRoomRef() {
+    return fs.collection('liveRooms').doc(window.liveRoomId || user.code);
+}
+
+window.updateLiveIntensity = function(val) {
+    for (let i = 1; i <= 4; i++) {
+        let label = document.getElementById('int' + i);
+        if(label) {
+            label.style.opacity = (i == val) ? '1' : '0.5';
+            label.style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
+        }
+    }
+    const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
+    document.getElementById('tempLabel').innerText = labels[val-1];
+    
+    getLiveRoomRef().set({ intensity: val }, { merge: true }).catch(()=>{});
+};
+
+function listenToLiveSync() {
+    if(liveUnsub) liveUnsub();
+    liveUnsub = getLiveRoomRef().onSnapshot(doc => {
+        const data = doc.data();
+        if (!data) return;
+
+        if (data.intensity) {
+            const slider = document.getElementById('liveIntensitySlider');
+            if(slider && slider.value != data.intensity) {
+                slider.value = data.intensity;
+                const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
+                document.getElementById('tempLabel').innerText = labels[data.intensity-1];
+                for (let i = 1; i <= 4; i++) {
+                    let label = document.getElementById('int' + i);
+                    if(label) {
+                        label.style.opacity = (i == data.intensity) ? '1' : '0.5';
+                        label.style.textShadow = (i == data.intensity) ? '0 0 10px var(--accent)' : 'none';
+                    }
+                }
+            }
+        }
+
+        if (data.currentChallenge && data.challengeTimestamp > (window.lastChallengeTime || 0)) {
+            window.lastChallengeTime = data.challengeTimestamp;
+            showChallengePopup(data.currentChallenge, data.challengeType);
+            
+            const btnA = document.getElementById('btnAction');
+            const btnV = document.getElementById('btnVerite');
+            btnA.classList.remove('animate-spring', 'animate-fade');
+            btnV.classList.remove('animate-spring', 'animate-fade');
+            btnA.disabled = false; btnV.disabled = false;
+        }
+    });
+}
+
+window.handleGameChoice = async function(type) {
+    const btnA = document.getElementById('btnAction');
+    const btnV = document.getElementById('btnVerite');
+    const intensity = document.getElementById('liveIntensitySlider').value;
+    const levels = ["Mignon", "Complice", "Sensuel", "Hot et piquant"];
+
+    if (type === 'action') {
+        btnA.classList.add('animate-spring');
+        btnV.classList.add('animate-fade');
+    } else {
+        btnV.classList.add('animate-spring');
+        btnA.classList.add('animate-fade');
+    }
+
+    btnA.disabled = true; btnV.disabled = true;
+    showToast("L'IA prépare votre défi...");
+
+    const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
+    const geminiPart2 = "JwRltTnShQLStB_uql4"; 
+    const GEMINI_API_KEY = geminiPart1 + geminiPart2;
+
+    const promptText = `Donne-moi un défi ou une question à poser en direct en appel vidéo. 
+                        C'est de type "${type}". 
+                        Niveau d'intensité demandé : ${levels[intensity-1]}. 
+                        Règle stricte : Fais une seule phrase, sois direct, romantique et joueur. Ne mets pas de guillemets. C'est pour un couple.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+
+        const data = await response.json();
+        const challenge = data.candidates[0].content.parts[0].text.trim();
+
+        await getLiveRoomRef().set({
+            currentChallenge: challenge,
+            challengeType: type,
+            challengeTimestamp: Date.now()
+        }, { merge: true });
+
+    } catch (err) {
+        showToast("L'IA est timide, réessaie...");
+        setTimeout(() => {
+            btnA.disabled = false; btnV.disabled = false;
+            btnA.classList.remove('animate-spring', 'animate-fade');
+            btnV.classList.remove('animate-spring', 'animate-fade');
+        }, 2000);
+    }
+};
+
+function showChallengePopup(text, type) {
+    playClick(); 
+    const title = type === 'action' ? '<span style="color:#ff4b2b;">🟥 Action</span>' : '<span style="color:#38ef7d;">🟩 Vérité</span>';
+    openModal(
+        `<div style='display:flex;align-items:center;gap:8px;justify-content:center; font-family:"Pacifico";'>${title}</div>`, 
+        `<div style="font-size:18px; padding:15px; font-style:italic; line-height: 1.5; color: white;">"${text}"</div>`, 
+        null
+    );
+}
+
+// ==========================================
+// --- RESTE DE L'APPLICATION ---
+// ==========================================
 
 function choisirHumeurCocon() {
     let html = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">`;
@@ -1391,11 +1450,8 @@ function choisirHumeurCocon() {
 
 window.setCustomCoconMood = function() {
     const val = document.getElementById('customCoconMoodInp').value.trim();
-    if(val) {
-        setHumeur(val);
-    } else {
-        showToast("Écris une humeur !");
-    }
+    if(val) setHumeur(val);
+    else showToast("Écris une humeur !");
 };
 
 function setHumeur(label) {
@@ -1509,14 +1565,10 @@ window.onpopstate = (e) => {
     }
 };
 
-function triggerBack() {
-    history.back();
-}
+function triggerBack() { history.back(); }
 
 function switchV(id, el) {
-    if(id === 'vCocon') {
-        document.getElementById('coconTabBtn').classList.remove('cocon-notify');
-    }
+    if(id === 'vCocon') document.getElementById('coconTabBtn').classList.remove('cocon-notify');
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -2588,374 +2640,6 @@ function promptGalaxyAccess() {
     });
 }
 
-// ==========================================
-// --- MOTEUR DE L'ODYSSÉE LIVE (PEERJS + FIREBASE) ---
-// ==========================================
-let liveStream = null;
-let myPeer = null;
-let currentCall = null;
-let liveUnsub = null; 
-window.myCallRole = null;
-window.livePartnerId = null;
-
-async function sendLiveCall() {
-    playClick();
-    showToast("Appel en cours... 🔔");
-    window.myCallRole = 'caller';
-    
-    await fs.collection('liveRooms').doc(user.code).set({
-        invitation: { callerName: user.pseudo, callerId: user.id, active: true, timestamp: Date.now() }
-    });
-    openGameRoom();
-}
-
-async function openGameRoom() {
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('coconBox').style.display = 'none';
-    document.getElementById('gameRoomContainer').style.display = 'flex';
-    pushState('gameRoom');
-
-    try {
-        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideoLive').srcObject = liveStream;
-        showToast("Caméra activée. Connexion P2P...");
-
-        myPeer = new Peer('nu_' + user.id);
-
-        myPeer.on('open', (id) => {
-            if (window.myCallRole === 'callee' && window.livePartnerId) {
-                currentCall = myPeer.call('nu_' + window.livePartnerId, liveStream);
-                handleCallStream(currentCall);
-            }
-        });
-
-        myPeer.on('call', (call) => {
-            currentCall = call;
-            call.answer(liveStream);
-            handleCallStream(call);
-        });
-
-        listenToLiveSync(); 
-    } catch (err) {
-        showToast("L'Univers a besoin de ta caméra pour le Live !");
-        closeGameRoom();
-    }
-}
-
-function handleCallStream(call) {
-    call.on('stream', (remoteStream) => {
-        const remoteVid = document.getElementById('remoteVideo');
-        remoteVid.srcObject = remoteStream;
-        document.getElementById('remotePlaceholder').style.display = 'none'; 
-    });
-    call.on('close', () => { closeGameRoom(); });
-    call.on('error', () => { showToast("Connexion réseau perdue."); closeGameRoom(); });
-}
-
-function closeGameRoom(fromHistory = false) {
-    if (currentCall) { currentCall.close(); currentCall = null; }
-    if (myPeer) { myPeer.destroy(); myPeer = null; }
-    if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
-    if (liveUnsub) { liveUnsub(); liveUnsub = null; }
-    
-    window.myCallRole = null;
-    window.livePartnerId = null;
-    
-    if(user && user.code) {
-        fs.collection('liveRooms').doc(user.code).set({ invitation: { active: false } }, { merge: true });
-    }
-
-    document.getElementById('gameRoomContainer').style.display = 'none';
-    document.getElementById('remotePlaceholder').style.display = 'flex';
-    document.getElementById('remoteVideo').srcObject = null;
-    document.getElementById('mainApp').style.display = 'block';
-    
-    if (!fromHistory) triggerBack();
-}
-
-window.updateLiveIntensity = function(val) {
-    for (let i = 1; i <= 4; i++) {
-        let label = document.getElementById('int' + i);
-        if(label) {
-            label.style.opacity = (i == val) ? '1' : '0.5';
-            label.style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
-        }
-    }
-    const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
-    document.getElementById('tempLabel').innerText = labels[val-1];
-    
-    fs.collection('liveRooms').doc(user.code).set({ intensity: val }, { merge: true }).catch(()=>{});
-};
-
-function listenToLiveSync() {
-    liveUnsub = fs.collection('liveRooms').doc(user.code).onSnapshot(doc => {
-        const data = doc.data();
-        if (!data) return;
-
-        if (data.intensity) {
-            const slider = document.getElementById('liveIntensitySlider');
-            if(slider && slider.value != data.intensity) {
-                slider.value = data.intensity;
-                const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
-                document.getElementById('tempLabel').innerText = labels[data.intensity-1];
-                for (let i = 1; i <= 4; i++) {
-                    let label = document.getElementById('int' + i);
-                    if(label) {
-                        label.style.opacity = (i == data.intensity) ? '1' : '0.5';
-                        label.style.textShadow = (i == data.intensity) ? '0 0 10px var(--accent)' : 'none';
-                    }
-                }
-            }
-        }
-
-        if (data.currentChallenge && data.challengeTimestamp > (window.lastChallengeTime || 0)) {
-            window.lastChallengeTime = data.challengeTimestamp;
-            showChallengePopup(data.currentChallenge, data.challengeType);
-            
-            const btnA = document.getElementById('btnAction');
-            const btnV = document.getElementById('btnVerite');
-            btnA.classList.remove('animate-spring', 'animate-fade');
-            btnV.classList.remove('animate-spring', 'animate-fade');
-            btnA.disabled = false; btnV.disabled = false;
-        }
-    });
-}
-
-window.handleGameChoice = async function(type) {
-    const btnA = document.getElementById('btnAction');
-    const btnV = document.getElementById('btnVerite');
-    const intensity = document.getElementById('liveIntensitySlider').value;
-    const levels = ["Mignon", "Complice", "Sensuel", "Hot et piquant"];
-
-    if (type === 'action') {
-        btnA.classList.add('animate-spring');
-        btnV.classList.add('animate-fade');
-    } else {
-        btnV.classList.add('animate-spring');
-        btnA.classList.add('animate-fade');
-    }
-
-    btnA.disabled = true; btnV.disabled = true;
-    showToast("L'IA prépare votre défi...");
-
-    const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
-    const geminiPart2 = "JwRltTnShQLStB_uql4"; 
-    const GEMINI_API_KEY = geminiPart1 + geminiPart2;
-
-    const promptText = `Donne-moi un défi ou une question à poser en direct en appel vidéo. 
-                        C'est de type "${type}". 
-                        Niveau d'intensité demandé : ${levels[intensity-1]}. 
-                        Règle stricte : Fais une seule phrase, sois direct, romantique et joueur. Ne mets pas de guillemets. C'est pour un couple.`;
-
-    try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-
-        const data = await response.json();
-        const challenge = data.candidates[0].content.parts[0].text.trim();
-
-        await fs.collection('liveRooms').doc(user.code).set({
-            currentChallenge: challenge,
-            challengeType: type,
-            challengeTimestamp: Date.now()
-        }, { merge: true });
-
-    } catch (err) {
-        showToast("L'IA est timide, réessaie...");
-        setTimeout(() => {
-            btnA.disabled = false; btnV.disabled = false;
-            btnA.classList.remove('animate-spring', 'animate-fade');
-            btnV.classList.remove('animate-spring', 'animate-fade');
-        }, 2000);
-    }
-};
-
-function showChallengePopup(text, type) {
-    playClick(); 
-    const title = type === 'action' ? '<span style="color:#ff4b2b;">🟥 Action</span>' : '<span style="color:#38ef7d;">🟩 Vérité</span>';
-    openModal(
-        `<div style='display:flex;align-items:center;gap:8px;justify-content:center; font-family:"Pacifico";'>${title}</div>`, 
-        `<div style="font-size:18px; padding:15px; font-style:italic; line-height: 1.5; color: white;">"${text}"</div>`, 
-        null
-    );
-}
-
-function pushState(id) {
-    stateStack.push(id);
-    history.pushState({id}, "");
-}
-
-window.onpopstate = (e) => {
-    const last = stateStack.pop();
-    if(last === 'modal') {
-        document.getElementById('customModal').style.display = 'none';
-    } else if(last === 'mediaViewer') {
-        closeMediaViewer(true);
-    } else if(last === 'galaxy') {
-        closeGalaxy(true);
-    } else if(last === 'needyou') {
-        closeNeedyouWizard(true);
-    } else if(last === 'arQuiz') {
-        closeARQuiz(true);
-    } else if(last === 'gameRoom') {
-        closeGameRoom(true);
-    } else if(last === 'chatBox' || last === 'coconBox') {
-        closeChat();
-    }
-};
-
-// ==========================================
-// --- WIZARD NEEDYOU : IA & DESIGN ---
-// ==========================================
-let nyCurrentStep = 1;
-let nySelections = { mood: '', style: '', length: 'Météore', name: '' };
-
-const moodsSansEmoji = [
-    "Radieux", "Nostalgique", "Passionné", "Rêveur", "Mélancolique", 
-    "Taquin", "En manque", "Reconnaissant", "Épuisé", "Zen", 
-    "Fier", "Fou amoureux", "Inquiet", "Protecteur", "Inspiré", 
-    "Apaisé", "Sensuel", "Émerveillé"
-];
-
-const neonColors = [
-    { border: 'rgba(255, 75, 110, 0.8)', bg: 'rgba(255, 75, 110, 0.2)', shadow: 'rgba(255, 75, 110, 0.5)' }, 
-    { border: 'rgba(208, 168, 255, 0.8)', bg: 'rgba(208, 168, 255, 0.2)', shadow: 'rgba(208, 168, 255, 0.5)' }, 
-    { border: 'rgba(0, 212, 255, 0.8)', bg: 'rgba(0, 212, 255, 0.2)', shadow: 'rgba(0, 212, 255, 0.5)' }    
-];
-
-const stylesNy = [
-    { n: "Doux & Romantique", d: "Mots tendres et cajoleurs" },
-    { n: "Épique & Cosmique", d: "Métaphores spatiales infinies" },
-    { n: "Mélancolique", d: "Émotion profonde et pluie d'étoiles" },
-    { n: "Haïku Stellaire", d: "Très court, percutant et poétique" },
-    { n: "Sonnet Classique", d: "Rimes et structure élégante" },
-    { n: "Prose Poétique", d: "Texte fluide, libre et touchant" },
-    { n: "Lettre d'Amour", d: "Déclaration sincère et très directe" },
-    { n: "Énigmatique", d: "Mystérieux, passionné, à déchiffrer" }
-];
-
-function openNeedyouWizard() {
-    document.getElementById('mainApp').style.display = 'none';
-    document.getElementById('needyouBox').style.display = 'flex';
-    pushState('needyou');
-    generateStars();
-    initNyWizard();
-}
-
-function closeNeedyouWizard(fromHistory = false) {
-    document.getElementById('needyouBox').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    document.getElementById('stars-container').innerHTML = '';
-    document.getElementById('stars-container').classList.remove('warp-active');
-    if(!fromHistory) triggerBack();
-}
-
-function initNyWizard() {
-    nyCurrentStep = 1;
-    nySelections = { mood: '', style: '', length: 'Météore', name: '' };
-    showNyStep(1);
-    renderNyMoods();
-    renderNyStyles();
-    document.getElementById('nyTargetName').value = '';
-    document.getElementById('nyCustomMoodInput').value = '';
-    
-    const customPrompt = document.getElementById('nyCustomPrompt');
-    if (customPrompt) {
-        customPrompt.value = '';
-    }
-    
-    const slider = document.getElementById('nyIntensitySlider');
-    if(slider) slider.value = "1";
-    
-    document.getElementById('aiPoemOutputBox').style.display = 'none';
-    
-    document.querySelectorAll('#nyLengthGrid .ny-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('#nyLengthGrid .ny-card')[1].classList.add('selected');
-}
-
-function showNyStep(step) {
-    document.querySelectorAll('.ny-step').forEach(s => s.classList.remove('active'));
-    document.getElementById('nyStep' + (step === 4 ? 'Result' : step)).classList.add('active');
-}
-
-function renderNyMoods() {
-    const grid = document.getElementById('nyMoodGrid');
-    grid.innerHTML = '';
-    
-    moodsSansEmoji.forEach((m) => {
-        let div = document.createElement('div');
-        div.className = 'ny-mood-pill';
-        div.innerText = m;
-        
-        div.onclick = () => {
-            playClick();
-            document.querySelectorAll('.ny-mood-pill').forEach(b => b.classList.remove('selected'));
-            div.classList.add('selected');
-            nySelections.mood = m;
-            setTimeout(() => { showNyStep(2); }, 400);
-        };
-        grid.appendChild(div);
-    });
-}
-
-window.setCustomNyMood = function() {
-    const val = document.getElementById('nyCustomMoodInput').value.trim();
-    if(val) {
-        document.querySelectorAll('.ny-mood-pill').forEach(b => b.classList.remove('selected'));
-        nySelections.mood = val;
-        setTimeout(() => { showNyStep(2); }, 400);
-    } else {
-        showToast("Écris une humeur !");
-    }
-};
-
-function renderNyStyles() {
-    const grid = document.getElementById('nyStyleGrid');
-    grid.innerHTML = '';
-    stylesNy.forEach(s => {
-        let div = document.createElement('div');
-        div.className = 'ny-card';
-        div.innerHTML = `<div class="ny-card-title">${s.n}</div><div class="ny-card-desc">${s.d}</div>`;
-        div.onclick = () => {
-            playClick();
-            document.querySelectorAll('#nyStyleGrid .ny-card').forEach(c => c.classList.remove('selected'));
-            div.classList.add('selected');
-            nySelections.style = s.n;
-            setTimeout(() => { showNyStep(3); }, 400);
-        };
-        grid.appendChild(div);
-    });
-}
-
-function selectNyOption(el, type, val) {
-    if(type === 'length') {
-        document.querySelectorAll(`#nyLengthGrid .ny-card`).forEach(c => c.classList.remove('selected'));
-    }
-    el.classList.add('selected');
-    nySelections[type] = val;
-}
-
-function generateStars() {
-    const container = document.getElementById('stars-container');
-    container.innerHTML = '';
-    for (let i = 0; i < 100; i++) {
-        let star = document.createElement('div');
-        star.className = 'star';
-        let size = Math.random() * 3 + 1;
-        star.style.width = size + 'px';
-        star.style.height = size + 'px';
-        star.style.left = Math.random() * 100 + '%';
-        star.style.top = Math.random() * 100 + '%';
-        star.style.opacity = Math.random();
-        const colors = ['#ffffff', '#d0a8ff', '#00d2ff'];
-        star.style.background = colors[Math.floor(Math.random() * colors.length)];
-        container.appendChild(star);
-    }
-}
-
 async function startNeedyouGeneration(isRetry = false) {
     if(!isRetry) {
         const nameInput = document.getElementById('nyTargetName').value.trim();
@@ -3062,21 +2746,11 @@ function typeWriterEffect(text, elementId) {
     function type() {
         if (i < text.length) {
             let char = text.charAt(i);
-            if(char === '\n') { 
-                el.innerHTML += '<br>'; 
-            } else { 
-                el.innerHTML += char; 
-            }
-            
+            if(char === '\n') { el.innerHTML += '<br>'; } else { el.innerHTML += char; }
             const container = el.parentElement;
             container.scrollTop = container.scrollHeight;
-            
-            if (i % 5 === 0 && navigator.vibrate) {
-                try { navigator.vibrate(2); } catch(e){}
-            }
-
-            i++; 
-            setTimeout(type, speed);
+            if (i % 5 === 0 && navigator.vibrate) { try { navigator.vibrate(2); } catch(e){} }
+            i++; setTimeout(type, speed);
         } else {
             if(cursor) cursor.style.display = 'none';
         }
@@ -3116,7 +2790,6 @@ const allARMissions = [
 
 function getNextARMission() {
     let deck = JSON.parse(localStorage.getItem('nu_ar_deck') || '[]');
-    
     if (deck.length === 0) {
         deck = [...allARMissions];
         for (let i = deck.length - 1; i > 0; i--) {
@@ -3124,13 +2797,11 @@ function getNextARMission() {
             [deck[i], deck[j]] = [deck[j], deck[i]];
         }
     }
-    
     const mission = deck.shift();
     localStorage.setItem('nu_ar_deck', JSON.stringify(deck));
     return mission;
 }
 
-// --- UPLOAD DE LA PHOTO SECRÈTE ---
 async function uploadSecretPhoto(e) {
     const file = e.target.files[0];
     if(!file) return;
@@ -3141,9 +2812,7 @@ async function uploadSecretPhoto(e) {
         const formData = new FormData();
         
         let finalFile = data;
-        if (!(data instanceof File)) {
-            finalFile = new File([data], 'univers_secret.jpg', { type: data.type || 'image/jpeg' });
-        }
+        if (!(data instanceof File)) finalFile = new File([data], 'univers_secret.jpg', { type: data.type || 'image/jpeg' });
         
         formData.append('file', finalFile);
         formData.append('upload_preset', "evyegpfe");
@@ -3164,7 +2833,6 @@ async function uploadSecretPhoto(e) {
     });
 }
 
-// --- OUVERTURE DE L'ODYSSÉE CLASSIQUE ---
 async function openARQuiz() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
@@ -3178,7 +2846,6 @@ async function openARQuiz() {
     currentMissionReward = mission.reward;
     document.getElementById('arMissionText').innerText = mission.text;
     
-    // Récupérer la progression du puzzle depuis Firebase
     fs.collection('cocon').doc(user.code).get().then(doc => {
         if(doc.exists && doc.data().secretPhotoUrl) {
             document.getElementById('arSecretPhoto').src = doc.data().secretPhotoUrl;
@@ -3208,9 +2875,7 @@ function closeARQuiz(fromHistory = false) {
     document.getElementById('arQuizContainer').style.display = 'none';
     document.getElementById('arPermissionScreen').style.display = 'none';
     document.getElementById('arSuccessScreen').style.display = 'none';
-    
     document.getElementById('mainApp').style.display = 'block';
-    
     if(!fromHistory) triggerBack();
 }
 
@@ -3227,7 +2892,6 @@ window.skipARMission = function() {
     playClick();
     const textEl = document.getElementById('arMissionText');
     textEl.style.opacity = 0; 
-    
     setTimeout(() => {
         const mission = getNextARMission();
         currentMissionTarget = mission.obj;
@@ -3237,7 +2901,6 @@ window.skipARMission = function() {
     }, 300);
 };
 
-// --- SCAN ET MISE À JOUR FIREBASE ---
 async function scanARObject() {
     const video = document.getElementById('arCamera');
     const canvas = document.getElementById('arCanvas');
@@ -3246,7 +2909,6 @@ async function scanARObject() {
     btn.innerHTML = `<div class="loader" style="width:20px;height:20px;border-width:2px;border-top-color:black;"></div> L'Univers analyse...`;
     btn.style.opacity = '0.8';
     btn.style.pointerEvents = 'none';
-    
     document.getElementById('arScannerLine').style.animationDuration = '0.5s';
     
     canvas.width = video.videoWidth;
@@ -3255,7 +2917,6 @@ async function scanARObject() {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     
     const base64Img = canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-    
     const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
     const geminiPart2 = "JwRltTnShQLStB_uql4"; 
     const GEMINI_API_KEY = geminiPart1 + geminiPart2;
@@ -3270,7 +2931,6 @@ async function scanARObject() {
         });
 
         if (!response.ok) throw new Error("API Error");
-
         const data = await response.json();
         const answer = data.candidates[0].content.parts[0].text.trim().toUpperCase();
         
@@ -3278,21 +2938,18 @@ async function scanARObject() {
         
         if (answer.includes("OUI")) {
             showToast("✨ Bravo ! Mission accomplie ! ✨");
-            
             document.getElementById('arRewardText').innerText = currentMissionReward;
             document.getElementById('arSuccessScreen').style.display = 'flex';
             
             fs.collection('cocon').doc(user.code).get().then(doc => {
                 let currentBlur = (doc.exists && doc.data().puzzleBlur !== undefined) ? doc.data().puzzleBlur : 25;
                 let newBlur = Math.max(0, currentBlur - 5);
-                
                 fs.collection('cocon').doc(user.code).set({ puzzleBlur: newBlur }, { merge: true });
                 
                 let blurOverlay = document.getElementById('puzzleBlurOverlay');
                 if(blurOverlay) {
                     blurOverlay.style.background = "rgba(0, 212, 255, 0.3)";
                     setTimeout(() => blurOverlay.style.background = "rgba(0,0,0,0.2)", 1500);
-                    
                     blurOverlay.style.backdropFilter = `blur(${newBlur}px)`;
                     blurOverlay.style.webkitBackdropFilter = `blur(${newBlur}px)`; 
                     
@@ -3304,12 +2961,8 @@ async function scanARObject() {
                         floatText.style.animation = 'floatUpFade 2s ease forwards';
                     }
                 }
-                
-                if(newBlur === 0) {
-                    setTimeout(() => showToast("💖 Souvenir débloqué à 100% !"), 1500);
-                }
+                if(newBlur === 0) setTimeout(() => showToast("💖 Souvenir débloqué à 100% !"), 1500);
             });
-            
             resetScanButton(btn);
         } else {
             showToast("Hmm, ce n'est pas ça... Réessaie ! 🕵️‍♂️");
