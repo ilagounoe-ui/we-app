@@ -68,7 +68,6 @@
             transition: background 0.5s ease;
         }
 
-        /* --- LE HACK ANTI-GOOGLE ET SYSTEME D'ŒIL --- */
         .masquer-texte { -webkit-text-security: disc; }
         .pwd-wrapper { position: relative; width: 100%; }
         .pwd-eye { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.5); cursor: pointer; padding: 5px; z-index: 5; transition: 0.2s; }
@@ -81,7 +80,6 @@
         }
         @keyframes dustAnim { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
 
-        /* --- TOASTER LOGIN --- */
         #authLayer { background: #080612; background-image: radial-gradient(circle at 50% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 60%); transition: background-color 0.8s ease; display:flex;}
         #authLayer.lamp-on { background-color: #0f0b1a; }
         .auth-container-flex { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 50px; width: 100%; max-width: 800px; padding: 20px; z-index: 10; }
@@ -235,7 +233,7 @@
         .warp-active { animation: warpSpeed 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate; filter: blur(1px); }
         .star { position: absolute; background: white; border-radius: 50%; box-shadow: 0 0 5px white; }
 
-        /* --- NOUVEAU DESIGN NEEDYOU : ÉPURÉ ET GLASSMORPHISM --- */
+        /* --- DESIGN NEEDYOU --- */
         .ny-step { display: none; width: 100%; flex-direction: column; align-items: center; opacity: 0; transform: translateY(20px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .ny-step.active { display: flex; opacity: 1; transform: translateY(0); }
         
@@ -280,25 +278,18 @@
         .ny-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 0 15px var(--accent-glow); border: 2px solid white; transition: 0.2s; }
         .ny-slider-labels { display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- NOUVEAU: DESIGN ODYSSÉE AR --- */
+        /* --- DESIGN ODYSSÉE AR --- */
         #arQuizContainer { position: fixed; inset: 0; background: #000; z-index: 150000; display: none; flex-direction: column; overflow: hidden; }
         #arCamera { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
         #arOverlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); pointer-events: none; z-index: 10; }
         
         .ar-scanner-line {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            background: var(--check);
+            position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--check);
             box-shadow: 0 0 15px var(--check), 0 0 30px var(--check);
-            animation: scanAnim 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-            z-index: 15;
+            animation: scanAnim 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; z-index: 15;
         }
         @keyframes scanAnim {
-            0% { top: 0%; opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { top: 100%; opacity: 0; }
+            0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; }
         }
 
         #arPermissionScreen { position: absolute; inset:0; background: var(--bg); z-index: 200; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:30px; }
@@ -314,7 +305,14 @@
         .confetti { position: absolute; width: 10px; height: 10px; z-index: 2000; animation: confettiFall 3s linear forwards; }
         @keyframes confettiFall { 0% { transform: translateY(-10vh) rotate(0deg); opacity:1;} 100% { transform: translateY(100vh) rotate(720deg); opacity:0;} }
 
-        /* --- NOUVEAU STYLE GRILLE COCON --- */
+        @keyframes floatUpFade {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            20% { transform: translate(-50%, -60%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -90%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -100%) scale(1); opacity: 0; }
+        }
+
+        /* --- GRILLE COCON --- */
         .cocon-grid-btn { padding: 20px 10px; border-radius: 25px; border: 1px solid var(--glass-border); background: var(--card); color: white; font-weight: 600; font-size: 14px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .cocon-grid-btn:active { transform: scale(0.92); }
         .cocon-grid-btn svg { width: 28px; height: 28px; }
@@ -327,11 +325,9 @@
 <div id="toastAlert" class="toast"></div>
 
 <div id="arQuizContainer">
-    
     <div id="arPermissionScreen">
         <svg style="width:80px; height:80px; stroke:var(--accent); fill:none; margin-bottom:20px;" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-            <circle cx="12" cy="13" r="4"></circle>
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>
         </svg>
         <h2 style="font-family:'Pacifico'; color:white; font-size:26px; margin:0 0 15px 0;">Accès à la Vision</h2>
         <p style="color:var(--text-sub); font-size:14px; margin-bottom:30px;">Pour jouer à la Chasse aux Souvenirs, l'Univers a besoin de voir à travers tes yeux.</p>
@@ -352,7 +348,10 @@
 
     <div class="ar-mission-card">
         <h3 class="ar-mission-title">L'Odyssée</h3>
-        <p id="arMissionText" class="ar-mission-text">Chargement de la mission...</p>
+        <p id="arMissionText" class="ar-mission-text" style="transition: opacity 0.3s;">Chargement de la mission...</p>
+        <button onclick="playClick(); skipARMission()" style="margin-top:15px; background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); padding:8px 15px; border-radius:15px; color:white; font-size:12px; cursor:pointer; transition:0.2s;">
+            🔄 Changer de défi
+        </button>
     </div>
 
     <button id="arScanBtn" class="ar-scan-btn" onclick="playClick(); scanARObject()">
@@ -362,12 +361,10 @@
     
     <div id="arSuccessScreen">
         <h2 style="font-family:'Pacifico'; color:var(--check); font-size:32px; margin-bottom:10px; text-shadow:0 0 15px rgba(0, 210, 255, 0.4);">Trouvé ! 🎉</h2>
-        
-        <!-- LE PUZZLE PHOTOGRAPHIQUE -->
         <div style="position:relative; width:220px; height:220px; border-radius:20px; overflow:hidden; margin: 15px auto; border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(208, 168, 255, 0.3);">
             <img id="arSecretPhoto" src="https://images.unsplash.com/photo-1518199266791-5375a83164ba?q=80&w=500" style="width:100%; height:100%; object-fit:cover;">
-            <!-- Le calque de flou qui va disparaître progressivement -->
-            <div id="puzzleBlurOverlay" style="position:absolute; inset:0; backdrop-filter: blur(25px); background: rgba(0,0,0,0.2); transition: backdrop-filter 1.5s ease;"></div>
+            <div id="puzzleBlurOverlay" style="position:absolute; inset:0; backdrop-filter: blur(25px); background: rgba(0,0,0,0.2); transition: all 1.5s ease;"></div>
+            <div id="unlockFloatingText" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:var(--check); font-weight:bold; font-size:26px; text-shadow:0 0 15px rgba(0,210,255,0.9); opacity:0; pointer-events:none; z-index:20;"></div>
         </div>
 
         <div style="background:var(--card); border:1px solid var(--accent); padding:20px; border-radius:25px; width:90%; max-width:350px; margin-top:10px;">
@@ -558,13 +555,11 @@
             <div style="height:1px; background:var(--glass-border); flex:1;"></div>
         </div>
 
-        <!-- NOUVEAU BOUTON : DÉFINIR LE SOUVENIR -->
         <button onclick="playClick(); document.getElementById('secretPhotoInput').click()" style="width:100%; padding:14px; border-radius:20px; border:1px dashed var(--accent); background:rgba(208, 168, 255, 0.05); color:white; font-weight:600; font-size:13px; transition:0.3s; margin-bottom: 15px;">
             📸 Cacher un nouveau souvenir dans l'Odyssée
         </button>
         <input type="file" id="secretPhotoInput" hidden accept="image/*" onchange="uploadSecretPhoto(event)" onclick="this.value=null">
 
-        <!-- BOUTON ODYSSÉE EXISTANT -->
         <button onclick="playClick(); openARQuiz()" style="width:100%; padding:18px; border-radius:30px; border:1px solid var(--check); background:rgba(0, 210, 255, 0.05); color:var(--check); font-weight:bold; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom: 30px;" onmousedown="this.style.transform='scale(0.96)'" onmouseup="this.style.transform='scale(1)'">
             <svg class="svg-icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> L'Odyssée
         </button>
@@ -752,7 +747,6 @@
 </div>
 
 <div id="needyouBox" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:100000; overflow:hidden; flex-direction:column; align-items:center; padding: 20px;">
-    
     <div id="stars-container" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.5; transition: opacity 0.5s, transform 2s;"></div>
 
     <div style="width:100%; display:flex; justify-content:flex-start; margin-top:20px; z-index:10; flex-shrink: 0;">
@@ -764,11 +758,9 @@
     <h2 style="font-family:'Pacifico'; font-size:28px; color:var(--accent); text-shadow: 0 0 15px var(--accent-glow); margin-top:0px; text-align:center; flex-shrink: 0;">Needyou</h2>
     
     <div id="nyWizard" style="width:100%; max-width:360px; position:relative; flex:1; display:flex; flex-direction:column; margin-top:5px; height: 100%; max-height: calc(100vh - 150px); overflow: hidden;">
-
         <div id="nyStep1" class="ny-step active">
             <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Dans quel état d'esprit es-tu ?</p>
             <div id="nyMoodGrid" class="ny-mood-grid scroll-hidden"></div>
-            
             <div style="width:100%; margin-top:15px; position:relative;">
                 <input type="text" id="nyCustomMoodInput" class="ny-input" placeholder="Ou écris ton humeur ici..." style="padding-right:60px;">
                 <button onclick="playClick(); window.setCustomNyMood()" style="position:absolute; right:5px; top:10px; bottom:5px; background:var(--accent); border:none; border-radius:15px; width:45px; height:45px; color:black; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:center;">
@@ -784,35 +776,26 @@
 
         <div id="nyStep3" class="ny-step">
             <p style="text-align:center; color:white; font-weight:bold; font-size:16px; margin-bottom:15px;">Les derniers détails...</p>
-            
             <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:10px;">Longueur du poème</label>
             <div class="ny-grid" style="max-height: max-content; padding-bottom: 0;" id="nyLengthGrid">
                 <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclair')">
-                    <div class="ny-card-title">Éclair ⚡</div>
-                    <div class="ny-card-desc">Quelques mots intenses</div>
+                    <div class="ny-card-title">Éclair ⚡</div><div class="ny-card-desc">Quelques mots intenses</div>
                 </div>
                 <div class="ny-card selected" onclick="playClick(); selectNyOption(this, 'length', 'Météore')">
-                    <div class="ny-card-title">Météore ☄️</div>
-                    <div class="ny-card-desc">Un petit paragraphe</div>
+                    <div class="ny-card-title">Météore ☄️</div><div class="ny-card-desc">Un petit paragraphe</div>
                 </div>
                 <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Orbite')">
-                    <div class="ny-card-title">Orbite 🪐</div>
-                    <div class="ny-card-desc">Deux ou trois strophes</div>
+                    <div class="ny-card-title">Orbite 🪐</div><div class="ny-card-desc">Deux ou trois strophes</div>
                 </div>
                 <div class="ny-card" onclick="playClick(); selectNyOption(this, 'length', 'Éclipse')">
-                    <div class="ny-card-title">Éclipse 🌑</div>
-                    <div class="ny-card-desc">Une longue déclaration</div>
+                    <div class="ny-card-title">Éclipse 🌑</div><div class="ny-card-desc">Une longue déclaration</div>
                 </div>
             </div>
 
             <div class="ny-slider-container">
                 <label style="font-size:11px; opacity:0.6; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:5px;">Intensité de l'émotion</label>
                 <input type="range" min="1" max="3" value="1" class="ny-slider" id="nyIntensitySlider" oninput="playClick();">
-                <div class="ny-slider-labels">
-                    <span>Douce</span>
-                    <span>Passionnée</span>
-                    <span>Extrême</span>
-                </div>
+                <div class="ny-slider-labels"><span>Douce</span><span>Passionnée</span><span>Extrême</span></div>
             </div>
 
             <label style="font-size:11px; opacity:0.6; margin-left:5px; text-transform:uppercase; letter-spacing:1px; display:block; margin-top:15px;">Un souhait particulier ? (Optionnel)</label>
@@ -830,17 +813,12 @@
         </div>
 
         <div id="nyStepResult" class="ny-step" style="flex:1; height:100%; display:flex; flex-direction:column; overflow:hidden; padding-bottom:20px; position:relative;">
-            
             <button id="nyRetryBtn" class="ny-btn-retry" onclick="playClick(); startNeedyouGeneration(true)" style="display:none;">
                 <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-8.36l5.67-5.67"></path></svg>
             </button>
 
             <div id="aiGeneratingBlock" style="text-align:center; margin-top: 50px;">
-                <div class="feather-container">
-                    <span class="feather">🪶</span>
-                    <span class="feather">🪶</span>
-                    <span class="feather">🪶</span>
-                </div>
+                <div class="feather-container"><span class="feather">🪶</span><span class="feather">🪶</span><span class="feather">🪶</span></div>
                 <div style="font-family:'Pacifico'; font-size:20px; color:white; text-shadow: 0 0 10px var(--accent-glow); opacity: 0.9;">L'Univers compose...</div>
             </div>
             
@@ -850,8 +828,7 @@
                 </div>
 
                 <button id="aiCopyBtn" class="ny-btn-copy" onclick="playClick(); copyPoemInteractive(this)">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    Copier le texte
+                    <svg class="svg-icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copier le texte
                 </button>
             </div>
         </div>
@@ -860,207 +837,8 @@
 
 <script>
 // ==========================================
-// --- VARIABLES GLOBALES ET ÉTAT ---
+// --- INITIALISATION FIREBASE ---
 // ==========================================
-window.sharedPlaylist = [];
-let toastTimeout = null;
-let isLoginMode = true;
-window.appReady = false; 
-
-// ==========================================
-// --- GESTION DU SON ET VIBREUR (Singleton) ---
-// ==========================================
-let globalAudioCtx = null;
-
-function playClick() {
-    try { 
-        if (navigator && navigator.vibrate) {
-            navigator.vibrate(15); 
-        }
-    } catch(e) {}
-    
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-            if (!globalAudioCtx) {
-                globalAudioCtx = new AudioContext();
-            }
-            if (globalAudioCtx.state === 'suspended') {
-                globalAudioCtx.resume();
-            }
-            
-            const osc = globalAudioCtx.createOscillator();
-            const gain = globalAudioCtx.createGain();
-            
-            osc.connect(gain);
-            gain.connect(globalAudioCtx.destination);
-            
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(600, globalAudioCtx.currentTime); 
-            gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.05); 
-            
-            osc.start(globalAudioCtx.currentTime);
-            osc.stop(globalAudioCtx.currentTime + 0.05);
-        }
-    } catch(e) {
-        console.warn("Audio bloqué par le navigateur", e);
-    }
-}
-
-// ==========================================
-// --- L'ŒIL MAGIQUE ET POUSSIÈRE D'ÉTOILE ---
-// ==========================================
-window.togglePwd = function(inputId, eyeIcon) {
-    playClick();
-    const input = document.getElementById(inputId);
-    const isHidden = input.classList.contains('masquer-texte');
-    
-    const rect = eyeIcon.getBoundingClientRect();
-    for(let i = 0; i < 8; i++) {
-        let dust = document.createElement('div');
-        dust.className = 'stellar-dust-particle';
-        dust.style.left = (rect.left + rect.width / 2) + 'px';
-        dust.style.top = (rect.top + rect.height / 2) + 'px';
-        
-        let tx = (Math.random() - 0.5) * 80 + 'px';
-        let ty = (Math.random() - 0.5) * 80 + 'px';
-        dust.style.setProperty('--tx', tx);
-        dust.style.setProperty('--ty', ty);
-        
-        document.body.appendChild(dust);
-        setTimeout(() => dust.remove(), 700);
-    }
-
-    if(isHidden) {
-        input.classList.remove('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
-    } else {
-        input.classList.add('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-    }
-}
-
-// ==========================================
-// --- FIX WHATSAPP : GESTION DU CLAVIER ---
-// ==========================================
-function lockAppHeight() {
-    const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.body.style.height = trueHeight + 'px';
-    
-    const mArea = document.getElementById('mArea');
-    const coArea = document.getElementById('coArea');
-
-    if(document.getElementById('chatBox').style.display === 'flex' && mArea) {
-        mArea.scrollTop = mArea.scrollHeight;
-    }
-    if(document.getElementById('coconBox').style.display === 'flex' && coArea) {
-        coArea.scrollTop = coArea.scrollHeight;
-    }
-}
-
-window.addEventListener('resize', lockAppHeight);
-if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', lockAppHeight);
-}
-
-document.getElementById('coArea').addEventListener('click', function(e) {
-    if(e.target.closest('.bubble') || e.target.closest('button')) return;
-    
-    const rose = document.createElement('div');
-    rose.innerHTML = Math.random() > 0.5 
-        ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
-    
-    rose.style.position = 'fixed';
-    rose.style.left = (e.clientX - 12) + 'px';
-    rose.style.top = (e.clientY - 12) + 'px';
-    rose.style.animation = 'universDust 1.5s ease-out forwards';
-    rose.style.pointerEvents = 'none';
-    rose.style.zIndex = '99999';
-    document.body.appendChild(rose);
-    
-    setTimeout(() => rose.remove(), 1500);
-});
-
-// ==========================================
-// --- MUSIQUE DU COCON ---
-// ==========================================
-const defaultPlaylist = [
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0090_etddlk.mp3"
-];
-let currentTrackIndex = 0;
-
-function nextCoconTrack() {
-    currentTrackIndex = (currentTrackIndex + 1) % defaultPlaylist.length;
-    const audio = document.getElementById('coconAudio');
-    if (audio) {
-        audio.src = defaultPlaylist[currentTrackIndex];
-        audio.load();
-        audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast("Musique : Piste " + (currentTrackIndex + 1));
-    }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const audioEl = document.getElementById('coconAudio');
-    if (audioEl) {
-        audioEl.addEventListener('ended', nextCoconTrack);
-    }
-    initApp();
-});
-
-// ==========================================
-// --- VARIABLES FIREBASE ET CHAT ---
-// ==========================================
-let user = null;
-let stateStack = [];
-let activeId = null;
-let currentPeerId = null;
-let currentMediaMode = null;
-let typingTimeout = null;
-let chatClearedAt = 0; 
-let timeCounterInterval = null; 
-let unsubMsgs = null; 
-
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-let audioUnlocked = false;
-let cancelAudio = false;
-let recordTimerInterval = null;
-let recordSeconds = 0;
-
-const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
-    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
-    "Sensuel": ["Mon désir pour toi traverse l'univers... 🔥", "Viens te perdre dans mes bras."],
-    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis là, juste de l'autre côté de l'écran."]
-};
-
-const humeursCocon = [
-    {label: "🥰 Amoureux"}, 
-    {label: "✨ Heureux"}, 
-    {label: "🥺 Tu me manques"}, 
-    {label: "💤 Fatigué"}, 
-    {label: "❌ Retirer l'humeur"}
-];
-
-const allLanguages = [
-    {code: 'fr', name: 'Français', flag: '🇫🇷'}, 
-    {code: 'en', name: 'English', flag: '🇬🇧'}
-];
-
-const i18n = {
-    fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
-    en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
-};
-
 const fbPart1 = "AIzaSyBtx8uE9h";
 const fbPart2 = "kBB86uA9p4gCCP3OHx3jdmfAs";
 
@@ -1078,7 +856,6 @@ if (!firebase.apps.length) {
 const auth = firebase.auth();
 const db = firebase.database(); 
 const fs = firebase.firestore();
-const storage = firebase.storage();
 
 try {
     fs.enablePersistence({synchronizeTabs:true}).catch(err => {
@@ -1120,7 +897,6 @@ function initApp() {
 // --- VRAI CHIFFREMENT E2EE (AES-GCM) ---
 // ==========================================
 const E2EE = {
-    // 1. Dérivation d'une vraie clé cryptographique à partir du code/ID
     deriveKey: async function(password) {
         const enc = new TextEncoder();
         const keyMaterial = await window.crypto.subtle.importKey(
@@ -1132,33 +908,28 @@ const E2EE = {
         );
     },
 
-    // 2. Chiffrement
     encrypt: async function(text, password) {
         if(!text) return "";
         const key = await this.deriveKey(password);
-        const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Vecteur d'initialisation unique
+        const iv = window.crypto.getRandomValues(new Uint8Array(12)); 
         const encodedText = new TextEncoder().encode(text);
         
         const ciphertext = await window.crypto.subtle.encrypt(
             { name: "AES-GCM", iv: iv }, key, encodedText
         );
         
-        // On combine l'IV et le texte chiffré
         const bundle = new Uint8Array(iv.length + ciphertext.byteLength);
         bundle.set(iv, 0);
         bundle.set(new Uint8Array(ciphertext), iv.length);
         
-        // Conversion en Base64 pour Firestore
         let binary = '';
         for(let i=0; i<bundle.length; i++) binary += String.fromCharCode(bundle[i]);
         return "AESGCM::" + btoa(binary);
     },
 
-    // 3. Déchiffrement
     decrypt: async function(text, password) {
         if(!text) return text;
         
-        // --- FALLBACK : Si c'est un ANCIEN message (ton ancien système XOR) ---
         if(text.startsWith("E2EE::")) {
             try {
                 let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
@@ -1171,7 +942,6 @@ const E2EE = {
             } catch(e) { return "🔒 [Ancien message]"; }
         }
 
-        // --- NOUVEAU SYSTEME : Si le message n'est pas chiffré en AES, on le retourne tel quel ---
         if(!text.startsWith("AESGCM::")) return text;
         
         try {
@@ -1252,9 +1022,6 @@ function openMoodSelector() {
     document.getElementById('vWidgetFull').style.display = "flex";
 }
 
-// ==========================================
-// --- IA POUR LES MOTS DOUX ---
-// ==========================================
 async function showMoodMessage(mood) {
     const widgetText = document.getElementById('widgetText');
     
@@ -1300,9 +1067,6 @@ async function showMoodMessage(mood) {
     }
 }
 
-// ==========================================
-// --- CONFIGURATION UTILISATEUR ---
-// ==========================================
 function setupApp() {
     document.getElementById('uNameDisp').innerText = user.pseudo;
     document.getElementById('setPhoneDisplay').innerText = user.id.replace('u_', '');
@@ -1520,9 +1284,6 @@ function toggleAuthMode() {
     }
 }
 
-// ==========================================
-// --- GESTION DES CONTACTS ---
-// ==========================================
 function loadContacts() {
     const list = document.getElementById('chatList');
     fs.collection('users').doc(user.id).collection('contacts').orderBy('lastMsgAt', 'desc').onSnapshot(snap => {
@@ -1776,7 +1537,6 @@ async function getMsgHTML(docId, m, path, target) {
     }
     
     const cryptoKey = path === 'msgs' ? activeId : user.code;
-    
     const decryptedText = m.type === 'text' ? await E2EE.decrypt(m.txt, cryptoKey) : m.txt;
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     
@@ -1899,9 +1659,6 @@ function editMsg(id, old, path, target) {
     });
 }
 
-// ==========================================
-// --- GESTION DU MICROPHONE ---
-// ==========================================
 async function toggleRecord(mode) {
     if (isRecording) return;
     
@@ -2754,7 +2511,6 @@ async function startNeedyouGeneration(isRetry = false) {
     
     document.getElementById('stars-container').classList.add('warp-active');
 
-    // 🔴 CLÉ GEMINI SÉCURISÉE EN DEUX PARTIES
     const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
     const geminiPart2 = "JwRltTnShQLStB_uql4"; 
     const GEMINI_API_KEY = geminiPart1 + geminiPart2;
@@ -2983,7 +2739,25 @@ function closeARQuiz(fromHistory = false) {
 
 window.nextARMission = function() {
     playClick();
-    closeARQuiz();
+    document.getElementById('arSuccessScreen').style.display = 'none';
+    const mission = getNextARMission();
+    currentMissionTarget = mission.obj;
+    currentMissionReward = mission.reward;
+    document.getElementById('arMissionText').innerText = mission.text;
+};
+
+window.skipARMission = function() {
+    playClick();
+    const textEl = document.getElementById('arMissionText');
+    textEl.style.opacity = 0; 
+    
+    setTimeout(() => {
+        const mission = getNextARMission();
+        currentMissionTarget = mission.obj;
+        currentMissionReward = mission.reward;
+        textEl.innerText = mission.text;
+        textEl.style.opacity = 1;
+    }, 300);
 };
 
 // --- SCAN ET MISE À JOUR FIREBASE ---
@@ -2996,7 +2770,6 @@ async function scanARObject() {
     btn.style.opacity = '0.8';
     btn.style.pointerEvents = 'none';
     
-    // Accélérer l'animation du laser pendant la recherche
     document.getElementById('arScannerLine').style.animationDuration = '0.5s';
     
     canvas.width = video.videoWidth;
@@ -3024,20 +2797,14 @@ async function scanARObject() {
         const data = await response.json();
         const answer = data.candidates[0].content.parts[0].text.trim().toUpperCase();
         
-        document.getElementById('arScannerLine').style.animationDuration = '2.5s'; // Retour à la normale
+        document.getElementById('arScannerLine').style.animationDuration = '2.5s'; 
         
         if (answer.includes("OUI")) {
             showToast("✨ Bravo ! Mission accomplie ! ✨");
             
-            if(arStream) {
-                arStream.getTracks().forEach(t => t.stop());
-                arStream = null;
-            }
-            
             document.getElementById('arRewardText').innerText = currentMissionReward;
             document.getElementById('arSuccessScreen').style.display = 'flex';
             
-            // --- LOGIQUE DU PUZZLE SYNCHRONISÉE SUR FIREBASE ---
             fs.collection('cocon').doc(user.code).get().then(doc => {
                 let currentBlur = (doc.exists && doc.data().puzzleBlur !== undefined) ? doc.data().puzzleBlur : 25;
                 let newBlur = Math.max(0, currentBlur - 5);
@@ -3046,8 +2813,19 @@ async function scanARObject() {
                 
                 let blurOverlay = document.getElementById('puzzleBlurOverlay');
                 if(blurOverlay) {
+                    blurOverlay.style.background = "rgba(0, 212, 255, 0.3)";
+                    setTimeout(() => blurOverlay.style.background = "rgba(0,0,0,0.2)", 1500);
+                    
                     blurOverlay.style.backdropFilter = `blur(${newBlur}px)`;
                     blurOverlay.style.webkitBackdropFilter = `blur(${newBlur}px)`; 
+                    
+                    let floatText = document.getElementById('unlockFloatingText');
+                    if(floatText) {
+                        floatText.innerText = newBlur === 0 ? "100% Débloqué !" : "+20% !";
+                        floatText.style.animation = 'none';
+                        void floatText.offsetWidth; 
+                        floatText.style.animation = 'floatUpFade 2s ease forwards';
+                    }
                 }
                 
                 if(newBlur === 0) {
@@ -3081,7 +2859,6 @@ function resetScanButton(btn) {
     let unsubGalaxy = null;
     window.currentCardIndex = null;
 
-    // Variables globales qui seront réinitialisées
     let scene, camera, renderer, controls, photoCloudGroup;
     let systems = [];
     let clickableCards = [];
@@ -3093,7 +2870,6 @@ function resetScanButton(btn) {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    // --- FONCTIONS DE DESSIN ---
     function createStarfield() {
         const canvas = document.createElement('canvas');
         canvas.width = 32; canvas.height = 32;
@@ -3146,7 +2922,6 @@ function resetScanButton(btn) {
     }
 
     function generateTextures() {
-        // Texture par défaut (+)
         const canvasPlus = document.createElement('canvas');
         canvasPlus.width = 256; canvasPlus.height = 256;
         const ctxPlus = canvasPlus.getContext('2d');
@@ -3163,7 +2938,6 @@ function resetScanButton(btn) {
         defaultTex = new THREE.CanvasTexture(canvasPlus);
         defaultTex.colorSpace = THREE.SRGBColorSpace;
 
-        // Alpha Map (Masque)
         const canvasMask = document.createElement('canvas');
         canvasMask.width = 256; canvasMask.height = 256;
         const ctxMask = canvasMask.getContext('2d');
@@ -3279,7 +3053,6 @@ function resetScanButton(btn) {
         }
     }
 
-    // --- INITIALISATION PROPRE ---
     function initGalaxy3D() {
         if (scene) return;
 
@@ -3358,7 +3131,6 @@ function resetScanButton(btn) {
         });
     }
 
-    // --- NETTOYAGE COMPLET DE LA MÉMOIRE (GARBAGE COLLECTION) ---
     function cleanMaterial(mat) {
         if (!mat) return;
         if (mat.map) mat.map.dispose();
@@ -3411,7 +3183,6 @@ function resetScanButton(btn) {
         clickableCards = [];
     }
 
-    // --- BOUCLE D'ANIMATION ---
     function animate() {
         if (!scene) return;
         animationId = requestAnimationFrame(animate);
@@ -3430,7 +3201,6 @@ function resetScanButton(btn) {
         }
     });
 
-    // --- EXPOSITION GLOBALE ---
     window.openGalaxy = function() {
         document.getElementById('galaxyBox').style.display = 'block';
         if(typeof window.pushState === 'function') window.pushState('galaxy'); 
