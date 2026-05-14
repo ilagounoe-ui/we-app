@@ -2998,7 +2998,7 @@ function resetScanButton(btn) {
     btn.style.pointerEvents = 'auto';
 }
 </script>
-
+    
 <script type="module">
     import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
     import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
@@ -3006,30 +3006,19 @@ function resetScanButton(btn) {
     let unsubGalaxy = null;
     window.currentCardIndex = null;
 
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x1a0510, 0.0004);
-
-    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
-    camera.position.set(0, 300, 1000);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-    document.getElementById('galaxyCanvasContainer').appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.maxDistance = 2500;
-    controls.minDistance = 100;
-
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    // Variables globales qui seront réinitialisées
+    let scene, camera, renderer, controls, photoCloudGroup;
+    let systems = [];
+    let clickableCards = [];
+    let animationId = null;
+    let isDragging = false;
+    let pointerDownPos = new THREE.Vector2();
+    let cardAlphaMap, defaultTex;
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
-    let animationId = null;
-    let isDragging = false; 
 
+    // --- FONCTIONS DE DESSIN ---
     function createStarfield() {
         const canvas = document.createElement('canvas');
         canvas.width = 32; canvas.height = 32;
@@ -3061,16 +3050,10 @@ function resetScanButton(btn) {
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         
         return new THREE.Points(geometry, new THREE.PointsMaterial({ 
-            size: 4,
-            vertexColors: true, 
-            map: starMap,
-            transparent: true, 
-            opacity: 0.8,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending 
+            size: 4, vertexColors: true, map: starMap, transparent: true, 
+            opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending 
         }));
     }
-    scene.add(createStarfield());
 
     function drawRoundRect(ctx, x, y, w, h, r) {
         ctx.beginPath();
@@ -3087,77 +3070,46 @@ function resetScanButton(btn) {
         ctx.fill();
     }
 
-    function createPlusTexture() {
-        const canvas = document.createElement('canvas');
-        canvas.width = 256; canvas.height = 256;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, 256, 256);
-        
-        ctx.fillStyle = 'rgba(255, 75, 110, 0.15)'; 
-        ctx.shadowColor = 'rgba(255, 75, 110, 0.4)';
-        ctx.shadowBlur = 15;
-        drawRoundRect(ctx, 10, 10, 236, 236, 25);
-        
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = 'rgba(208, 168, 255, 0.8)';
-        ctx.stroke();
+    function generateTextures() {
+        // Texture par défaut (+)
+        const canvasPlus = document.createElement('canvas');
+        canvasPlus.width = 256; canvasPlus.height = 256;
+        const ctxPlus = canvasPlus.getContext('2d');
+        ctxPlus.clearRect(0, 0, 256, 256);
+        ctxPlus.fillStyle = 'rgba(255, 75, 110, 0.15)'; 
+        ctxPlus.shadowColor = 'rgba(255, 75, 110, 0.4)';
+        ctxPlus.shadowBlur = 15;
+        drawRoundRect(ctxPlus, 10, 10, 236, 236, 25);
+        ctxPlus.lineWidth = 3; ctxPlus.strokeStyle = 'rgba(208, 168, 255, 0.8)'; ctxPlus.stroke();
+        ctxPlus.shadowBlur = 0; ctxPlus.fillStyle = '#ff4b6e'; 
+        ctxPlus.font = 'bold 120px Arial'; ctxPlus.textAlign = 'center'; ctxPlus.textBaseline = 'middle';
+        ctxPlus.fillText('+', 128, 125);
+        ctxPlus.font = '30px Arial'; ctxPlus.fillText('💖', 210, 210);
+        defaultTex = new THREE.CanvasTexture(canvasPlus);
+        defaultTex.colorSpace = THREE.SRGBColorSpace;
 
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = '#ff4b6e'; 
-        ctx.font = 'bold 120px Arial';
-        ctx.textAlign = 'center'; 
-        ctx.textBaseline = 'middle';
-        ctx.fillText('+', 128, 125);
-        
-        ctx.font = '30px Arial';
-        ctx.fillText('💖', 210, 210);
-
-        const tex = new THREE.CanvasTexture(canvas);
-        tex.colorSpace = THREE.SRGBColorSpace;
-        return tex;
+        // Alpha Map (Masque)
+        const canvasMask = document.createElement('canvas');
+        canvasMask.width = 256; canvasMask.height = 256;
+        const ctxMask = canvasMask.getContext('2d');
+        ctxMask.fillStyle = '#000000'; ctxMask.fillRect(0,0,256,256);
+        ctxMask.fillStyle = '#ffffff'; drawRoundRect(ctxMask, 5, 5, 246, 246, 25); 
+        cardAlphaMap = new THREE.CanvasTexture(canvasMask);
     }
-
-    const canvasMask = document.createElement('canvas');
-    canvasMask.width = 256; 
-    canvasMask.height = 256;
-    const ctxMask = canvasMask.getContext('2d');
-    ctxMask.fillStyle = '#000000';
-    ctxMask.fillRect(0,0,256,256);
-    ctxMask.fillStyle = '#ffffff';
-    drawRoundRect(ctxMask, 5, 5, 246, 246, 25); 
-    const cardAlphaMap = new THREE.CanvasTexture(canvasMask);
 
     function createTextPatternTexture(text, themeColor) {
         const canvas = document.createElement('canvas');
-        canvas.width = 512; 
-        canvas.height = 512;
+        canvas.width = 512; canvas.height = 512;
         const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = themeColor;
-        ctx.fillRect(0, 0, 512, 512);
-        
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.font = '20px Arial';
+        ctx.fillStyle = themeColor; ctx.fillRect(0, 0, 512, 512);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'; ctx.font = '20px Arial';
         const motifs = ['⭐', '🌙', '☁️', '💖'];
-        for(let i=0; i<30; i++) {
-            ctx.fillText(motifs[Math.floor(Math.random() * motifs.length)], Math.random()*512, Math.random()*512);
-        }
-        
-        ctx.font = 'bold 80px Arial'; 
-        ctx.fillStyle = '#ffffff';
-        ctx.textAlign = 'center'; 
-        ctx.textBaseline = 'middle';
-        ctx.shadowColor = "rgba(0,0,0,0.5)";
-        ctx.shadowBlur = 10;
-        
+        for(let i=0; i<30; i++) ctx.fillText(motifs[Math.floor(Math.random() * motifs.length)], Math.random()*512, Math.random()*512);
+        ctx.font = 'bold 80px Arial'; ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 10;
         const lines = text.split('\n');
-        if (lines.length > 1) {
-            ctx.fillText(lines[0], 256, 200); 
-            ctx.fillText(lines[1], 256, 312);
-        } else { 
-            ctx.fillText(text, 256, 256); 
-        }
-        
+        if (lines.length > 1) { ctx.fillText(lines[0], 256, 200); ctx.fillText(lines[1], 256, 312); } 
+        else { ctx.fillText(text, 256, 256); }
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
@@ -3165,24 +3117,20 @@ function resetScanButton(btn) {
 
     function createGlowTexture(colorHex) {
         const canvas = document.createElement('canvas');
-        canvas.width = 256; 
-        canvas.height = 256;
+        canvas.width = 256; canvas.height = 256;
         const ctx = canvas.getContext('2d');
         const color = new THREE.Color(colorHex);
         const colorStr = '#' + color.getHexString();
         const gradient = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
-        gradient.addColorStop(0, colorStr); 
-        gradient.addColorStop(0.3, colorStr); 
-        gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 256, 256);
+        gradient.addColorStop(0, colorStr); gradient.addColorStop(0.3, colorStr); gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
+        ctx.fillStyle = gradient; ctx.fillRect(0, 0, 256, 256);
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
         return tex;
     }
 
     class SolarSystem {
-        constructor(position, sunColor, lightColor, planetsConfig, globalIndexStart) {
+        constructor(position, sunColor, lightColor, planetsConfig) {
             this.group = new THREE.Group();
             this.baseY = position.y; 
             this.offset = Math.random() * 100;
@@ -3204,7 +3152,6 @@ function resetScanButton(btn) {
             this.group.add(this.light);
 
             const drawnOrbits = new Set();
-            
             planetsConfig.forEach(config => {
                 if (!drawnOrbits.has(config.distance)) {
                     const ringGeo = new THREE.RingGeometry(config.distance - 1, config.distance + 1, 64);
@@ -3221,15 +3168,11 @@ function resetScanButton(btn) {
                 const planetGeo = new THREE.SphereGeometry(config.size, 64, 64);
                 const texture = createTextPatternTexture(config.text, lightColor);
                 const planetMat = new THREE.MeshStandardMaterial({ 
-                    map: texture, 
-                    roughness: 0.6, 
-                    metalness: 0.2, 
-                    emissive: new THREE.Color(lightColor), 
-                    emissiveIntensity: 0.05 
+                    map: texture, roughness: 0.6, metalness: 0.2, 
+                    emissive: new THREE.Color(lightColor), emissiveIntensity: 0.05 
                 });
                 
                 const planetMesh = new THREE.Mesh(planetGeo, planetMat);
-                
                 this.group.add(planetMesh);
                 this.planets.push({
                     mesh: planetMesh, distance: config.distance, speed: config.speed,
@@ -3240,9 +3183,7 @@ function resetScanButton(btn) {
         }
         update() {
             const time = Date.now() * 0.001;
-            
             this.group.position.y = this.baseY + Math.sin(time + this.offset) * 15;
-            
             const scale = 1 + Math.sin(time * 2) * 0.02;
             this.sun.scale.set(scale, scale, scale);
             
@@ -3263,162 +3204,172 @@ function resetScanButton(btn) {
         }
     }
 
-    const systems = [];
+    // --- INITIALISATION PROPRE ---
+    function initGalaxy3D() {
+        // Si la scène existe déjà, on ne refait rien
+        if (scene) return;
 
-    const p1 = [
-        { text: "Te\nAmo", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 16, offset: 0 },
-        { text: "💖", distance: 130, speed: 0.01, tiltX: 0.1, tiltZ: 0.1, size: 14, offset: Math.PI },
-        { text: "🕷️🐱", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 18, offset: 0 },
-        { text: "My\nLove", distance: 210, speed: 0.007, tiltX: -0.2, tiltZ: 0.2, size: 17, offset: Math.PI },
-        { text: "🐶", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 16, offset: 0 },
-        { text: "Me\nEncantas", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 20, offset: Math.PI * 0.66 },
-        { text: "✨", distance: 290, speed: 0.004, tiltX: 0.2, tiltZ: -0.1, size: 13, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(0, 0, 0), 0xffeb3b, '#ffeb3b', p1, 0));
+        generateTextures();
 
-    const p2 = [
-        { text: "Cool\nLove", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 15, offset: 0 },
-        { text: "💎", distance: 140, speed: 0.012, tiltX: 0.3, tiltZ: -0.2, size: 13, offset: Math.PI },
-        { text: "❄️", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 17, offset: 0 },
-        { text: "Blue\nMoon", distance: 230, speed: 0.008, tiltX: -0.1, tiltZ: 0.4, size: 18, offset: Math.PI },
-        { text: "🧊", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 15, offset: 0 },
-        { text: "Océan", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 19, offset: Math.PI * 0.66 },
-        { text: "🌌", distance: 320, speed: 0.005, tiltX: 0.2, tiltZ: 0.1, size: 14, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(-1000, 200, -400), 0x00ffff, '#00ffff', p2, 7));
+        scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x1a0510, 0.0004);
 
-    const p3 = [
-        { text: "Amour", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 17, offset: 0 },
-        { text: "🔥", distance: 120, speed: 0.014, tiltX: -0.3, tiltZ: 0.2, size: 15, offset: Math.PI },
-        { text: "Pasión", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 20, offset: 0 },
-        { text: "🌹", distance: 200, speed: 0.009, tiltX: 0.2, tiltZ: -0.3, size: 16, offset: Math.PI },
-        { text: "Fuego", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 18, offset: 0 },
-        { text: "Heart\nBeat", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 19, offset: Math.PI * 0.66 },
-        { text: "💋", distance: 280, speed: 0.006, tiltX: 0.4, tiltZ: 0.3, size: 14, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(1000, -200, 300), 0xff1010, '#ff1010', p3, 14));
+        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 5000);
+        camera.position.set(0, 300, 1000);
 
-    const p4 = [
-        { text: "Magie", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 16, offset: 0 },
-        { text: "🔮", distance: 130, speed: 0.011, tiltX: 0.2, tiltZ: -0.4, size: 15, offset: Math.PI },
-        { text: "Éternel", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 19, offset: 0 },
-        { text: "👾", distance: 220, speed: 0.007, tiltX: -0.4, tiltZ: 0.1, size: 16, offset: Math.PI },
-        { text: "Rêve", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 20, offset: 0 },
-        { text: "Infini", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 21, offset: Math.PI * 0.66 },
-        { text: "🎆", distance: 310, speed: 0.004, tiltX: 0.3, tiltZ: 0.3, size: 15, offset: Math.PI * 1.33 }
-    ];
-    systems.push(new SolarSystem(new THREE.Vector3(300, 800, -600), 0xee00ee, '#ee00ee', p4, 21));
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        document.getElementById('galaxyCanvasContainer').appendChild(renderer.domElement);
 
-    const photoCloudGroup = new THREE.Group();
-    scene.add(photoCloudGroup);
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.05;
+        controls.maxDistance = 2500; controls.minDistance = 100;
 
-    const clickableCards = [];
-    const totalCards = 40; 
-    const defaultTex = createPlusTexture();
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        scene.add(createStarfield());
 
-    for(let i = 0; i < totalCards; i++) {
-        const cardMat = new THREE.MeshBasicMaterial({ 
-            map: defaultTex, 
-            alphaMap: cardAlphaMap, 
-            transparent: true, 
-            side: THREE.DoubleSide,
-            alphaTest: 0.5,
-            depthWrite: false
-        });
-        const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
+        systems = [];
+        const p1 = [ { text: "Te\nAmo", distance: 130, speed: 0.01, size: 16, offset: 0 }, { text: "💖", distance: 130, speed: 0.01, size: 14, offset: Math.PI } ];
+        systems.push(new SolarSystem(new THREE.Vector3(0, 0, 0), 0xffeb3b, '#ffeb3b', p1));
+
+        const p2 = [ { text: "Cool\nLove", distance: 140, speed: 0.012, size: 15, offset: 0 }, { text: "💎", distance: 140, speed: 0.012, size: 13, offset: Math.PI } ];
+        systems.push(new SolarSystem(new THREE.Vector3(-1000, 200, -400), 0x00ffff, '#00ffff', p2));
+
+        const p3 = [ { text: "Amour", distance: 120, speed: 0.014, size: 17, offset: 0 }, { text: "🔥", distance: 120, speed: 0.014, size: 15, offset: Math.PI } ];
+        systems.push(new SolarSystem(new THREE.Vector3(1000, -200, 300), 0xff1010, '#ff1010', p3));
+
+        photoCloudGroup = new THREE.Group();
+        scene.add(photoCloudGroup);
+        clickableCards = [];
         
-        const angle = (i / totalCards) * Math.PI * 2;
-        const radius = 450 + (Math.random() - 0.5) * 150; 
-        const yOffset = (Math.random() - 0.5) * 120; 
-        
-        cardMesh.position.set(Math.cos(angle) * radius, yOffset, Math.sin(angle) * radius);
-        
-        cardMesh.userData = { 
-            isPhotoCard: true, 
-            cardIndex: i, 
-            currentUrl: ""
-        };
-        
-        photoCloudGroup.add(cardMesh);
-        clickableCards.push(cardMesh);
-    }
-
-    let pointerDownPos = new THREE.Vector2();
-
-    renderer.domElement.addEventListener('pointermove', (event) => {
-        isDragging = true;
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickableCards);
-        document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
-    });
-
-    renderer.domElement.addEventListener('pointerdown', (event) => {
-        isDragging = false;
-        pointerDownPos.set(event.clientX, event.clientY);
-    });
-
-    renderer.domElement.addEventListener('pointerup', (event) => {
-        if (isDragging) return;
-        const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
-        if (distance > 5) return; 
-
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(clickableCards);
-        
-        if (intersects.length > 0) {
-            playClick();
-            const clickedCard = intersects[0].object;
-            window.currentCardIndex = clickedCard.userData.cardIndex;
-            document.getElementById('floatingPhotoInput').click();
+        for(let i = 0; i < 40; i++) {
+            const cardMat = new THREE.MeshBasicMaterial({ 
+                map: defaultTex, alphaMap: cardAlphaMap, transparent: true, side: THREE.DoubleSide, alphaTest: 0.5, depthWrite: false
+            });
+            const cardMesh = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), cardMat);
+            const angle = (i / 40) * Math.PI * 2;
+            const radius = 450 + (Math.random() - 0.5) * 150; 
+            const yOffset = (Math.random() - 0.5) * 120; 
+            cardMesh.position.set(Math.cos(angle) * radius, yOffset, Math.sin(angle) * radius);
+            cardMesh.userData = { isPhotoCard: true, cardIndex: i, currentUrl: "" };
+            photoCloudGroup.add(cardMesh);
+            clickableCards.push(cardMesh);
         }
-    });
 
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    function animate() {
-        animationId = requestAnimationFrame(animate);
-        systems.forEach(s => s.update());
-        
-        photoCloudGroup.rotation.y -= 0.001;
-
-        clickableCards.forEach(card => {
-            card.quaternion.copy(camera.quaternion);
+        renderer.domElement.addEventListener('pointermove', (event) => {
+            isDragging = true;
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1; mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(clickableCards);
+            document.body.style.cursor = intersects.length > 0 ? 'pointer' : 'default';
         });
 
-        controls.update(); 
-        renderer.render(scene, camera);
+        renderer.domElement.addEventListener('pointerdown', (event) => {
+            isDragging = false; pointerDownPos.set(event.clientX, event.clientY);
+        });
+
+        renderer.domElement.addEventListener('pointerup', (event) => {
+            if (isDragging) return;
+            const distance = Math.hypot(event.clientX - pointerDownPos.x, event.clientY - pointerDownPos.y);
+            if (distance > 5) return; 
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1; mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(clickableCards);
+            if (intersects.length > 0) {
+                if(typeof window.playClick === 'function') window.playClick();
+                window.currentCardIndex = intersects[0].object.userData.cardIndex;
+                document.getElementById('floatingPhotoInput').click();
+            }
+        });
     }
 
-    window.startGalaxy3D = function() {
-        document.getElementById('mainApp').style.display = 'none'; 
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        if (!animationId) animate();
-    };
+    // --- NETTOYAGE COMPLET DE LA MÉMOIRE (GARBAGE COLLECTION) ---
+    function cleanMaterial(mat) {
+        if (!mat) return;
+        if (mat.map) mat.map.dispose();
+        if (mat.lightMap) mat.lightMap.dispose();
+        if (mat.bumpMap) mat.bumpMap.dispose();
+        if (mat.normalMap) mat.normalMap.dispose();
+        if (mat.specularMap) mat.specularMap.dispose();
+        if (mat.envMap) mat.envMap.dispose();
+        if (mat.alphaMap) mat.alphaMap.dispose();
+        mat.dispose();
+    }
 
-    window.stopGalaxy3D = function() {
+    function disposeGalaxy3D() {
         if (animationId) {
             cancelAnimationFrame(animationId);
             animationId = null;
         }
-    };
 
+        if (!scene) return;
+
+        // On libère toutes les géométries et textures de la carte graphique
+        scene.traverse((object) => {
+            if (object.geometry) object.geometry.dispose();
+            if (object.material) {
+                if (Array.isArray(object.material)) {
+                    object.material.forEach(mat => cleanMaterial(mat));
+                } else {
+                    cleanMaterial(object.material);
+                }
+            }
+        });
+
+        if (cardAlphaMap) cardAlphaMap.dispose();
+        if (defaultTex) defaultTex.dispose();
+
+        // On détruit le rendu WebGL
+        if (renderer) {
+            renderer.dispose();
+            renderer.forceContextLoss(); // Ordre explicite de vider la VRAM du téléphone
+            const container = document.getElementById('galaxyCanvasContainer');
+            if (container && renderer.domElement) {
+                container.removeChild(renderer.domElement);
+            }
+        }
+
+        // On vide les variables pour le ramasse-miettes (Garbage Collector) du navigateur
+        scene = null;
+        camera = null;
+        renderer = null;
+        controls = null;
+        photoCloudGroup = null;
+        systems = [];
+        clickableCards = [];
+    }
+
+    // --- BOUCLE D'ANIMATION ---
+    function animate() {
+        if (!scene) return;
+        animationId = requestAnimationFrame(animate);
+        systems.forEach(s => s.update());
+        photoCloudGroup.rotation.y -= 0.001;
+        clickableCards.forEach(card => { card.quaternion.copy(camera.quaternion); });
+        controls.update(); 
+        renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', () => {
+        if(camera && renderer) {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    });
+
+    // --- EXPOSITION GLOBALE ---
     window.openGalaxy = function() {
         document.getElementById('galaxyBox').style.display = 'block';
-        pushState('galaxy'); 
+        if(typeof window.pushState === 'function') window.pushState('galaxy'); 
         
+        initGalaxy3D(); // On charge la 3D UNIQUEMENT à l'ouverture
+        animate();
+
         if(unsubGalaxy) unsubGalaxy();
-        unsubGalaxy = fs.collection('cocon').doc(user.code).collection('floatingPhotos').onSnapshot(snap => {
+        unsubGalaxy = window.firebase.firestore().collection('cocon').doc(window.user.code).collection('floatingPhotos').onSnapshot(snap => {
+            if (!clickableCards || clickableCards.length === 0) return;
             const loader = new THREE.TextureLoader();
             loader.setCrossOrigin('anonymous');
             
@@ -3435,14 +3386,12 @@ function resetScanButton(btn) {
                             targetCard.material.map.dispose();
                         }
                         targetCard.material.map = texture;
-                        targetCard.material.alphaMap = cardAlphaMap;
                         targetCard.material.needsUpdate = true;
                     });
                 }
             });
         });
 
-        window.startGalaxy3D();
         const audio = document.getElementById('galaxyAudio');
         if(audio) {
             audio.currentTime = 0; 
@@ -3461,16 +3410,21 @@ function resetScanButton(btn) {
     window.closeGalaxy = function(fromHistory = false) {
         document.getElementById('galaxyBox').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block'; 
-        window.stopGalaxy3D();
-        const audio = document.getElementById('galaxyAudio');
-        if(audio) { 
-            audio.pause(); 
-            audio.currentTime = 0; 
+        
+        if(unsubGalaxy) {
+            unsubGalaxy();
+            unsubGalaxy = null;
         }
-        if(!fromHistory) triggerBack();
+
+        disposeGalaxy3D(); // Destruction propre de la mémoire !
+
+        const audio = document.getElementById('galaxyAudio');
+        if(audio) { audio.pause(); audio.currentTime = 0; }
+        
+        if(!fromHistory && typeof window.triggerBack === 'function') window.triggerBack();
     };
 </script>
-
+    
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
