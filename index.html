@@ -330,22 +330,12 @@
         .truth-bg { background: linear-gradient(135deg, #11998e, #38ef7d); box-shadow: 0 8px 25px rgba(56, 239, 125, 0.4); }
         .action-bg { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4); }
         
-        .card-inflate {
-            animation: elasticInflate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            z-index: 10;
-        }
-        .card-fade {
-            opacity: 0;
-            transform: scale(0.5);
-            pointer-events: none;
-            transition: all 0.5s ease;
-        }
+        .card-inflate { animation: elasticInflate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; z-index: 10; }
+        .card-fade { opacity: 0; transform: scale(0.5); pointer-events: none; transition: all 0.5s ease; }
         
         @keyframes elasticInflate {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.15); }
-            60% { transform: scale(1.05); }
-            80% { transform: scale(1.1); }
+            0% { transform: scale(1); } 40% { transform: scale(1.15); }
+            60% { transform: scale(1.05); } 80% { transform: scale(1.1); }
             100% { transform: scale(1.1); }
         }
     </style>
@@ -561,6 +551,51 @@ let isLoginMode = true;
 window.appReady = false; 
 
 // ==========================================
+// --- INITIALISATION FIREBASE ---
+// ==========================================
+const fbPart1 = "AIzaSyBtx8uE9h";
+const fbPart2 = "kBB86uA9p4gCCP3OHx3jdmfAs";
+
+const firebaseConfig = {
+    apiKey: fbPart1 + fbPart2,
+    authDomain: "notre-univers-d71a3.firebaseapp.com",
+    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
+    projectId: "notre-univers-d71a3"
+};
+
+if (!firebase.apps.length) { 
+    firebase.initializeApp(firebaseConfig); 
+}
+
+const auth = firebase.auth();
+const db = firebase.database(); 
+const fs = firebase.firestore();
+
+try {
+    fs.enablePersistence({synchronizeTabs:true}).catch(err => {
+        console.warn("Erreur de persistance", err);
+    });
+} catch(e) {}
+
+let user = null;
+let stateStack = [];
+let activeId = null;
+let currentPeerId = null;
+let currentMediaMode = null;
+let typingTimeout = null;
+let chatClearedAt = 0; 
+let timeCounterInterval = null; 
+let unsubMsgs = null; 
+
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+let audioUnlocked = false;
+let cancelAudio = false;
+let recordTimerInterval = null;
+let recordSeconds = 0;
+
+// ==========================================
 // --- GESTION DU SON ET VIBREUR ---
 // ==========================================
 let globalAudioCtx = null;
@@ -583,7 +618,7 @@ function playClick() {
             osc.start(globalAudioCtx.currentTime);
             osc.stop(globalAudioCtx.currentTime + 0.05);
         }
-    } catch(e) { console.warn("Audio bloqué par le navigateur", e); }
+    } catch(e) { console.warn("Audio bloqué", e); }
 }
 
 window.togglePwd = function(inputId, eyeIcon) {
@@ -658,29 +693,12 @@ function nextCoconTrack() {
     }
 }
 
+// LANCEMENT DE L'APPLICATION
 window.addEventListener('DOMContentLoaded', () => {
     const audioEl = document.getElementById('coconAudio');
     if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
     initApp();
 });
-
-let user = null;
-let stateStack = [];
-let activeId = null;
-let currentPeerId = null;
-let currentMediaMode = null;
-let typingTimeout = null;
-let chatClearedAt = 0; 
-let timeCounterInterval = null; 
-let unsubMsgs = null; 
-
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-let audioUnlocked = false;
-let cancelAudio = false;
-let recordTimerInterval = null;
-let recordSeconds = 0;
 
 const moodLibrary = {
     "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
@@ -704,33 +722,6 @@ const i18n = {
     fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
 };
-
-// ==========================================
-// --- INITIALISATION FIREBASE ---
-// ==========================================
-const fbPart1 = "AIzaSyBtx8uE9h";
-const fbPart2 = "kBB86uA9p4gCCP3OHx3jdmfAs";
-
-const firebaseConfig = {
-    apiKey: fbPart1 + fbPart2,
-    authDomain: "notre-univers-d71a3.firebaseapp.com",
-    databaseURL: "https://notre-univers-d71a3-default-rtdb.firebaseio.com",
-    projectId: "notre-univers-d71a3"
-};
-
-if (!firebase.apps.length) { 
-    firebase.initializeApp(firebaseConfig); 
-}
-
-const auth = firebase.auth();
-const db = firebase.database(); 
-const fs = firebase.firestore();
-
-try {
-    fs.enablePersistence({synchronizeTabs:true}).catch(err => {
-        console.warn("Erreur de persistance", err);
-    });
-} catch(e) {}
 
 function initApp() {
     auth.onAuthStateChanged(firebaseUser => {
