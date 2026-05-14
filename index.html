@@ -318,6 +318,36 @@
         .cocon-grid-btn svg { width: 28px; height: 28px; }
         .cocon-grid-btn.needyou-btn { background: linear-gradient(135deg, rgba(208, 168, 255, 0.05), rgba(255, 75, 110, 0.05)); border: 1px solid rgba(255, 75, 110, 0.3); box-shadow: 0 0 15px rgba(255, 75, 110, 0.1); }
         .cocon-grid-btn.galaxy-btn { background: rgba(208, 168, 255, 0.05); border: 1px solid rgba(208, 168, 255, 0.3); color: var(--accent); }
+
+        /* --- NOUVEAU DESIGN CARTES ODYSSÉE LIVE --- */
+        .game-card-btn {
+            flex: 1; padding: 20px 10px; border-radius: 20px; border: none; 
+            color: white; font-weight: bold; font-size: 18px; 
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: center; cursor: pointer;
+        }
+        .truth-bg { background: linear-gradient(135deg, #11998e, #38ef7d); box-shadow: 0 8px 25px rgba(56, 239, 125, 0.4); }
+        .action-bg { background: linear-gradient(135deg, #ff416c, #ff4b2b); box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4); }
+        
+        .card-inflate {
+            animation: elasticInflate 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            z-index: 10;
+        }
+        .card-fade {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        
+        @keyframes elasticInflate {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.15); }
+            60% { transform: scale(1.05); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -360,10 +390,10 @@
 
         <!-- Cartes Action / Vérité -->
         <div style="display:flex; gap:15px; justify-content:center;">
-            <button onclick="playClick(); drawCard('verite')" style="flex:1; padding:20px 10px; border-radius:20px; border:none; background:linear-gradient(135deg, #11998e, #38ef7d); color:white; font-weight:bold; font-size:18px; box-shadow:0 8px 25px rgba(56, 239, 125, 0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <button id="btnTruth" onclick="drawCard('verite')" class="game-card-btn truth-bg">
                 <span style="font-size:24px;">🟩</span> Vérité
             </button>
-            <button onclick="playClick(); drawCard('action')" style="flex:1; padding:20px 10px; border-radius:20px; border:none; background:linear-gradient(135deg, #ff416c, #ff4b2b); color:white; font-weight:bold; font-size:18px; box-shadow:0 8px 25px rgba(255, 65, 108, 0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+            <button id="btnAction" onclick="drawCard('action')" class="game-card-btn action-bg">
                 <span style="font-size:24px;">🟥</span> Action
             </button>
         </div>
@@ -890,159 +920,6 @@
 </div>
 
 <script>
-// ==========================================
-// --- VARIABLES GLOBALES ET ÉTAT ---
-// ==========================================
-window.sharedPlaylist = [];
-let toastTimeout = null;
-let isLoginMode = true;
-window.appReady = false; 
-
-// ==========================================
-// --- GESTION DU SON ET VIBREUR ---
-// ==========================================
-let globalAudioCtx = null;
-
-function playClick() {
-    try { if (navigator && navigator.vibrate) navigator.vibrate(15); } catch(e) {}
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-            if (!globalAudioCtx) globalAudioCtx = new AudioContext();
-            if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
-            const osc = globalAudioCtx.createOscillator();
-            const gain = globalAudioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(globalAudioCtx.destination);
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(600, globalAudioCtx.currentTime); 
-            gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.05); 
-            osc.start(globalAudioCtx.currentTime);
-            osc.stop(globalAudioCtx.currentTime + 0.05);
-        }
-    } catch(e) { console.warn("Audio bloqué par le navigateur", e); }
-}
-
-window.togglePwd = function(inputId, eyeIcon) {
-    playClick();
-    const input = document.getElementById(inputId);
-    const isHidden = input.classList.contains('masquer-texte');
-    const rect = eyeIcon.getBoundingClientRect();
-    for(let i = 0; i < 8; i++) {
-        let dust = document.createElement('div');
-        dust.className = 'stellar-dust-particle';
-        dust.style.left = (rect.left + rect.width / 2) + 'px';
-        dust.style.top = (rect.top + rect.height / 2) + 'px';
-        let tx = (Math.random() - 0.5) * 80 + 'px';
-        let ty = (Math.random() - 0.5) * 80 + 'px';
-        dust.style.setProperty('--tx', tx);
-        dust.style.setProperty('--ty', ty);
-        document.body.appendChild(dust);
-        setTimeout(() => dust.remove(), 700);
-    }
-    if(isHidden) {
-        input.classList.remove('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
-    } else {
-        input.classList.add('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-    }
-}
-
-function lockAppHeight() {
-    const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.body.style.height = trueHeight + 'px';
-    const mArea = document.getElementById('mArea');
-    const coArea = document.getElementById('coArea');
-    if(document.getElementById('chatBox').style.display === 'flex' && mArea) mArea.scrollTop = mArea.scrollHeight;
-    if(document.getElementById('coconBox').style.display === 'flex' && coArea) coArea.scrollTop = coArea.scrollHeight;
-}
-
-window.addEventListener('resize', lockAppHeight);
-if (window.visualViewport) window.visualViewport.addEventListener('resize', lockAppHeight);
-
-document.getElementById('coArea').addEventListener('click', function(e) {
-    if(e.target.closest('.bubble') || e.target.closest('button')) return;
-    const rose = document.createElement('div');
-    rose.innerHTML = Math.random() > 0.5 
-        ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
-    rose.style.position = 'fixed';
-    rose.style.left = (e.clientX - 12) + 'px';
-    rose.style.top = (e.clientY - 12) + 'px';
-    rose.style.animation = 'universDust 1.5s ease-out forwards';
-    rose.style.pointerEvents = 'none';
-    rose.style.zIndex = '99999';
-    document.body.appendChild(rose);
-    setTimeout(() => rose.remove(), 1500);
-});
-
-const defaultPlaylist = [
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0090_etddlk.mp3"
-];
-let currentTrackIndex = 0;
-
-function nextCoconTrack() {
-    currentTrackIndex = (currentTrackIndex + 1) % defaultPlaylist.length;
-    const audio = document.getElementById('coconAudio');
-    if (audio) {
-        audio.src = defaultPlaylist[currentTrackIndex];
-        audio.load();
-        audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast("Musique : Piste " + (currentTrackIndex + 1));
-    }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const audioEl = document.getElementById('coconAudio');
-    if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
-    initApp();
-});
-
-let user = null;
-let stateStack = [];
-let activeId = null;
-let currentPeerId = null;
-let currentMediaMode = null;
-let typingTimeout = null;
-let chatClearedAt = 0; 
-let timeCounterInterval = null; 
-let unsubMsgs = null; 
-
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-let audioUnlocked = false;
-let cancelAudio = false;
-let recordTimerInterval = null;
-let recordSeconds = 0;
-
-const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
-    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
-    "Sensuel": ["Mon désir pour toi traverse l'univers... 🔥", "Viens te perdre dans mes bras."],
-    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis là, juste de l'autre côté de l'écran."]
-};
-
-const humeursCocon = [
-    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, {label: "❌ Retirer l'humeur"}
-];
-
-const allLanguages = [
-    {code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}
-];
-
-const i18n = {
-    fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
-    en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
-};
-
 // ==========================================
 // --- INITIALISATION FIREBASE ---
 // ==========================================
@@ -2542,9 +2419,14 @@ function promptGalaxyAccess() {
 }
 
 // ==========================================
-// --- L'ODYSSÉE LIVE (JEU EN APPEL) ---
+// --- L'ODYSSÉE LIVE (APPEL & JEU DE SOCIÉTÉ) ---
 // ==========================================
 let liveStream = null;
+let peerConnection = null;
+let liveUnsub = null;
+let gameUnsub = null;
+
+const rtcConfig = { iceServers: [ { urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' } ] };
 
 async function openGameRoom() {
     document.getElementById('mainApp').style.display = 'none';
@@ -2553,48 +2435,187 @@ async function openGameRoom() {
     pushState('gameRoom');
 
     try {
-        // Demande d'accès caméra + micro pour l'appel Live
         liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         document.getElementById('localVideoLive').srcObject = liveStream;
-        showToast("Caméra activée. En attente de connexion...");
+        showToast("Caméra activée. Connexion en cours...");
+        
+        initWebRTC();
+        syncGameState();
     } catch (err) {
         showToast("Accès caméra ou micro refusé.");
         closeGameRoom();
     }
 }
 
-function closeGameRoom(fromHistory = false) {
-    if (liveStream) {
-        liveStream.getTracks().forEach(t => t.stop());
-        liveStream = null;
-    }
-    document.getElementById('gameRoomContainer').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    if (!fromHistory) triggerBack();
+function initWebRTC() {
+    const roomRef = fs.collection('cocon').doc(user.code).collection('liveRoom').doc('call');
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    
+    liveStream.getTracks().forEach(track => { peerConnection.addTrack(track, liveStream); });
+    
+    peerConnection.ontrack = event => {
+        const remoteVideo = document.getElementById('remoteVideo');
+        if (!remoteVideo.srcObject) {
+            remoteVideo.srcObject = event.streams[0];
+            document.getElementById('remotePlaceholder').style.display = 'none';
+        }
+    };
+
+    peerConnection.onicecandidate = event => {
+        if (event.candidate) {
+            roomRef.collection(user.id).add(event.candidate.toJSON());
+        }
+    };
+
+    roomRef.get().then(async docSnapshot => {
+        if (!docSnapshot.exists || (docSnapshot.data() && docSnapshot.data().answer)) {
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            await roomRef.set({ offer: { type: offer.type, sdp: offer.sdp }, callerId: user.id });
+
+            liveUnsub = roomRef.onSnapshot(async snap => {
+                const data = snap.data();
+                if (!peerConnection.currentRemoteDescription && data && data.answer) {
+                    const rtcSessionDescription = new RTCSessionDescription(data.answer);
+                    await peerConnection.setRemoteDescription(rtcSessionDescription);
+                }
+            });
+        } else {
+            const offerData = docSnapshot.data().offer;
+            const callerId = docSnapshot.data().callerId;
+            
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offerData));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            await roomRef.update({ answer: { type: answer.type, sdp: answer.sdp } });
+            
+            roomRef.collection(callerId).onSnapshot(snap => {
+                snap.docChanges().forEach(change => {
+                    if (change.type === 'added') {
+                        const candidate = new RTCIceCandidate(change.doc.data());
+                        peerConnection.addIceCandidate(candidate);
+                    }
+                });
+            });
+        }
+    });
+
+    roomRef.collection(user.id === docSnapshot?.data()?.callerId ? 'callee_candidates' : user.id).onSnapshot(snap => {
+         snap.docChanges().forEach(change => {
+             if (change.type === 'added') {
+                 const candidate = new RTCIceCandidate(change.doc.data());
+                 peerConnection.addIceCandidate(candidate);
+             }
+         });
+    });
+}
+
+function syncGameState() {
+    const stateRef = fs.collection('cocon').doc(user.code).collection('liveRoom').doc('gameState');
+    stateRef.set({ intensity: 1 }, { merge: true });
+
+    gameUnsub = stateRef.onSnapshot(snap => {
+        const data = snap.data();
+        if(data && data.intensity) {
+            const val = data.intensity;
+            document.getElementById('gameIntensitySlider').value = val;
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('int' + i).style.opacity = (i == val) ? '1' : '0.5';
+                document.getElementById('int' + i).style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
+            }
+        }
+        
+        if (data && data.lastDrawnCard && data.lastDrawnBy !== user.id && data.timestamp > (window.lastCardTime || 0)) {
+            window.lastCardTime = data.timestamp;
+            animateCard(data.lastDrawnType);
+            openModal(`${data.lastDrawnType === 'action' ? '🟥 Action' : '🟩 Vérité'}`, `<div style="font-size:16px; padding:15px; font-style:italic; line-height: 1.5; color: white;">${data.lastDrawnCard}</div>`, () => {
+                resetCardAnimation(data.lastDrawnType);
+                triggerBack();
+            });
+        }
+    });
 }
 
 function updateGameIntensity(val) {
     playClick();
-    for (let i = 1; i <= 4; i++) {
-        document.getElementById('int' + i).style.opacity = (i == val) ? '1' : '0.5';
-        document.getElementById('int' + i).style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
-    }
+    fs.collection('cocon').doc(user.code).collection('liveRoom').doc('gameState').update({ intensity: parseInt(val) });
 }
 
-function drawCard(type) {
-    const val = document.getElementById('gameIntensitySlider').value;
-    const intensities = ["Mignonne", "Complice", "Sensuelle", "Hot"];
-    const intent = intensities[val - 1];
+async function drawCard(type) {
+    playClick();
+    if(window.isDrawingCard) return;
+    window.isDrawingCard = true;
     
-    // Fenêtre modale temporaire pour préparer la phase 2 (Gemini AI + WebRTC)
-    openModal(
-        `<div style='display:flex;align-items:center;gap:8px;justify-content:center;'>${type === 'action' ? '🟥 Action' : '🟩 Vérité'}</div>`, 
-        `<div style="font-size:16px; padding:15px; font-style:italic; line-height: 1.5; color: white;">
-            L'IA générera bientôt une ${type} <b>${intent}</b> ici, synchronisée avec ta partenaire ! 🌶️<br><br>
-            <span style="font-size:12px; opacity:0.6;">(Phase WebRTC à suivre...)</span>
-        </div>`, 
-        null
-    );
+    animateCard(type);
+    showToast("L'IA génère le défi...");
+
+    const val = document.getElementById('gameIntensitySlider').value;
+    const intensities = ["mignonne et douce", "très complice et romantique", "sensuelle et excitante", "très hot, intime et pimentée (+18 élégant)"];
+    const intent = intensities[val - 1];
+
+    const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
+    const geminiPart2 = "JwRltTnShQLStB_uql4"; 
+    const GEMINI_API_KEY = geminiPart1 + geminiPart2;
+    const promptText = `Nous sommes un couple en train de faire un appel vidéo à distance. Je viens de tirer une carte "${type}". Donne-moi UNIQUEMENT le défi ou la question à relever. L'intensité doit être : ${intent}. Sois direct, naturel, et créatif. Ne mets aucun guillemet.`;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+        });
+        const data = await response.json();
+        const cardText = data.candidates[0].content.parts[0].text.trim();
+        
+        window.lastCardTime = Date.now();
+        await fs.collection('cocon').doc(user.code).collection('liveRoom').doc('gameState').update({
+            lastDrawnCard: cardText,
+            lastDrawnBy: user.id,
+            lastDrawnType: type,
+            timestamp: window.lastCardTime
+        });
+
+        openModal(`${type === 'action' ? '🟥 Action' : '🟩 Vérité'}`, `<div style="font-size:16px; padding:15px; font-style:italic; line-height: 1.5; color: white;">${cardText}</div>`, () => {
+            resetCardAnimation(type);
+            triggerBack();
+        });
+        
+    } catch(e) {
+        showToast("Erreur de connexion.");
+        resetCardAnimation(type);
+    }
+    setTimeout(() => { window.isDrawingCard = false; }, 2000);
+}
+
+function animateCard(type) {
+    const btnClicked = document.getElementById(type === 'action' ? 'btnAction' : 'btnTruth');
+    const btnOther = document.getElementById(type === 'action' ? 'btnTruth' : 'btnAction');
+    btnClicked.classList.add('card-inflate');
+    btnOther.classList.add('card-fade');
+}
+
+function resetCardAnimation(type) {
+    const btnClicked = document.getElementById(type === 'action' ? 'btnAction' : 'btnTruth');
+    const btnOther = document.getElementById(type === 'action' ? 'btnTruth' : 'btnAction');
+    btnClicked.classList.remove('card-inflate');
+    btnOther.classList.remove('card-fade');
+}
+
+function closeGameRoom(fromHistory = false) {
+    if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
+    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+    if (liveUnsub) liveUnsub();
+    if (gameUnsub) gameUnsub();
+    
+    const remoteVid = document.getElementById('remoteVideo');
+    if(remoteVid) remoteVid.srcObject = null;
+    const remotePl = document.getElementById('remotePlaceholder');
+    if(remotePl) remotePl.style.display = 'flex';
+    
+    fs.collection('cocon').doc(user.code).collection('liveRoom').doc('call').delete().catch(()=>{});
+    
+    document.getElementById('gameRoomContainer').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    if (!fromHistory) triggerBack();
 }
 
 // ==========================================
