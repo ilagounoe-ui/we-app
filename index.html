@@ -836,6 +836,160 @@
 </div>
 
 <script>
+  // ==========================================
+// --- VARIABLES GLOBALES ET ÉTAT ---
+// ==========================================
+window.sharedPlaylist = [];
+let toastTimeout = null;
+let isLoginMode = true;
+window.appReady = false; 
+
+// ==========================================
+// --- GESTION DU SON ET VIBREUR ---
+// ==========================================
+let globalAudioCtx = null;
+
+function playClick() {
+    try { if (navigator && navigator.vibrate) navigator.vibrate(15); } catch(e) {}
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            if (!globalAudioCtx) globalAudioCtx = new AudioContext();
+            if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
+            const osc = globalAudioCtx.createOscillator();
+            const gain = globalAudioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(globalAudioCtx.destination);
+            osc.type = 'sine'; 
+            osc.frequency.setValueAtTime(600, globalAudioCtx.currentTime); 
+            gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime); 
+            gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.05); 
+            osc.start(globalAudioCtx.currentTime);
+            osc.stop(globalAudioCtx.currentTime + 0.05);
+        }
+    } catch(e) { console.warn("Audio bloqué par le navigateur", e); }
+}
+
+window.togglePwd = function(inputId, eyeIcon) {
+    playClick();
+    const input = document.getElementById(inputId);
+    const isHidden = input.classList.contains('masquer-texte');
+    const rect = eyeIcon.getBoundingClientRect();
+    for(let i = 0; i < 8; i++) {
+        let dust = document.createElement('div');
+        dust.className = 'stellar-dust-particle';
+        dust.style.left = (rect.left + rect.width / 2) + 'px';
+        dust.style.top = (rect.top + rect.height / 2) + 'px';
+        let tx = (Math.random() - 0.5) * 80 + 'px';
+        let ty = (Math.random() - 0.5) * 80 + 'px';
+        dust.style.setProperty('--tx', tx);
+        dust.style.setProperty('--ty', ty);
+        document.body.appendChild(dust);
+        setTimeout(() => dust.remove(), 700);
+    }
+    if(isHidden) {
+        input.classList.remove('masquer-texte');
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
+    } else {
+        input.classList.add('masquer-texte');
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+    }
+}
+
+function lockAppHeight() {
+    const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.body.style.height = trueHeight + 'px';
+    const mArea = document.getElementById('mArea');
+    const coArea = document.getElementById('coArea');
+    if(document.getElementById('chatBox').style.display === 'flex' && mArea) mArea.scrollTop = mArea.scrollHeight;
+    if(document.getElementById('coconBox').style.display === 'flex' && coArea) coArea.scrollTop = coArea.scrollHeight;
+}
+
+window.addEventListener('resize', lockAppHeight);
+if (window.visualViewport) window.visualViewport.addEventListener('resize', lockAppHeight);
+
+document.getElementById('coArea').addEventListener('click', function(e) {
+    if(e.target.closest('.bubble') || e.target.closest('button')) return;
+    const rose = document.createElement('div');
+    rose.innerHTML = Math.random() > 0.5 
+        ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
+    rose.style.position = 'fixed';
+    rose.style.left = (e.clientX - 12) + 'px';
+    rose.style.top = (e.clientY - 12) + 'px';
+    rose.style.animation = 'universDust 1.5s ease-out forwards';
+    rose.style.pointerEvents = 'none';
+    rose.style.zIndex = '99999';
+    document.body.appendChild(rose);
+    setTimeout(() => rose.remove(), 1500);
+});
+
+const defaultPlaylist = [
+    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
+    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
+    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0090_etddlk.mp3"
+];
+let currentTrackIndex = 0;
+
+function nextCoconTrack() {
+    currentTrackIndex = (currentTrackIndex + 1) % defaultPlaylist.length;
+    const audio = document.getElementById('coconAudio');
+    if (audio) {
+        audio.src = defaultPlaylist[currentTrackIndex];
+        audio.load();
+        audio.play().catch(e => console.log("Lecture bloquée", e));
+        showToast("Musique : Piste " + (currentTrackIndex + 1));
+    }
+}
+
+// C'EST CETTE FONCTION QUI LANCE TOUT !
+window.addEventListener('DOMContentLoaded', () => {
+    const audioEl = document.getElementById('coconAudio');
+    if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
+    initApp();
+});
+
+let user = null;
+let stateStack = [];
+let activeId = null;
+let currentPeerId = null;
+let currentMediaMode = null;
+let typingTimeout = null;
+let chatClearedAt = 0; 
+let timeCounterInterval = null; 
+let unsubMsgs = null; 
+
+let mediaRecorder;
+let audioChunks = [];
+let isRecording = false;
+let audioUnlocked = false;
+let cancelAudio = false;
+let recordTimerInterval = null;
+let recordSeconds = 0;
+
+const moodLibrary = {
+    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
+    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
+    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
+    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
+    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
+    "Sensuel": ["Mon désir pour toi traverse l'univers... 🔥", "Viens te perdre dans mes bras."],
+    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis là, juste de l'autre côté de l'écran."]
+};
+
+const humeursCocon = [
+    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, {label: "❌ Retirer l'humeur"}
+];
+
+const allLanguages = [
+    {code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}
+];
+
+const i18n = {
+    fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
+    en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
+};
+  
 // ==========================================
 // --- INITIALISATION FIREBASE ---
 // ==========================================
