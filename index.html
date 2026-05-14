@@ -848,14 +848,12 @@ window.appReady = false;
 let globalAudioCtx = null;
 
 function playClick() {
-    // 1. Vibration
     try { 
         if (navigator && navigator.vibrate) {
             navigator.vibrate(15); 
         }
     } catch(e) {}
     
-    // 2. Son (recyclage du moteur pour éviter les crashs de mémoire)
     try {
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) {
@@ -941,7 +939,6 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', lockAppHeight);
 }
 
-// Animation des petites roses au clic dans le Cocon
 document.getElementById('coArea').addEventListener('click', function(e) {
     if(e.target.closest('.bubble') || e.target.closest('button')) return;
     
@@ -1039,7 +1036,6 @@ const i18n = {
     en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
 };
 
-// 🔴 ASTUCE ANTI-ROBOTS GITHUB : Clé Firebase coupée en deux
 const fbPart1 = "AIzaSyBtx8uE9h";
 const fbPart2 = "kBB86uA9p4gCCP3OHx3jdmfAs";
 
@@ -1094,32 +1090,80 @@ function initApp() {
         }
     });
 }
-
+/* --- FIN DE LA PARTIE 1 --- */
 // ==========================================
-// --- CHIFFREMENT E2EE ---
+// --- VRAI CHIFFREMENT E2EE (AES-GCM) ---
 // ==========================================
 const E2EE = {
-    encrypt: (text, key) => {
-        if(!text) return "";
-        let res = "";
-        const kLen = key.length; 
-        for(let i=0; i<text.length; i++) {
-            res += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % kLen));
-        }
-        return "E2EE::" + btoa(encodeURIComponent(res));
+    // 1. Dérivation d'une vraie clé cryptographique à partir du code/ID
+    deriveKey: async function(password) {
+        const enc = new TextEncoder();
+        const keyMaterial = await window.crypto.subtle.importKey(
+            "raw", enc.encode(password), {name: "PBKDF2"}, false, ["deriveKey"]
+        );
+        return window.crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt: enc.encode("Sel_Univers_Secret_2026"), iterations: 100000, hash: "SHA-256" },
+            keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+        );
     },
-    decrypt: (text, key) => {
-        if(!text || !text.startsWith("E2EE::")) return text;
+
+    // 2. Chiffrement
+    encrypt: async function(text, password) {
+        if(!text) return "";
+        const key = await this.deriveKey(password);
+        const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Vecteur d'initialisation unique
+        const encodedText = new TextEncoder().encode(text);
+        
+        const ciphertext = await window.crypto.subtle.encrypt(
+            { name: "AES-GCM", iv: iv }, key, encodedText
+        );
+        
+        // On combine l'IV et le texte chiffré
+        const bundle = new Uint8Array(iv.length + ciphertext.byteLength);
+        bundle.set(iv, 0);
+        bundle.set(new Uint8Array(ciphertext), iv.length);
+        
+        // Conversion en Base64 pour Firestore
+        let binary = '';
+        for(let i=0; i<bundle.length; i++) binary += String.fromCharCode(bundle[i]);
+        return "AESGCM::" + btoa(binary);
+    },
+
+    // 3. Déchiffrement
+    decrypt: async function(text, password) {
+        if(!text) return text;
+        
+        // --- FALLBACK : Si c'est un ANCIEN message (ton ancien système XOR) ---
+        if(text.startsWith("E2EE::")) {
+            try {
+                let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
+                let res = "";
+                const kLen = password.length;
+                for(let i=0; i<dec.length; i++) {
+                    res += String.fromCharCode(dec.charCodeAt(i) ^ password.charCodeAt(i % kLen));
+                }
+                return res;
+            } catch(e) { return "🔒 [Ancien message]"; }
+        }
+
+        // --- NOUVEAU SYSTEME : Si le message n'est pas chiffré en AES, on le retourne tel quel ---
+        if(!text.startsWith("AESGCM::")) return text;
+        
         try {
-            let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
-            let res = "";
-            const kLen = key.length;
-            for(let i=0; i<dec.length; i++) {
-                res += String.fromCharCode(dec.charCodeAt(i) ^ key.charCodeAt(i % kLen));
-            }
-            return res;
-        } catch(e) { 
-            return "🔒 [Message indéchiffrable]"; 
+            const binary = atob(text.replace("AESGCM::", ""));
+            const bundle = new Uint8Array(binary.length);
+            for(let i=0; i<binary.length; i++) bundle[i] = binary.charCodeAt(i);
+            
+            const iv = bundle.slice(0, 12);
+            const ciphertext = bundle.slice(12);
+            const key = await this.deriveKey(password);
+            
+            const decrypted = await window.crypto.subtle.decrypt(
+                { name: "AES-GCM", iv: iv }, key, ciphertext
+            );
+            return new TextDecoder().decode(decrypted);
+        } catch(e) {
+            return "🔒 [Message indéchiffrable]";
         }
     }
 };
@@ -1675,7 +1719,7 @@ function closeMediaViewer(fromHistory = false) {
     if(!fromHistory) triggerBack();
 }
 
-function getMsgHTML(docId, m, path, target) {
+async function getMsgHTML(docId, m, path, target) {
     if(m.deletedFor && m.deletedFor[user.id]) return "";
     
     const ts = m.t ? (m.t.toDate ? m.t.toDate() : new Date()) : new Date();
@@ -1686,9 +1730,7 @@ function getMsgHTML(docId, m, path, target) {
     if(!isMe && !m.seen && !m.deletedForEveryone) {
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? activeId : user.code;
-        
         fs.collection(collPath).doc(docTarget).collection('messages').doc(docId).update({ seen: true }).catch(()=>{});
-        
         if (path === 'msgs' && currentPeerId) {
             fs.collection('users').doc(user.id).collection('contacts').doc(currentPeerId).set({ unread: 0 }, { merge: true }).catch(()=>{});
         }
@@ -1696,9 +1738,7 @@ function getMsgHTML(docId, m, path, target) {
     
     const time = ts.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
     
-    if(m.deletedForEveryone) {
-        return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
-    }
+    if(m.deletedForEveryone) return `<div class="bubble ${isMe ? 'm-me' : 'm-they'}" style="opacity: 0.6; font-style: italic; background: transparent;"><span style="font-size: 12px;">🚫 Ce message a été supprimé</span></div>`;
     
     if (m.unlockAt && !m.opened) {
         const now = Date.now();
@@ -1711,29 +1751,14 @@ function getMsgHTML(docId, m, path, target) {
     }
     
     const cryptoKey = path === 'msgs' ? activeId : user.code;
-    const decryptedText = m.type === 'text' ? E2EE.decrypt(m.txt, cryptoKey) : m.txt;
+    
+    const decryptedText = m.type === 'text' ? await E2EE.decrypt(m.txt, cryptoKey) : m.txt;
     let content = decryptedText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     
-    if(m.type === 'img') {
-        content = `<img src="${m.txt}" class="media-thumbnail" onclick="playClick(); openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
-    }
-    if(m.type === 'video') {
-        content = `<div style="position:relative;" onclick="playClick(); openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
-    }
+    if(m.type === 'img') content = `<img src="${m.txt}" class="media-thumbnail" onclick="playClick(); openMediaViewer('${m.txt}', 'img'); event.stopPropagation();">`;
+    if(m.type === 'video') content = `<div style="position:relative;" onclick="playClick(); openMediaViewer('${m.txt}', 'video'); event.stopPropagation();"><video src="${m.txt}#t=0.1" preload="metadata" class="media-thumbnail" style="background:#000; pointer-events:none;"></video><div class="video-overlay">▶</div></div>`;
     if(m.type === 'audio') {
-        content = `
-        <div class="custom-audio-player">
-            <div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            </div>
-            <div class="audio-wave">
-                <div class="audio-bar" style="height:10px;"></div>
-                <div class="audio-bar" style="height:20px;"></div>
-                <div class="audio-bar" style="height:15px;"></div>
-                <div class="audio-bar" style="height:25px;"></div>
-                <div class="audio-bar" style="height:12px;"></div>
-            </div>
-        </div>`;
+        content = `<div class="custom-audio-player"><div class="audio-play-btn" onclick="playCustomAudio('${m.txt}', this); event.stopPropagation();"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div><div class="audio-wave"><div class="audio-bar" style="height:10px;"></div><div class="audio-bar" style="height:20px;"></div><div class="audio-bar" style="height:15px;"></div><div class="audio-bar" style="height:25px;"></div><div class="audio-bar" style="height:12px;"></div></div></div>`;
     }
     
     const escTxt = m.type === 'text' ? encodeURIComponent(decryptedText) : '';
@@ -1757,10 +1782,10 @@ function syncMessages(path, target, areaId) {
     const collPath = path === 'msgs' ? 'chats' : 'cocon';
     const docTarget = path === 'msgs' ? target : user.code;
     
-    unsubMsgs = fs.collection(collPath).doc(docTarget).collection('messages').orderBy('t', 'asc').onSnapshot(snap => {
-        snap.docChanges().forEach(change => {
+    unsubMsgs = fs.collection(collPath).doc(docTarget).collection('messages').orderBy('t', 'asc').onSnapshot(async snap => {
+        for (let change of snap.docChanges()) {
             if (change.type === 'added') {
-                const html = getMsgHTML(change.doc.id, change.doc.data(), path, target);
+                const html = await getMsgHTML(change.doc.id, change.doc.data(), path, target);
                 if(html) {
                     area.insertAdjacentHTML('beforeend', html);
                     area.scrollTop = area.scrollHeight;
@@ -1768,7 +1793,7 @@ function syncMessages(path, target, areaId) {
             }
             if (change.type === 'modified') {
                 const el = document.getElementById('msg_' + change.doc.id);
-                const html = getMsgHTML(change.doc.id, change.doc.data(), path, target);
+                const html = await getMsgHTML(change.doc.id, change.doc.data(), path, target);
                 if(el && html) {
                     const t = document.createElement('div');
                     t.innerHTML = html;
@@ -1781,7 +1806,7 @@ function syncMessages(path, target, areaId) {
                 const el = document.getElementById('msg_' + change.doc.id);
                 if(el) el.remove();
             }
-        });
+        }
     });
 }
 
@@ -1837,9 +1862,9 @@ function delMsgForAll(id, path, target) {
 }
 
 function editMsg(id, old, path, target) {
-    openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, (val) => {
+    openModal("Modifier", `<input type="text" id="modalInput" class="modal-input" value="${old}">`, async (val) => {
         const cryptoKey = path === 'msgs' ? activeId : user.code;
-        const encryptedText = E2EE.encrypt(val, cryptoKey);
+        const encryptedText = await E2EE.encrypt(val, cryptoKey);
         const collPath = path === 'msgs' ? 'chats' : 'cocon';
         const docTarget = path === 'msgs' ? target : user.code;
         
@@ -1954,9 +1979,10 @@ function sendMsg(mode) {
         proceedSend();
     }
     
-    function proceedSend() {
+    async function proceedSend() {
         const cryptoKey = mode === 'msgs' ? activeId : user.code;
-        const encryptedText = E2EE.encrypt(text, cryptoKey);
+        const encryptedText = await E2EE.encrypt(text, cryptoKey);
+        
         const collPath = mode === 'msgs' ? 'chats' : 'cocon';
         const docTarget = mode === 'msgs' ? activeId : user.code;
         
@@ -2141,10 +2167,10 @@ function openCapsuleCreator() {
     });
 }
 
-function sendCapsule(text, unlockTimestamp) {
+async function sendCapsule(text, unlockTimestamp) {
     const mode = currentMediaMode;
     const cryptoKey = mode === 'msgs' ? activeId : user.code;
-    const encryptedText = E2EE.encrypt(text, cryptoKey);
+    const encryptedText = await E2EE.encrypt(text, cryptoKey);
     const collPath = mode === 'msgs' ? 'chats' : 'cocon';
     const docTarget = mode === 'msgs' ? activeId : user.code;
     
@@ -3291,7 +3317,6 @@ function resetScanButton(btn) {
     const defaultTex = createPlusTexture();
 
     for(let i = 0; i < totalCards; i++) {
-        // LE CORRECTIF VISUEL EST ICI : alphaTest: 0.5, depthWrite: false
         const cardMat = new THREE.MeshBasicMaterial({ 
             map: defaultTex, 
             alphaMap: cardAlphaMap, 
