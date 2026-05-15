@@ -321,41 +321,17 @@
         .cocon-grid-btn.galaxy-btn { background: rgba(208, 168, 255, 0.05); border: 1px solid rgba(208, 168, 255, 0.3); color: var(--accent); }
 
         /* --- NOUVEAUX STYLES DES CARTES LIVE --- */
-        .card-action {
-            background: linear-gradient(135deg, #ff416c, #ff4b2b) !important;
-            box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4) !important;
-            border: none !important;
-        }
+        .card-action { background: linear-gradient(135deg, #ff416c, #ff4b2b) !important; box-shadow: 0 8px 25px rgba(255, 65, 108, 0.4) !important; border: none !important; }
+        .card-verite { background: linear-gradient(135deg, #11998e, #38ef7d) !important; box-shadow: 0 8px 25px rgba(56, 239, 125, 0.4) !important; border: none !important; }
 
-        .card-verite {
-            background: linear-gradient(135deg, #11998e, #38ef7d) !important;
-            box-shadow: 0 8px 25px rgba(56, 239, 125, 0.4) !important;
-            border: none !important;
-        }
+        @keyframes spring-click { 0% { transform: scale(1); } 40% { transform: scale(1.15); } 100% { transform: scale(1.1); } }
+        @keyframes fade-out-card { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.5); pointer-events: none; } }
 
-        @keyframes spring-click {
-            0% { transform: scale(1); }
-            40% { transform: scale(1.15); }
-            100% { transform: scale(1.1); }
-        }
-
-        @keyframes fade-out-card {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.5); pointer-events: none; }
-        }
-
-        .animate-spring {
-            animation: spring-click 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            z-index: 100;
-        }
-
-        .animate-fade {
-            animation: fade-out-card 0.4s ease forwards;
-        }
+        .animate-spring { animation: spring-click 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; z-index: 100; }
+        .animate-fade { animation: fade-out-card 0.4s ease forwards; }
     </style>
 </head>
 <body>
-
 <div id="toastAlert" class="toast"></div>
 
 <div id="gameRoomContainer" style="display:none; position:fixed; inset:0; background:#000; z-index:150000; flex-direction:column; overflow:hidden;">
@@ -729,157 +705,114 @@
         </div>
     </div>
 </div>
+
+<div id="chatBox">
+    <div class="chat-head">
+        <span onclick="playClick(); triggerBack()" style="font-size:26px; font-weight:bold; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
+        <div class="pfp" id="cHeadPfp" style="width:40px; height:40px; margin:0; border:none;"></div>
+        <div style="flex:1">
+            <b id="cName" style="font-size:16px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">...</b><br>
+            <small id="cStatus" style="font-size:11px; opacity:0.8;"></small>
+        </div>
+        <div class="opt-dots" id="chatDots" onclick="playClick(); openContactOptions()" style="display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </div>
+    </div>
+    
+    <div class="msg-area" id="mArea"></div>
+    
+    <div class="chat-footer" id="chatFooter">
+        <div id="typingDisp" class="typing-indicator" style="display:none;">écrit un message...</div>
+        <div class="chat-bottom-bar">
+            <div class="chat-input-wrapper">
+                <input type="text" id="mIn" class="chat-input-field" placeholder="Message" oninput="handleTyping()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('msgs'); }" onfocus="setTimeout(() => document.getElementById('mArea').scrollTop = document.getElementById('mArea').scrollHeight, 300)">
+                
+                <div id="recUiMsgs" style="display:none; flex:1; align-items:center; gap:10px;">
+                    <div style="color:var(--accent); font-size: 18px; animation: pulse 1.5s infinite;">🎙️</div>
+                    <div class="audio-wave playing" style="flex:1;">
+                        <div class="audio-bar" style="background:var(--accent);"></div>
+                        <div class="audio-bar" style="background:var(--accent);"></div>
+                        <div class="audio-bar" style="background:var(--accent);"></div>
+                        <div class="audio-bar" style="background:var(--accent);"></div>
+                        <div class="audio-bar" style="background:var(--accent);"></div>
+                    </div>
+                    <span id="recTimeMsgs" style="font-size:14px; font-weight:bold; color:var(--accent); font-variant-numeric: tabular-nums;">00:00</span>
+                </div>
+
+                <button id="trashBtnMsgs" class="btn-attachment" style="display:none; color:var(--accent);" onclick="playClick(); cancelRecord('msgs')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+
+                <button id="micBtnMsgs" class="btn-attachment" onclick="playClick(); toggleRecord('msgs')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <button id="mediaBtnMsgs" class="btn-attachment" onclick="playClick(); openMediaMenu('msgs')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
+            </div>
+            <button onclick="playClick(); sendMsg('msgs')" style="background:var(--accent); border:none; width:45px; height:45px; border-radius:50%; color:black; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--accent-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:black; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="coconBox">
+    <div class="chat-head" style="background:rgba(0,0,0,0.85); color:white; border-bottom:1px solid rgba(255,75,110,0.2);">
+        <span onclick="playClick(); triggerBack()" style="font-size:26px; cursor:pointer; padding-right:10px; display:flex; align-items:center;">
+            <svg class="svg-icon-lg" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </span>
+        
+        <div style="flex:1; text-align:center;" onclick="playClick(); nextCoconTrack()">
+            <b style="font-family:'Pacifico'; font-size:20px; text-shadow:0 2px 5px rgba(0,0,0,0.3); cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                <svg class="svg-icon" style="stroke:var(--love); fill:var(--love);" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                Notre Cocon Privé 
+            </b>
+        </div>
+        
+        <audio id="coconAudio" src=""></audio>
+    </div>
+    
+    <div class="msg-area" id="coArea"></div>
+    
+    <div class="chat-footer" id="coconFooter">
+        <div class="chat-bottom-bar" style="background:rgba(11,9,20,0.95); border-color:rgba(255,75,110,0.3);">
+            <div class="chat-input-wrapper" style="background:rgba(255,75,110,0.08); border-color:rgba(255,75,110,0.3);">
+                <input type="text" id="coIn" class="chat-input-field" placeholder="Message secret" onkeydown="if(event.key === 'Enter') { event.preventDefault(); sendMsg('cocon'); }" onfocus="setTimeout(() => document.getElementById('coArea').scrollTop = document.getElementById('coArea').scrollHeight, 300)">
+                
+                <div id="recUiCo" style="display:none; flex:1; align-items:center; gap:10px;">
+                    <div style="color:var(--love); font-size: 18px; animation: pulse 1.5s infinite;">🎙️</div>
+                    <div class="audio-wave playing" style="flex:1;">
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                        <div class="audio-bar" style="background:var(--love);"></div>
+                    </div>
+                    <span id="recTimeCo" style="font-size:14px; font-weight:bold; color:var(--love); font-variant-numeric: tabular-nums;">00:00</span>
+                </div>
+
+                <button id="trashBtnCo" class="btn-attachment" style="display:none; color:var(--love);" onclick="playClick(); cancelRecord('cocon')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+
+                <button id="micBtnCo" class="btn-attachment" style="color:var(--love);" onclick="playClick(); toggleRecord('cocon')">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <button id="mediaBtnCo" class="btn-attachment" onclick="playClick(); openMediaMenu('cocon')" style="color:var(--love);">
+                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
+            </div>
+            <button onclick="playClick(); sendMsg('cocon')" style="background:var(--love); border:none; width:45px; height:45px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px var(--love-glow); transition:0.2s; cursor:pointer; flex-shrink: 0;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">
+                <svg class="svg-icon" style="stroke:white; margin-right:2px;" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-// ==========================================
-// --- VARIABLES GLOBALES ET ÉTAT ---
-// ==========================================
-window.sharedPlaylist = [];
-let toastTimeout = null;
-let isLoginMode = true;
-window.appReady = false; 
-
-let globalAudioCtx = null;
-
-function playClick() {
-    try { if (navigator && navigator.vibrate) navigator.vibrate(15); } catch(e) {}
-    try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (AudioContext) {
-            if (!globalAudioCtx) globalAudioCtx = new AudioContext();
-            if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
-            const osc = globalAudioCtx.createOscillator();
-            const gain = globalAudioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(globalAudioCtx.destination);
-            osc.type = 'sine'; 
-            osc.frequency.setValueAtTime(600, globalAudioCtx.currentTime); 
-            gain.gain.setValueAtTime(0.05, globalAudioCtx.currentTime); 
-            gain.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.05); 
-            osc.start(globalAudioCtx.currentTime);
-            osc.stop(globalAudioCtx.currentTime + 0.05);
-        }
-    } catch(e) { console.warn("Audio bloqué", e); }
-}
-
-window.togglePwd = function(inputId, eyeIcon) {
-    playClick();
-    const input = document.getElementById(inputId);
-    const isHidden = input.classList.contains('masquer-texte');
-    const rect = eyeIcon.getBoundingClientRect();
-    for(let i = 0; i < 8; i++) {
-        let dust = document.createElement('div');
-        dust.className = 'stellar-dust-particle';
-        dust.style.left = (rect.left + rect.width / 2) + 'px';
-        dust.style.top = (rect.top + rect.height / 2) + 'px';
-        let tx = (Math.random() - 0.5) * 80 + 'px';
-        let ty = (Math.random() - 0.5) * 80 + 'px';
-        dust.style.setProperty('--tx', tx);
-        dust.style.setProperty('--ty', ty);
-        document.body.appendChild(dust);
-        setTimeout(() => dust.remove(), 700);
-    }
-    if(isHidden) {
-        input.classList.remove('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon" style="stroke:var(--accent);"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><path d="M2 2l20 20"></path></svg>`;
-    } else {
-        input.classList.add('masquer-texte');
-        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24" class="svg-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-    }
-}
-
-function lockAppHeight() {
-    const trueHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    document.body.style.height = trueHeight + 'px';
-    const mArea = document.getElementById('mArea');
-    const coArea = document.getElementById('coArea');
-    if(document.getElementById('chatBox').style.display === 'flex' && mArea) mArea.scrollTop = mArea.scrollHeight;
-    if(document.getElementById('coconBox').style.display === 'flex' && coArea) coArea.scrollTop = coArea.scrollHeight;
-}
-
-window.addEventListener('resize', lockAppHeight);
-if (window.visualViewport) window.visualViewport.addEventListener('resize', lockAppHeight);
-
-document.getElementById('coArea').addEventListener('click', function(e) {
-    if(e.target.closest('.bubble') || e.target.closest('button')) return;
-    const rose = document.createElement('div');
-    rose.innerHTML = Math.random() > 0.5 
-        ? '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--love);"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
-        : '<svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--accent);"><path d="M12 2l1.3 4.2c.4 1.3 1.5 2.4 2.8 2.8L20.3 10.3l-4.2 1.3c-1.3.4-2.4 1.5-2.8 2.8L12 18.6l-1.3-4.2c-.4-1.3-1.5-2.4-2.8-2.8L3.7 10.3l4.2-1.3c1.3-.4 2.4-1.5 2.8-2.8z"/></svg>';
-    rose.style.position = 'fixed';
-    rose.style.left = (e.clientX - 12) + 'px';
-    rose.style.top = (e.clientY - 12) + 'px';
-    rose.style.animation = 'universDust 1.5s ease-out forwards';
-    rose.style.pointerEvents = 'none';
-    rose.style.zIndex = '99999';
-    document.body.appendChild(rose);
-    setTimeout(() => rose.remove(), 1500);
-});
-
-const defaultPlaylist = [
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931977/Sparkle___Your_Name_AMV_otkqvf.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0091_siwoey.mp3",
-    "https://res.cloudinary.com/dgiy2zapd/video/upload/v1776931971/AUD-20260422-WA0090_etddlk.mp3"
-];
-let currentTrackIndex = 0;
-
-function nextCoconTrack() {
-    currentTrackIndex = (currentTrackIndex + 1) % defaultPlaylist.length;
-    const audio = document.getElementById('coconAudio');
-    if (audio) {
-        audio.src = defaultPlaylist[currentTrackIndex];
-        audio.load();
-        audio.play().catch(e => console.log("Lecture bloquée", e));
-        showToast("Musique : Piste " + (currentTrackIndex + 1));
-    }
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const audioEl = document.getElementById('coconAudio');
-    if (audioEl) audioEl.addEventListener('ended', nextCoconTrack);
-    initApp();
-});
-
-let user = null;
-let stateStack = [];
-let activeId = null;
-let currentPeerId = null;
-let currentMediaMode = null;
-let typingTimeout = null;
-let chatClearedAt = 0; 
-let timeCounterInterval = null; 
-let unsubMsgs = null; 
-
-let mediaRecorder;
-let audioChunks = [];
-let isRecording = false;
-let audioUnlocked = false;
-let cancelAudio = false;
-let recordTimerInterval = null;
-let recordSeconds = 0;
-
-const moodLibrary = {
-    "Heureux": ["Ton bonheur est ma plus belle réussite. ✨", "C'est une journée magnifique pour s'aimer encore plus !"],
-    "Triste": ["N'oublie jamais que je suis ton port d'attache. ⚓", "Tes larmes sont mes larmes. Je suis là. ❤️"],
-    "Fatigué": ["Repose-toi bien, tu as assez conquis le monde. 😴", "Ferme les yeux, laisse-toi porter."],
-    "Amoureux": ["Tu es ma galaxie toute entière. ✨", "Chaque battement de mon cœur porte ton nom."],
-    "Besoin de force": ["Tu es bien plus forte que tu ne le penses. 💪", "Respire un grand coup, tu vas tout déchirer !"],
-    "Sensuel": ["Mon désir pour toi traverse l'univers... 🔥", "Viens te perdre dans mes bras."],
-    "Seule": ["Regarde le ciel, on regarde la même lune. 🌙", "Je suis là, juste de l'autre côté de l'écran."]
-};
-
-const humeursCocon = [
-    {label: "🥰 Amoureux"}, {label: "✨ Heureux"}, {label: "🥺 Tu me manques"}, {label: "💤 Fatigué"}, {label: "❌ Retirer l'humeur"}
-];
-
-const allLanguages = [
-    {code: 'fr', name: 'Français', flag: '🇫🇷'}, {code: 'en', name: 'English', flag: '🇬🇧'}
-];
-
-const i18n = {
-    fr: { tab_msg: "Messages", tab_cocon: "Le Cocon", tab_set: "Réglages", set_pseudo: "Pseudo", set_code: "Code Cocon" },
-    en: { tab_msg: "Messages", tab_cocon: "The Cocoon", tab_set: "Settings", set_pseudo: "Nickname", set_code: "Cocoon Code" }
-};
-
 // ==========================================
 // --- INITIALISATION FIREBASE ---
 // ==========================================
@@ -937,17 +870,6 @@ function initApp() {
     });
 }
 
-function showToast(msg) {
-    const t = document.getElementById('toastAlert');
-    t.innerHTML = msg; 
-    if(!t.classList.contains('show')) { t.classList.add('show'); }
-    if(toastTimeout) { clearTimeout(toastTimeout); }
-    toastTimeout = setTimeout(() => { t.classList.remove('show'); }, 2500);
-}
-
-// ==========================================
-// --- VRAI CHIFFREMENT E2EE (AES-GCM) ---
-// ==========================================
 const E2EE = {
     deriveKey: async function(password) {
         const enc = new TextEncoder();
@@ -981,37 +903,28 @@ const E2EE = {
 
     decrypt: async function(text, password) {
         if(!text) return text;
-        
         if(text.startsWith("E2EE::")) {
             try {
                 let dec = decodeURIComponent(atob(text.replace("E2EE::", "")));
                 let res = "";
                 const kLen = password.length;
-                for(let i=0; i<dec.length; i++) {
-                    res += String.fromCharCode(dec.charCodeAt(i) ^ password.charCodeAt(i % kLen));
-                }
+                for(let i=0; i<dec.length; i++) res += String.fromCharCode(dec.charCodeAt(i) ^ password.charCodeAt(i % kLen));
                 return res;
             } catch(e) { return "🔒 [Ancien message]"; }
         }
-
         if(!text.startsWith("AESGCM::")) return text;
-        
         try {
             const binary = atob(text.replace("AESGCM::", ""));
             const bundle = new Uint8Array(binary.length);
             for(let i=0; i<binary.length; i++) bundle[i] = binary.charCodeAt(i);
-            
             const iv = bundle.slice(0, 12);
             const ciphertext = bundle.slice(12);
             const key = await this.deriveKey(password);
-            
             const decrypted = await window.crypto.subtle.decrypt(
                 { name: "AES-GCM", iv: iv }, key, ciphertext
             );
             return new TextDecoder().decode(decrypted);
-        } catch(e) {
-            return "🔒 [Message indéchiffrable]";
-        }
+        } catch(e) { return "🔒 [Message indéchiffrable]"; }
     }
 };
 
@@ -1095,7 +1008,7 @@ function setupApp() {
     updatePresence();
     loadContacts();
     updateTimeCounter();
-    listenForLiveInvites(); // IMPORTANT : Écouteur pour le widget d'invitation Live
+    listenForLiveInvites(); 
     
     if(user.wall) document.body.style.backgroundImage = `url(${user.wall})`;
     if(user.pfp) document.getElementById('pfpPreview').innerHTML = `<img src="${user.pfp}">`;
@@ -1125,7 +1038,8 @@ function setupApp() {
         }
     });
 }
-
+</script>
+<script>
 // ==========================================
 // --- MOTEUR DE L'ODYSSÉE LIVE (INVITATIONS & PEERJS) ---
 // ==========================================
@@ -1139,8 +1053,8 @@ let currentCall = null;
 let liveUnsub = null; 
 window.myCallRole = null;
 window.livePartnerId = null;
+window.liveRoomId = null;
 
-// 1. Ouvre la fenêtre avec les personnes connectées / amis
 function openLiveInviteMenu() {
     playClick();
     fs.collection('users').doc(user.id).collection('contacts').get().then(snap => {
@@ -1172,7 +1086,6 @@ function openLiveInviteMenu() {
     });
 }
 
-// 2. Envoie l'invitation à la personne
 function sendLiveInvite(peerId, peerName) {
     playClick();
     triggerBack(); 
@@ -1205,7 +1118,6 @@ function sendLiveInvite(peerId, peerName) {
     });
 }
 
-// 3. Écouteur pour afficher le widget
 function listenForLiveInvites() {
     fs.collection('users').doc(user.id).collection('liveInvites').onSnapshot(snap => {
         snap.docChanges().forEach(change => {
@@ -1225,8 +1137,7 @@ function listenForLiveInvites() {
     });
 }
 
-// 4. Accepter / Refuser
-function acceptLiveInvite() {
+window.acceptLiveInvite = function() {
     playClick();
     document.getElementById('liveInviteWidget').style.display = 'none';
     if(currentLiveInviteId) {
@@ -1238,7 +1149,7 @@ function acceptLiveInvite() {
     }
 }
 
-function declineLiveInvite() {
+window.declineLiveInvite = function() {
     playClick();
     document.getElementById('liveInviteWidget').style.display = 'none';
     if(currentLiveInviteId) {
@@ -1246,7 +1157,6 @@ function declineLiveInvite() {
     }
 }
 
-// 5. SALLE VIDÉO PEERJS
 async function openGameRoom() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
@@ -1290,7 +1200,7 @@ function handleCallStream(call) {
     call.on('error', () => { showToast("Connexion réseau perdue."); closeGameRoom(); });
 }
 
-function closeGameRoom(fromHistory = false) {
+window.closeGameRoom = function(fromHistory = false) {
     if (currentCall) { currentCall.close(); currentCall = null; }
     if (myPeer) { myPeer.destroy(); myPeer = null; }
     if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
@@ -1308,7 +1218,6 @@ function closeGameRoom(fromHistory = false) {
     if (!fromHistory) triggerBack();
 }
 
-// 6. SYNCHRO JEU (Utilise la salle commune liveRoomId)
 function getLiveRoomRef() {
     return fs.collection('liveRooms').doc(window.liveRoomId || user.code);
 }
@@ -1423,6 +1332,30 @@ function showChallengePopup(text, type) {
         null
     );
 }
+
+function pushState(id) {
+    stateStack.push(id);
+    history.pushState({id}, "");
+}
+
+window.onpopstate = (e) => {
+    const last = stateStack.pop();
+    if(last === 'modal') {
+        document.getElementById('customModal').style.display = 'none';
+    } else if(last === 'mediaViewer') {
+        closeMediaViewer(true);
+    } else if(last === 'galaxy') {
+        closeGalaxy(true);
+    } else if(last === 'needyou') {
+        closeNeedyouWizard(true);
+    } else if(last === 'arQuiz') {
+        closeARQuiz(true);
+    } else if(last === 'gameRoom') {
+        closeGameRoom(true);
+    } else if(last === 'chatBox' || last === 'coconBox') {
+        closeChat();
+    }
+};
 
 // ==========================================
 // --- RESTE DE L'APPLICATION ---
@@ -1539,30 +1472,6 @@ function unlockSecureSettings() {
         }
     });
 }
-
-function pushState(id) {
-    stateStack.push(id);
-    history.pushState({id}, "");
-}
-
-window.onpopstate = (e) => {
-    const last = stateStack.pop();
-    if(last === 'modal') {
-        document.getElementById('customModal').style.display = 'none';
-    } else if(last === 'mediaViewer') {
-        closeMediaViewer(true);
-    } else if(last === 'galaxy') {
-        closeGalaxy(true);
-    } else if(last === 'needyou') {
-        closeNeedyouWizard(true);
-    } else if(last === 'arQuiz') {
-        closeARQuiz(true);
-    } else if(last === 'gameRoom') {
-        closeGameRoom(true);
-    } else if(last === 'chatBox' || last === 'coconBox') {
-        closeChat();
-    }
-};
 
 function triggerBack() { history.back(); }
 
@@ -2639,7 +2548,7 @@ function promptGalaxyAccess() {
     });
 }
 
-async function startNeedyouGeneration(isRetry = false) {
+window.startNeedyouGeneration = async function(isRetry = false) {
     if(!isRetry) {
         const nameInput = document.getElementById('nyTargetName').value.trim();
         nySelections.name = nameInput || "mon amour"; 
@@ -2723,7 +2632,7 @@ async function startNeedyouGeneration(isRetry = false) {
         
         if (retryBtn) retryBtn.style.display = 'flex';
         
-        typeWriterEffect(poemText, 'aiPoemTypewriter');
+        window.typeWriterEffect(poemText, 'aiPoemTypewriter');
 
     } catch (err) {
         console.error("Erreur détaillée :", err);
@@ -2734,7 +2643,7 @@ async function startNeedyouGeneration(isRetry = false) {
     }
 }
 
-function typeWriterEffect(text, elementId) {
+window.typeWriterEffect = function(text, elementId) {
     const el = document.getElementById(elementId);
     el.innerHTML = '';
     let i = 0; 
@@ -2757,7 +2666,7 @@ function typeWriterEffect(text, elementId) {
     type();
 }
     
-function copyPoemInteractive(btn) {
+window.copyPoemInteractive = function(btn) {
     const text = document.getElementById('aiPoemTypewriter').innerText;
     navigator.clipboard.writeText(text).then(() => {
         btn.classList.add('success');
@@ -2801,7 +2710,7 @@ function getNextARMission() {
     return mission;
 }
 
-async function uploadSecretPhoto(e) {
+window.uploadSecretPhoto = async function(e) {
     const file = e.target.files[0];
     if(!file) return;
     showToast("Création du souvenir...");
@@ -2832,7 +2741,7 @@ async function uploadSecretPhoto(e) {
     });
 }
 
-async function openARQuiz() {
+window.openARQuiz = async function() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
     
@@ -2866,7 +2775,7 @@ async function openARQuiz() {
     }
 }
 
-function closeARQuiz(fromHistory = false) {
+window.closeARQuiz = function(fromHistory = false) {
     if(arStream) {
         arStream.getTracks().forEach(t => t.stop());
         arStream = null;
@@ -2900,7 +2809,7 @@ window.skipARMission = function() {
     }, 300);
 };
 
-async function scanARObject() {
+window.scanARObject = async function() {
     const video = document.getElementById('arCamera');
     const canvas = document.getElementById('arCanvas');
     const btn = document.getElementById('arScanBtn');
@@ -2962,19 +2871,19 @@ async function scanARObject() {
                 }
                 if(newBlur === 0) setTimeout(() => showToast("💖 Souvenir débloqué à 100% !"), 1500);
             });
-            resetScanButton(btn);
+            window.resetScanButton(btn);
         } else {
             showToast("Hmm, ce n'est pas ça... Réessaie ! 🕵️‍♂️");
-            resetScanButton(btn);
+            window.resetScanButton(btn);
         }
     } catch(e) {
         document.getElementById('arScannerLine').style.animationDuration = '2.5s';
         showToast("Erreur de connexion spatiale ✨");
-        resetScanButton(btn);
+        window.resetScanButton(btn);
     }
 }
 
-function resetScanButton(btn) {
+window.resetScanButton = function(btn) {
     btn.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> <span>Scanner l'objet</span>`;
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
@@ -3182,7 +3091,7 @@ function resetScanButton(btn) {
         }
     }
 
-    function initGalaxy3D() {
+    window.initGalaxy3D = function() {
         if (scene) return;
 
         generateTextures();
@@ -3272,7 +3181,7 @@ function resetScanButton(btn) {
         mat.dispose();
     }
 
-    function disposeGalaxy3D() {
+    window.disposeGalaxy3D = function() {
         if (animationId) {
             cancelAnimationFrame(animationId);
             animationId = null;
@@ -3334,7 +3243,7 @@ function resetScanButton(btn) {
         document.getElementById('galaxyBox').style.display = 'block';
         if(typeof window.pushState === 'function') window.pushState('galaxy'); 
         
-        initGalaxy3D(); 
+        window.initGalaxy3D(); 
         animate();
 
         if(unsubGalaxy) unsubGalaxy();
@@ -3386,7 +3295,7 @@ function resetScanButton(btn) {
             unsubGalaxy = null;
         }
 
-        disposeGalaxy3D(); 
+        window.disposeGalaxy3D(); 
 
         const audio = document.getElementById('galaxyAudio');
         if(audio) { audio.pause(); audio.currentTime = 0; }
@@ -3406,4 +3315,3 @@ function resetScanButton(btn) {
 </script>
 </body>
 </html>
-
