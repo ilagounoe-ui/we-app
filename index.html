@@ -21,6 +21,664 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script>
+/*
+ * ==========================================
+ * MODULE APPELS VIDÉO - Notre Univers Live
+ * WebRTC + PeerJS + Firebase (Mode Dégradé Supporté)
+ * ==========================================
+ */
+
+class VideoCallManager {
+    constructor() {
+        this.peer = null;
+        this.peerConnection = null;
+        this.localStream = null;
+        this.remoteStream = null;
+        this.callInProgress = false;
+        this.currentPartnerPeerId = null;
+        this.gameIntensity = 1;
+        this.currentGameChoice = null;
+        this.db = firebase.database();
+        this.callState = 'idle'; // idle, calling, connected, error
+        this.callHistory = [];
+        this.missedCalls = [];
+        this.signalChannel = null;
+        this.statsInterval = null;
+        this.isFallbackMode = false; // Mode dégradé si PeerJS indisponible
+
+        // Configuration ICE
+        this.iceServers = [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+        ];
+
+        this.init();
+    }
+
+    // Initialiser PeerJS avec fallback
+    async init() {
+        try {
+            const userId = this.getCurrentUserId();
+            if (!userId) {
+                console.warn('Utilisateur non authentifié');
+                return;
+            }
+
+            // Essayer d'abord avec le cloud PeerJS gratuit
+            this.peer = new Peer(userId, {
+                host: '0.peerjs.com',
+                port: 443,
+                secure: true,
+                config: { iceServers: this.iceServers },
+                debug: 1
+            });
+
+            this.setupPeerEvents();
+            console.log('✅ PeerJS initialisé (cloud):', userId);
+        } catch (error) {
+            console.warn('❌ PeerJS cloud indisponible, tentative fallback...');
+            this.tryFallbackInit();
+        }
+    }
+
+    // Tentative de connexion avec un serveur alternatif
+    async tryFallbackInit() {
+        try {
+            const userId = this.getCurrentUserId();
+            // Essayer un autre serveur public
+            this.peer = new Peer(userId, {
+                host: 'peerjs-server.herokuapp.com',
+                port: 443,
+                secure: true,
+                config: { iceServers: this.iceServers },
+                debug: 1
+            });
+            this.setupPeerEvents();
+            console.log('✅ PeerJS initialisé (fallback):', userId);
+        } catch (error) {
+            console.warn('❌ Tous les serveurs PeerJS indisponibles. Mode dégradé activé.');
+            this.isFallbackMode = true;
+            this.setupFallbackMode();
+        }
+    }
+
+    // Mode dégradé : permet d'utiliser l'interface sans PeerJS
+    setupFallbackMode() {
+        this.callState = 'connected'; // Simuler une connexion
+        this.callInProgress = true;
+        console.log('🎮 Mode dégradé activé : jeu fonctionnel sans vidéo P2P');
+    }
+
+    // Récupérer l'ID utilisateur actuel
+    getCurrentUserId() {
+        return localStorage.getItem('userId') || (user ? user.id : null);
+    }
+
+    // Récupérer l'ID du partenaire (depuis Firebase)
+    async getPartnerPeerId(partnerId) {
+        try {
+            const snapshot = await this.db.ref(`users/${partnerId}/peerId`).once('value');
+            return snapshot.val();
+        } catch (error) {
+            console.error('Erreur récupération PeerID:', error);
+            return null;
+        }
+    }
+
+    // Setup événements PeerJS
+    setupPeerEvents() {
+        this.peer.on('open', (id) => {
+            console.log('🔐 Votre ID Peer:', id);
+            this.db.ref(`users/${this.getCurrentUserId()}/peerId`).set(id);
+        });
+
+        this.peer.on('call', (call) => {
+            this.handleIncomingCall(call);
+        });
+
+        this.peer.on('connection', (conn) => {
+            console.log('📡 Connexion reçue:', conn.peer);
+        });
+
+        this.peer.on('error', (err) => {
+            console.error('❌ Erreur Peer:', err);
+            if (err.type === 'network' || err.type === 'server-error') {
+                console.warn('Passage en mode dégradé...');
+                this.isFallbackMode = true;
+                this.setupFallbackMode();
+            }
+            this.setCallState('error');
+            this.showToast('Erreur de connexion: ' + err.type);
+        });
+
+        this.peer.on('disconnected', () => {
+            console.warn('PeerJS déconnecté, reconnexion...');
+            this.peer.reconnect();
+        });
+    }
+
+    // Démarrer appel vidéo
+    async startCall(partnerId) {
+        try {
+            if (this.callInProgress && !this.isFallbackMode) {
+                this.showToast('Un appel est déjà en cours');
+                return;
+            }
+
+            this.setCallState('calling');
+
+            // Obtenir caméra et micro
+            const stream = await this.getMediaStream();
+            this.localStream = stream;
+
+            // Afficher vidéo locale
+            this.displayLocalVideo(stream);
+
+            // Si mode dégradé, on simule la connexion
+            if (this.isFallbackMode) {
+                this.callInProgress = true;
+                this.currentPartnerPeerId = 'fallback_partner';
+                this.setCallState('connected');
+                this.showToast('🎮 Mode dégradé : jeu activé sans vidéo');
+                return;
+            }
+
+            // Obtenir PeerID du partenaire
+            const partnerPeerId = await this.getPartnerPeerId(partnerId);
+            if (!partnerPeerId) {
+                // Si pas de PeerID, passer en mode dégradé
+                this.isFallbackMode = true;
+                this.setupFallbackMode();
+                this.showToast('Partenaire hors ligne - Mode jeu activé');
+                return;
+            }
+
+            this.currentPartnerPeerId = partnerPeerId;
+
+            // Initier appel
+            const call = this.peer.call(partnerPeerId, stream, {
+                metadata: {
+                    userName: this.getCurrentUserName(),
+                    startTime: Date.now()
+                }
+            });
+
+            this.setupCallEvents(call);
+
+            // Notifier le partenaire
+            await this.notifyCallIncoming(partnerId);
+
+            console.log('📞 Appel initié vers:', partnerPeerId);
+
+        } catch (error) {
+            console.error('❌ Erreur lors du démarrage:', error);
+            // En cas d'erreur, passer en mode dégradé
+            this.isFallbackMode = true;
+            this.setupFallbackMode();
+            this.showToast('Mode jeu activé (vidéo indisponible)');
+            this.setCallState('connected');
+        }
+    }
+
+    // Répondre à un appel incoming
+    async answerCall(call) {
+        try {
+            if (this.isFallbackMode) {
+                this.callInProgress = true;
+                this.currentPartnerPeerId = call.peer || 'fallback_partner';
+                this.setCallState('connected');
+                return;
+            }
+
+            const stream = await this.getMediaStream();
+            this.localStream = stream;
+
+            this.displayLocalVideo(stream);
+
+            call.answer(stream);
+            this.setupCallEvents(call);
+
+            this.setCallState('connected');
+            this.callInProgress = true;
+            this.currentPartnerPeerId = call.peer;
+
+            console.log('✅ Appel accepté');
+
+        } catch (error) {
+            console.error('❌ Erreur réponse appel:', error);
+            this.showToast('Erreur: ' + error.message);
+            if (call && call.close) call.close();
+        }
+    }
+
+    // Rejeter un appel
+    rejectCall(call) {
+        if (call && call.close) call.close();
+        this.setCallState('idle');
+        this.removeMissedCall(call.peer || 'fallback_partner');
+    }
+
+    // Setup événements appel
+    setupCallEvents(call) {
+        if (!call) return;
+
+        call.on('stream', (remoteStream) => {
+            console.log('🎥 Stream reçu');
+            this.remoteStream = remoteStream;
+            this.displayRemoteVideo(remoteStream);
+            this.setCallState('connected');
+            this.callInProgress = true;
+            this.startStatsMonitoring();
+        });
+
+        call.on('close', () => {
+            this.endCall();
+        });
+
+        call.on('error', (err) => {
+            console.error('❌ Erreur appel:', err);
+            this.showToast('Erreur appel: ' + err);
+            this.endCall();
+        });
+    }
+
+    // Gérer appel entrant
+    async handleIncomingCall(call) {
+        console.log('📞 Appel entrant de:', call.peer);
+
+        this.setCallState('calling');
+        const incomingCall = {
+            peerId: call.peer,
+            userName: call.metadata?.userName || 'Utilisateur inconnu',
+            timestamp: Date.now(),
+            call: call
+        };
+
+        this.missedCalls.push(incomingCall);
+        this.showIncomingCallNotification(incomingCall);
+
+        setTimeout(() => {
+            if (this.callState === 'calling' && this.missedCalls.includes(incomingCall)) {
+                this.recordMissedCall(incomingCall);
+                this.removeMissedCall(call.peer);
+            }
+        }, 30000);
+    }
+
+    // Obtenir accès au média (caméra + micro)
+    async getMediaStream() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { 
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                },
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                }
+            });
+            return stream;
+        } catch (error) {
+            console.error('❌ Erreur accès média:', error);
+            // Retourner un stream vide en mode dégradé
+            if (this.isFallbackMode) {
+                return new MediaStream();
+            }
+            throw new Error('Caméra/Micro non disponible: ' + error.message);
+        }
+    }
+
+    // Afficher vidéo locale
+    displayLocalVideo(stream) {
+        const video = document.getElementById('localVideoLive');
+        if (video) {
+            video.srcObject = stream;
+            video.play().catch(() => {});
+        }
+    }
+
+    // Afficher vidéo distante
+    displayRemoteVideo(stream) {
+        const video = document.getElementById('remoteVideo');
+        if (video) {
+            video.srcObject = stream;
+            video.play().catch(() => {});
+        }
+
+        const placeholder = document.getElementById('remotePlaceholder');
+        if (placeholder) {
+            placeholder.style.display = 'none';
+        }
+    }
+
+    // Terminer appel
+    endCall() {
+        try {
+            if (this.localStream) {
+                this.localStream.getTracks().forEach(track => track.stop());
+                this.localStream = null;
+            }
+
+            if (this.remoteStream) {
+                this.remoteStream.getTracks().forEach(track => track.stop());
+                this.remoteStream = null;
+            }
+
+            const localVideo = document.getElementById('localVideoLive');
+            const remoteVideo = document.getElementById('remoteVideo');
+            if (localVideo) localVideo.srcObject = null;
+            if (remoteVideo) remoteVideo.srcObject = null;
+
+            if (this.statsInterval) {
+                clearInterval(this.statsInterval);
+                this.statsInterval = null;
+            }
+
+            this.callInProgress = false;
+            this.currentPartnerPeerId = null;
+            this.setCallState('idle');
+            this.recordCallHistory();
+            this.closeGameRoom();
+
+            console.log('📞 Appel terminé');
+
+        } catch (error) {
+            console.error('Erreur fermeture appel:', error);
+        }
+    }
+
+    // Contrôle caméra
+    toggleCamera(enabled) {
+        if (this.localStream) {
+            this.localStream.getVideoTracks().forEach(track => {
+                track.enabled = enabled;
+            });
+            console.log('🎥 Caméra:', enabled ? 'ON' : 'OFF');
+        }
+    }
+
+    // Contrôle micro
+    toggleMicrophone(enabled) {
+        if (this.localStream) {
+            this.localStream.getAudioTracks().forEach(track => {
+                track.enabled = enabled;
+            });
+            console.log('🎤 Micro:', enabled ? 'ON' : 'OFF');
+        }
+    }
+
+    // Changer intensité du jeu
+    setGameIntensity(level) {
+        this.gameIntensity = level;
+        const labels = {
+            1: 'Mignon 💕',
+            2: 'Complice 😊',
+            3: 'Sensuel 😏',
+            4: 'Hot 🌶️'
+        };
+        this.showToast('Température: ' + labels[level]);
+        this.sendGameData({ intensity: level });
+    }
+
+    // Envoyer choix du jeu
+    handleGameChoice(choice) {
+        this.currentGameChoice = choice;
+        this.sendGameData({
+            choice: choice,
+            intensity: this.gameIntensity
+        });
+
+        const emoji = choice === 'verite' ? '❓' : '🎬';
+        this.showToast(`${emoji} ${choice.toUpperCase()}`);
+        this.getGameContent(choice);
+    }
+
+    // Récupérer question/action du jeu
+    async getGameContent(type) {
+        try {
+            const ref = type === 'verite' ? 'game/questions' : 'game/actions';
+            const snapshot = await this.db.ref(ref).orderByChild('difficulty')
+                .equalTo(this.gameIntensity).limitToFirst(1).once('value');
+
+            const data = snapshot.val();
+            if (data) {
+                const content = Object.values(data)[0];
+                this.displayGameContent(content);
+            }
+        } catch (error) {
+            console.error('Erreur récupération contenu jeu:', error);
+        }
+    }
+
+    // Afficher contenu du jeu
+    displayGameContent(content) {
+        const gameButtonsRow = document.getElementById('gameButtonsRow');
+        if (gameButtonsRow) {
+            gameButtonsRow.insertAdjacentHTML('afterend', `
+                <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 20px; margin-top: 20px; text-align: center; color: white;">
+                    <p style="font-size: 14px; opacity: 0.8; margin: 0 0 10px 0;">${this.currentGameChoice === 'verite' ? 'VÉRITÉ' : 'ACTION'}</p>
+                    <p style="font-size: 16px; font-weight: bold; margin: 0;">${content.text}</p>
+                </div>
+            `);
+        }
+    }
+
+    // Envoyer données du jeu
+    sendGameData(data) {
+        if (this.currentPartnerPeerId && this.peer) {
+            try {
+                const conn = this.peer.connect(this.currentPartnerPeerId);
+                conn.send({ type: 'gameData', payload: data });
+            } catch (e) {
+                console.log('Envoi données jeu impossible (mode dégradé)');
+            }
+        }
+    }
+
+    // Monitoring stats de connexion
+    startStatsMonitoring() {
+        if (this.statsInterval) clearInterval(this.statsInterval);
+
+        this.statsInterval = setInterval(async () => {
+            if (!this.peerConnection) return;
+
+            try {
+                const stats = await this.peerConnection.getStats();
+                stats.forEach(report => {
+                    if (report.type === 'inbound-rtp' && report.kind === 'video') {
+                        const packetsLost = report.packetsLost || 0;
+                        if (packetsLost > 10) {
+                            console.warn('⚠️ Perte de paquets:', packetsLost);
+                            this.showToast('Connexion faible ⚠️');
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Erreur monitoring stats:', error);
+            }
+        }, 5000);
+    }
+
+    // Notifier appel entrant au partenaire
+    async notifyCallIncoming(partnerId) {
+        try {
+            await this.db.ref(`users/${partnerId}/incomingCall`).set({
+                from: this.getCurrentUserId(),
+                userName: this.getCurrentUserName(),
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            });
+        } catch (error) {
+            console.error('Erreur notification:', error);
+        }
+    }
+
+    // Enregistrer appel dans l'historique
+    recordCallHistory() {
+        const callRecord = {
+            partnerId: this.currentPartnerPeerId,
+            duration: Math.floor((Date.now() - (this.callStartTime || Date.now())) / 1000),
+            timestamp: Date.now(),
+            gameIntensity: this.gameIntensity,
+            status: 'completed'
+        };
+
+        this.callHistory.push(callRecord);
+        this.db.ref(`users/${this.getCurrentUserId()}/callHistory`).push(callRecord);
+    }
+
+    // Enregistrer appel manqué
+    recordMissedCall(call) {
+        const missedRecord = {
+            from: call.peerId,
+            userName: call.userName,
+            timestamp: call.timestamp
+        };
+
+        this.db.ref(`users/${this.getCurrentUserId()}/missedCalls`).push(missedRecord);
+    }
+
+    // Retirer des appels manqués
+    removeMissedCall(peerId) {
+        this.missedCalls = this.missedCalls.filter(call => call.peerId !== peerId);
+    }
+
+    // Afficher notification d'appel entrant
+    showIncomingCallNotification(call) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(11, 9, 20, 0.95);
+            border: 2px solid var(--love);
+            border-radius: 40px;
+            padding: 40px;
+            z-index: 100001;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(255, 75, 110, 0.4);
+            backdrop-filter: blur(10px);
+        `;
+
+        notification.innerHTML = `
+            <div style="font-family: Pacifico; color: var(--love); font-size: 28px; margin-bottom: 20px;">
+                ${call.userName}
+            </div>
+            <div style="color: white; font-size: 16px; margin-bottom: 30px;">
+                t'appelle...
+            </div>
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button onclick="window.videoCallManager.rejectCall(window.videoCallManager.missedCalls.find(c => c.peerId === '${call.peerId}')?.call)" 
+                    style="background: rgba(255, 75, 110, 0.3); border: 1px solid var(--love); color: var(--love); 
+                    padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold;">
+                    Refuser
+                </button>
+                <button onclick="window.videoCallManager.answerCall(window.videoCallManager.missedCalls.find(c => c.peerId === '${call.peerId}')?.call)"
+                    style="background: var(--love); border: none; color: white; 
+                    padding: 12px 30px; border-radius: 25px; cursor: pointer; font-weight: bold;">
+                    Répondre
+                </button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.remove(), 30000);
+    }
+
+    // Ouvrir gameRoom
+    async openGameRoom() {
+        try {
+            if (!this.callInProgress && !this.isFallbackMode) {
+                this.showToast('Aucun appel en cours');
+                return;
+            }
+
+            const gameRoom = document.getElementById('gameRoomContainer');
+            if (gameRoom) {
+                gameRoom.style.display = 'flex';
+                this.showToast('🎮 Jeu lancé!' + (this.isFallbackMode ? ' (Mode dégradé)' : ''));
+            }
+        } catch (error) {
+            console.error('Erreur ouverture gameRoom:', error);
+        }
+    }
+
+    // Fermer gameRoom
+    closeGameRoom() {
+        const gameRoom = document.getElementById('gameRoomContainer');
+        if (gameRoom) {
+            gameRoom.style.display = 'none';
+        }
+    }
+
+    // État de l'appel
+    setCallState(state) {
+        this.callState = state;
+        console.log('📊 État appel:', state);
+
+        const stateElement = document.getElementById('callState');
+        if (stateElement) {
+            stateElement.textContent = state.toUpperCase();
+        }
+    }
+
+    // Afficher toast notification
+    showToast(message) {
+        const toast = document.getElementById('toastAlert');
+        if (toast) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    }
+
+    // Récupérer nom utilisateur actuel
+    getCurrentUserName() {
+        return localStorage.getItem('userName') || (user ? user.pseudo : 'Utilisateur');
+    }
+}
+
+// Initialiser le gestionnaire global
+window.videoCallManager = new VideoCallManager();
+
+// Fonctions globales pour les événements HTML (compatibilité avec l'ancien code)
+function sendLiveCall() {
+    const partnerId = localStorage.getItem('partnerId') || (user ? user.id : null);
+    if (!partnerId) {
+        if (window.videoCallManager) window.videoCallManager.showToast('Partenaire non défini');
+        return;
+    }
+    if (window.videoCallManager) window.videoCallManager.startCall(partnerId);
+}
+
+function handleGameChoice(choice) {
+    if (window.videoCallManager) window.videoCallManager.handleGameChoice(choice);
+}
+
+function closeGameRoom() {
+    if (window.videoCallManager) window.videoCallManager.endCall();
+}
+
+function updateLiveIntensity(value) {
+    if (window.videoCallManager) window.videoCallManager.setGameIntensity(parseInt(value));
+}
+
+function toggleVideoCall(enabled) {
+    if (window.videoCallManager) window.videoCallManager.toggleCamera(enabled);
+}
+
+function toggleMicCall(enabled) {
+    if (window.videoCallManager) window.videoCallManager.toggleMicrophone(enabled);
+}
+
+</script>
+
 
     <script type="importmap">
         {
@@ -353,6 +1011,7 @@
             animation: fade-out-card 0.4s ease forwards;
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -2589,118 +3248,152 @@ function promptGalaxyAccess() {
 }
 
 // ==========================================
-// --- MOTEUR DE L'ODYSSÉE LIVE (PEERJS + FIREBASE) ---
+// --- MOTEUR DE L'ODYSSÉE LIVE (VideoCallManager + Fallback) ---
 // ==========================================
-let liveStream = null;
-let myPeer = null;
-let currentCall = null;
-let liveUnsub = null; 
+// Le VideoCallManager est initialisé dans le <head> et gère tout.
+// Cette section fournit les fonctions de compatibilité et le mode dégradé.
+
+let liveUnsub = null;
 window.myCallRole = null;
 window.livePartnerId = null;
 
+// Fonction principale pour lancer un appel live
 async function sendLiveCall() {
     playClick();
-    showToast("Appel en cours... 🔔");
+
+    // Vérifier si VideoCallManager est disponible
+    if (!window.videoCallManager) {
+        showToast("Initialisation du module Live...");
+        window.videoCallManager = new VideoCallManager();
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Si l'utilisateur n'a pas de partenaire défini, utiliser son propre code
+    const partnerId = localStorage.getItem('partnerId') || (user ? user.id : null);
+    if (!partnerId) {
+        showToast('Partenaire non défini');
+        return;
+    }
+
+    // Stocker le rôle
     window.myCallRole = 'caller';
-    
-    await fs.collection('liveRooms').doc(user.code).set({
-        invitation: { callerName: user.pseudo, callerId: user.id, active: true, timestamp: Date.now() }
-    });
+    window.livePartnerId = partnerId;
+
+    // Notifier via Firebase que l'on appelle
+    try {
+        await fs.collection('liveRooms').doc(user.code).set({
+            invitation: { callerName: user.pseudo, callerId: user.id, active: true, timestamp: Date.now() }
+        }, { merge: true });
+    } catch(e) {
+        console.warn("Firebase notification failed:", e);
+    }
+
+    // Ouvrir la game room (même si PeerJS échoue, le jeu fonctionne)
     openGameRoom();
+
+    // Tenter de démarrer l'appel vidéo (async, ne bloque pas)
+    window.videoCallManager.startCall(partnerId).catch(err => {
+        console.warn("Appel vidéo non disponible, mode jeu activé:", err);
+    });
 }
 
+// Ouvrir la game room - TOUJOURS accessible, même sans PeerJS
 async function openGameRoom() {
     document.getElementById('mainApp').style.display = 'none';
     document.getElementById('coconBox').style.display = 'none';
     document.getElementById('gameRoomContainer').style.display = 'flex';
     pushState('gameRoom');
 
+    // Essayer d'activer la caméra locale pour l'aperçu
     try {
-        liveStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('localVideoLive').srcObject = liveStream;
-        showToast("Caméra activée. Connexion P2P...");
-
-        myPeer = new Peer('nu_' + user.id);
-
-        myPeer.on('open', (id) => {
-            if (window.myCallRole === 'callee' && window.livePartnerId) {
-                currentCall = myPeer.call('nu_' + window.livePartnerId, liveStream);
-                handleCallStream(currentCall);
-            }
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+            audio: false 
         });
-
-        myPeer.on('call', (call) => {
-            currentCall = call;
-            call.answer(liveStream);
-            handleCallStream(call);
-        });
-
-        listenToLiveSync(); 
-    } catch (err) {
-        showToast("L'Univers a besoin de ta caméra pour le Live !");
-        closeGameRoom();
+        const localVideo = document.getElementById('localVideoLive');
+        if (localVideo) {
+            localVideo.srcObject = stream;
+            localVideo.play().catch(() => {});
+        }
+    } catch(e) {
+        console.warn("Caméra non disponible:", e);
+        // En mode dégradé, on affiche un message sympa
+        const placeholder = document.getElementById('remotePlaceholder');
+        if (placeholder) {
+            placeholder.innerHTML = `
+                <div style="text-align:center; padding:20px;">
+                    <div style="font-size:60px; margin-bottom:15px;">🎮</div>
+                    <div style="font-family:'Pacifico'; font-size:22px; color:var(--love);">Mode Jeu</div>
+                    <div style="font-size:13px; opacity:0.7; margin-top:10px;">La vidéo n'est pas disponible,<br>mais le jeu fonctionne !</div>
+                </div>
+            `;
+        }
     }
+
+    // Démarrer la synchro Firebase pour le jeu
+    listenToLiveSync();
+
+    showToast("🎮 Odyssée Live ouverte !");
 }
 
-function handleCallStream(call) {
-    call.on('stream', (remoteStream) => {
-        const remoteVid = document.getElementById('remoteVideo');
-        remoteVid.srcObject = remoteStream;
-        document.getElementById('remotePlaceholder').style.display = 'none'; 
-    });
-    call.on('close', () => { closeGameRoom(); });
-    call.on('error', () => { showToast("Connexion réseau perdue."); closeGameRoom(); });
-}
-
+// Fermer la game room
 function closeGameRoom(fromHistory = false) {
-    if (currentCall) { currentCall.close(); currentCall = null; }
-    if (myPeer) { myPeer.destroy(); myPeer = null; }
-    if (liveStream) { liveStream.getTracks().forEach(t => t.stop()); liveStream = null; }
-    if (liveUnsub) { liveUnsub(); liveUnsub = null; }
-    
-    window.myCallRole = null;
-    window.livePartnerId = null;
-    
-    if(user && user.code) {
-        fs.collection('liveRooms').doc(user.code).set({ invitation: { active: false } }, { merge: true });
+    // Arrêter tout stream local
+    const localVideo = document.getElementById('localVideoLive');
+    if (localVideo && localVideo.srcObject) {
+        localVideo.srcObject.getTracks().forEach(t => t.stop());
+        localVideo.srcObject = null;
     }
 
+    // Réinitialiser le placeholder
+    const placeholder = document.getElementById('remotePlaceholder');
+    if (placeholder) {
+        placeholder.style.display = 'flex';
+        placeholder.innerHTML = `
+            <div class="loader" style="margin-bottom:15px; border-top-color:var(--love);"></div>
+            En attente de connexion...
+        `;
+    }
+
+    // Nettoyer Firebase
+    if (user && user.code) {
+        fs.collection('liveRooms').doc(user.code).set({ 
+            invitation: { active: false } 
+        }, { merge: true }).catch(() => {});
+    }
+
+    // Arrêter la synchro
+    if (liveUnsub) { liveUnsub(); liveUnsub = null; }
+
+    // Cacher la game room
     document.getElementById('gameRoomContainer').style.display = 'none';
-    document.getElementById('remotePlaceholder').style.display = 'flex';
-    document.getElementById('remoteVideo').srcObject = null;
     document.getElementById('mainApp').style.display = 'block';
-    
+
     if (!fromHistory) triggerBack();
 }
 
-window.updateLiveIntensity = function(val) {
-    for (let i = 1; i <= 4; i++) {
-        let label = document.getElementById('int' + i);
-        if(label) {
-            label.style.opacity = (i == val) ? '1' : '0.5';
-            label.style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
-        }
-    }
-    const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
-    document.getElementById('tempLabel').innerText = labels[val-1];
-    
-    fs.collection('liveRooms').doc(user.code).set({ intensity: val }, { merge: true }).catch(()=>{});
-};
-
+// Synchro Firebase pour le jeu (intensité + défis)
 function listenToLiveSync() {
+    if (!user || !user.code) return;
+
+    if (liveUnsub) { liveUnsub(); }
+
     liveUnsub = fs.collection('liveRooms').doc(user.code).onSnapshot(doc => {
         const data = doc.data();
         if (!data) return;
 
+        // Synchro intensité
         if (data.intensity) {
             const slider = document.getElementById('liveIntensitySlider');
-            if(slider && slider.value != data.intensity) {
+            if (slider && slider.value != data.intensity) {
                 slider.value = data.intensity;
                 const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
-                document.getElementById('tempLabel').innerText = labels[data.intensity-1];
+                const tempLabel = document.getElementById('tempLabel');
+                if (tempLabel) tempLabel.innerText = labels[data.intensity - 1];
+
                 for (let i = 1; i <= 4; i++) {
                     let label = document.getElementById('int' + i);
-                    if(label) {
+                    if (label) {
                         label.style.opacity = (i == data.intensity) ? '1' : '0.5';
                         label.style.textShadow = (i == data.intensity) ? '0 0 10px var(--accent)' : 'none';
                     }
@@ -2708,34 +3401,78 @@ function listenToLiveSync() {
             }
         }
 
+        // Nouveau défi reçu
         if (data.currentChallenge && data.challengeTimestamp > (window.lastChallengeTime || 0)) {
             window.lastChallengeTime = data.challengeTimestamp;
             showChallengePopup(data.currentChallenge, data.challengeType);
-            
+
             const btnA = document.getElementById('btnAction');
             const btnV = document.getElementById('btnVerite');
-            btnA.classList.remove('animate-spring', 'animate-fade');
-            btnV.classList.remove('animate-spring', 'animate-fade');
-            btnA.disabled = false; btnV.disabled = false;
+            if (btnA) { btnA.classList.remove('animate-spring', 'animate-fade'); btnA.disabled = false; }
+            if (btnV) { btnV.classList.remove('animate-spring', 'animate-fade'); btnV.disabled = false; }
+        }
+
+        // Détection d'appel entrant
+        if (data && data.invitation && data.invitation.active && data.invitation.callerId !== user.id) {
+            if (Date.now() - data.invitation.timestamp < 60000) {
+                // Vérifier si on n'est pas déjà en appel
+                if (document.getElementById('gameRoomContainer').style.display !== 'flex') {
+                    openModal(
+                        "<span style='color:var(--love); font-family:Pacifico;'>Appel Entrant ! 💖</span>",
+                        `<div style="text-align:center;">
+                            <p><b>${data.invitation.callerName}</b> t'attend dans l'Odyssée Live...</p>
+                            <div class="loader" style="margin:20px auto; border-top-color:var(--love);"></div>
+                         </div>`,
+                        () => { 
+                            playClick();
+                            window.myCallRole = 'callee';
+                            window.livePartnerId = data.invitation.callerId;
+                            openGameRoom(); 
+                        }
+                    );
+                    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                }
+            }
         }
     });
 }
 
+// Mettre à jour l'intensité
+window.updateLiveIntensity = function(val) {
+    for (let i = 1; i <= 4; i++) {
+        let label = document.getElementById('int' + i);
+        if (label) {
+            label.style.opacity = (i == val) ? '1' : '0.5';
+            label.style.textShadow = (i == val) ? '0 0 10px var(--accent)' : 'none';
+        }
+    }
+    const labels = ["Mignon ☁️", "Complice ✨", "Sensuel 🔥", "Hot 🌶️"];
+    const tempLabel = document.getElementById('tempLabel');
+    if (tempLabel) tempLabel.innerText = labels[val - 1];
+
+    if (user && user.code) {
+        fs.collection('liveRooms').doc(user.code).set({ intensity: val }, { merge: true }).catch(() => {});
+    }
+};
+
+// Gérer le choix du jeu (Vérité / Action)
 window.handleGameChoice = async function(type) {
     const btnA = document.getElementById('btnAction');
     const btnV = document.getElementById('btnVerite');
-    const intensity = document.getElementById('liveIntensitySlider').value;
+    const slider = document.getElementById('liveIntensitySlider');
+    const intensity = slider ? slider.value : 1;
     const levels = ["Mignon", "Complice", "Sensuel", "Hot et piquant"];
 
-    if (type === 'action') {
+    if (type === 'action' && btnA && btnV) {
         btnA.classList.add('animate-spring');
         btnV.classList.add('animate-fade');
-    } else {
+    } else if (btnA && btnV) {
         btnV.classList.add('animate-spring');
         btnA.classList.add('animate-fade');
     }
 
-    btnA.disabled = true; btnV.disabled = true;
+    if (btnA) btnA.disabled = true;
+    if (btnV) btnV.disabled = true;
     showToast("L'IA prépare votre défi...");
 
     const geminiPart1 = "AIzaSyAxdcYy5ewD4Zy-"; 
@@ -2754,25 +3491,29 @@ window.handleGameChoice = async function(type) {
             body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
 
+        if (!response.ok) throw new Error("Erreur API Gemini");
+
         const data = await response.json();
         const challenge = data.candidates[0].content.parts[0].text.trim();
 
-        await fs.collection('liveRooms').doc(user.code).set({
-            currentChallenge: challenge,
-            challengeType: type,
-            challengeTimestamp: Date.now()
-        }, { merge: true });
+        if (user && user.code) {
+            await fs.collection('liveRooms').doc(user.code).set({
+                currentChallenge: challenge,
+                challengeType: type,
+                challengeTimestamp: Date.now()
+            }, { merge: true });
+        }
 
     } catch (err) {
         showToast("L'IA est timide, réessaie...");
         setTimeout(() => {
-            btnA.disabled = false; btnV.disabled = false;
-            btnA.classList.remove('animate-spring', 'animate-fade');
-            btnV.classList.remove('animate-spring', 'animate-fade');
+            if (btnA) { btnA.disabled = false; btnA.classList.remove('animate-spring', 'animate-fade'); }
+            if (btnV) { btnV.disabled = false; btnV.classList.remove('animate-spring', 'animate-fade'); }
         }, 2000);
     }
 };
 
+// Afficher le popup de défi
 function showChallengePopup(text, type) {
     playClick(); 
     const title = type === 'action' ? '<span style="color:#ff4b2b;">🟥 Action</span>' : '<span style="color:#38ef7d;">🟩 Vérité</span>';
@@ -2782,31 +3523,6 @@ function showChallengePopup(text, type) {
         null
     );
 }
-
-function pushState(id) {
-    stateStack.push(id);
-    history.pushState({id}, "");
-}
-
-window.onpopstate = (e) => {
-    const last = stateStack.pop();
-    if(last === 'modal') {
-        document.getElementById('customModal').style.display = 'none';
-    } else if(last === 'mediaViewer') {
-        closeMediaViewer(true);
-    } else if(last === 'galaxy') {
-        closeGalaxy(true);
-    } else if(last === 'needyou') {
-        closeNeedyouWizard(true);
-    } else if(last === 'arQuiz') {
-        closeARQuiz(true);
-    } else if(last === 'gameRoom') {
-        closeGameRoom(true);
-    } else if(last === 'chatBox' || last === 'coconBox') {
-        closeChat();
-    }
-};
-
 // ==========================================
 // --- WIZARD NEEDYOU : IA & DESIGN ---
 // ==========================================
